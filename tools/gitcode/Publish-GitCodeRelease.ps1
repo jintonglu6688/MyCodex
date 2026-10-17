@@ -44,6 +44,7 @@ $distributionScript = Join-Path $repoRoot "tools\gitcode\Publish-GitCodeDistribu
 $runtimeScript = Join-Path $repoRoot "tools\gitcode\Publish-GitCodeRuntime.ps1"
 $gitCodeApiBase = "https://api.gitcode.com/api/v5"
 $script:CachedGitCodeToken = $null
+. (Join-Path $repoRoot "tools\gitcode\GitCodePublishing.ps1")
 
 if ([string]::IsNullOrWhiteSpace($RepoUrl)) {
     $RepoUrl = "https://gitcode.com/$Owner/$Repo.git"
@@ -146,8 +147,8 @@ echo %GITCODE_ASKPASS_PASSWORD%
         $env:GITCODE_ASKPASS_PASSWORD = $tokenValue
 
         $gitArgs = @("-c", "credential.helper=") + $Arguments
-        & git @gitArgs
-        if ($LASTEXITCODE -ne 0) {
+        $exitCode = Invoke-GitCodeNativeCommand -FilePath "git" -Arguments $gitArgs
+        if ($exitCode -ne 0) {
             throw "GitCode git command failed: git $($Arguments -join ' ')"
         }
     }
@@ -255,27 +256,6 @@ function Send-GitCodeReleaseFile {
         -UseBasicParsing)
 
     Write-Host "Uploaded Release asset: $TagName / $fileName"
-}
-
-function Test-PublicDownloadSize {
-    param(
-        [string]$Url,
-        [long]$ExpectedSize,
-        [string]$Name
-    )
-
-    $response = Invoke-WebRequest -Uri $Url -Method Head -TimeoutSec 120 -UseBasicParsing
-    $contentLength = @($response.Headers["Content-Length"]) |
-        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-        Select-Object -First 1
-    if ([string]::IsNullOrWhiteSpace($contentLength)) {
-        throw "$Name size check failed. Content-Length header was not returned."
-    }
-
-    $actualSize = [long]$contentLength
-    if ($actualSize -ne $ExpectedSize) {
-        throw "$Name size mismatch. Expected $ExpectedSize, got $actualSize."
-    }
 }
 
 $sourceRemotes = @(git remote)
@@ -391,7 +371,7 @@ if ($manifest.app.version -ne $version) {
 }
 
 $assetUrl = "$packageBaseUrl$($manifest.app.asset.url)"
-Test-PublicDownloadSize -Url $assetUrl -ExpectedSize ([long]$manifest.app.asset.size) -Name "Installer"
+Assert-GitCodePublicDownloadSize -Url $assetUrl -ExpectedSize ([long]$manifest.app.asset.size) -Name "Installer"
 
 Write-Host ""
 Write-Host "GitCode release published:"

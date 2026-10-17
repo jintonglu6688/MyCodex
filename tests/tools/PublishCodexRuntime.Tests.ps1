@@ -4,7 +4,7 @@ $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $fixtureRoot = Join-Path $repoRoot ('temp\codex-runtime-test-' + [Guid]::NewGuid().ToString('N'))
 $fixtureVersion = '0.999.0'
 $triples = @('x86_64-pc-windows-msvc', 'aarch64-pc-windows-msvc')
-$global:codexRuntimeFixture = @{ Downloads = 0; LatestQueries = 0; Uploads = @{} }
+$global:codexRuntimeFixture = @{ Downloads = 0; LatestQueries = 0; SizeChecks = 0; Uploads = @{} }
 $badIntegrity = $false
 $failArm = $false
 $archiveHash = $null
@@ -51,10 +51,6 @@ function Invoke-WebRequest {
         $global:codexRuntimeFixture.Uploads[$name] = [pscustomobject]@{ Size = (Get-Item $InFile).Length; Hash = (Get-FileHash $InFile).Hash }
         return
     }
-    if ($Method -eq 'Head') {
-        $name = ($Uri -split '/')[-2]
-        return [pscustomobject]@{ Headers = @{ 'Content-Length' = [string]$global:codexRuntimeFixture.Uploads[$name].Size } }
-    }
     throw "Unexpected fixture download: $Uri"
 }
 
@@ -62,9 +58,17 @@ try {
     foreach ($relative in @('tools\runtime', 'tools\gitcode', 'updates', 'payload\package')) {
         New-Item -ItemType Directory -Path (Join-Path $fixtureRoot $relative) -Force | Out-Null
     }
-    foreach ($relative in @('tools\runtime\prepare-bundled-codex-runtime.ps1', 'tools\gitcode\Publish-GitCodeRuntime.ps1')) {
+    foreach ($relative in @('tools\runtime\prepare-bundled-codex-runtime.ps1', 'tools\gitcode\Publish-GitCodeRuntime.ps1', 'tools\gitcode\GitCodePublishing.ps1')) {
         Copy-Item -LiteralPath (Join-Path $repoRoot $relative) -Destination (Join-Path $fixtureRoot $relative)
     }
+    # Answer public size checks from the mock uploads; GitCodePublishing.Tests.ps1 covers the real range request.
+    Add-Content -LiteralPath (Join-Path $fixtureRoot 'tools\gitcode\GitCodePublishing.ps1') -Encoding ASCII -Value @'
+function Get-GitCodePublicDownloadSize {
+    param([string]$Url)
+    $global:codexRuntimeFixture.SizeChecks++
+    return [long]$global:codexRuntimeFixture.Uploads[($Url -split '/')[-2]].Size
+}
+'@
     # The distribution publisher is outside this test's boundary; verify it receives the prepared manifest.
     Set-Content -LiteralPath (Join-Path $fixtureRoot 'tools\gitcode\Publish-GitCodeDistributionRepo.ps1') -Encoding ASCII -Value 'param($RepoUrl, $CommitMessage, $GitUsername, $GitPassword) $global:LASTEXITCODE = 0'
     foreach ($triple in $triples) {
@@ -122,6 +126,7 @@ try {
         Assert-True ($global:codexRuntimeFixture.Uploads[$item.asset.fileName].Hash -eq $archiveHash) 'Uploaded bytes differ from the locally extracted archive.'
     }
     Assert-True ($global:codexRuntimeFixture.Uploads.ContainsKey('stable.json')) 'Stable pointer was not uploaded.'
+    Assert-True ($global:codexRuntimeFixture.SizeChecks -eq $triples.Count) 'Each published runtime package must be size-checked once.'
 
     try {
         & $prepare -Version '../escape' -RegistryBaseUrl 'https://registry.fixture'

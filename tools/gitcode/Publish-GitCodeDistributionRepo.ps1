@@ -15,6 +15,7 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $artifactRoot = Join-Path $repoRoot "artifacts"
+. (Join-Path $repoRoot "tools\gitcode\GitCodePublishing.ps1")
 
 if ([string]::IsNullOrWhiteSpace($WorkDirectory)) {
     $WorkDirectory = Join-Path $artifactRoot "gitcode-distribution"
@@ -94,8 +95,8 @@ echo %GITCODE_ASKPASS_PASSWORD%
         }
 
         $gitArgs = @("-c", "credential.helper=") + $Arguments
-        & git @gitArgs
-        if ($LASTEXITCODE -ne 0) {
+        $exitCode = Invoke-GitCodeNativeCommand -FilePath "git" -Arguments $gitArgs
+        if ($exitCode -ne 0) {
             throw "GitCode git push failed."
         }
     }

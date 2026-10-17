@@ -29,6 +29,7 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $gitCodeApiBase = "https://api.gitcode.com/api/v5"
 $distributionScript = Join-Path $repoRoot "tools\gitcode\Publish-GitCodeDistributionRepo.ps1"
 $prepareScript = Join-Path $repoRoot "tools\runtime\prepare-bundled-codex-runtime.ps1"
+. (Join-Path $repoRoot "tools\gitcode\GitCodePublishing.ps1")
 
 if ([string]::IsNullOrWhiteSpace($RepoUrl)) {
     $RepoUrl = "https://gitcode.com/$Owner/$Repo.git"
@@ -98,8 +99,8 @@ echo %GITCODE_ASKPASS_PASSWORD%
         $env:GITCODE_ASKPASS_PASSWORD = Get-GitCodeToken
 
         $gitArgs = @("-c", "credential.helper=") + $Arguments
-        & git @gitArgs
-        if ($LASTEXITCODE -ne 0) {
+        $exitCode = Invoke-GitCodeNativeCommand -FilePath "git" -Arguments $gitArgs
+        if ($exitCode -ne 0) {
             throw "GitCode git command failed: git $($Arguments -join ' ')"
         }
     }
@@ -356,18 +357,7 @@ Send-GitCodeReleaseFile -TagName "updates-stable" -Path $ManifestPath
 foreach ($targetTriple in $targetTriples) {
     $package = $packages[[string]$targetTriple]
     $url = "$gitCodeApiBase/repos/$Owner/$Repo/releases/$releaseTag/attach_files/$($package.FileName)/download"
-    $response = Invoke-WebRequest -Uri $url -Method Head -TimeoutSec 120 -UseBasicParsing
-    $contentLength = @($response.Headers["Content-Length"]) |
-        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-        Select-Object -First 1
-    if ([string]::IsNullOrWhiteSpace($contentLength)) {
-        throw "Runtime package size check failed for $targetTriple. Content-Length header was not returned."
-    }
-
-    $actualSize = [long]$contentLength
-    if ($actualSize -ne [long]$package.Size) {
-        throw "Runtime package size mismatch for $targetTriple. Expected $($package.Size), got $actualSize."
-    }
+    Assert-GitCodePublicDownloadSize -Url $url -ExpectedSize ([long]$package.Size) -Name "Runtime package $targetTriple"
 }
 
 Write-Host ""
