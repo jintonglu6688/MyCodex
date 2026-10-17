@@ -214,7 +214,7 @@ namespace MyCodex.Application.Tests
                 var status = await Call(host, "status");
                 started = true;
                 Assert.That(status["protocolVersion"], Is.EqualTo(3));
-                Assert.That(status["hostVersion"], Is.EqualTo("0.3.7"));
+                Assert.That(status["hostVersion"], Is.EqualTo("0.3.8"));
                 Assert.That(((IDictionary<string, object>)status["route"])["running"], Is.False);
                 Assert.That(File.Exists(Path.Combine(home, "config.toml")), Is.False);
 

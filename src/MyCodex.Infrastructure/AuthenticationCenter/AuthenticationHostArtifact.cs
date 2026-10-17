@@ -12,7 +12,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
     {
         internal const string ManifestFileName = "mycodex-auth-host.manifest.json";
         private const int ProtocolVersion = 3;
-        private const string HostVersion = "0.3.7";
+        private const string HostVersion = "0.3.8";
         private const string UpstreamRevision = "790ed8009df809bedaf6c31b5ced05da46bb1f1f";
         // Earlier releases may only be replaced: 0.2.x (protocol 2, 3.x upstream)
         // and 0.3.0-0.3.2 (protocol 3, v4.0.5 upstream).
