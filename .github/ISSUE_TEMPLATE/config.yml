@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全问题反馈
+    url: https://github.com/jintonglu6688
+    about: 涉及安全问题时，请优先使用私下渠道，不要公开披露细节。
+

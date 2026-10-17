@@ -1,0 +1,131 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>MyCodex.WinForms</RootNamespace>
+    <AssemblyName>MyCodex</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <WebView2NeverCopyLoaderDllToOutputDirectory>true</WebView2NeverCopyLoaderDllToOutputDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MyCodexChannel)' == 'Dev'">
+    <AssemblyName>MyCodex.Dev</AssemblyName>
+    <DefineConstants>$(DefineConstants);MYCODEX_DEV</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\tools\update\Invoke-DeferredMyCodexUpdate.ps1">
+      <Link>tools\update\Invoke-DeferredMyCodexUpdate.ps1</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\tools\installer\Test-MyCodexResourceUsers.ps1">
+      <Link>tools\installer\Test-MyCodexResourceUsers.ps1</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <ProjectReference Include="..\MyCodex.Application\MyCodex.Application.csproj" />
+    <ProjectReference Include="..\MyCodex.Infrastructure\MyCodex.Infrastructure.csproj" />
+    <ProjectReference Include="..\MyCodex.Domain\MyCodex.Domain.csproj" />
+    <ProjectReference Include="..\MyCodex.Shared\MyCodex.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Donate\wechat-donate.png">
+      <LogicalName>MyCodex.WinForms.Resources.Donate.Wechat</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\MyCodex.Infrastructure\ComputerUse\Host\*.mjs;..\MyCodex.Infrastructure\ComputerUse\Host\*.ps1">
+      <Link>computer-use\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\tts\byctrl\byctrl-x64.dll">
+      <Link>tts\byctrl\byctrl-x64.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\tts\ZDSRAPI\ZDSRAPI_x64.dll">
+      <Link>tts\ZDSRAPI\ZDSRAPI_x64.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\tts\nvdaControllerClient\nvdaControllerClient.dll" Condition="Exists('..\..\tts\nvdaControllerClient\nvdaControllerClient.dll')">
+      <Link>tts\nvdaControllerClient\nvdaControllerClient.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\sound\Approval.wav">
+      <Link>sound\Approval.wav</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\sound\End of session.wav">
+      <Link>sound\End of session.wav</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\sound\Subagent completed.wav">
+      <Link>sound\Subagent completed.wav</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\sound\MsgSent.wav">
+      <Link>sound\MsgSent.wav</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\help\用户手册.html">
+      <Link>help\用户手册.html</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\help\UserManual.en.html">
+      <Link>help\UserManual.en.html</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\runtime\cua\**\*">
+      <Link>runtime\cua\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\runtime\git\**\*">
+      <Link>runtime\git\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\runtime\codex\**\*">
+      <Link>runtime\codex\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\runtime\putty\**\*">
+      <Link>runtime\putty\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\runtime\auth-core\mycodex-auth-host.exe;..\..\runtime\auth-core\mycodex-auth-host.manifest.json;..\..\runtime\auth-core\LICENSE" Condition="Exists('..\..\runtime\auth-core\mycodex-auth-host.manifest.json')">
+      <Link>runtime\auth-core\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- NuGet native assets are copied to the output root; unsupported runtime layouts are removed after build. -->
+    <PackageReference Include="Markdig" Version="1.3.2" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4022.49" />
+    <PackageReference Include="Scintilla5.NET" Version="6.1.2" />
+  </ItemGroup>
+
+  <Target Name="CopyWinFormsPackageRuntimeDependencies" AfterTargets="ResolveReferences" Condition="'$(UseCommonOutputDirectory)' == 'true'">
+    <ItemGroup>
+      <_WinFormsPackageRuntimeDependency Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' != '' And '%(ReferenceCopyLocalPaths.Extension)' == '.dll' And ('%(ReferenceCopyLocalPaths.NuGetPackageId)' != 'Scintilla5.NET' Or '%(ReferenceCopyLocalPaths.AssetType)' != 'native')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_WinFormsPackageRuntimeDependency)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="RemoveWinFormsUnsupportedRuntimeAssetLayouts" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(UseCommonOutputDirectory)' == 'true'">
+    <ItemGroup>
+      <_WinFormsUnsupportedRuntimeAssetLayout Include="$(OutDir)runtimes\win-x86" />
+      <_WinFormsUnsupportedRuntimeAssetLayout Include="$(OutDir)runtimes\win-arm64" />
+    </ItemGroup>
+    <RemoveDir Directories="@(_WinFormsUnsupportedRuntimeAssetLayout)" />
+  </Target>
+
+</Project>

@@ -1,0 +1,35 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)Version.props" Condition="Exists('$(MSBuildThisFileDirectory)Version.props')" />
+
+  <PropertyGroup>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\obj\**;**\obj-*\**;artifacts\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug' And '$(MyCodexTestBuildOutputRoot)' == ''">
+    <BaseOutputPath>$(MSBuildThisFileDirectory)debug\</BaseOutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)debug\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(MyCodexTestBuildOutputRoot)' == ''">
+    <BaseOutputPath>$(MSBuildThisFileDirectory)Release\</BaseOutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)Release\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MyCodexTestBuildOutputRoot)' != ''">
+    <UseCommonOutputDirectory>false</UseCommonOutputDirectory>
+    <BaseOutputPath>$(MyCodexTestBuildOutputRoot)$(MSBuildProjectName)\</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup Condition="'$(MyCodexTestBuildOutputRoot)' != ''">
+    <ProjectReference>
+      <AdditionalProperties>MyCodexTestBuildOutputRoot=$(MyCodexTestBuildOutputRoot)</AdditionalProperties>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+</Project>

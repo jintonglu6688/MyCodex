@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <UseCommonOutputDirectory>false</UseCommonOutputDirectory>
+    <MyCodexTestBuildOutputRoot>$(MSBuildThisFileDirectory)bin\ProjectReferences\</MyCodexTestBuildOutputRoot>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)bin\</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MyCodex.Application\MyCodex.Application.csproj" AdditionalProperties="MyCodexTestBuildOutputRoot=$(MSBuildThisFileDirectory)bin\ProjectReferences\" />
+    <ProjectReference Include="..\..\src\MyCodex.Domain\MyCodex.Domain.csproj" AdditionalProperties="MyCodexTestBuildOutputRoot=$(MSBuildThisFileDirectory)bin\ProjectReferences\" />
+    <ProjectReference Include="..\..\src\MyCodex.Infrastructure\MyCodex.Infrastructure.csproj" AdditionalProperties="MyCodexTestBuildOutputRoot=$(MSBuildThisFileDirectory)bin\ProjectReferences\" />
+    <ProjectReference Include="..\..\src\MyCodex.WinForms\MyCodex.WinForms.csproj" AdditionalProperties="MyCodexTestBuildOutputRoot=$(MSBuildThisFileDirectory)bin\ProjectReferences\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>$(NuGetPackageRoot)nunit\3.14.0\lib\net45\nunit.framework.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(NuGetPackageRoot)nunit\3.14.0\lib\net45\nunit.framework.dll">
+      <Link>nunit.framework.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestData\remote-conversation-pagination-v1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

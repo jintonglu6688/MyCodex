@@ -1,0 +1,29 @@
+name: update-verify
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  validate-update-files:
+    runs-on: euleros-2.10.1
+    steps:
+      - uses: checkout-action@0.0.1
+      - name: Validate update manifest examples
+        run: |
+          cd repo_workspace
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          for path in Path(".").glob("updates/*.json"):
+              data = json.loads(path.read_text(encoding="utf-8-sig"))
+              assert data.get("schemaVersion"), f"{path}: schemaVersion missing"
+              assert data.get("app", {}).get("version"), f"{path}: app.version missing"
+              asset = data.get("app", {}).get("asset", {})
+              assert asset.get("url"), f"{path}: app.asset.url missing"
+              assert asset.get("sha256"), f"{path}: app.asset.sha256 missing"
+              notes = data.get("app", {}).get("releaseNotes", {})
+              if isinstance(notes, dict):
+                  assert notes.get("zh-CN") or notes.get("en-US"), f"{path}: release notes missing"
+          PY

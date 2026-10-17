@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MyCodex User Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #5b6473;
+      --line: #d9deea;
+      --accent: #1f6feb;
+      --accent-soft: #e8f0ff;
+      --code: #f3f5f9;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 32px 18px 56px;
+      font: 16px/1.7 "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #f4f7ff 0%, var(--bg) 180px);
+    }
+
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px 30px 40px;
+      box-shadow: 0 14px 40px rgba(25, 39, 68, 0.08);
+    }
+
+    h1, h2, h3 {
+      line-height: 1.35;
+      margin: 0 0 14px;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin-top: 32px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      font-size: 24px;
+    }
+
+    h3 {
+      margin-top: 22px;
+      font-size: 19px;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    ul, ol {
+      margin: 0 0 16px 24px;
+      padding: 0;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    .lead {
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .note {
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--accent-soft);
+      border: 1px solid #cbdcff;
+      margin: 16px 0;
+    }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      background: var(--code);
+      border: 1px solid #dfe4ee;
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>MyCodex User Manual</h1>
+    <p class="lead">This guide covers the main workflow, Office Mode, automations, online updates, Authentication Center, unified session history, targets, phone connection and pairing, accessibility, independent conversation windows, attachments, file management, subagent management, message browsing, import and sync, extensions, and target options.</p>
+
+    <h2>1. Before You Start</h2>
+    <p>MyCodex uses the included Codex runtime by default. In most cases it is ready after startup, and you do not need to download Codex CLI yourself.</p>
+    <p>Use <code>Settings -&gt; Targets</code> to open or activate a configured target in its own window. For configuration, open <code>Target Manager...</code>; edit <code>This PC</code> to choose a Windows runtime, or add a WSL or SSH target:</p>
+    <ul>
+      <li><code>Bundled</code>: the default option. It uses the Windows Codex runtime packaged with MyCodex.</li>
+      <li><code>System</code>: use a <code>codex</code> command already available on the Windows PATH.</li>
+      <li><code>Custom</code>: choose a local <code>codex.exe</code> or <code>codex.cmd</code>.</li>
+      <li><code>WSL</code>: keep the Windows UI and run Codex inside a WSL distribution.</li>
+      <li><code>Remote Unix (SSH)</code>: keep the Windows UI and run Codex on a remote macOS or Linux host over SSH.</li>
+    </ul>
+    <p>WSL mode is useful when you want Linux tooling for a project, or when you want to avoid Windows command-environment encoding issues with non-English files. MyCodex does not install WSL or Codex inside WSL automatically. Prepare your WSL distribution and make sure Codex can run there before using this mode.</p>
+    <p>Each Execution Target uses its own Codex sign-in, settings, and history. Windows, each WSL distribution, and each Remote SSH target are independent, and MyCodex does not copy sign-in or settings between them.</p>
+    <p>After another tool changes Codex settings, the changes take effect the next time the target starts. On Windows, you can also use <code>File -&gt; Reload Target</code> to apply them immediately. Ordinary automatic reconnect does not apply these changes.</p>
+
+    <h2>2. First-Time Setup</h2>
+    <ol>
+      <li>Start MyCodex.</li>
+      <li>In most cases, you do not need to change runtime settings. MyCodex uses the bundled runtime by default.</li>
+      <li>If you want to use WSL, open <code>Settings -&gt; Targets -&gt; Target Manager...</code>, choose <code>Add WSL</code>, detect and save the target, then open it from the Targets menu.</li>
+      <li>When a Windows target needs sign-in, <code>Authentication Center</code> opens automatically. Choose <code>Add</code>, select a ChatGPT account configuration, and complete browser or device-code sign-in, or use a saved account. Save the configuration, then press <code>Enter</code> on its list row or choose <code>Enable</code> from the context menu.</li>
+      <li>For API access, add an official or third-party configuration in Authentication Center, enter its address, key, and model, then save and enable it. The authentication backend retains configurations and credentials for later switching; protect the target data.</li>
+      <li>WSL and SSH targets still show the official sign-in guide when required, supporting browser, device-code, or API-key sign-in. You can also open <code>Account -&gt; Authentication Center…</code> to manage that environment. Use a device code when browser callbacks are unavailable.</li>
+      <li>If the current target already has a working third-party model service, it can be used without a ChatGPT account and MyCodex does not request sign-in again.</li>
+      <li>Back in MyCodex, click <code>New Workspace</code>.</li>
+      <li>Select your project folder.</li>
+      <li>If no session exists yet, click <code>New Session</code>, or type and send directly to auto-create one.</li>
+      <li>Press <code>Alt+I</code> to jump to the input box.</li>
+      <li>Enter your request.</li>
+      <li>Press <code>Ctrl+Enter</code> to send.</li>
+    </ol>
+
+    <div class="note">
+      <strong>Notes</strong>
+      <ul>
+        <li>If you see “Please open a workspace first”, the project folder is not selected yet.</li>
+        <li>If you see “No sessions in current workspace”, this is normal for a new workspace.</li>
+        <li>If an older session cannot continue, follow the on-screen prompt to refresh or try again.</li>
+      </ul>
+    </div>
+
+    <h2>3. Main UI Overview</h2>
+    <ul>
+      <li>Left: workspaces and sessions.</li>
+      <li>Center: message list, input area, pending items.</li>
+      <li>Right: activity area and terminal entry.</li>
+    </ul>
+    <p>The right-side <code>Activity</code> area shows task progress and important status, including plans, reasoning snippets, tool activity, network requests, and changed files. When the current target provides usage information, the completion summary also shows current-turn and total usage. See the separate terminal window for detailed command output.</p>
+    <p>You can right-click the activity area to toggle <code>Show Log</code>. When it is off, the summary remains visible and only the log section is hidden. To clear existing log text, right-click and choose <code>Clear Log</code>.</p>
+    <p>The <code>Terminal</code> button opens a standalone command terminal window. The terminal can open even when no command is running. Use the bottom standard input box to run commands such as <code>ping 127.0.0.1</code>, <code>git status</code>, or a project build script.</p>
+    <p>Commands follow the current runtime target: Windows uses a Windows command environment, WSL uses its configured Linux shell, and Remote Unix uses the shell on the remote host.</p>
+    <p>The terminal keeps the current command and its output. New background output does not open the terminal or steal focus.</p>
+
+    <h2>4. Common Operations</h2>
+    <p>The message-list <code>Review...</code> action offers uncommitted changes, a base branch, a commit, and custom instructions. Enter the required branch name, commit hash, or instructions. Review uses the selected session's workspace and records the target and review configuration; these configured values are not a report of the actual executing model. Uncommitted changes and a new session are the defaults. MyCodex creates a new thread with the effective directory, model, reasoning effort and permissions, verifies the settings, then starts official inline review in that thread. The source conversation and its history are unchanged and are not copied. If the new thread is created but review fails to start, the session remains available in the list.</p>
+    <p>The message-list <code>Fork</code> menu creates an independent full fork or a fork through a selected finished turn, including that turn and excluding later turns. Turn forks require native runtime support; older runtimes can still create full forks. The new session keeps the source session's model and reasoning overrides, including following defaults. If saving the remote title fails, the new session remains available and a warning identifies it.</p>
+    <h3>4.1 Send Message</h3>
+    <ul>
+      <li><code>Alt+I</code>: focus input box.</li>
+      <li><code>Ctrl+Enter</code>: send by default; <code>Enter</code> inserts a new line.</li>
+    </ul>
+    <p>Under <code>Settings -&gt; Options... -&gt; Appearance</code>, <code>Send message shortcut</code> can swap the roles of Enter and Ctrl+Enter. You can also choose whether follow-up messages sent while working steer the active turn or are queued.</p>
+    <p>For asynchronous supplemental questions, the <code>Pending Questions</code> window lets you choose a suggested answer or select <code>Other (enter your own answer)</code>. Other requires a non-empty answer before sending; a preselected choice is not submitted automatically. <code>Answer later</code> hides the window and retains unsent answers.</p>
+
+    <h3>4.2 Plan Mode</h3>
+    <p>Plan mode is useful when you want Codex to produce an implementation plan first, then let you decide whether to execute it. It is a per-session switch and does not affect other sessions.</p>
+    <ul>
+      <li>Open the message-list context menu and choose <code>Plan Mode</code> to enable or disable it for the current session.</li>
+      <li>You can also send <code>/plan</code> from the input box to enable plan mode, or send <code>/plan your request</code> to request a plan directly.</li>
+      <li>After a plan is generated, MyCodex asks whether to execute it. If you accept, it switches back to normal execution mode and sends the execution prompt.</li>
+      <li>The current session's plan-mode state is the checked state of <code>Plan Mode</code> in the message-list context menu.</li>
+    </ul>
+
+    <h3>4.3 New Workspace and Session</h3>
+    <ul>
+      <li><code>New Workspace</code>: choose a project folder.</li>
+      <li><code>New Session</code>: create a new conversation under the current workspace.</li>
+    </ul>
+    <p>If no session exists, sending directly from input also creates one automatically.</p>
+
+    <h3>4.3.1 Office Mode</h3>
+    <p><code>Coding</code> and <code>Office</code> are two accessible tabs in the same main window. Office Mode is for everyday document work such as Word, Excel, and PowerPoint files, while Coding Mode keeps the project-oriented workflow. The default startup mode chooses which tab receives focus when MyCodex starts; it does not disable the other tab.</p>
+    <ul>
+      <li>Select the tabs directly, press <code>Ctrl+1</code> for Coding or <code>Ctrl+2</code> for Office, use <code>Ctrl+Tab</code>/<code>Ctrl+Shift+Tab</code>, or use the dynamic command in the <code>File</code> menu.</li>
+      <li>Switching tabs changes only what is visible. Responses, commands, detached workbenches, and automations in the other tab continue running.</li>
+      <li>Office Mode follows the active Windows, WSL, or Remote Unix (SSH) runtime. Windows defaults to <code>Documents\MyCodex-office</code>; WSL and SSH targets default to <code>$HOME/MyCodex-office</code>.</li>
+      <li>Open <code>Settings -&gt; Options... -&gt; Office</code> to view the current runtime and customize only that target's Office directory. Windows, each WSL distribution, and each SSH profile keep independent settings and Office state.</li>
+      <li>Each runtime target has its own Office workspace. The left side shows the Office session list directly; subfolders under the Office directory are ordinary folders, not separate workspaces.</li>
+      <li>Unless you explicitly choose another location, generated documents, spreadsheets, presentations, images, and supporting files are saved in the current Office directory.</li>
+      <li>Clear, low-risk Office requests start directly. MyCodex uses enabled Skills, Plugins, MCP tools, or command-line tools that suit the task; no particular Office Plugin or OfficeCLI is required.</li>
+      <li>Before editing an existing file, MyCodex reads or inspects it. Unless you explicitly request an overwrite, it creates an edited copy and keeps the original. An explicit request to overwrite, replace, or save back to the original file is the authorization, so the same confirmation is not requested again. After creating or changing DOCX, XLSX, or PPTX files, MyCodex checks file validity and key content when possible, then reports the final file name and path.</li>
+      <li>Changing the Office directory does not discard existing Office sessions or move, copy, merge, or delete files in the old directory. Later work and deliverables use the new directory.</li>
+      <li>If a WSL or SSH home directory cannot currently be resolved, the Office tab remains available and reports that its directory is unavailable. MyCodex retains the Office workspace, conversations, and drafts and does not fall back to a Windows path.</li>
+      <li>OfficeCLI onboarding is an optional local Windows integration. It is offered only for a Windows runtime, never controls whether the Office tab is available, and is not required to complete Office tasks.</li>
+    </ul>
+    <p>When deleting an Office conversation, MyCodex deletes the local history by default so old Office tasks do not accumulate. Confirm the conversation is no longer needed before deleting it.</p>
+
+    <h3>4.3.2 Automations</h3>
+    <p><code>Automations</code> lets MyCodex run saved Codex instructions manually or on a schedule. It is useful for recurring tasks such as collecting news, reviewing a project, checking a workspace, or generating Office reports.</p>
+    <ul>
+      <li>Open the top-level <code>Automations</code> menu to show the non-blocking Automations window. The main window remains usable while the automation window is open.</li>
+      <li>For either a Coding or Office session, use <code>Create Automation</code> on the session-list context menu to continue future automation runs from that conversation.</li>
+      <li>Use the workspace-list context menu <code>Create Project Automation...</code> in Coding Mode to bind an automation to a project workspace.</li>
+      <li>In the automation editor, set the name, type, schedule, model, reasoning effort, approval mode, and persistent prompt. Use <code>Plugin</code> and <code>Skill</code> to insert structured plugin and skill references.</li>
+      <li>Available schedules include manual-only, every few minutes, every few hours, daily, and weekly. Full cron expressions and worktree automations are not currently supported.</li>
+      <li>New automations are enabled by default. In the <code>Automations</code> tab, right-click an automation to edit, enable or disable, or delete it. Select an automation and press <code>Run Now</code> to start it immediately.</li>
+    </ul>
+    <p>The Automations window has two tabs:</p>
+    <ul>
+      <li><code>Automations</code>: saved automation definitions, their enabled state, type, and next run time.</li>
+      <li><code>Run results</code>: every recorded run, including running, completed, failed, canceled, skipped, waiting-for-approval, and waiting-for-input states.</li>
+    </ul>
+    <p>Open a run result with <code>Enter</code>, double-click, or the <code>Details</code> button. The read-only details window shows the run name, status, times, model, workspace, related <code>Messages</code>, and <code>Activity</code>. Its buttons are <code>Refresh</code>, <code>Open in main window</code>, <code>Open workspace</code>, and <code>Close</code>. It does not include an input box, attachments, or a continue-conversation action.</p>
+    <p>Run results can be opened, stopped when still running, or deleted from the local automation result list. Deleting a run result uses a confirmation dialog similar to deleting a main-window conversation; when the run has related local conversation history, you can also choose to delete that local history. Deleting an automation also removes its local automation run results.</p>
+    <p>Review automation outcomes and items needing attention in the Automations window's <code>Run results</code> tab. Task status remains available in MyCodex without extra desktop notifications.</p>
+    <p>Automation model and reasoning-effort choices come from the current target. When an automation has no configured model, MyCodex uses a current available default. If a saved model is no longer available, the run selects an available model and shows both the configured and actual model in the run record. Automations still follow the selected approval mode and do not bypass permission prompts.</p>
+    <p>Keyboard basics: <code>F5</code> refreshes the Automations window, <code>Esc</code> closes automation windows, and <code>Enter</code> opens the selected run result details.</p>
+
+    <h3>4.4 Rename a Session Title</h3>
+    <ul>
+      <li>Select a session in the left list, then right-click and choose <code>Rename Title...</code></li>
+    </ul>
+    <p>Renaming a session in MyCodex updates the corresponding Codex conversation. If the same conversation is renamed in the official Codex app or another client, MyCodex shows the new title after the next synchronization. The title change updates the existing session only; it does not copy or create another conversation.</p>
+    <p>Session actions are available from the context menu in the left session list.</p>
+
+    <h3>4.4.1 Conversation Statistics</h3>
+    <p>Select a session in the left session list, right-click it, and choose <code>Statistics...</code> to view its title, model, reasoning effort, dates, activity, and available usage information. For older sessions or targets that do not provide usage, the window clearly says that the information is not available yet.</p>
+
+    <h3>4.4.2 Subagent Sessions</h3>
+    <p>When Codex creates subagents from a main session, MyCodex groups those subagents under the parent session instead of listing them as normal main sessions. A parent session with subagents is shown or announced with text such as <code>3 subagent(s)</code> in the left session list.</p>
+    <p>To open subagents, select the parent session in the left session list, right-click it, and choose <code>View Subagents...</code>. The command is available once the session has a thread ID, including when no subagents have been discovered yet. Subagents open in a separate window, so the main window can stay on the parent conversation.</p>
+    <p>The subagent window has a subagent list on the left and the active subagent conversation on the right. Reading history does not resume the agent or change its configuration. Additional input uses the same thread and preserves its settings; running turns receive steering input. If the runtime state cannot be verified or the agent is not loaded, ask its parent to resume it and refresh. Drafts are kept separately while switching agents in the window.</p>
+    <ul>
+      <li>Press <code>Enter</code> on a subagent, or double-click it, to load that subagent conversation.</li>
+      <li>Use <code>Ctrl+Enter</code> to send from the input box, or use the <code>Send</code> and <code>Stop</code> buttons.</li>
+      <li><code>Insert</code> supports images, files, folders, and skills. You can also paste files or images with <code>Ctrl+V</code> in the input box.</li>
+      <li>After attachments are added, the <code>Pending Items</code> list appears. Press <code>Delete</code> on a pending item to remove it, or use the context menu to remove the selected item or clear all items.</li>
+      <li>In the subagent list, press <code>Delete</code> to delete the selected subagent, or <code>Ctrl+Delete</code> to delete all subagents. The context menu also provides <code>Delete</code> and <code>Delete All</code>.</li>
+      <li>Deletion is permanent. Confirmation lists the selected agents and their descendants, including archived descendants; active or unverified threads must be resolved first. Confirmed deletions remain applied if a later deletion fails.</li>
+      <li><code>Esc</code> closes the subagent window without stopping the agents.</li>
+    </ul>
+    <p>The subagent window is designed for keyboard and screen-reader use. Focus moves through the subagent list, message list, input box, pending items, and action buttons. The list includes all descendants and shows name, role, title, runtime status, agent-reported status, recent work, update time, and parent thread. Refresh runs every 5 seconds; press F5 to refresh immediately. The context menu opens the full recent work text.</p>
+
+    <h3>4.4.3 Open a Session in an Independent Window</h3>
+    <p>Both Coding and Office sessions can open in an independent window. Use this when you need to work with several conversations at once without changing the main window's current session. Select a session in the left session list, then choose <code>Open in New Window</code> from its context menu. With focus on the session list, <code>Ctrl+Enter</code> opens the selected session in the same way.</p>
+    <p>The independent window is a compact conversation workspace for that session. It includes the message list, input box, Insert and Send actions, activity list, terminal, Git Workbench, file browser, and subagent entry when the session has subagents. Its title combines the workspace name and session title, and it updates while that session is working.</p>
+    <ul>
+      <li>An independent conversation window is not a third interaction mode. It keeps the session's original Coding or Office mode, workspace, and runtime. Opening the same session again activates its existing window instead of creating a duplicate.</li>
+      <li>The window is independent: using it does not block the main window, and changes to the same conversation continue to refresh in both places.</li>
+      <li>Its terminal, file browser, and Git Workbench use that session's workspace and active runtime. This also applies to WSL and Remote Unix (SSH) workspaces.</li>
+      <li>Press <code>Ctrl+W</code> to close the independent window. When <code>Allow Esc to close the main and independent windows</code> is enabled, which is the default, <code>Esc</code> closes an independent window and hides the main window to the notification area. Disable this option under <code>Settings -&gt; Options... -&gt; Appearance</code> when Esc should do neither.</li>
+      <li>A normal close saves any unsent draft. Reopening the same session restores the draft and, during the same MyCodex run, restores the message-list selection and manual <code>Alt</code>-browse position when the matching message is still available. These temporary browsing positions are cleared when the session is deleted or the App Server runtime target changes.</li>
+    </ul>
+
+    <h3>4.5 Terminal</h3>
+    <ul>
+      <li><code>Alt+K</code>: open or activate the Terminal window.</li>
+    </ul>
+    <p>The terminal can run system commands, build scripts, test commands, and Git commands directly. Preset commands are available from <code>Common Commands</code> in the terminal.</p>
+    <p>Typical built-in commands include build and Git Workbench quick entry.</p>
+    <p>Command presets are separated by target platform. Windows-only commands are not mixed into WSL mode by default. A command that works in both environments can be saved for both Windows and WSL. After selecting a preset, you can insert it into the terminal input box, or run it immediately when no command is active.</p>
+
+    <h3>4.5.1 Git Workbench</h3>
+    <p>The main <code>Git Workbench</code> entry opens the standalone Git Workbench. It does not block the main window, so you can inspect, commit, pull, push, and review the current workspace while continuing to use MyCodex.</p>
+    <ul>
+      <li>The file list groups changes as <code>Staged</code>, <code>Unstaged</code>, <code>Untracked</code>, and <code>Conflict</code>.</li>
+      <li>Selecting a file only updates the diff view. It does not run a Git write operation. When focus moves to the diff box, MyCodex can load the current diff automatically if it has not been loaded yet.</li>
+      <li>File-level commands are in the file-list context menu, including <code>Stage</code>, <code>Unstage</code>, <code>Discard Unstaged Changes</code>, <code>Delete Untracked File</code>, <code>Open File</code>, <code>Copy Path</code>, and <code>Copy Diff</code>.</li>
+      <li>The bottom area supports commit title and detailed commit body, plus <code>Commit</code>, <code>Fetch</code>, <code>Pull</code>, and <code>Push</code>. If no upstream is configured, push asks whether to set upstream before pushing. You can also set or unset the current branch upstream from remote management.</li>
+      <li><code>Remotes</code> management can list repository remotes, add a remote, edit a remote URL, remove a remote, copy remote names or URLs, and choose the remote name and whether to push immediately when publishing the current repository.</li>
+      <li><code>Branches and Commits</code> combines branch navigation and commit history. The branch tree lists local and remote branches, and commit history can be loaded from the selected branch with <code>Enter</code> or the context menu.</li>
+      <li>The branch tree context menu dynamically shows actions for the selected item. It can switch local branches, create and switch to a local tracking branch from a remote branch, create a branch, delete or force-delete a local branch, delete a remote branch, rename branches, compare ahead/behind, view different commits, refresh branches, or load the selected branch history.</li>
+      <li>The commit history context menu can copy commit IDs, revert a commit, cherry-pick commits from another branch, amend the latest commit, or roll back to a selected commit. History-changing actions live in this history window instead of the Git Workbench main surface.</li>
+      <li>In-progress merge, rebase, and cherry-pick states are shown in Git Workbench. When there are uncommitted changes, conflicts, or unfinished Git operations, risky actions such as switching, deleting, merge, or rebase warn or block as appropriate.</li>
+      <li><code>Stashes</code> saves, applies, pops, and drops stashes. After loading details, it shows the changed-file list and the full diff. Press <code>Enter</code> on a file or use its context menu to load a single-file diff, and copy the current diff when needed.</li>
+      <li>The worktree tree on the left lists Git worktrees for the current repository. Its context menu can create a new worktree, remove a worktree, prune stale worktree records, copy paths, and switch the current MyCodex workspace to another worktree.</li>
+      <li><code>Diagnostics and Maintenance</code> opens one combined window. The <code>Diagnostics</code> tab is read-only and lists Git availability, repository state, remotes, upstream, HEAD, unfinished operations, working-tree status, object database statistics, and lock files, with suggestions in the details pane. The <code>Maintenance</code> tab provides repository integrity checks and official Git maintenance: <code>Check Integrity</code> runs the read-only <code>git fsck --full</code>, and <code>Run Maintenance</code> runs <code>git maintenance run</code> after confirmation.</li>
+      <li>When conflicts exist, commit and push are disabled. Use the conflicted file context menu to view conflict details.</li>
+      <li>If the current folder is not a Git repository, you can initialize it directly in Git Workbench.</li>
+    </ul>
+    <p>When creating a Git worktree, MyCodex suggests a sibling folder, usually using the current workspace name plus <code>-Worktree</code>. You can change the location before confirming.</p>
+    <p>Git Workbench worktrees are for code workspace management.</p>
+    <p>The Windows installer includes Git, which local Git Workbench operations, cloning, and environment checks prefer. A global Git installation is not needed, and user and system PATH settings are unchanged. WSL and Remote Unix still use Git in their own environment. Configure credentials, SSH keys, and credential helpers in the relevant environment; MyCodex does not sign in for you.</p>
+    <p>Longer Git operations continue in the background and can be canceled. When command output is displayed, MyCodex hides URL credentials, GitHub tokens, and common access tokens where possible.</p>
+    <p>Discarding file changes, deleting untracked files, rollback, revert, and force push all ask for confirmation. Use force push only when you are sure you intend to rewrite remote branch history.</p>
+
+    <h3>4.5.2 Git Hosting and Remote Repositories</h3>
+    <p>The top-level <code>Git</code> menu now provides GitHub-oriented remote actions that are separate from the current-workspace Git Workbench.</p>
+    <ul>
+      <li><code>Git Environment</code>: checks whether <code>git</code> is available in the active runtime and shows key environment items such as user name, email, and credential helper.</li>
+      <li><code>Remote Credentials</code>: shows the <code>gh</code> sign-in state and local SSH key information in one window. GitHub uses the <code>gh</code> account already signed in for the current environment.</li>
+      <li><code>Clone Repository</code>: supports both manual Git URL input and a GitHub repository list loaded through <code>gh</code>. Manual and GitHub modes are separated by tabs.</li>
+      <li><code>Remote Repositories</code>: opens a separate repository browser for the current GitHub account. The list can show repository name, visibility summary, description, language, default branch, and update time.</li>
+      <li>The repository-list context menu dynamically shows actions for the current repository state. You can create repositories, rename repositories, edit description and homepage, change visibility, archive, unarchive, or delete repositories. Deleting a repository requires two confirmations and entering the full <code>owner/repo</code>; if permission is missing, follow the GitHub CLI message to grant the <code>delete_repo</code> scope.</li>
+      <li>Press <code>Enter</code> or use the context menu on a repository to open a details window. Repository details can be read directly inside MyCodex, including overview, releases, issues, pull requests, contributors, discussions, branches, and tags.</li>
+      <li>The branch tab in repository details can copy branch names and commit SHAs, open branch pages, set the default branch, delete remote branches, and, when the current workspace remote points to this repository, fetch a remote branch and switch to it locally.</li>
+      <li>The pull request tab supports filtering open, closed, merged, and all PRs; filtering PRs authored by you, assigned to you, or requesting your review; creating a PR from the current branch; checking out a PR locally; opening or copying PR URLs; viewing discussions; adding comments; and closing or reopening PRs.</li>
+      <li>The issue tab supports filtering open, closed, and all issues; filtering issues assigned to you or created by you; creating issues; opening or copying issue URLs; viewing discussions; adding comments; and closing or reopening issues.</li>
+      <li><code>Create Repository</code> is available from the remote repository window. For an existing local Git repository, Git Workbench can also guide you through publishing the current repository to GitHub and binding the remote.</li>
+      <li><code>GitHub Store</code> opens from the <code>Git</code> menu. Use <code>Search</code> to find a specific repository and <code>Rankings</code> to browse suggested content.</li>
+      <li>The <code>Search</code> tab supports keyword, language, topic, result limit, and a clear <code>Search</code> button. Less common filters such as license, stars/forks/open-issues ranges, sorting, and public-only search expand through <code>Show advanced filters</code>. Changing advanced filters does not run a query automatically; click <code>Search</code> again to run the query.</li>
+      <li>The <code>Rankings</code> tab is for discovery and only keeps ranking type, language, result limit, and <code>Refresh Ranking</code>. Ranking presets include Trending, New Repositories, New Stars, New Forks, High Activity, Top Forks, Recent Created, and Recent Updated.</li>
+      <li>The result list shows repository, description, language, Stars, Forks, open issues, license, updated time, pushed time, and topics. Focus is preserved across refresh actions to avoid breaking the current selection flow.</li>
+      <li>On a selected market item, press <code>Enter</code> to open the repository page or use the context menu for dynamic actions: open repository page, copy HTTPS URL, copy full name, clone, fork-and-clone, and fetch/pull when the repository already exists locally.</li>
+    </ul>
+    <p>GitHub sign-in, repository lists, and hosting management require a separately installed and signed-in <code>gh</code> CLI in the current environment; bundled Git does not include it. Without <code>gh</code>, you can still clone by entering a Git URL manually. Private repositories also require working credentials.</p>
+    <p>SSH is treated as the Git transport layer rather than a separate account system. You can keep using HTTPS through <code>gh</code>, or switch your Git remote URLs to SSH after you configure your key on GitHub.</p>
+
+    <h3>4.6 Insert Images, Files, Folders, Plugins, and Skills</h3>
+    <p>Click <code>Insert</code> near the input box to add image, file, folder, plugin, or skill items. You can also use <code>Ctrl+V</code> to paste files/images directly.</p>
+    <p>Every attachment is inserted at the current caret position as one indivisible attachment object on its own line. Arrow keys move across it as one position, and <code>Backspace</code> or <code>Delete</code> removes the whole attachment rather than a character inside its name. Screen-reader output at that position depends on the reader: it may be announced as an embedded object or as a blank, and the attachment name is not guaranteed. Use the pending-items list when you need to review attachment names reliably.</p>
+
+    <h3>4.6.1 File Browser</h3>
+    <p>When files can be browsed on the current target, the workspace context menu provides <code>File Browser...</code>. A Windows target shows local paths, a WSL target shows paths available inside WSL, and a Remote Unix target shows paths on the remote host.</p>
+    <p>The browser uses a Windows Explorer-style detailed list with Name, Modified, Type, and Size columns. Modified time is shown to the minute and refreshes when file information changes. Use <code>Up</code> and <code>Down</code> to move through items, and <code>Left</code> and <code>Right</code> to browse the columns for the current item.</p>
+    <p>The file browser supports Home, Up, Refresh, Search, New Folder, New File, Preview, Copy, Cut, Copy Path, Delete, and Attach. Use <code>Ctrl+C</code> or <code>Ctrl+X</code> to copy or cut selected entries, then use <code>Ctrl+V</code> in a destination folder to paste them. The same file-management flow applies to local Windows, WSL, and Remote Unix (SSH) file systems; a partially failed paste reports only the failed count so normal focus reading is not interrupted. You can type a path in the address box, search under the current path, and press <code>Esc</code> to leave search first or close the window when search is clear.</p>
+    <p>Opening a file follows its type. Known text files use the text preview or editor flow. Archives, executables, images, audio, video, and other non-text files use the Windows system default app when Windows can access the path directly, such as local paths or WSL mounted-drive paths like <code>/mnt/c</code>, <code>/mnt/d</code>, and <code>/mnt/e</code>. Non-text files under WSL-only paths such as <code>/home/user/...</code>, or on a remote SSH host, are not downloaded to a local temp folder automatically; that avoids opening a detached copy or accidentally executing a remote file locally.</p>
+    <p>Use <code>Attach</code> to add the selected runtime paths to the current message's pending items.</p>
+
+    <h3>4.7 Import and Sync</h3>
+    <p>Workspace migration actions are grouped under the workspace-list context menu <code>Import &amp; Sync</code>:</p>
+    <ul>
+      <li><code>Sync Thread History...</code>: reads local history sessions from the current Codex Home that are not yet in MyCodex, then syncs them into the current workspace.</li>
+      <li><code>Import Other Sessions...</code>: selects sessions from other workspaces or unassociated sessions and copies them into the current workspace as new sessions. This is a copy import: it does not move the source session, and deleting the imported session later does not delete the source session.</li>
+      <li><code>Import External Agent Config...</code>: detects external agent configuration and lets you import selected user-configuration or current-workspace items.</li>
+    </ul>
+    <p>Common keys in import and sync windows:</p>
+    <ul>
+      <li><code>F5</code>: reload the list.</li>
+      <li><code>Space</code>: check or uncheck the current item.</li>
+      <li><code>Enter</code>: import or sync the checked items.</li>
+      <li><code>Esc</code>: close the window.</li>
+    </ul>
+    <p><code>Import Other Sessions</code> does not check list items by default. Select items explicitly before importing to avoid copying many sessions into the current workspace by accident. External-agent import also requires preview and explicit selection; broad configuration and unknown items are not imported, and MyCodex does not migrate external configuration in the background.</p>
+
+    <h3>4.8 Authentication Center, Sign-In, and User Center</h3>
+    <p>Open <code>Account -&gt; Authentication Center…</code> to manage provider configurations and saved accounts for the current target. Check the target and Codex Home shown at the top before making changes. Windows, WSL, and SSH use their own environment's data; Authentication Center does not copy Windows credentials to other targets.</p>
+    <p>Authentication Center changes global settings in that Codex Home, which also affects Codex CLI and other clients using the same location. After connecting, MyCodex tries to recognize and capture the current configuration. Refresh Authentication Center to inspect external configuration changes; an existing chat connection still needs a target reload or normal restart to reread them.</p>
+    <ul>
+      <li><code>Add</code>: choose a preset or configuration type. Supported types include ChatGPT accounts, official OpenAI API, and third-party Responses, Chat Completions, and Anthropic Messages APIs. Enter the name, API base URL, and key as requested; some protocols require conversion by the authentication backend.</li>
+      <li>A ChatGPT configuration supports browser sign-in, device-code sign-in, or <code>Use saved account</code>. Successful sign-in saves the account; click <code>Save</code> in the provider window to finish the configuration. Signing in alone does not switch the active identity.</li>
+      <li>For API configurations, use <code>Get models</code> or <code>Add model</code> and choose a default model. MyCodex tries to fill blank context lengths and reasoning levels; review them before saving. <code>Context and compaction</code> provides the related settings supported by the backend.</li>
+      <li>Selecting a row does not switch providers. Press <code>Enter</code> or choose <code>Enable</code> from its context menu to apply it. Double-click or choose <code>Edit</code> to open its configuration. The context menu also offers copy, sign in again, and deletion of a non-current configuration.</li>
+      <li>Saving a new or inactive configuration does not switch the current provider. Editing the current configuration reads global settings; saving updates them immediately and attempts to reconnect. Active responses, commands, automations, and other work prevent configuration changes; finish that work before retrying.</li>
+      <li><code>Saved accounts</code> lets you inspect and remove accounts. After deleting a provider configuration, check the result to see whether its account is still used by other configurations. Removing an account can also clear its matching global sign-in; configurations using it will need to sign in again.</li>
+      <li>If the configuration was applied but reconnection failed, use <code>Retry connection</code>. The global change is not rolled back automatically. Existing conversations may need a compatible model or a new conversation.</li>
+    </ul>
+    <p><code>Edit provider TOML</code> opens the configuration editor. A backend with full editing support shows the complete <code>config.toml</code> as it will be after switching to that provider. Provider fields are saved with the configuration; other changes are written to the global file when you click <code>Save</code> in the outer provider window. Saving inside the editor only updates the form. If another program changed the same fields, a conflict dialog lets you choose which values to keep or cancel. Configuration text can contain credentials; do not share it directly.</p>
+    <p>The Windows authentication backend is included with MyCodex. WSL and SSH Authentication Center checks and, when needed, deploys the matching backend components, requiring network access and permission to write to the target directory. Use <code>Update backend</code> when the interface reports a compatibility issue; reinstall MyCodex if local components are missing. For a configuration that requires protocol conversion, open MyCodex after a target restart to restore the service before using the CLI in that environment.</p>
+
+    <h3>4.8.1 Unified Codex Session History</h3>
+    <p><code>Unify Codex session history</code> in Authentication Center is off by default and affects only the current execution target. When enabled, ChatGPT accounts and third-party providers share a session identity, allowing earlier conversations to continue with the configuration in use after switching.</p>
+    <ul>
+      <li>Close other Codex clients first and review the session count in the confirmation dialog. Enabling moves earlier official sessions to the shared identity without copying their contents. Until you turn it off, the official ChatGPT client will no longer list those sessions; they remain visible in MyCodex.</li>
+      <li>Turning it off restores the previously moved official sessions and retains content added in the meantime. Shared sessions created while it was on keep their shared identity, can subsequently continue only through third-party providers, and are not listed by the official ChatGPT client.</li>
+      <li>If moving or restoring sessions did not finish, use <code>Retry moving sessions</code>. Do not delete history files to clear the pending state.</li>
+      <li>Before continuing another provider's conversation with ChatGPT, MyCodex removes incompatible content such as that provider's reasoning. If unreadable earlier compaction summaries also need replacement, a separate confirmation explains the loss of that earlier context for the model. A session backup is retained.</li>
+    </ul>
+
+    <h3>4.8.2 User Center and Official Settings</h3>
+    <p><code>Account -&gt; User Center</code> is available for ChatGPT accounts and shows the account, plan, credits, rate limits, and usage. Missing information is reported explicitly. <code>Reset quota</code> is available only when the account supports it and asks for confirmation before running.</p>
+    <p><code>Settings -&gt; Options... -&gt; Official Settings</code> edits supported user-level Codex runtime settings. Not having a ChatGPT account is not necessarily an error: a working third-party configuration can be used normally. After another tool changes sign-in or model settings, normally restart the target; Windows also offers <code>File -&gt; Reload Target</code>. Ordinary automatic reconnect does not reread those external changes.</p>
+
+    <h3>4.9 Check for Updates</h3>
+    <p>MyCodex silently checks for app updates after startup. When a new version is available, it shows an update window with release notes in the current UI language.</p>
+    <ul>
+      <li>You can also open <code>Help -&gt; Check for Updates...</code> manually.</li>
+      <li>The release notes area is a standard text box and receives focus when the window opens, which makes it easier to read with a screen reader.</li>
+      <li>Choose <code>Update Now</code> to download the installer with progress. After download, review the running targets before confirming <code>Exit all and install update</code>. Every listed target must save and agree before shutdown starts; the installer waits until all affected processes have actually exited. Cancellation or an unverified remaining process prevents installation.</li>
+      <li>Only one update can use the same installation at a time. Another edition using its files must exit normally first; the update does not silently close that edition. A development window asks you to build and replace the development version instead of running the release installer.</li>
+      <li>Choose <code>Ignore Update</code> to skip the detected version. Later higher versions can still be shown.</li>
+    </ul>
+
+    <h3>4.10 Phone Connection and Pairing</h3>
+    <p>Open <code>Settings -&gt; Phone Connection...</code> in the target you want to access. Each target has its own phone-connection switch, identity, and paired devices. All targets use one common service address and port.</p>
+    <ul>
+      <li>Use <code>Connection Settings...</code> in this window to choose the built-in service or a public service. These settings apply to all targets; applying changes lists affected targets and may reconnect their phone connections while desktop tasks continue.</li>
+      <li>Choose <code>Generate Pairing Code</code> to copy pairing information to the clipboard. Import it on the phone, then compare the six-digit verification code shown on both devices before choosing <code>Allow</code>. Use <code>Reject</code> for an unknown request, or <code>Later</code> when you want to review it from the device list.</li>
+      <li>Refresh the paired-device list when needed. Its context menu can review a pending request or remove a device and revoke its access to this target. Disabling one target's phone connection leaves other targets available.</li>
+      <li>For a public service, import the complete deployment JSON with <code>Import Server Info</code>, or enter the connection values in Connection Settings. Detect the service before applying. Keep access secrets private.</li>
+      <li>Add each target as a separate device on the phone. The phone connects to and monitors one target at a time. Browsing device details does not switch; use <code>Check and Connect</code> explicitly. A target that is not running cannot be started from the phone.</li>
+      <li>Switching saves each device's Coding and Office drafts and pages, closes the previous connection, then connects to the selected device. Desktop work on the previous target continues. Failure or cancellation attempts to restore the original connection; returning reloads history and pending requests.</li>
+      <li>Normal upgrades, target renaming, and restarts preserve the original pairing. Newly added targets require their own first pairing. <code>Current Device Settings</code> changes that target's default model, permissions, and supported Codex advanced settings.</li>
+    </ul>
+
+    <h3>4.11 Compact, Archive, and Restore Conversations</h3>
+    <p>Use <code>Compact Context</code> from the message-list context menu to summarize a long conversation before continuing. This does not delete the conversation from the session list.</p>
+    <p>To put work aside, choose <code>Archive</code> from a workspace or session context menu. Use <code>Restore Archived Threads...</code> from the workspace context menu when you need an archived session again.</p>
+
+    <h2>5. Message List and Search</h2>
+    <p>The message list is a plain-text, keyboard-first list for quick browsing, multi-selection, manual screen-reader reading, and user-turn navigation.</p>
+    <p>List rows show short previews. Long logs or code may end with an ellipsis in the preview, but the original text is retained: accessible text, copying, manual reading, and the message viewer still use the full content. Press <code>Enter</code> to inspect the whole message. While browsing a selected message, refreshing unchanged content preserves the selection and browsing position.</p>
+    <ul>
+      <li><code>Up</code> / <code>Down</code>: move to the previous or next message and update the current selection.</li>
+      <li><code>Home</code> / <code>End</code>: move to the first or last message.</li>
+      <li><code>Ctrl+Up</code> / <code>Ctrl+Down</code>: move only the message-list focus without changing the existing selection. This is useful while browsing around a multi-selection.</li>
+      <li><code>Shift+Up</code> / <code>Shift+Down</code> / <code>Shift+Home</code> / <code>Shift+End</code>: extend the message selection.</li>
+      <li><code>Ctrl+Shift+Home</code> / <code>Ctrl+Shift+End</code>: extend the selection from the current position to the start or end.</li>
+      <li><code>Space</code> or <code>Ctrl+Space</code>: toggle whether the focused message is selected.</li>
+      <li><code>Ctrl+A</code>: select all messages.</li>
+      <li><code>Ctrl+C</code>: copy the full text of the selected messages; when there is no multi-selection, it copies the focused message.</li>
+      <li><code>Left</code>: jump to the previous user turn.</li>
+      <li><code>Right</code>: jump to the next user turn.</li>
+      <li><code>Ctrl+F</code>: find within current message list.</li>
+      <li><code>F3</code>: find next match.</li>
+      <li><code>Shift+F3</code>: find previous match.</li>
+    </ul>
+    <p>Press <code>Enter</code> on the message list to open the current message in the structured viewer. The viewer avoids automatic line wrapping where possible, making it friendlier for screen-reader line navigation, code-copying, and link opening.</p>
+    <p>In the viewer, press <code>Enter</code> on a link to open it in the default browser, or on a code block or its copy line to copy the code. The <code>Apps</code> key opens the context menu for link and code actions; <code>Esc</code> closes the viewer. Message search stays within the current message list and does not reorder it.</p>
+
+    <h2>6. Settings, Options, and Extensions</h2>
+    <p>Common entries under <code>Settings</code> include:</p>
+    <ul>
+      <li><code>Default Model</code> and <code>Default Permission</code>: affect defaults for new sessions.</li>
+      <li>Permission modes include <code>Read Only</code>, <code>Auto</code>, <code>Custom</code>, and <code>Full Access</code>. <code>Read Only</code> starts in a read-only sandbox and asks before writes, deletes, network access, or expanded permissions. <code>Auto</code> allows normal workspace work and asks when extra permission is needed. <code>Full Access</code> skips approval prompts and has the highest risk. <code>Custom</code> starts from read-only access, then automatically allows the approval categories you select in Options.</li>
+      <li><code>Options...</code>: groups Appearance, Permissions, Office, Sound, Screen Reader, and Official Settings.</li>
+      <li><code>Targets</code>: open or activate a configured target, or open <code>Target Manager...</code> to add or edit WSL and SSH targets and configure This PC. <code>Open Workspace</code> follows this window's target; WSL and SSH use absolute paths in their own environment.</li>
+      <li>Both Coding and Office follow the active App Server runtime. Office directory overrides and retained Office state are isolated by Windows target, WSL distribution, or Remote Unix SSH profile; the Office page in Options edits only the currently active target.</li>
+      <li><code>Extensions</code>: a submenu that groups <code>Plugin Management...</code>, <code>Skills Management...</code>, and <code>MCP Management...</code>.</li>
+    </ul>
+    <p><code>Options...</code> applies to this window's target, including language, theme, the visibility shortcut, sound, screen reader, and permissions. Its pages are <code>Appearance</code>, <code>Permissions</code>, <code>Office</code>, <code>Sound</code>, <code>Screen Reader</code>, and <code>Official Settings</code>. Focus the shortcut field and press modifiers with another key; Tab and Shift+Tab move focus. The Office page edits this target's directory. Official Settings edits supported user-level Codex settings with confirmation; <code>Follow Default</code> removes that override. Custom permissions and command prefixes are also saved per target.</p>
+    <p><code>Custom command prefixes</code> lets you add, edit, or delete commands that should be allowed in Custom mode, such as <code>git status</code> or <code>npm test</code>. A command must start with the saved prefix; this is not a keyword match. Keep prefixes narrow and predictable, and do not automatically allow broad shell commands, deletes, cleans, forced resets, or other destructive operations.</p>
+    <p>Approval prompts are queued and shown one at a time. Later requests wait until the current approval is resolved. Approval summaries try to use concise command text and file-change summaries so the request is easier to review. Remote/mobile approval dialogs use the same decisions, but do not display Windows desktop mnemonic suffixes.</p>
+    <p>When an MCP server requests additional input, the current tool call waits for an explicit response. MyCodex opens an <code>MCP Request</code> dialog for option or text questions, a confirmation dialog for yes/no requests, or a URL confirmation before opening a browser page. Submit the requested answer to continue, or cancel to reject the request; leaving only the status message unresolved keeps that MCP call waiting.</p>
+    <p>Default model, default permission, and other conversation preferences are scoped by Execution Target. A session can override <code>Model</code> or <code>Permission</code> from the session-list context menu, or use <code>Reset to Defaults</code> to return to target defaults. The lists show only models and reasoning levels available on the current target; an unavailable saved model blocks sending until you choose another model.</p>
+    <p>The extension management dialogs share the same keyboard-friendly pattern: the main list keeps the default focus, the filter box is earlier in the tab order, and pressing <code>Enter</code> on a selected row opens a separate details window.</p>
+    <ul>
+      <li><code>Plugin Management...</code>: split into <code>Installed</code> and <code>Market</code> tabs. Use <code>Market</code> to browse, search, and install Plugins. Use <code>Installed</code> to view, enable, disable, uninstall, or open an authorization page.</li>
+      <li><code>Plugin Management</code> includes MyCodex Official Marketplace, where you can browse and install Plugins. Other third-party Marketplaces can be added from the same window; adding a Marketplace does not install its Plugins.</li>
+      <li>Lists refresh after an install or uninstall. If an external tool has just changed a Plugin, press <code>Refresh</code> to reload. A Plugin appearing in <code>Market</code> is not necessarily installed; use the <code>Installed</code> tab to check.</li>
+      <li>If a Plugin exposes an app connection page, use <code>Open Auth</code> on the <code>Installed</code> tab. Opening the page does not itself prove that authorization succeeded; complete the page's Manage or Connect flow. If no pending authorization entry remains, the Plugin may already be connected.</li>
+      <li><code>Skills Management...</code>: shows Skills available on the current target and has no standalone Skill Marketplace. User and project Skills can be created, edited, or removed. Plugin, system, and admin Skills are read-only; a Skill bundled in a Plugin follows that Plugin's lifecycle.</li>
+      <li><code>MCP Management...</code>: filter and inspect status, OAuth, tools, and resources, then use the available buttons for add, settings, login, enable, disable, and delete. Refresh or reload the target after another tool changes MCP configuration.</li>
+    </ul>
+    <p>The <code>Appearance</code> page also offers <code>Font size (restart required)</code> at 100%, 125%, or 150%. Save and normally restart that target window to apply it. <code>Session information order</code> offers subagent count/time/title, title/time/subagent count, or title/subagent count/time. It changes the display and reading order within each session entry, not how sessions are sorted.</p>
+    <h3>Official Computer Use</h3>
+    <p>The local Windows x64 installer includes verified official Computer Use components and the matching Plugin; the official desktop client does not need to be installed or running. Components are stored beside MyCodex in <code>runtime\cua</code>. Check the Plugin under <code>Settings -&gt; Extensions -&gt; Plugin Management...</code>; a deliberately disabled Plugin is not enabled automatically. WSL, SSH, and unregistered subagents do not receive access to the local desktop.</p>
+    <p>Components load from the current application directory. After an installation moves, MyCodex checks and repairs the old registration for its bundled Plugin when preparing a conversation. If unavailable, inspect Activity for the specific reason and check whether the Plugin is enabled. Reinstall MyCodex if components are missing or damaged. Ordinary chat remains available.</p>
+    <p>App permissions use the existing approval dialog with the scopes provided by the official component: once, this conversation, or always for this app. Full Access automatically grants only the current request when it meets the existing ordinary-permission rules. Read Only describes the file sandbox, not a guarantee that every desktop action is read-only. Changing permission levels does not revoke previously saved app grants.</p>
+    <p>Only one turn may own the desktop across conversations and MyCodex instances; competing requests report that it is busy. Stopping, ending the turn, reconnecting its target, or exiting that target cleans up the corresponding operations. Failed input is never replayed automatically; continue in a new valid turn after recovery.</p>
+
+    <h2>7. Runtime, Config, and Local Data</h2>
+    <p>MyCodex local data is stored under:</p>
+    <ul>
+      <li><code>%LOCALAPPDATA%\MyCodex</code></li>
+    </ul>
+    <p>Main local directories:</p>
+    <ul>
+      <li><code>%LOCALAPPDATA%\MyCodex\targets\catalog.json</code>: configured targets and the last explicitly opened target.</li>
+      <li><code>%LOCALAPPDATA%\MyCodex\targets\&lt;target ID&gt;\config</code>: this target's settings, retained state, automations, and phone identity.</li>
+      <li><code>%LOCALAPPDATA%\MyCodex\targets\&lt;target ID&gt;\logs</code>, <code>temp</code>, and <code>automations</code>: target logs, temporary files, and automation support data.</li>
+      <li><code>%LOCALAPPDATA%\MyCodex\config\relay-service.json</code>: common phone connection settings.</li>
+      <li><code>%LOCALAPPDATA%\MyCodex\migration-backup</code>: preserved pre-upgrade MyCodex files.</li>
+    </ul>
+    <p>The development edition uses <code>MyCodex-Dev</code> instead of <code>MyCodex</code>. Target IDs do not change when targets are renamed. An upgrade failure keeps the old files and offers retry; do not delete original data to bypass the error.</p>
+    <p>The target folders above store MyCodex interface settings and working state. Active authentication, models, Plugins, Skills, MCP, and conversations reside in the target's Codex Home. Authentication Center also retains provider configurations and saved accounts in the corresponding environment. On Windows, authentication data is under <code>%LOCALAPPDATA%\MyCodex\auth-core</code>, separated by Codex Home. Release and development editions using the same Codex Home share this data. Do not delete or share these folders as ordinary cache files.</p>
+    <p>Runtime components distributed with MyCodex are stored next to the executable, for example:</p>
+    <ul>
+      <li><code>App directory\runtime\codex</code></li>
+      <li><code>App directory\runtime\putty</code>: SSH password connection support</li>
+      <li><code>App directory\runtime\auth-core</code>: Windows authentication backend</li>
+      <li><code>App directory\runtime\cua</code>: Computer Use components</li>
+      <li><code>App directory\runtime\git</code>: bundled Windows Git</li>
+      <li><code>App directory\runtime\relay</code>: phone connection service</li>
+    </ul>
+    <p>If the bundled Codex runtime is deleted or damaged, edit <code>This PC</code> in Target Manager to download it again or choose System or Custom. You can also reinstall MyCodex or use a configured WSL/SSH target. SSH password connections require the included Plink; reinstall MyCodex if it is missing.</p>
+
+    <h3>7.1 Targets and Runtime Settings</h3>
+    <p><code>Settings -&gt; Targets</code> lists configured names only. The check mark identifies this window's target; selecting another opens its independent window or activates its existing one. Other targets continue working. This PC keeps the original window-title format; other targets prefix their configured name on associated windows.</p>
+    <p><code>Target Manager...</code> opens with focus on the target list. Selection, Enter, and double-click do not open a target. Use the explicit add, edit, remove, refresh, and close actions. A fresh install starts This PC; subsequent ordinary starts reopen the last target explicitly chosen from the menu, without restoring all windows.</p>
+    <p>There is one Windows target. Edit it to choose:</p>
+    <ul>
+      <li><code>Bundled</code>: recommended default. Uses the Windows Codex runtime packaged with MyCodex.</li>
+      <li><code>System</code>: uses a <code>codex</code> command available on the Windows PATH.</li>
+      <li><code>Custom</code>: chooses a specific <code>codex.exe</code> or <code>codex.cmd</code>.</li>
+    </ul>
+    <p>Each WSL distribution and SSH profile is a separate target. Add one, test and save it, then open it from the Targets menu. New targets start with no visibility shortcut, automatic reading off, and phone connection off. Changing launch settings for a running target asks before reconnecting it; cancellation keeps the edit. Renaming keeps its data and pairing.</p>
+    <p><code>Remove</code> is available for WSL and SSH targets; This PC cannot be removed. The confirmation defaults to Cancel. A running target must first save and exit normally; cancellation or a failed save leaves it available. Removal clears that target's MyCodex local settings and phone access, while keeping projects, Git repositories, remote Codex data, and Office documents. Remove its old device entry manually on the phone. If relay cleanup or local-file cleanup is incomplete, the status explains what remains; a retained removal archive is not an active target. Unexpected local files or overlapping project paths block removal for inspection.</p>
+    <p>When This PC uses built-in Codex, MyCodex checks for updates silently at startup. Saving a switch back to the built-in runtime also checks before connecting. A failed check or no newer version lets startup continue normally. When a newer version is found, MyCodex asks whether to update. Choose No to keep using the existing runtime; choose Yes to download it in a modal window with a standard progress bar. Cancel stops the update and returns to the client using the existing runtime. On success, a completion message shows the installed version. After connecting successfully, MyCodex removes unused older versions; startup connections also retry cleanup of any that remain. If the update fails, retry or cancel. System, custom, WSL and SSH runtimes are managed separately. Downloads are verified, and other targets keep running on their existing versions. Older versions still in use are preserved during cleanup.</p>
+
+    <h3>7.2 Windows Sandbox Runtime Setup</h3>
+    <p>Edit the current <code>This PC</code> target in Target Manager to access <code>Windows Sandbox</code> detection and setup for its bundled runtime.</p>
+    <ul>
+      <li><code>Detect</code>: reads the current Windows Sandbox readiness state.</li>
+      <li><code>Configure...</code>: available when the state is not configured or update required; it asks for confirmation before running.</li>
+      <li>If you changed the runtime source but have not saved it yet, Sandbox detection and setup ask you to save and restart App Server first so the check uses the intended runtime.</li>
+    </ul>
+
+    <h3>7.3 Configure WSL Runtime</h3>
+    <p>Before using WSL, check that:</p>
+    <ul>
+      <li>WSL is installed on Windows.</li>
+      <li>A distribution such as <code>Ubuntu</code> is installed.</li>
+      <li><code>codex --version</code> works inside WSL.</li>
+      <li>WSL uses the official Codex Home selected by that distribution and does not inherit or map Windows sign-in state. When sign-in is needed, use the MyCodex browser, device-code, or API-key flow, or sign in with an official Codex tool in that WSL environment.</li>
+      <li>If an external tool configured a third-party model service inside WSL, confirm that it works in the same distribution. MyCodex does not copy Windows settings or keys.</li>
+    </ul>
+    <p>Recommended steps:</p>
+    <ol>
+      <li>Open <code>Settings -&gt; Targets -&gt; Target Manager...</code>.</li>
+      <li>Choose <code>Add WSL</code>, or edit an existing WSL target.</li>
+      <li>Enter your distribution name, for example <code>Ubuntu</code>.</li>
+      <li>Usually keep the Codex command as <code>codex</code>.</li>
+      <li>Usually keep the shell as <code>/bin/sh</code>. Use <code>bash</code> or another shell only when you explicitly need it.</li>
+      <li>Press <code>Detect WSL Codex</code> to confirm Codex is available inside WSL.</li>
+      <li>Save, then select its name from the Targets menu to open it. Editing launch settings for an already running target may ask to reconnect it.</li>
+    </ol>
+    <p>In WSL mode, the MyCodex window, workspace list, and session list still run in the Windows UI. The Codex App Server inside WSL handles requests, runs commands, and reads or writes workspace content.</p>
+
+    <h3>7.4 Workspace Paths in WSL Mode</h3>
+    <p>In WSL mode, use project folders that WSL can access directly. Projects on Windows drives can be reached through WSL mount paths. For example, the Windows path:</p>
+    <ul>
+      <li><code>E:\Projects\demo</code></li>
+    </ul>
+    <p>usually appears inside WSL as:</p>
+    <ul>
+      <li><code>/mnt/e/Projects/demo</code></li>
+    </ul>
+    <p>When opening a WSL workspace, MyCodex shows a runtime file browser where you can select or enter an absolute WSL path, such as <code>/home/user/repo</code> or <code>/mnt/e/Projects/demo</code>. Avoid using <code>\\wsl$</code> paths as normal Windows workspaces.</p>
+
+    <h3>7.5 Codex Home in WSL Mode</h3>
+    <p>In WSL mode, the selected distribution uses its own Codex sign-in, settings, and history:</p>
+    <ul>
+      <li>If you chose a Codex Home inside WSL, MyCodex continues to use that location.</li>
+      <li>Otherwise, the distribution normally uses <code>~/.codex</code>.</li>
+    </ul>
+    <p>Windows and each WSL distribution keep independent sign-in, settings, history, Plugins, Skills, and MCP. Use the relevant tool or an explicit import workflow if you need to move content between them.</p>
+
+    <h3>7.6 Commands and Files in WSL Mode</h3>
+    <p>When WSL runtime is active, standalone commands in the Terminal window run through the shell configured for WSL. For example, <code>pwd</code> returns a WSL path, and <code>ls</code> or <code>git status</code> uses Linux semantics.</p>
+    <p>If the workspace is on a Windows drive, WSL can normally access it through paths such as <code>/mnt/c</code>, <code>/mnt/d</code>, or <code>/mnt/e</code>. Commands still follow the rules of the WSL environment.</p>
+
+    <h3>7.7 Remote Unix (SSH) Runtime</h3>
+    <p>Remote Unix mode is intended for running Codex App Server, workspaces, history sessions, skills, plugins, and MCP on a remote macOS or Linux host. The Windows side only keeps the MyCodex UI.</p>
+    <ul>
+      <li>The remote host must be able to run <code>codex --version</code>. Sign-in, models, history, Plugins, Skills, and MCP use that remote environment's own Codex state; MyCodex does not copy them from Windows.</li>
+      <li>Open <code>Settings -&gt; Targets -&gt; Target Manager...</code>, choose <code>Add SSH</code>, and enter a name, host, port, username, shell, and Codex command.</li>
+      <li>Authentication can use an SSH private key or password. Private key is the most stable option. Password mode uses the bundled Plink runtime; first connection may ask you to trust the remote host key based on the detection result.</li>
+      <li>Run detection before saving, then open the saved target from the Targets menu. Use a new target when replacing the SSH host or user.</li>
+      <li>Remote workspaces must be selected or entered as absolute Unix paths on the remote host, such as <code>/Users/name/repo</code> or <code>/home/name/repo</code>.</li>
+    </ul>
+
+    <h2>8. Accessibility and Keyboard Priority</h2>
+    <p>MyCodex is optimized for keyboard and screen-reader workflows. Core operations are reachable from menu accelerators and logical focus order.</p>
+    <p>Each target can have its own fixed visibility shortcut under <code>Settings -&gt; Options... -&gt; Appearance</code>. This PC defaults to <code>Shift+Alt+M</code>; new targets start unassigned. A shortcut shows or hides its running target only and does not start a closed target. Conflicts are reported without taking another target's shortcut; a failed replacement keeps the original working shortcut. Hiding preserves Coding/Office work and focus. Each target also has its own tray icon labeled with its name and status.</p>
+    <p>When <code>Allow Esc to close the main and independent windows</code> is enabled, <code>Esc</code> hides the main window to the notification area or closes the active independent conversation window. Disabling the option leaves Esc inactive for those two window types without changing Esc behavior in other dialogs.</p>
+    <p>The standard mode tabs are keyboard reachable. Press <code>Ctrl+1</code> for Coding, <code>Ctrl+2</code> for Office, <code>Ctrl+Tab</code> for the next tab, or <code>Ctrl+Shift+Tab</code> for the previous tab. In Coding Mode, <code>Alt+1</code> moves focus to the workspace list and <code>Alt+2</code> moves focus to the session list. In Office Mode, both shortcuts move focus to the session list because the workspace list is hidden.</p>
+    <p>Switching between Coding and Office tabs, opening another target, or switching phone devices does not stop work in other targets. Reconnecting a target after a launch-setting change affects that target only. A connection failure is shown in its own window; work is not silently redirected to This PC.</p>
+    <p>Automatic reply reading is saved per target and continues while that target is in the background or tray, regardless of how many targets are open. Completion, approval, automation, and tray-hide events do not add desktop notifications or notification speech. Configured sound prompts remain available. New targets copy This PC's speech-channel name; an empty name uses <code>MyCodex</code>. You can change each target's channel afterward. Identical names share screen-reader settings and speech, so an explicit stop of that channel can affect other targets. Closing a target releases its speech connection without stopping the shared channel.</p>
+    <p>Closing a main window with <code>Alt+F4</code>, choosing <code>File -&gt; Exit</code>, or using its tray exit action closes that target only. The confirmation names the target and defaults to <code>No</code>. It warns about active Coding and Office responses, commands, and automations together. Drafts and unsaved file choices are handled before work stops; cancellation or a failed save leaves the target running. A successful exit closes its associated windows and removes its tray icon and shortcut. Closing an auxiliary window still closes only that window.</p>
+    <p><code>File -&gt; Exit all MyCodex targets...</code> and the same tray command list the running targets in this edition, including hidden windows. All listed targets prepare and save before any is stopped. A cancellation, rejected save, or changed set of running targets cancels preparation. If a target does not confirm cancellation, inspect its window; an abandoned preparation expires within ten minutes. After shutdown starts, targets already closed stay closed; the dialog lists those still running or whose exit cannot be verified, with <code>Continue waiting</code> and <code>Return to running windows</code>. It does not force-kill them.</p>
+    <ul>
+      <li>Do not trigger heavy operations on focus movement.</li>
+      <li>Use explicit actions (<code>Enter</code>, menu command, button) to execute tasks.</li>
+      <li>Use list-based navigation for read-heavy content.</li>
+    </ul>
+    <p>Manual screen-reader browsing has three targets: <code>Message</code>, <code>Terminal</code>, and <code>Activity</code>. Press <code>Alt+Delete</code> to cycle through them; MyCodex announces the active target name after switching.</p>
+    <p>The same manual browsing keys work in each independent conversation window. Their message, terminal, and activity cursors are separate from the main window and from other independent windows, so browsing one conversation does not move another conversation's manual-reading position.</p>
+    <p>Long text is read in full. You can also review it with manual browsing or the structured message viewer.</p>
+    <p>When the target is <code>Message</code>, <code>Alt+Up</code> and <code>Alt+Down</code> read the previous or next message, <code>Alt+Left</code> and <code>Alt+Right</code> read the previous or next line inside the current manually read message, <code>Alt+Home</code> and <code>Alt+End</code> read the first or last message, <code>Alt+PageUp</code> and <code>Alt+PageDown</code> move by five messages, and <code>Alt+Enter</code> opens the message currently selected by manual reading.</p>
+    <p>When the target is <code>Terminal</code>, <code>Alt+Up</code>, <code>Alt+Down</code>, <code>Alt+Home</code>, <code>Alt+End</code>, <code>Alt+PageUp</code>, and <code>Alt+PageDown</code> read terminal output line by line without moving focus into the terminal content.</p>
+    <p>When the target is <code>Activity</code>, the same <code>Alt+Up</code>, <code>Alt+Down</code>, <code>Alt+Home</code>, <code>Alt+End</code>, <code>Alt+PageUp</code>, and <code>Alt+PageDown</code> keys read the right-side activity records, including current activity, summaries, and log items.</p>
+    <p>In the subagent window, <code>Enter</code> opens the selected subagent, <code>Delete</code> removes the selected subagent or pending item, and <code>Ctrl+Delete</code> deletes all subagents after confirmation.</p>
+
+    <h2>9. Language Settings</h2>
+    <p>Open <code>Settings -&gt; Options... -&gt; Appearance</code> and choose:</p>
+    <ul>
+      <li><code>Follow System</code></li>
+      <li><code>Chinese (Simplified)</code></li>
+      <li><code>English</code></li>
+    </ul>
+    <p>After changing language, restart the app to fully apply all UI text.</p>
+
+    <h2>10. Troubleshooting</h2>
+    <ul>
+      <li>If App Server disconnects, wait for automatic reconnect or trigger retry by the related action.</li>
+      <li>If a command cannot be stopped, check current permission mode and command support.</li>
+      <li>If attachments become unavailable, re-add them before sending.</li>
+      <li>If subagents are missing, open <code>View Subagents...</code> and press F5. Check the selected execution target and parent session; a disconnected target cannot provide current status.</li>
+      <li>If browser sign-in does not open or cannot return to the target, use device-code sign-in and follow the address and code shown in the window. Waiting, success, cancellation, and failure are available in the status area for screen-reader inspection.</li>
+      <li>If Authentication Center applied a configuration but could not reconnect, use <code>Retry connection</code>. Follow the update action if it reports an old backend. For incomplete unified-history migration, close other Codex clients and use <code>Retry moving sessions</code>.</li>
+      <li>If Computer Use is unavailable, check Plugin enablement, the Activity error, and whether <code>runtime\cua</code> in the application directory is intact. Installing the official desktop client is not needed.</li>
+      <li>If a third-party model service is configured, confirm it works on the selected target. A working third-party configuration does not require a ChatGPT account.</li>
+      <li>If runtime connection fails, edit that target in <code>Settings -&gt; Targets -&gt; Target Manager...</code> and test its settings.</li>
+      <li>If <code>Bundled</code> is selected, confirm <code>App directory\runtime\codex</code> still exists. Reinstall MyCodex or download the required runtime again if it is missing.</li>
+      <li>If Windows Sandbox features are unavailable, edit This PC in Target Manager and run <code>Windows Sandbox</code> detection. If you just changed the runtime source, save and reconnect that target before detecting.</li>
+      <li>If <code>System</code> is selected, confirm <code>codex --version</code> works in Windows Command Prompt or PowerShell.</li>
+      <li>If <code>Custom</code> is selected, confirm the configured <code>codex.exe</code> or <code>codex.cmd</code> still exists.</li>
+      <li>If <code>WSL</code> is selected, confirm <code>codex --version</code> works inside WSL and <code>Detect WSL Codex</code> passes in the settings window.</li>
+      <li>In WSL mode, if you want to open a project on a Windows drive, confirm the path can map to a WSL mount path, such as <code>E:\Projects\demo</code> to <code>/mnt/e/Projects/demo</code>. If the project is inside the WSL file system, use an absolute WSL path such as <code>/home/name/repo</code>.</li>
+      <li>If history sessions do not appear in WSL mode, check the Codex Home actually used by that distribution. MyCodex does not read Windows Codex history for a WSL target.</li>
+      <li>If <code>Remote Unix (SSH)</code> is selected, confirm the remote host is reachable, host/port/username are correct, the private key exists or password is entered, and remote detection passes in the settings window.</li>
+      <li>In Remote Unix mode, if the ChatGPT account or history looks wrong, check the remote host's own Codex Home. This mode does not read the local Windows ChatGPT account or history.</li>
+      <li>If a model or third-party model service looks wrong in Remote Unix mode, check the Codex settings on the remote host and restart the target after changing them.</li>
+      <li>After another tool changes sign-in, model, Plugin, Skill, or MCP configuration, automatic reconnect does not reload the change. Wait for the next normal target start, or use <code>File -&gt; Reload Target</code> on Windows.</li>
+      <li>If the built-in phone service cannot start, confirm <code>App directory\runtime\relay\mycodex-relay.exe</code> exists. For a public service, run <code>Detect Server</code> in Connection Settings and verify its address, TLS setting, tenant ID, and access secret.</li>
+      <li>If Git Workbench says the workspace is not a Git repository, use <code>Initialize</code> in Git Workbench if this folder should become a repository.</li>
+      <li>For Git failures, use <code>Git -&gt; Git Environment</code> to check the Git MyCodex uses. Windows includes its own Git; failure to find global Git in an external terminal does not prove MyCodex Git is unavailable. WSL and SSH still need <code>git --version</code> to work in their own environment.</li>
+      <li>If fetch, pull, or push fails, read the latest output at the bottom of Git Workbench. MyCodex hides common tokens and URL credentials where possible.</li>
+      <li>Push requires an upstream. If no upstream is configured, follow the prompt to set upstream before pushing.</li>
+      <li>If a normal push is rejected after rollback, it is usually non-fast-forward. Use force push only after confirming you intend to rewrite remote branch history.</li>
+      <li>If conflicts exist, commit and push are disabled. Resolve conflicts in your editor or command line, then refresh Git Workbench.</li>
+      <li>If Git Workbench shows a repository as unsafe or blocked by ownership protection, it is usually Git <code>safe.directory</code>. Follow the Git error message and add the repository to <code>safe.directory</code> if you trust it.</li>
+      <li>If GitHub-related windows are empty or unavailable, first confirm <code>gh --version</code> works in the same environment and that <code>gh auth status</code> reports a signed-in account. WSL and Remote Unix modes use <code>gh</code> from that environment.</li>
+      <li>If deleting a GitHub repository reports missing <code>delete_repo</code> permission, run <code>gh auth refresh -s delete_repo</code> as suggested by the error message, then retry.</li>
+      <li>If SSH cloning or pushing fails, confirm that your public key has been added to GitHub and that the corresponding private key is available on this machine.</li>
+    </ul>
+  </main>
+</body>
+</html>

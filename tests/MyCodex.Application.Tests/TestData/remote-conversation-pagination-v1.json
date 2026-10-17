@@ -1,0 +1,10 @@
+{
+  "protocol": "remote-conversation-pagination-v1",
+  "capabilities": ["conversation.messages.pagination.v1", "conversation.message.contentChunks.v1"],
+  "listRequest": {"pagingVersion": 1, "limit": 100},
+  "listResponseFields": ["sessionId", "messages", "olderCursor", "newerCursor", "hasOlder", "hasNewer", "tailConnected", "tailMessageId", "latestAssistantMessageId", "historyRevision", "anchorFound", "resolvedAnchorMessageId", "generating"],
+  "messageFields": ["id", "content", "contentTruncated", "contentUtf8ByteCount", "contentVersion"],
+  "contentRequest": ["sessionId", "messageId", "contentVersion", "cursor"],
+  "contentResponse": ["sessionId", "messageId", "contentVersion", "text", "nextCursor", "loadedUtf8Bytes", "totalUtf8Bytes", "complete"],
+  "errors": ["invalid_cursor", "history_changed", "message_not_found", "message_content_changed", "mobile_upgrade_required", "response_too_large"]
+}

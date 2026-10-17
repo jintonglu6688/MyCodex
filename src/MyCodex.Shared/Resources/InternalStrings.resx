@@ -1,0 +1,1685 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="WorkspaceService.Error.WorkspacePathRequired" xml:space="preserve">
+    <value>Workspace path cannot be empty.</value>
+  </data>
+  <data name="WorkspaceService.Error.WorkspaceNotFound" xml:space="preserve">
+    <value>The specified workspace does not exist.</value>
+  </data>
+  <data name="WorkspaceService.Value.PathUnavailable" xml:space="preserve">
+    <value>(Path unavailable)</value>
+  </data>
+  <data name="WorkspaceService.Value.HistoricalWorkspace" xml:space="preserve">
+    <value>(Historical workspace)</value>
+  </data>
+  <data name="WorkspaceService.Value.NotGitRepository" xml:space="preserve">
+    <value>(Not a Git repository)</value>
+  </data>
+  <data name="WorkspaceService.Value.UnknownBranch" xml:space="preserve">
+    <value>(Unknown branch)</value>
+  </data>
+  <data name="WorkspaceService.Value.DetachedHead" xml:space="preserve">
+    <value>(Detached HEAD)</value>
+  </data>
+  <data name="SessionService.Title.DefaultSession.Template" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="SessionService.Title.HistorySession.Template" xml:space="preserve">
+    <value>{0} History Session</value>
+  </data>
+  <data name="AppServerReviewTarget.Error.BaseBranchRequired" xml:space="preserve">
+    <value>Review base branch cannot be empty.</value>
+  </data>
+  <data name="AppServerReviewTarget.Error.CommitShaRequired" xml:space="preserve">
+    <value>Review commit hash cannot be empty.</value>
+  </data>
+  <data name="AppServerReviewTarget.Error.CustomInstructionsRequired" xml:space="preserve">
+    <value>Custom review instructions cannot be empty.</value>
+  </data>
+  <data name="AppServerReviewTarget.Error.UnsupportedTarget" xml:space="preserve">
+    <value>Unsupported review target.</value>
+  </data>
+  <data name="AppServerLaunchInfo.Error.ExecutablePathRequired" xml:space="preserve">
+    <value>Executable path cannot be empty.</value>
+  </data>
+  <data name="AppConfigService.Error.VersionRequired" xml:space="preserve">
+    <value>Version cannot be empty.</value>
+  </data>
+  <data name="AppConfigService.Error.PlatformRequired" xml:space="preserve">
+    <value>Platform cannot be empty.</value>
+  </data>
+  <data name="AppConfigService.Error.TargetPlatformRequired" xml:space="preserve">
+    <value>Target platform cannot be empty.</value>
+  </data>
+  <data name="AppConfigService.Error.RuntimePathSegmentInvalid" xml:space="preserve">
+    <value>Runtime path segment is invalid.</value>
+  </data>
+  <data name="TtsNativeLibrary.Error.DllPathRequired" xml:space="preserve">
+    <value>DLL path cannot be empty.</value>
+  </data>
+  <data name="TtsNativeLibrary.Error.EntryPointRequired" xml:space="preserve">
+    <value>Entry point name cannot be empty.</value>
+  </data>
+  <data name="TtsNativeLibrary.Error.LibraryNotLoaded" xml:space="preserve">
+    <value>DLL has not been loaded.</value>
+  </data>
+  <data name="ScreenReader.Error.NoAvailableService" xml:space="preserve">
+    <value>No available screen reader service.</value>
+  </data>
+  <data name="ScreenReader.Error.SpeakTextRequired" xml:space="preserve">
+    <value>Text to read cannot be empty.</value>
+  </data>
+  <data name="Common.Value.UnknownError" xml:space="preserve">
+    <value>Unknown error</value>
+  </data>
+  <data name="CodexRuntime.Error.NoAvailableRuntime" xml:space="preserve">
+    <value>No available Codex runtime was detected.</value>
+  </data>
+  <data name="CodexRuntime.Error.ExecutablePathRequired" xml:space="preserve">
+    <value>Executable path cannot be empty.</value>
+  </data>
+  <data name="CodexRuntime.Error.ExecutableNotFound" xml:space="preserve">
+    <value>Codex executable was not found.</value>
+  </data>
+  <data name="CodexRuntime.Error.UnableToStartExecutable" xml:space="preserve">
+    <value>Unable to start Codex executable.</value>
+  </data>
+  <data name="CodexRuntime.Error.VerificationFailed.Template" xml:space="preserve">
+    <value>Codex verification failed: {0}</value>
+  </data>
+  <data name="CodexRuntime.Status.NoAvailableRuntime" xml:space="preserve">
+    <value>No available Codex runtime was detected. Choose a runtime source in App Server Runtime settings.</value>
+  </data>
+  <data name="CodexRuntime.Status.BundledRuntimeMissing" xml:space="preserve">
+    <value>Bundled Codex runtime is missing. Reinstall MyCodex, or choose System, Custom, or WSL in App Server Runtime settings.</value>
+  </data>
+  <data name="CodexRuntime.Status.SystemRuntimeMissing" xml:space="preserve">
+    <value>System Codex was not found. Choose Bundled, Custom, or WSL in App Server Runtime settings.</value>
+  </data>
+  <data name="CodexRuntime.Status.CustomRuntimeMissing" xml:space="preserve">
+    <value>Selected Codex executable is unavailable. Choose another executable, or switch runtime source in App Server Runtime settings.</value>
+  </data>
+  <data name="CodexRuntime.Status.WslRuntimeMissing" xml:space="preserve">
+    <value>WSL Codex runtime is unavailable. Check WSL settings, or switch runtime source in App Server Runtime settings.</value>
+  </data>
+  <data name="CodexRuntime.Status.UsingCustomExecutable" xml:space="preserve">
+    <value>Your selected Codex executable will be used.</value>
+  </data>
+  <data name="CodexRuntime.Status.UsingBundledRuntime.Template" xml:space="preserve">
+    <value>Bundled Codex runtime ({0}) will be used.</value>
+  </data>
+  <data name="CodexRuntime.Status.UsingSystemCodex" xml:space="preserve">
+    <value>System-installed Codex will be used.</value>
+  </data>
+  <data name="CodexRuntime.Status.UsingWslCodex" xml:space="preserve">
+    <value>WSL Codex runtime will be used.</value>
+  </data>
+  <data name="CodexRuntime.Status.AvailableRuntimeDetected" xml:space="preserve">
+    <value>A usable Codex runtime has been detected.</value>
+  </data>
+  <data name="CodexRuntime.Error.WslExecutableNotFound" xml:space="preserve">
+    <value>wsl.exe was not found.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Progress.CheckingLatest" xml:space="preserve">
+    <value>Checking latest Codex runtime...</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Progress.Downloading.Template" xml:space="preserve">
+    <value>Downloading Codex runtime {0}...</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Progress.Verifying" xml:space="preserve">
+    <value>Verifying Codex runtime package...</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Progress.Extracting" xml:space="preserve">
+    <value>Extracting Codex runtime package...</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Progress.Installing" xml:space="preserve">
+    <value>Installing Codex runtime...</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.IntegrityCheckFailed" xml:space="preserve">
+    <value>Codex runtime package integrity check failed.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.ExecutableMissing.Template" xml:space="preserve">
+    <value>Codex runtime package did not contain {0}.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.LatestVersionMissing" xml:space="preserve">
+    <value>Codex runtime metadata did not include the latest version.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.UnexpectedPackageName.Template" xml:space="preserve">
+    <value>Unexpected Codex runtime package name '{0}'. Expected '{1}'.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.ExtractFailed" xml:space="preserve">
+    <value>Failed to extract Codex runtime package.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.MetadataMissing.Template" xml:space="preserve">
+    <value>Codex runtime metadata did not include {0}.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.UnsafeArchiveEntry" xml:space="preserve">
+    <value>Codex runtime archive contains an unsafe entry path.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.InstallPathEscaped" xml:space="preserve">
+    <value>Codex runtime install path escapes the bundled runtime directory.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.MutationBusy" xml:space="preserve">
+    <value>Another window is updating this shared Codex runtime. Wait for it to finish and retry.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.RuntimeInUse" xml:space="preserve">
+    <value>This Codex runtime is in use. Exit its users normally before replacing this version.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.RuntimeUseUnknown" xml:space="preserve">
+    <value>Cannot verify which processes are using the Codex runtime. This version will not be changed.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.UnsafeRuntimeLink" xml:space="preserve">
+    <value>Codex runtime paths cannot contain symbolic links or junctions.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.ManifestChanged" xml:space="preserve">
+    <value>Runtime update metadata changed during installation. Check for updates again.</value>
+  </data>
+  <data name="UpdatePackage.Error.FileNameMissing" xml:space="preserve">
+    <value>Update asset file name is missing.</value>
+  </data>
+  <data name="UpdatePackage.Error.FileNameInvalid" xml:space="preserve">
+    <value>Update asset file name must not contain a path.</value>
+  </data>
+  <data name="UpdatePackage.Error.DestinationEscaped" xml:space="preserve">
+    <value>Update asset destination escapes the download directory.</value>
+  </data>
+  <data name="UpdatePackage.Error.SizeMismatch.Template" xml:space="preserve">
+    <value>Update asset size mismatch. Expected {0} bytes, got {1} bytes.</value>
+  </data>
+  <data name="UpdatePackage.Error.Sha256Missing" xml:space="preserve">
+    <value>Update asset SHA256 is missing.</value>
+  </data>
+  <data name="UpdatePackage.Error.Sha256Mismatch" xml:space="preserve">
+    <value>Update asset SHA256 verification failed.</value>
+  </data>
+  <data name="AppServerPathMappingPolicy.Error.PathNotMappableToWsl.Template" xml:space="preserve">
+    <value>Cannot map {0} path to WSL: {1}. Use a Windows drive path such as E:\Repo so WSL can access it under /mnt/e.</value>
+  </data>
+  <data name="ByCtrl.Error.LibraryNotFound.Template" xml:space="preserve">
+    <value>{0} was not found.</value>
+  </data>
+  <data name="ByCtrl.Error.LoadFailed.Prefix" xml:space="preserve">
+    <value>Failed to load byctrl: </value>
+  </data>
+  <data name="ByCtrl.Error.VersionMismatch.Prefix" xml:space="preserve">
+    <value>byctrl API version mismatch: </value>
+  </data>
+  <data name="ByCtrl.Error.BitnessMismatch.Prefix" xml:space="preserve">
+    <value>byctrl API bitness mismatch: </value>
+  </data>
+  <data name="ByCtrl.Error.ReadStateFailed.Prefix" xml:space="preserve">
+    <value>Failed to read screen reader state: </value>
+  </data>
+  <data name="ByCtrl.Error.ReadDetailStateFailed.Prefix" xml:space="preserve">
+    <value>Failed to read detailed screen reader state: </value>
+  </data>
+  <data name="ByCtrl.Error.SpeakTextRequired" xml:space="preserve">
+    <value>Text to read cannot be empty.</value>
+  </data>
+  <data name="ByCtrl.Error.SpeakInvokeFailed.Prefix" xml:space="preserve">
+    <value>Failed to invoke screen reader: </value>
+  </data>
+  <data name="ByCtrl.Error.StopFailed.Prefix" xml:space="preserve">
+    <value>Failed to stop reading: </value>
+  </data>
+  <data name="ByCtrl.Error.WriteConfigFailed.Prefix" xml:space="preserve">
+    <value>Failed to update byctrl configuration: </value>
+  </data>
+  <data name="ByCtrl.Operation.Initialize" xml:space="preserve">
+    <value>Initialize</value>
+  </data>
+  <data name="ByCtrl.Operation.Speak" xml:space="preserve">
+    <value>Speak</value>
+  </data>
+  <data name="ByCtrl.Operation.Stop" xml:space="preserve">
+    <value>Stop reading</value>
+  </data>
+  <data name="ByCtrl.Error.OperationInvalidArgument.Template" xml:space="preserve">
+    <value>{0} failed: invalid argument.</value>
+  </data>
+  <data name="ByCtrl.Error.OperationUnavailable.Template" xml:space="preserve">
+    <value>{0} failed: byctrl service is unavailable.</value>
+  </data>
+  <data name="ByCtrl.Error.OperationFailed.Template" xml:space="preserve">
+    <value>{0} failed.</value>
+  </data>
+  <data name="Nvda.Error.LibraryNotFound.Template" xml:space="preserve">
+    <value>{0} was not found.</value>
+  </data>
+  <data name="Nvda.Error.CommunicationFailed" xml:space="preserve">
+    <value>Failed to communicate with NVDA</value>
+  </data>
+  <data name="Nvda.Error.ReadStateFailed.Prefix" xml:space="preserve">
+    <value>Failed to detect NVDA state: </value>
+  </data>
+  <data name="Nvda.Error.SpeakTextRequired" xml:space="preserve">
+    <value>Text to read cannot be empty.</value>
+  </data>
+  <data name="Nvda.Error.StopExistingSpeechFailed" xml:space="preserve">
+    <value>Failed to stop current NVDA speech</value>
+  </data>
+  <data name="Nvda.Error.SpeakInvokeFailed" xml:space="preserve">
+    <value>Failed to invoke NVDA speech</value>
+  </data>
+  <data name="Nvda.Error.SpeakInvokeFailed.Prefix" xml:space="preserve">
+    <value>Failed to invoke NVDA speech: </value>
+  </data>
+  <data name="Nvda.Error.StopFailed" xml:space="preserve">
+    <value>Failed to stop NVDA speech</value>
+  </data>
+  <data name="Nvda.Error.StopFailed.Prefix" xml:space="preserve">
+    <value>Failed to stop NVDA speech: </value>
+  </data>
+  <data name="Nvda.Error.LoadFailed.Prefix" xml:space="preserve">
+    <value>Failed to load NVDA API: </value>
+  </data>
+  <data name="Nvda.Error.VersionMismatch.Prefix" xml:space="preserve">
+    <value>NVDA API version mismatch: </value>
+  </data>
+  <data name="Nvda.Error.BitnessMismatch.Prefix" xml:space="preserve">
+    <value>NVDA API bitness mismatch: </value>
+  </data>
+  <data name="Nvda.Error.WithSystemMessage.Template" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Nvda.Error.WithCode.Template" xml:space="preserve">
+    <value>{0}: error code {1}</value>
+  </data>
+  <data name="Zdsr.Error.LibraryNotFound.Template" xml:space="preserve">
+    <value>{0} was not found.</value>
+  </data>
+  <data name="Zdsr.Error.LoadFailed.Prefix" xml:space="preserve">
+    <value>Failed to load ZDSR API: </value>
+  </data>
+  <data name="Zdsr.Error.VersionMismatch.Prefix" xml:space="preserve">
+    <value>ZDSR API version mismatch: </value>
+  </data>
+  <data name="Zdsr.Error.BitnessMismatch.Prefix" xml:space="preserve">
+    <value>ZDSR API bitness mismatch: </value>
+  </data>
+  <data name="Zdsr.Error.NotRunningOrUnauthorized" xml:space="preserve">
+    <value>ZDSR is not running or not authorized.</value>
+  </data>
+  <data name="Zdsr.Error.VersionMismatch" xml:space="preserve">
+    <value>ZDSR API version mismatch.</value>
+  </data>
+  <data name="Zdsr.Error.ReadStateFailed.Prefix" xml:space="preserve">
+    <value>Failed to read ZDSR state: </value>
+  </data>
+  <data name="Zdsr.Error.SpeakTextRequired" xml:space="preserve">
+    <value>Text to read cannot be empty.</value>
+  </data>
+  <data name="Zdsr.Error.SpeakInvokeFailed.Prefix" xml:space="preserve">
+    <value>Failed to invoke ZDSR speech: </value>
+  </data>
+  <data name="Zdsr.Error.StopFailed.Prefix" xml:space="preserve">
+    <value>Failed to stop ZDSR speech: </value>
+  </data>
+  <data name="Zdsr.Error.InitializeFailed" xml:space="preserve">
+    <value>Failed to initialize ZDSR.</value>
+  </data>
+  <data name="Zdsr.Error.SpeakFailed" xml:space="preserve">
+    <value>ZDSR speech failed.</value>
+  </data>
+  <data name="AppServerClient.Status.Connected.Template" xml:space="preserve">
+    <value>Connected to Codex App Server. Platform: {0}, Agent: {1}</value>
+  </data>
+  <data name="AppServerClient.Value.Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="AppServerClient.Status.NoInterruptibleResponse" xml:space="preserve">
+    <value>There is no in-progress response to interrupt.</value>
+  </data>
+  <data name="AppServerClient.Thread.Started" xml:space="preserve">
+    <value>Thread is ready.</value>
+  </data>
+  <data name="AppServerClient.Thread.Archived" xml:space="preserve">
+    <value>Session archived.</value>
+  </data>
+  <data name="AppServerClient.Thread.Deleted" xml:space="preserve">
+    <value>Session deleted.</value>
+  </data>
+  <data name="AppServerClient.Thread.Unarchived" xml:space="preserve">
+    <value>Session restored from archive.</value>
+  </data>
+  <data name="AppServerClient.Thread.ContextCompacted" xml:space="preserve">
+    <value>Session context compressed.</value>
+  </data>
+  <data name="AppServerClient.Thread.StatusUpdated.Prefix" xml:space="preserve">
+    <value>Thread status updated: </value>
+  </data>
+  <data name="AppServerClient.Turn.Started" xml:space="preserve">
+    <value>Codex is processing...</value>
+  </data>
+  <data name="AppServerClient.Turn.PlanUpdated" xml:space="preserve">
+    <value>Plan updated.</value>
+  </data>
+  <data name="AppServerClient.Turn.PlanUpdating" xml:space="preserve">
+    <value>Plan is being updated.</value>
+  </data>
+  <data name="AppServerClient.Turn.DiffUpdated" xml:space="preserve">
+    <value>Change summary updated.</value>
+  </data>
+  <data name="AppServerClient.Reasoning.Started" xml:space="preserve">
+    <value>Analyzing</value>
+  </data>
+  <data name="AppServerClient.Reasoning.Completed" xml:space="preserve">
+    <value>Analysis completed</value>
+  </data>
+  <data name="AppServerClient.FileChange.Summarizing" xml:space="preserve">
+    <value>Summarizing file changes</value>
+  </data>
+  <data name="AppServerClient.FileChange.Completed" xml:space="preserve">
+    <value>File changes completed</value>
+  </data>
+  <data name="AppServerClient.FileChange.PatchUpdated" xml:space="preserve">
+    <value>File changes updated.</value>
+  </data>
+  <data name="AppServerClient.Network.WebSearchStarted" xml:space="preserve">
+    <value>Web search started</value>
+  </data>
+  <data name="AppServerClient.Network.WebSearchCompleted" xml:space="preserve">
+    <value>Web search completed</value>
+  </data>
+  <data name="AppServerClient.Status.Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="AppServerClient.Status.Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="AppServerClient.Status.Ended" xml:space="preserve">
+    <value>Ended</value>
+  </data>
+  <data name="AppServerClient.Status.Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="AppServerClient.Error.TurnRequestFailed" xml:space="preserve">
+    <value>Current turn request failed.</value>
+  </data>
+  <data name="AppServerClient.Turn.Interrupted" xml:space="preserve">
+    <value>Current response interrupted.</value>
+  </data>
+  <data name="AppServerClient.Turn.Completed" xml:space="preserve">
+    <value>Current turn request completed.</value>
+  </data>
+  <data name="AppServerClient.Error.ServerReturnedError" xml:space="preserve">
+    <value>App Server returned an error.</value>
+  </data>
+  <data name="AppServerClient.Account.StatusUpdated" xml:space="preserve">
+    <value>Account status updated.</value>
+  </data>
+  <data name="AppServerClient.Account.StatusUpdatedWithMode.Template" xml:space="preserve">
+    <value>Account status updated: {0}{1}</value>
+  </data>
+  <data name="AppServerClient.Account.LoginCompleted" xml:space="preserve">
+    <value>Login completed.</value>
+  </data>
+  <data name="AppServerClient.Account.LoginFailed" xml:space="preserve">
+    <value>Login failed.</value>
+  </data>
+  <data name="AppServerClient.Mcp.LoginCompleted.Template" xml:space="preserve">
+    <value>MCP server login completed: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.LoginFailed.Template" xml:space="preserve">
+    <value>MCP server login failed: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.LoginStatusUpdated.Template" xml:space="preserve">
+    <value>MCP server login status updated: {0}</value>
+  </data>
+  <data name="AppServerClient.Value.UnknownServer" xml:space="preserve">
+    <value>(Unknown server)</value>
+  </data>
+  <data name="AppServerClient.RateLimits.Updated" xml:space="preserve">
+    <value>Quota information updated.</value>
+  </data>
+  <data name="AppServerClient.Apps.ListUpdated" xml:space="preserve">
+    <value>Apps list updated.</value>
+  </data>
+  <data name="AppServerClient.TokenUsage.Updated" xml:space="preserve">
+    <value>Context usage updated.</value>
+  </data>
+  <data name="AppServerClient.Skills.Changed" xml:space="preserve">
+    <value>Detected changes in skill folders.</value>
+  </data>
+  <data name="AppServerClient.Error.RequestTimeout.Template" xml:space="preserve">
+    <value>App Server request timed out: {0}, still no response after waiting about {1} seconds.</value>
+  </data>
+  <data name="AppServerClient.Error.ConnectionLost" xml:space="preserve">
+    <value>Connection to Codex App Server was lost.</value>
+  </data>
+  <data name="AppServerClient.Error.ConnectionLostWithDetail.Prefix" xml:space="preserve">
+    <value>Connection to Codex App Server was lost: </value>
+  </data>
+  <data name="AppServerClient.Error.AppServerExited" xml:space="preserve">
+    <value>Codex App Server exited.</value>
+  </data>
+  <data name="AppServerClient.SystemNotice.UnparsableMessageIgnored" xml:space="preserve">
+    <value>Received an unparsable App Server message and ignored it.</value>
+  </data>
+  <data name="AppServerClient.SystemNotice.UnhandledServerRequest.Prefix" xml:space="preserve">
+    <value>Received an unhandled server request: </value>
+  </data>
+  <data name="AppServerClient.SystemNotice.AppServerOutputPrefix" xml:space="preserve">
+    <value>App Server: </value>
+  </data>
+  <data name="AppServerClient.SystemNotice.ReadStderrFailed.Prefix" xml:space="preserve">
+    <value>Failed to read App Server stderr: </value>
+  </data>
+  <data name="AppServerClient.ToolInput.Requested" xml:space="preserve">
+    <value>Received tool input request.</value>
+  </data>
+  <data name="AppServerClient.ToolInput.Submitted" xml:space="preserve">
+    <value>Tool input submitted.</value>
+  </data>
+  <data name="AppServerClient.ToolInput.Canceled" xml:space="preserve">
+    <value>Tool input canceled.</value>
+  </data>
+  <data name="AppServerClient.ToolInput.RequestedWithQuestionCount.Template" xml:space="preserve">
+    <value>Received tool input request with {0} questions.</value>
+  </data>
+  <data name="AppServerClient.ToolInput.RequestedWithHeader.Prefix" xml:space="preserve">
+    <value>Received tool input request: </value>
+  </data>
+  <data name="AppServerClient.ToolInput.RequestedWithHeaderAndMore.Template" xml:space="preserve">
+    <value>Received tool input request: {0} and {1} more questions.</value>
+  </data>
+  <data name="AppServerClient.ToolInput.QuestionCount.Template" xml:space="preserve">
+    <value>Question count: {0}</value>
+  </data>
+  <data name="AppServerClient.Approval.Requested" xml:space="preserve">
+    <value>Received approval request.</value>
+  </data>
+  <data name="AppServerClient.Approval.PermissionRequestRejected" xml:space="preserve">
+    <value>Permission request rejected.</value>
+  </data>
+  <data name="AppServerClient.Approval.Command.Requested.Template" xml:space="preserve">
+    <value>Received command approval request: {0}</value>
+  </data>
+  <data name="AppServerClient.Approval.FileChange.Requested" xml:space="preserve">
+    <value>Received file-change approval request.</value>
+  </data>
+  <data name="AppServerClient.Approval.FileChange.RequestedWithReason.Prefix" xml:space="preserve">
+    <value>Received file-change approval request: </value>
+  </data>
+  <data name="AppServerClient.Approval.Permissions.Requested" xml:space="preserve">
+    <value>Received permission approval request.</value>
+  </data>
+  <data name="AppServerClient.Approval.Permissions.RequestedWithReason.Prefix" xml:space="preserve">
+    <value>Received permission approval request: </value>
+  </data>
+  <data name="AppServerClient.Approval.Action.AllowForSession" xml:space="preserve">
+    <value>Allowed for this session</value>
+  </data>
+  <data name="AppServerClient.Approval.Action.Rejected" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
+  <data name="AppServerClient.Approval.Action.AllowOnce" xml:space="preserve">
+    <value>Allowed once</value>
+  </data>
+  <data name="AppServerClient.Approval.Command.Resolved.Template" xml:space="preserve">
+    <value>{0} command approval: {1}</value>
+  </data>
+  <data name="AppServerClient.Approval.FileChange.ResolvedSuffix" xml:space="preserve">
+    <value> file-change approval.</value>
+  </data>
+  <data name="AppServerClient.Approval.Permissions.ResolvedSuffix" xml:space="preserve">
+    <value> permission approval.</value>
+  </data>
+  <data name="AppServerClient.Approval.ResolvedSuffix" xml:space="preserve">
+    <value> approval request.</value>
+  </data>
+  <data name="AppServerClient.Permissions.Read.Prefix" xml:space="preserve">
+    <value>Read: </value>
+  </data>
+  <data name="AppServerClient.Permissions.Write.Prefix" xml:space="preserve">
+    <value>Write: </value>
+  </data>
+  <data name="AppServerClient.Permissions.NetworkAllowed" xml:space="preserve">
+    <value>Network: allowed</value>
+  </data>
+  <data name="AppServerClient.Approval.CommandActions.Prefix" xml:space="preserve">
+    <value>Command actions: </value>
+  </data>
+  <data name="AppServerClient.Approval.WriteRoot.Prefix" xml:space="preserve">
+    <value>Write root: </value>
+  </data>
+  <data name="AppServerClient.Review.Entered.Prefix" xml:space="preserve">
+    <value>Entered review mode: </value>
+  </data>
+  <data name="AppServerClient.Review.Exited.Prefix" xml:space="preserve">
+    <value>Exited review mode: </value>
+  </data>
+  <data name="AppServerClient.Attachment.Image.DefaultName" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="AppServerClient.Attachment.File.DefaultName" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="AppServerClient.Attachment.Image.Single.Template" xml:space="preserve">
+    <value>Attached 1 image: {0}</value>
+  </data>
+  <data name="AppServerClient.Attachment.Image.Multi.Template" xml:space="preserve">
+    <value>Attached {0} images: {1}</value>
+  </data>
+  <data name="AppServerClient.Attachment.File.Single.Template" xml:space="preserve">
+    <value>Attached 1 file: {0}</value>
+  </data>
+  <data name="AppServerClient.Attachment.File.Multi.Template" xml:space="preserve">
+    <value>Attached {0} files: {1}</value>
+  </data>
+  <data name="AppServerClient.Command.CompletedSummary.Template" xml:space="preserve">
+    <value>Command finished: {0}, status: {1}{2}</value>
+  </data>
+  <data name="AppServerClient.Command.ExitCodeSuffix.Template" xml:space="preserve">
+    <value>, exit code: {0}</value>
+  </data>
+  <data name="AppServerClient.Value.UnknownCommand" xml:space="preserve">
+    <value>(Unknown command)</value>
+  </data>
+  <data name="AppServerClient.Error.NotConnected" xml:space="preserve">
+    <value>App Server is not connected.</value>
+  </data>
+  <data name="AppServerClient.Error.UnsupportedReviewTarget" xml:space="preserve">
+    <value>Unsupported review target.</value>
+  </data>
+  <data name="AppServerClient.ConfigSource.User.Prefix" xml:space="preserve">
+    <value>User config: </value>
+  </data>
+  <data name="AppServerClient.ConfigSource.Project.Prefix" xml:space="preserve">
+    <value>Project config: </value>
+  </data>
+  <data name="AppServerClient.ConfigSource.System.Prefix" xml:space="preserve">
+    <value>System config: </value>
+  </data>
+  <data name="AppServerClient.ConfigSource.SessionArguments" xml:space="preserve">
+    <value>Session arguments</value>
+  </data>
+  <data name="AppServerClient.ConfigSource.LegacyManaged.Prefix" xml:space="preserve">
+    <value>Legacy managed config: </value>
+  </data>
+  <data name="AppServerClient.ConfigSource.LegacyMdmManaged" xml:space="preserve">
+    <value>Legacy MDM managed config</value>
+  </data>
+  <data name="AppServerClient.ConfigSource.UnknownLayer" xml:space="preserve">
+    <value>Unknown config layer</value>
+  </data>
+  <data name="AppServerClient.ConfigSource.Mdm.Template" xml:space="preserve">
+    <value>MDM: {0}/{1}</value>
+  </data>
+  <data name="AppServerClient.Value.UnknownDomain" xml:space="preserve">
+    <value>(Unknown domain)</value>
+  </data>
+  <data name="AppServerClient.Value.UnknownKey" xml:space="preserve">
+    <value>(Unknown key)</value>
+  </data>
+  <data name="AppServerClient.FileChange.ProgressPrefix" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+  <data name="AppServerClient.FileChange.ProcessedPrefix" xml:space="preserve">
+    <value>Processed</value>
+  </data>
+  <data name="AppServerClient.FileChange.LinePrefix.Added" xml:space="preserve">
+    <value>Added </value>
+  </data>
+  <data name="AppServerClient.FileChange.LinePrefix.Deleted" xml:space="preserve">
+    <value>Deleted </value>
+  </data>
+  <data name="AppServerClient.FileChange.LinePrefix.Modified" xml:space="preserve">
+    <value>Modified </value>
+  </data>
+  <data name="AppServerClient.FileChange.LinePrefix.Processed" xml:space="preserve">
+    <value>Processed </value>
+  </data>
+  <data name="AppServerClient.FileChange.Line.Moved.Template" xml:space="preserve">
+    <value>Moved {0} -&gt; {1}</value>
+  </data>
+  <data name="AppServerClient.Value.UnknownFile" xml:space="preserve">
+    <value>(Unknown file)</value>
+  </data>
+  <data name="AppServerClient.FileChange.MoreFiles.Prefix" xml:space="preserve">
+    <value>And </value>
+  </data>
+  <data name="AppServerClient.FileChange.MoreFiles.Suffix" xml:space="preserve">
+    <value> more files</value>
+  </data>
+  <data name="AppServerClient.Error.ApprovalRequestIdRequired" xml:space="preserve">
+    <value>Approval request ID cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.BatchConfigEditsRequired" xml:space="preserve">
+    <value>Batch config edits cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.CommandRequired" xml:space="preserve">
+    <value>Command cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.CommandTimedOut" xml:space="preserve">
+    <value>Command timed out.</value>
+  </data>
+  <data name="AppServerClient.Error.ConfigKeyPathRequired" xml:space="preserve">
+    <value>Config key path cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.ConfigMergeStrategyRequired" xml:space="preserve">
+    <value>Config merge strategy cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.ForkedThreadIdMissing" xml:space="preserve">
+    <value>App Server did not return the forked thread ID.</value>
+  </data>
+  <data name="AppServerClient.Error.McpServerNameRequired" xml:space="preserve">
+    <value>MCP server name cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.PendingApprovalRequestNotFound" xml:space="preserve">
+    <value>Pending approval request was not found.</value>
+  </data>
+  <data name="AppServerClient.Error.PendingToolInputRequestNotFound" xml:space="preserve">
+    <value>Pending tool input request was not found.</value>
+  </data>
+  <data name="AppServerClient.Error.PermissionRequestRejectedByUser" xml:space="preserve">
+    <value>The user rejected the permission request.</value>
+  </data>
+  <data name="AppServerClient.Error.PluginIdRequired" xml:space="preserve">
+    <value>Plugin ID cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.MarketplaceSourceRequired" xml:space="preserve">
+    <value>Marketplace source cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.PluginMarketplacePathRequired" xml:space="preserve">
+    <value>Plugin marketplace path cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.PluginNameRequired" xml:space="preserve">
+    <value>Plugin name cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.ProcessIdRequired" xml:space="preserve">
+    <value>Process ID cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.ResumeThreadIdMissing" xml:space="preserve">
+    <value>Failed to restore thread: thread ID was not returned.</value>
+  </data>
+  <data name="AppServerClient.Error.ServerRequestNotImplemented" xml:space="preserve">
+    <value>This server request is not implemented in the current version.</value>
+  </data>
+  <data name="AppServerClient.Error.SkillPathRequired" xml:space="preserve">
+    <value>Skill path cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadFilePathRequired" xml:space="preserve">
+    <value>Thread file path cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadFilePathUnsupported" xml:space="preserve">
+    <value>Current thread file path is outside supported Codex state directories and cannot be fully removed.</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadIdMissing" xml:space="preserve">
+    <value>App Server did not return a thread ID.</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadIdRequired" xml:space="preserve">
+    <value>Thread ID cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadNameRequired" xml:space="preserve">
+    <value>Thread name cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.ToolInputRequestIdRequired" xml:space="preserve">
+    <value>Tool input request ID cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.UnableToStartAppServer" xml:space="preserve">
+    <value>Unable to start codex app-server.</value>
+  </data>
+  <data name="AppServerClient.Error.UnknownServerError" xml:space="preserve">
+    <value>App Server returned an unknown error.</value>
+  </data>
+  <data name="AppServerClient.Error.UnsupportedApprovalRequestType" xml:space="preserve">
+    <value>Unsupported approval request type.</value>
+  </data>
+  <data name="AppServerClient.Error.ValidInputRequired" xml:space="preserve">
+    <value>At least one valid input item is required.</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.BearerToken" xml:space="preserve">
+    <value>Bearer Token</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.Initializing" xml:space="preserve">
+    <value>Initializing</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.NotFound" xml:space="preserve">
+    <value>Not configured or not logged in</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.NotLoggedIn" xml:space="preserve">
+    <value>Not logged in</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.NotProvided" xml:space="preserve">
+    <value>Not provided</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.NotRequiredOrUnknown" xml:space="preserve">
+    <value>Not required or unknown</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.OAuth" xml:space="preserve">
+    <value>OAuth</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.Unsupported" xml:space="preserve">
+    <value>Unsupported</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Auth.Template" xml:space="preserve">
+    <value>Auth: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Capabilities.Template" xml:space="preserve">
+    <value>Capabilities: tools {0}, resources {1}, templates {2}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.DisabledTools.Template" xml:space="preserve">
+    <value>Disabled tools: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Enabled.Template" xml:space="preserve">
+    <value>Enabled: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.EnabledTools.Template" xml:space="preserve">
+    <value>Enabled tools: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Entry.Template" xml:space="preserve">
+    <value>Entry: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Environment.Template" xml:space="preserve">
+    <value>Environment variables: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Error.Template" xml:space="preserve">
+    <value>Error: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.OAuthResource.Template" xml:space="preserve">
+    <value>OAuth resource: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Required.Template" xml:space="preserve">
+    <value>Required: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Runtime.Template" xml:space="preserve">
+    <value>Runtime: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Server.Template" xml:space="preserve">
+    <value>Server: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Source.Template" xml:space="preserve">
+    <value>Source: {0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Environment.Configured" xml:space="preserve">
+    <value>Configured</value>
+  </data>
+  <data name="AppServerClient.Mcp.Environment.Items.Template" xml:space="preserve">
+    <value>{0} items: {1}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Environment.ItemsWithEllipsis.Template" xml:space="preserve">
+    <value>{0} items: {1}...</value>
+  </data>
+  <data name="AppServerClient.Mcp.SourceSummary.Command" xml:space="preserve">
+    <value>Command</value>
+  </data>
+  <data name="AppServerClient.Mcp.SourceSummary.Http" xml:space="preserve">
+    <value>HTTP</value>
+  </data>
+  <data name="AppServerClient.Mcp.Status.Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="AppServerClient.Mcp.Status.Idle" xml:space="preserve">
+    <value>Idle</value>
+  </data>
+  <data name="AppServerClient.Mcp.Status.SystemError" xml:space="preserve">
+    <value>System error</value>
+  </data>
+  <data name="AppServerClient.Mcp.Status.Unloaded" xml:space="preserve">
+    <value>Unloaded</value>
+  </data>
+  <data name="AppServerClient.Operation.ReplyUnimplementedServerRequest" xml:space="preserve">
+    <value>Reply to unimplemented server request</value>
+  </data>
+  <data name="AppServerClient.Value.Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="AppServerClient.Value.Enabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="AppServerClient.Value.No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="AppServerClient.Value.UnnamedServer" xml:space="preserve">
+    <value>Unnamed server</value>
+  </data>
+  <data name="AppServerClient.Value.Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="AppServerClient.Plan.MessagePrefix" xml:space="preserve">
+    <value>Plan:</value>
+  </data>
+  <data name="AppServerClient.Error.RemoteThreadFilePathUnsupported" xml:space="preserve">
+    <value>Remote Unix session files cannot be deleted through Windows file access yet.</value>
+  </data>
+  <data name="AppServerPathMappingPolicy.Error.PathNotMappableToRemoteMac.Template" xml:space="preserve">
+    <value>Cannot map {0} path to Remote Unix: {1}. Use an absolute Unix path such as /home/name/repo or /Users/name/repo.</value>
+  </data>
+  <data name="CodexRuntime.Status.UsingRemoteMacSsh" xml:space="preserve">
+    <value>Remote Unix SSH Codex runtime will be used.</value>
+  </data>
+  <data name="CodexRuntime.Status.UsingRemoteUnixSsh" xml:space="preserve">
+    <value>Remote Unix SSH Codex runtime will be used.</value>
+  </data>
+  <data name="CodexRuntime.Status.RemoteMacSshRuntimeMissing" xml:space="preserve">
+    <value>Remote Unix SSH runtime is unavailable. Check SSH settings, or switch runtime source in App Server Runtime settings.</value>
+  </data>
+  <data name="CodexRuntime.Status.RemoteUnixSshRuntimeMissing" xml:space="preserve">
+    <value>Remote Unix SSH runtime is unavailable. Check SSH settings, or switch runtime source in App Server Runtime settings.</value>
+  </data>
+  <data name="RemoteMacFileSystemBridge.Error.CommandFailed" xml:space="preserve">
+    <value>Remote SSH command failed.</value>
+  </data>
+  <data name="RemoteSshLocalPortForward.Error.StartFailed" xml:space="preserve">
+    <value>Unable to start SSH port forwarding.</value>
+  </data>
+<data name="CodexRuntimeUpdate.Error.VersionMetadataMissing.Template" xml:space="preserve">
+    <value>Codex runtime metadata was not found for version {0}.</value>
+  </data>
+  <data name="GitCommandRunner.Error.WorkingDirectoryRequired" xml:space="preserve">
+    <value>Working directory cannot be empty.</value>
+  </data>
+  <data name="GitCommandRunner.Error.WorkingDirectoryNotFound" xml:space="preserve">
+    <value>The working directory does not exist.</value>
+  </data>
+  <data name="GitCommandRunner.Error.Timeout" xml:space="preserve">
+    <value>Git command timed out.</value>
+  </data>
+  <data name="GitCommandRunner.Error.CommandFailed" xml:space="preserve">
+    <value>Git command failed.</value>
+  </data>
+  <data name="GitRepositoryService.Error.WorkspacePathRequired" xml:space="preserve">
+    <value>Workspace path cannot be empty.</value>
+  </data>
+  <data name="GitRepositoryService.Error.WorkspaceNotFound" xml:space="preserve">
+    <value>The specified workspace does not exist.</value>
+  </data>
+  <data name="GitRepositoryService.Error.PathsRequired" xml:space="preserve">
+    <value>At least one file path is required.</value>
+  </data>
+  <data name="GitRepositoryService.Error.CommitMessageRequired" xml:space="preserve">
+    <value>Commit message cannot be empty.</value>
+  </data>
+  <data name="GitRepositoryService.Error.CommitRefRequired" xml:space="preserve">
+    <value>Commit ID cannot be empty.</value>
+  </data>
+  <data name="GitRepositoryService.Error.CommitRefInvalid" xml:space="preserve">
+    <value>Commit ID cannot start with a dash.</value>
+  </data>
+  <data name="GitRepositoryService.Error.RevisionInvalid" xml:space="preserve">
+    <value>Revision cannot start with a dash.</value>
+  </data>
+  <data name="GitRepositoryService.Error.StashRefRequired" xml:space="preserve">
+    <value>Stash reference cannot be empty.</value>
+  </data>
+  <data name="GitRepositoryService.Error.StashRefInvalid" xml:space="preserve">
+    <value>Stash reference cannot start with a dash.</value>
+  </data>
+  <data name="GitRepositoryService.Error.ResetModeInvalid" xml:space="preserve">
+    <value>Reset mode is invalid.</value>
+  </data>
+  <data name="GitRepositoryService.Error.BranchRequired" xml:space="preserve">
+    <value>Branch name cannot be empty.</value>
+  </data>
+  <data name="GitRepositoryService.Error.BranchNameInvalid" xml:space="preserve">
+    <value>Branch name cannot start with a dash.</value>
+  </data>
+  <data name="GitRepositoryService.Error.OperationFailed" xml:space="preserve">
+    <value>Git operation failed.</value>
+  </data>
+  <data name="GitRepositoryService.Error.NoSequencerOperation" xml:space="preserve">
+    <value>No merge, rebase, cherry-pick, or revert operation is in progress.</value>
+  </data>
+  <data name="GitRepositoryService.Error.MergeSkipUnsupported" xml:space="preserve">
+    <value>Skip is not supported for merge operations.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.MergeBranch" xml:space="preserve">
+    <value>Merged selected branch into the current branch.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.MergeBranchNoChanges" xml:space="preserve">
+    <value>The current branch already contains the selected branch. No merge was needed.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.MergeBranchSquash" xml:space="preserve">
+    <value>Squashed selected branch into the current branch.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.MergeBranchSquashNoChanges" xml:space="preserve">
+    <value>The current branch already contains the selected branch. No squash merge was needed.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RebaseCurrentBranch" xml:space="preserve">
+    <value>Rebased the current branch onto the selected branch.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RebaseCurrentBranchNoChanges" xml:space="preserve">
+    <value>The current branch is already up to date with the selected branch. No rebase was needed.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Initialize" xml:space="preserve">
+    <value>Initialized repository.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Stage" xml:space="preserve">
+    <value>Staged.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.MarkConflictsResolved" xml:space="preserve">
+    <value>Marked selected conflict(s) as resolved.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StageAll" xml:space="preserve">
+    <value>All changes staged.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Unstage" xml:space="preserve">
+    <value>Unstaged.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.UnstageAll" xml:space="preserve">
+    <value>All changes unstaged.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Commit" xml:space="preserve">
+    <value>Committed staged changes.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RevertCommit" xml:space="preserve">
+    <value>Reverted selected commit.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RevertCommits" xml:space="preserve">
+    <value>Reverted selected commits.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ResetCommit" xml:space="preserve">
+    <value>Rolled back current branch to the selected commit.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.CherryPick" xml:space="preserve">
+    <value>Commit cherry-picked.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.SequencerContinue" xml:space="preserve">
+    <value>Continued current Git operation.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.SequencerAbort" xml:space="preserve">
+    <value>Aborted current Git operation.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.SequencerSkip" xml:space="preserve">
+    <value>Skipped current Git operation step.</value>
+  </data>
+  <data name="GitRepositoryService.Stash.DefaultMessage" xml:space="preserve">
+    <value>MyCodex stash</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StashPush" xml:space="preserve">
+    <value>Saved changes to stash.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StashPushPaths" xml:space="preserve">
+    <value>Saved selected file(s) to stash.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ReadStashDiff" xml:space="preserve">
+    <value>Loaded stash diff.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ReadStashFileDiff" xml:space="preserve">
+    <value>Loaded stash file diff.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StashApply" xml:space="preserve">
+    <value>Applied selected stash.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StashPop" xml:space="preserve">
+    <value>Popped selected stash.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StashDrop" xml:space="preserve">
+    <value>Dropped selected stash.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.CheckoutBranch" xml:space="preserve">
+    <value>Switched branch.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.CheckoutRemoteBranch" xml:space="preserve">
+    <value>Created local tracking branch.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.CreateBranch" xml:space="preserve">
+    <value>Created and switched to new branch.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RenameCurrentBranch" xml:space="preserve">
+    <value>Renamed current branch.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.DeleteBranch" xml:space="preserve">
+    <value>Deleted local branch.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ForceDeleteBranch" xml:space="preserve">
+    <value>Force deleted local branch.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.DeleteRemoteBranch" xml:space="preserve">
+    <value>Deleted remote branch.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Push" xml:space="preserve">
+    <value>Pushed current branch.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.PushForceWithLease" xml:space="preserve">
+    <value>Force-pushed current branch with lease.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.PushSetUpstream" xml:space="preserve">
+    <value>Set upstream and pushed current branch.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.AddRemote" xml:space="preserve">
+    <value>Added remote repository.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.SetRemoteUrl" xml:space="preserve">
+    <value>Updated remote repository URL.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.SetRemotePushUrl" xml:space="preserve">
+    <value>Updated remote repository push URL.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RemoveRemote" xml:space="preserve">
+    <value>Removed remote repository.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.SetUpstream" xml:space="preserve">
+    <value>Updated branch upstream.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.UnsetUpstream" xml:space="preserve">
+    <value>Removed branch upstream.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Fetch" xml:space="preserve">
+    <value>Fetched remote updates.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Pull" xml:space="preserve">
+    <value>Pulled remote updates.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Discard" xml:space="preserve">
+    <value>Discarded selected unstaged change(s).</value>
+  </data>
+  <data name="GitRepositoryService.Operation.DeleteUntracked" xml:space="preserve">
+    <value>Deleted selected untracked file(s).</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ReadDiff" xml:space="preserve">
+    <value>Loaded selected diff.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ReadConflictDetails" xml:space="preserve">
+    <value>Loaded conflict details.</value>
+  </data>
+  <data name="GitRepositoryService.Conflict.EmptyDetails.Template" xml:space="preserve">
+    <value>No conflict diff is available for {0}. Refresh Git status and make sure the file is still conflicted.</value>
+  </data>
+  <data name="GitRepositoryService.Untracked.Placeholder.Template" xml:space="preserve">
+    <value>Untracked file: {0}
+
+This file has not been added to Git yet. Open the file to inspect its current content.</value>
+  </data>
+  <data name="GitRepositoryService.Untracked.Empty.Template" xml:space="preserve">
+    <value>Untracked file: {0}
+
+This file is empty.</value>
+  </data>
+  <data name="GitCloneService.Error.RepositoryUrlRequired" xml:space="preserve">
+    <value>Repository URL cannot be empty.</value>
+  </data>
+  <data name="GitCloneService.Error.TargetParentRequired" xml:space="preserve">
+    <value>Target directory cannot be empty.</value>
+  </data>
+  <data name="GitCloneService.Error.TargetFolderRequired" xml:space="preserve">
+    <value>Target folder name cannot be empty.</value>
+  </data>
+  <data name="GitCloneService.Error.TargetExists" xml:space="preserve">
+    <value>The target folder already exists and is not empty.</value>
+  </data>
+  <data name="GitCloneService.Error.InvalidTargetFolder" xml:space="preserve">
+    <value>Target folder name contains invalid characters.</value>
+  </data>
+  <data name="GitEnvironmentService.Error.ValueRequired" xml:space="preserve">
+    <value>Value cannot be empty.</value>
+  </data>
+  <data name="GitEnvironmentService.Error.Timeout" xml:space="preserve">
+    <value>Command timed out.</value>
+  </data>
+  <data name="GitEnvironmentService.Runtime.LocalWindows" xml:space="preserve">
+    <value>Local Windows</value>
+  </data>
+  <data name="GitEnvironmentService.Value.NotDetected" xml:space="preserve">
+    <value>Not detected</value>
+  </data>
+  <data name="GitHubCli.Status.NotInstalled" xml:space="preserve">
+    <value>GitHub CLI is not installed.</value>
+  </data>
+  <data name="GitHubCli.Status.NotAuthenticated" xml:space="preserve">
+    <value>GitHub CLI is not logged in to GitHub.</value>
+  </data>
+  <data name="GitHubCli.Status.Authenticated" xml:space="preserve">
+    <value>GitHub CLI is logged in to GitHub.</value>
+  </data>
+  <data name="GitHubCli.Error.Timeout" xml:space="preserve">
+    <value>GitHub CLI command timed out.</value>
+  </data>
+  <data name="GitSshKeyService.Details.Directory.Template" xml:space="preserve">
+    <value>SSH directory: {0}</value>
+  </data>
+  <data name="GitSshKeyService.Details.DirectoryMissing" xml:space="preserve">
+    <value>SSH directory was not found.</value>
+  </data>
+  <data name="GitSshKeyService.Details.NoKeys" xml:space="preserve">
+    <value>No public SSH keys were found.</value>
+  </data>
+  <data name="GitSshKeyService.Details.ReadFailed.Template" xml:space="preserve">
+    <value>{0}: failed to read public key: {1}</value>
+  </data>
+  <data name="GitSshKeyService.Details.FingerprintFailed.Template" xml:space="preserve">
+    <value>{0}: failed to read fingerprint: {1}</value>
+  </data>
+  <data name="GitSshKeyService.Details.Key.Template" xml:space="preserve">
+    <value>{0}: {1}; {2}; private: {3}</value>
+  </data>
+  <data name="GitSshKeyService.Value.Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="GitSshKeyService.Value.NoFingerprint" xml:space="preserve">
+    <value>No fingerprint</value>
+  </data>
+  <data name="GitSshKeyService.Value.Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="GitSshKeyService.Value.No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="GitSshKeyService.Error.Timeout" xml:space="preserve">
+    <value>Command timed out.</value>
+  </data>
+  <data name="GitHubCli.Error.RepositoryNameRequired" xml:space="preserve">
+    <value>Repository name cannot be empty.</value>
+  </data>
+  <data name="GitHubCli.Error.RepositoryNameInvalid" xml:space="preserve">
+    <value>Repository name is invalid.</value>
+  </data>
+  <data name="GitRepositoryService.Error.RemoteNameRequired" xml:space="preserve">
+    <value>Remote name cannot be empty.</value>
+  </data>
+  <data name="GitRepositoryService.Error.RemoteNameInvalid" xml:space="preserve">
+    <value>Remote name is invalid.</value>
+  </data>
+  <data name="GitRepositoryService.Error.RemoteUrlRequired" xml:space="preserve">
+    <value>Remote URL cannot be empty.</value>
+  </data>
+  <data name="GitRepositoryService.Error.RemoteUrlInvalid" xml:space="preserve">
+    <value>Remote URL is invalid.</value>
+  </data>
+  <data name="GitRepositoryService.Error.UpstreamRequired" xml:space="preserve">
+    <value>Upstream cannot be empty.</value>
+  </data>
+  <data name="GitRepositoryService.Error.ReadRemotesFailed" xml:space="preserve">
+    <value>Failed to read Git remotes.</value>
+  </data>
+  <data name="AppServerProtocolCapabilities.Error.FeatureNotSupported.Template" xml:space="preserve">
+    <value>{0} is not supported by the current Codex runtime. Switch to a standard or newer runtime to use this feature.</value>
+  </data>
+  <data name="AppServerProtocolCapabilities.Feature.ThisFeature" xml:space="preserve">
+    <value>This feature</value>
+  </data>
+
+  <data name="AppServerClient.McpElicitation.FormRequested.Template" xml:space="preserve"><value>MCP server {0} requested additional input: {1}</value></data>
+  <data name="AppServerClient.McpElicitation.ConfirmationRequested.Template" xml:space="preserve"><value>MCP server {0} requested confirmation: {1}</value></data>
+  <data name="AppServerClient.McpElicitation.UrlRequested.Template" xml:space="preserve"><value>MCP server {0} requested opening a URL: {1}</value></data>
+  <data name="AppServerClient.McpElicitation.UnknownServer" xml:space="preserve"><value>MCP server</value></data>
+  <data name="AppServerClient.McpElicitation.NoMessage" xml:space="preserve"><value>Additional input is required.</value></data>
+  <data name="AppServerClient.McpElicitation.NoConfirmationMessage" xml:space="preserve"><value>Confirmation is required.</value></data>
+  <data name="AppServerClient.McpElicitation.Boolean.True" xml:space="preserve"><value>True</value></data>
+  <data name="AppServerClient.McpElicitation.Boolean.False" xml:space="preserve"><value>False</value></data>
+  <data name="AppServerClient.McpElicitation.Required" xml:space="preserve"><value>Required.</value></data>
+  <data name="AppServerClient.McpElicitation.AllowedValues.Prefix" xml:space="preserve"><value>Allowed values: </value></data>
+  <data name="AppServerClient.McpElicitation.ArrayInputHint" xml:space="preserve"><value>Enter multiple values separated by commas.</value></data>
+  <data name="AppServerClient.Mcp.StartupStatus.Unknown" xml:space="preserve"><value>updated</value></data>
+  <data name="AppServerClient.Mcp.StartupStatusUpdated.Template" xml:space="preserve"><value>MCP server startup status updated: {0}, {1}.</value></data>
+  <data name="AppServerClient.Mcp.StartupStatusUpdatedWithMessage.Template" xml:space="preserve"><value>MCP server startup status updated: {0}, {1}. {2}</value></data>
+  <data name="AppServerClient.Mcp.ReauthenticationRequired.Template" xml:space="preserve"><value>MCP server authentication expired: {0}.</value></data>
+  <data name="AppServerClient.Protocol.ConfigWarning.Template" xml:space="preserve"><value>Configuration warning: {0}</value></data>
+  <data name="AppServerClient.Protocol.ConfigWarning.NoDetails" xml:space="preserve"><value>The runtime reported a configuration warning.</value></data>
+  <data name="AppServerClient.Protocol.DeprecationNotice.Template" xml:space="preserve"><value>Deprecation notice: {0}</value></data>
+  <data name="AppServerClient.Protocol.DeprecationNotice.NoDetails" xml:space="preserve"><value>The runtime reported a deprecation notice.</value></data>
+  <data name="AppServerClient.Protocol.GuardianWarning.Template" xml:space="preserve"><value>Guardian warning: {0}</value></data>
+  <data name="AppServerClient.Protocol.GuardianWarning.NoDetails" xml:space="preserve"><value>The runtime reported a guardian warning.</value></data>
+  <data name="AppServerClient.Protocol.RuntimeWarning.Template" xml:space="preserve"><value>Runtime warning: {0}</value></data>
+  <data name="AppServerClient.Protocol.RuntimeWarning.NoDetails" xml:space="preserve"><value>The runtime reported a warning.</value></data>
+  <data name="AppServerClient.Protocol.ModelRerouted.Template" xml:space="preserve"><value>Model rerouted: {0} -&gt; {1}</value></data>
+  <data name="AppServerClient.Protocol.ModelReroutedWithReason.Template" xml:space="preserve"><value>Model rerouted: {0} -&gt; {1}. {2}</value></data>
+  <data name="AppServerClient.Protocol.ModelRerouted.Message.Template" xml:space="preserve"><value>Model rerouted: {0}</value></data>
+  <data name="AppServerClient.Protocol.ModelRerouted.NoDetails" xml:space="preserve"><value>The runtime rerouted the model.</value></data>
+  <data name="AppServerClient.Protocol.ModelVerification.Template" xml:space="preserve"><value>Model verification: {0}</value></data>
+  <data name="AppServerClient.Protocol.ModelVerification.ModelStatus.Template" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="AppServerClient.Protocol.ModelVerification.NoDetails" xml:space="preserve"><value>The runtime reported a model verification update.</value></data>
+  <data name="AppServerClient.Protocol.UnhandledNotification.Template" xml:space="preserve"><value>Received an unhandled App Server notification: {0}</value></data>
+  <data name="AppServerClient.Protocol.UnhandledNotificationWithMessage.Template" xml:space="preserve"><value>Received an unhandled App Server notification: {0}. {1}</value></data>
+  <data name="AppServerClient.Protocol.UnhandledServerRequest.Template" xml:space="preserve"><value>Received an unhandled App Server request: {0}</value></data>
+  <data name="AppServerClient.Protocol.UnhandledServerRequestWithMessage.Template" xml:space="preserve"><value>Received an unhandled App Server request: {0}. {1}</value></data>
+  <data name="AppServerClient.Protocol.UnknownMethod" xml:space="preserve"><value>(unknown method)</value></data>
+  <data name="GitRepositoryService.Operation.CommitAmend" xml:space="preserve">
+    <value>Amended the previous commit.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ReadCommitDiff" xml:space="preserve">
+    <value>Loaded commit diff.</value>
+  </data>
+  <data name="GitRepositoryService.Error.StatusFailed" xml:space="preserve">
+    <value>Failed to read Git status.</value>
+  </data>
+  <data name="GitRepositoryService.Error.ReadCommitHistoryFailed" xml:space="preserve">
+    <value>Failed to read Git commit history.</value>
+  </data>
+  <data name="GitRepositoryService.Error.ReadBranchesFailed" xml:space="preserve">
+    <value>Failed to read Git branches.</value>
+  </data>
+  <data name="GitRepositoryService.Error.ReadStashesFailed" xml:space="preserve">
+    <value>Failed to read Git stashes.</value>
+  </data>
+  <data name="GitRepositoryService.Error.ReadWorktreesFailed" xml:space="preserve">
+    <value>Failed to read Git worktrees.</value>
+  </data>
+  <data name="GitDiffService.Error.WorkspacePathRequired" xml:space="preserve">
+    <value>Workspace path cannot be empty.</value>
+  </data>
+  <data name="GitDiffService.Error.WorkspaceNotFound" xml:space="preserve">
+    <value>Workspace path does not exist.</value>
+  </data>
+  <data name="GitDiffService.Error.Timeout" xml:space="preserve">
+    <value>Git diff command timed out.</value>
+  </data>
+  <data name="GitDiffService.Error.GitCommandFailed" xml:space="preserve">
+    <value>Git diff command failed.</value>
+  </data>
+  <data name="GitEnvironmentService.Runtime.Wsl" xml:space="preserve">
+    <value>WSL</value>
+  </data>
+  <data name="GitEnvironmentService.Runtime.RemoteUnixSsh" xml:space="preserve">
+    <value>Remote Unix SSH</value>
+  </data>
+  <data name="GitHubCli.Error.CommandFailed" xml:space="preserve">
+    <value>GitHub CLI command failed.</value>
+  </data>
+  <data name="GitHubCli.Error.RemoteInteractiveLoginUnsupported" xml:space="preserve">
+    <value>Interactive GitHub login is not supported in the remote runtime.</value>
+  </data>
+  <data name="WslFileSystemBridge.Error.CommandFailed" xml:space="preserve">
+    <value>WSL file system command failed.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StashBranch" xml:space="preserve">
+    <value>Created branch from selected stash.</value>
+  </data>
+  <data name="GitRepositoryService.Diagnostics.GitVersion.Title" xml:space="preserve"><value>Git executable</value></data>
+  <data name="GitRepositoryService.Diagnostics.GitVersion.Available" xml:space="preserve"><value>Git is available.</value></data>
+  <data name="GitRepositoryService.Diagnostics.GitVersion.Unavailable" xml:space="preserve"><value>Git is not available.</value></data>
+  <data name="GitRepositoryService.Diagnostics.GitVersion.Suggestion" xml:space="preserve"><value>Install Git or check the runtime Git configuration.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Repository.Title" xml:space="preserve"><value>Repository</value></data>
+  <data name="GitRepositoryService.Diagnostics.Repository.Valid" xml:space="preserve"><value>Current workspace is inside a Git work tree.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Repository.Invalid" xml:space="preserve"><value>Current workspace is not a Git repository.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Repository.Suggestion" xml:space="preserve"><value>Initialize a repository or open an existing Git workspace.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Remote.Title" xml:space="preserve"><value>Remotes</value></data>
+  <data name="GitRepositoryService.Diagnostics.Remote.Empty" xml:space="preserve"><value>No remote repositories are configured.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Remote.Suggestion" xml:space="preserve"><value>Add an origin remote before using pull or push workflows.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Upstream.Title" xml:space="preserve"><value>Upstream</value></data>
+  <data name="GitRepositoryService.Diagnostics.Upstream.Empty" xml:space="preserve"><value>Current branch has no upstream.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Upstream.Suggestion" xml:space="preserve"><value>Publish the branch or set an upstream before pulling and pushing normally.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Head.Title" xml:space="preserve"><value>HEAD state</value></data>
+  <data name="GitRepositoryService.Diagnostics.Head.Branch.Template" xml:space="preserve"><value>Current branch: {0}</value></data>
+  <data name="GitRepositoryService.Diagnostics.Head.Detached" xml:space="preserve"><value>Repository is in detached HEAD state.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Head.Suggestion" xml:space="preserve"><value>Switch to a branch before normal development or publishing.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Operation.Title" xml:space="preserve"><value>Unfinished operation</value></data>
+  <data name="GitRepositoryService.Diagnostics.Operation.None" xml:space="preserve"><value>No merge, cherry-pick, or revert operation is in progress.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Operation.Active.Template" xml:space="preserve"><value>A {0} operation is in progress.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Operation.Suggestion" xml:space="preserve"><value>Resolve conflicts, continue, skip, or abort the current operation before starting another Git workflow.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Lock.Title" xml:space="preserve"><value>Lock files</value></data>
+  <data name="GitRepositoryService.Diagnostics.Lock.RuntimeSkipped" xml:space="preserve"><value>Lock file existence cannot be checked directly in this runtime.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Lock.RuntimeSuggestion" xml:space="preserve"><value>If Git reports an index lock, inspect the runtime repository manually before deleting any lock file.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Lock.Exists.Template" xml:space="preserve"><value>Index lock exists: {0}</value></data>
+  <data name="GitRepositoryService.Diagnostics.Lock.None" xml:space="preserve"><value>No index lock file was detected.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Lock.Suggestion" xml:space="preserve"><value>Do not delete the lock file until you confirm no Git process is running.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Ownership.Title" xml:space="preserve"><value>Repository ownership</value></data>
+  <data name="GitRepositoryService.Diagnostics.Ownership.Ok" xml:space="preserve"><value>No safe.directory ownership problem was detected.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Ownership.Suggestion" xml:space="preserve"><value>If you trust this repository, follow the Git error message and add the workspace path to safe.directory.</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.Title" xml:space="preserve"><value>Working tree</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.ReadFailed" xml:space="preserve"><value>Failed to read working tree status.</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.ReadFailedSuggestion" xml:space="preserve"><value>Refresh the Git Workbench and check whether the repository path is still available.</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.Detail.Template" xml:space="preserve"><value>Branch: {0}&#xD;&#xA;Upstream: {1}&#xD;&#xA;Staged: {2}&#xD;&#xA;Unstaged: {3}&#xD;&#xA;Untracked: {4}&#xD;&#xA;Conflicts: {5}&#xD;&#xA;Stashes: {6}&#xD;&#xA;Ahead: {7}&#xD;&#xA;Behind: {8}</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.ConflictSuggestion" xml:space="preserve"><value>Resolve conflicts before committing, pulling, pushing, or continuing sequencer operations.</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.DirtySuggestion" xml:space="preserve"><value>Review the changed files, then commit, stash, or discard intentional changes.</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.BehindSuggestion" xml:space="preserve"><value>Pull or fetch remote updates before continuing work that depends on the latest upstream state.</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.AheadSuggestion" xml:space="preserve"><value>Push local commits when you are ready to publish them.</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.StashSuggestion" xml:space="preserve"><value>Review stashes if you expect a clean temporary-work state.</value></data>
+  <data name="GitRepositoryService.Diagnostics.ObjectDatabase.Title" xml:space="preserve"><value>Object database</value></data>
+  <data name="GitRepositoryService.Diagnostics.ObjectDatabase.Unavailable" xml:space="preserve"><value>Object database statistics are unavailable.</value></data>
+  <data name="GitRepositoryService.Diagnostics.ObjectDatabase.UnavailableSuggestion" xml:space="preserve"><value>Run diagnostics again later, or use the command line if Git reports repository integrity errors.</value></data>
+  <data name="GitRepositoryService.Diagnostics.ObjectDatabase.Empty" xml:space="preserve"><value>No object database statistics were returned.</value></data>
+  <data name="GitRepositoryService.Diagnostics.ObjectDatabase.MaintenanceSuggestion" xml:space="preserve"><value>The repository has many loose objects. Consider running Git maintenance or gc from an advanced maintenance workflow after current Git operations finish.</value></data>
+  <data name="GitRepositoryService.Diagnostics.Value.Unknown" xml:space="preserve"><value>(unknown)</value></data>
+  <data name="GitRepositoryService.Diagnostics.Value.None" xml:space="preserve"><value>(none)</value></data>
+  <data name="GitRepositoryService.Operation.CreateWorktree" xml:space="preserve">
+    <value>Created worktree.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RemoveWorktree" xml:space="preserve">
+    <value>Removed worktree.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.PruneWorktrees" xml:space="preserve">
+    <value>Pruned stale worktree records.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RepositoryIntegrityCheck" xml:space="preserve">
+    <value>Repository integrity check completed.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RepositoryMaintenance" xml:space="preserve">
+    <value>Repository maintenance completed.</value>
+  </data>
+  <data name="GitRepositoryService.Error.WorktreePathRequired" xml:space="preserve">
+    <value>Worktree path cannot be empty.</value>
+  </data>
+  <data name="GitRepositoryService.Error.WorktreePathInvalid" xml:space="preserve">
+    <value>Worktree path cannot start with a dash.</value>
+  </data>  <data name="GitRepositoryService.Operation.RenameBranch" xml:space="preserve">
+    <value>Renamed local branch.</value>
+  </data>
+  <data name="GitRepositoryService.Error.RevisionRequired" xml:space="preserve">
+    <value>Revision cannot be empty.</value>
+  </data>
+  <data name="GitRepositoryService.Error.CompareBranchesFailed" xml:space="preserve">
+    <value>Failed to compare Git branches.</value>
+  </data>  <data name="GitHubCli.Error.RepositoryVisibilityInvalid" xml:space="preserve">
+    <value>Repository visibility is invalid.</value>
+  </data>
+  <data name="GitRepositoryService.Error.PullRequestNumberRequired" xml:space="preserve">
+    <value>Pull request number must be greater than zero.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.CheckoutPullRequest" xml:space="preserve">
+    <value>Checked out pull request.</value>
+  </data>
+  <data name="GitRepositoryService.Operation.FetchPullRequest" xml:space="preserve">
+    <value>Fetched pull request branch.</value>
+  </data>
+    <data name="AutomationService.Error.IdRequired" xml:space="preserve">
+    <value>Automation ID cannot be empty.</value>
+  </data>
+  <data name="AutomationService.Error.NotFound" xml:space="preserve">
+    <value>Automation was not found.</value>
+  </data>
+  <data name="AutomationService.Error.RunNotFound" xml:space="preserve">
+    <value>Automation run was not found.</value>
+  </data>
+  <data name="AutomationService.Error.NameRequired" xml:space="preserve">
+    <value>Automation name cannot be empty.</value>
+  </data>
+  <data name="AutomationService.Error.PromptRequired" xml:space="preserve">
+    <value>Automation prompt cannot be empty.</value>
+  </data>
+  <data name="AutomationService.Error.WorkspacePathRequired" xml:space="preserve">
+    <value>Automation workspace path cannot be empty.</value>
+  </data>
+  <data name="AutomationInputItemPlanner.Error.SkillPathRequired" xml:space="preserve">
+    <value>Automation references a skill without a path: {0}</value>
+  </data>
+  <data name="AutomationInputItemPlanner.Error.PluginPathRequired" xml:space="preserve">
+    <value>Automation references a plugin without a path: {0}</value>
+  </data>
+  <data name="AutomationInputItemPlanner.Error.SkillUnavailable" xml:space="preserve">
+    <value>Automation referenced skill is unavailable: {0}</value>
+  </data>
+  <data name="AutomationInputItemPlanner.Error.PluginUnavailable" xml:space="preserve">
+    <value>Automation referenced plugin is unavailable: {0}</value>
+  </data>
+  <data name="AutomationRunner.Error.AutomationIdRequired" xml:space="preserve">
+    <value>Automation ID cannot be empty.</value>
+  </data>
+  <data name="AutomationRunner.Error.NotFound" xml:space="preserve">
+    <value>Automation was not found.</value>
+  </data>
+  <data name="AutomationRunner.Error.WorkspacePathRequired" xml:space="preserve">
+    <value>Automation workspace path cannot be empty.</value>
+  </data>
+  <data name="AutomationRunner.Status.Canceled" xml:space="preserve">
+    <value>Automation canceled.</value>
+  </data>
+  <data name="AutomationModelResolver.Message.AppServerDefault" xml:space="preserve">
+    <value>the App Server default model</value>
+  </data>
+  <data name="AutomationModelResolver.Message.Fallback.Template" xml:space="preserve">
+    <value>Configured model '{0}' is unavailable for the current authentication source. This run used '{1}' instead.</value>
+  </data>
+  <data name="AutomationRuntimePlanner.Summary.SkippedMissedRun" xml:space="preserve">
+    <value>Skipped missed automation run.</value>
+  </data>
+  <data name="CodingRemote.ThreadOperation.ForkCreated" xml:space="preserve">
+    <value>Fork created.</value>
+  </data>
+  <data name="CodingRemote.ThreadOperation.CompactionStarted" xml:space="preserve">
+    <value>Context compaction started.</value>
+  </data>
+  <data name="OfficeCliInstallation.Status.Ready" xml:space="preserve">
+    <value>OfficeCLI is installed.</value>
+  </data>
+  <data name="OfficeCliInstallation.Status.Partial" xml:space="preserve">
+    <value>OfficeCLI installation finished with missing components.</value>
+  </data>
+  <data name="OfficeCliInstallation.Status.Uninstalled" xml:space="preserve">
+    <value>OfficeCLI was uninstalled.</value>
+  </data>
+  <data name="OfficeCliInstallation.Error.ReleaseAssetMissing" xml:space="preserve">
+    <value>OfficeCLI release assets are incomplete.</value>
+  </data>
+  <data name="OfficeCliInstallation.Error.PackageMissing" xml:space="preserve">
+    <value>OfficeCLI package was not found.</value>
+  </data>
+  <data name="OfficeCliInstallation.Error.ReleaseInvalid" xml:space="preserve">
+    <value>OfficeCLI release response is invalid.</value>
+  </data>
+  <data name="OfficeCliInstallation.Error.ShaMissing" xml:space="preserve">
+    <value>OfficeCLI SHA256 entry was not found.</value>
+  </data>
+  <data name="OfficeCliInstallation.Error.ShaMismatch" xml:space="preserve">
+    <value>OfficeCLI SHA256 verification failed.</value>
+  </data>
+  <data name="OfficeCliInstallation.Error.AllSourcesFailed" xml:space="preserve">
+    <value>OfficeCLI installation failed from GitCode mirror and GitHub official source. GitCode: {0}; GitHub: {1}</value>
+  </data>
+  <data name="AppServerConversationSummaryRequest.Error.ExactlyOneSourceRequired" xml:space="preserve">
+    <value>Exactly one conversation summary source is required.</value>
+  </data>
+  <data name="AppServerCommandTerminalSize.Error.RowsRequired" xml:space="preserve">
+    <value>Terminal rows must be greater than zero.</value>
+  </data>
+  <data name="AppServerCommandTerminalSize.Error.ColumnsRequired" xml:space="preserve">
+    <value>Terminal columns must be greater than zero.</value>
+  </data>
+  <data name="AppServerContextInjectionService.Error.SourceNotAllowed" xml:space="preserve">
+    <value>Context injection source is not allowed.</value>
+  </data>
+  <data name="AppServerClient.Windows.WorldWritableWarning.NoSamples" xml:space="preserve">
+    <value>(no sample paths)</value>
+  </data>
+  <data name="AppServerClient.Windows.WorldWritableWarning.ScanFailed" xml:space="preserve">
+    <value>Windows path permission scan did not complete. Review the diagnostic details.</value>
+  </data>
+  <data name="AppServerClient.Windows.WorldWritableWarning.Template" xml:space="preserve">
+    <value>Windows detected broadly writable paths. Samples: {0}.</value>
+  </data>
+  <data name="AppServerClient.Error.McpResourceUriRequired" xml:space="preserve">
+    <value>MCP resource URI cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.McpToolNameRequired" xml:space="preserve">
+    <value>MCP tool name cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.GuardianEventRequired" xml:space="preserve">
+    <value>Guardian assessment event cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.WorkspacePathRequired" xml:space="preserve">
+    <value>Workspace path cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.AutoApprovalReview.Started.Template" xml:space="preserve">
+    <value>Auto approval review started: {0}; risk: {1}; action: {2}</value>
+  </data>
+  <data name="AppServerClient.AutoApprovalReview.Completed.Template" xml:space="preserve">
+    <value>Auto approval review completed: {0}; status: {1}; risk: {2}; action: {3}</value>
+  </data>
+  <data name="AppServerClient.AutoApprovalReview.UnknownReview" xml:space="preserve">
+    <value>(unknown review)</value>
+  </data>
+  <data name="AppServerClient.AutoApprovalReview.UnknownRisk" xml:space="preserve">
+    <value>unknown</value>
+  </data>
+  <data name="AppServerClient.AutoApprovalReview.UnknownStatus" xml:space="preserve">
+    <value>unknown</value>
+  </data>
+  <data name="AppServerClient.AutoApprovalReview.UnknownAction" xml:space="preserve">
+    <value>Guardian action</value>
+  </data>
+  <data name="AppServerClient.ModerationMetadata.Template" xml:space="preserve">
+    <value>Moderation metadata: {0}</value>
+  </data>
+  <data name="AppServerMcpToolCallMapper.Label.StructuredContent" xml:space="preserve">
+    <value>Structured content:</value>
+  </data>
+  <data name="AppServerMcpToolCallMapper.Label.Metadata" xml:space="preserve">
+    <value>Metadata:</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.Command" xml:space="preserve">
+    <value>Command</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.Execve" xml:space="preserve">
+    <value>Program execution</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.ApplyPatch" xml:space="preserve">
+    <value>Apply patch</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.NetworkAccess" xml:space="preserve">
+    <value>Network access</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.McpToolCall" xml:space="preserve">
+    <value>MCP tool call</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.RequestPermissions" xml:space="preserve">
+    <value>Permission request</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.Unknown" xml:space="preserve">
+    <value>Guardian action</value>
+  </data>
+  <data name="AppServerGitDiffPreferenceService.Operation.AppServerDiffLoaded" xml:space="preserve">
+    <value>Loaded Git diff from App Server.</value>
+  </data>
+  <data name="AppServerClient.Approval.Source.FullAccessMode" xml:space="preserve">
+    <value>full access mode</value>
+  </data>
+  <data name="AppServerClient.Approval.Source.CustomPermission" xml:space="preserve">
+    <value>custom permission</value>
+  </data>
+  <data name="AppServerClient.Approval.Source.CustomCommandPrefix" xml:space="preserve">
+    <value>custom command prefix</value>
+  </data>
+  <data name="AppServerClient.ImageGeneration.Started.Template" xml:space="preserve">
+    <value>Image generation started: {0}</value>
+  </data>
+  <data name="AppServerClient.ImageGeneration.Completed.Template" xml:space="preserve">
+    <value>Image generation completed: {0}</value>
+  </data>
+  <data name="AppServerClient.SubAgent.Activity.Template" xml:space="preserve">
+    <value>Subagent activity ({0}): {1}</value>
+  </data>
+  <data name="AppServerClient.Error.SessionBudgetExceeded" xml:space="preserve">
+    <value>The current session has reached its budget limit.</value>
+  </data>
+  <data name="RemoteRelay.Error.NonLoopbackRequiresTls" xml:space="preserve">
+    <value>Embedded Remote Service requires TLS for local-network access.</value>
+  </data>
+  <data name="RemoteRelay.Error.InvalidCertificateFingerprint" xml:space="preserve">
+    <value>Embedded Remote Service did not return a valid certificate fingerprint.</value>
+  </data>
+  <data name="RemoteRelay.Error.CertificateValidationFailed" xml:space="preserve">
+    <value>Embedded Remote Service certificate validation failed.</value>
+  </data>
+  <data name="RemoteRelay.Error.InvalidInternalEndpoint" xml:space="preserve">
+    <value>Embedded Remote Service did not return a safe loopback endpoint.</value>
+  </data>
+  <data name="SessionFork.UnsupportedAnchor" xml:space="preserve"><value>This runtime does not support forking through a selected turn. Update the runtime or use a full fork.</value></data>
+  <data name="SessionFork.InvalidAnchor" xml:space="preserve"><value>The selected turn is missing or has not finished. Refresh the conversation and choose a finished turn.</value></data>
+  <data name="SessionFork.MissingThread" xml:space="preserve"><value>The fork did not return a new thread ID.</value></data>
+  <data name="SessionFork.NameFailed" xml:space="preserve"><value>Fork {0} was created, but its remote title could not be saved. The new session is available; retry renaming it later.</value></data>
+<data name="AppServerReview.SettingsUnavailable" xml:space="preserve"><value>The review directory or settings could not be applied. The thread may still be active or used by another client. Review was not started.</value></data>
+  <data name="SubAgent.Error.IdentityUnavailable" xml:space="preserve">
+    <value>The subagent identity could not be verified. Nothing was sent.</value>
+  </data>
+  <data name="SubAgent.Error.NotLoaded" xml:space="preserve">
+    <value>The agent is not confirmed idle or running. Ask its parent to resume it, then refresh.</value>
+  </data>
+  <data name="AppServerClient.Approval.Source.FullAccessAutoApprove" xml:space="preserve">
+    <value>automatically approved by Full Access setting</value>
+  </data>
+  <data name="AppServerClient.Error.InvalidHistoryPage" xml:space="preserve">
+    <value>The runtime returned incomplete history or a repeated page cursor. Please retry loading the conversation.</value>
+  </data>
+  <data name="AppServerClient.McpApproval.Decision" xml:space="preserve"><value>Approval choice</value></data>
+  <data name="AppServerClient.McpApproval.Once" xml:space="preserve"><value>Allow once</value></data>
+  <data name="AppServerClient.McpApproval.Session" xml:space="preserve"><value>Allow for this session</value></data>
+  <data name="AppServerClient.McpApproval.Always" xml:space="preserve"><value>Always allow this tool</value></data>
+  <data name="AppServerClient.McpApproval.AlwaysApp" xml:space="preserve"><value>Always allow this app</value></data>
+  <data name="ComputerUse.Status.Ready" xml:space="preserve">
+    <value>Computer Use is ready for this local Windows session.</value>
+  </data>
+  <data name="ComputerUse.Status.PluginDisabled" xml:space="preserve">
+    <value>Computer Use is unavailable: its plugin is disabled or could not be enabled.</value>
+  </data>
+  <data name="ComputerUse.Status.PolicyDenied" xml:space="preserve">
+    <value>Computer Use is disabled by the current policy.</value>
+  </data>
+  <data name="ComputerUse.Status.PolicyUnsupported" xml:space="preserve">
+    <value>Computer Use is unavailable: the managed policy cannot be safely passed to the local executor.</value>
+  </data>
+  <data name="ComputerUse.Status.ConfigConflict" xml:space="preserve">
+    <value>Computer Use is unavailable: the existing node_repl configuration is disabled or conflicts with the verified components.</value>
+  </data>
+  <data name="ComputerUse.Status.ComponentsMissing" xml:space="preserve">
+    <value>Computer Use is unavailable: MyCodex components are missing, damaged, or conflicting. Prepare or reinstall the component package.</value>
+  </data>
+  <data name="ComputerUse.Status.Incompatible" xml:space="preserve">
+    <value>Computer Use is unavailable: the installed runtime or components do not support the required interfaces. Update MyCodex or select a compatible runtime; ordinary chat remains available.</value>
+  </data>
+  <data name="ComputerUse.Status.CleanupFailed" xml:space="preserve">
+    <value>Computer Use stopped, but executor shutdown could not be confirmed. Desktop access remains blocked until MyCodex exits.</value>
+  </data>
+  <data name="ComputerUse.Status.ReconnectRequired" xml:space="preserve">
+    <value>Computer Use is unavailable in this already loaded session. Reconnect the runtime and resume the session to apply its desktop configuration.</value>
+  </data>
+  <data name="ComputerUse.Status.ExecutionFailed" xml:space="preserve">
+    <value>Computer Use stopped after an executor failure. No input was replayed; start a new turn to retry.</value>
+  </data>
+  <data name="ComputerUse.Status.PreparationFailed" xml:space="preserve">
+    <value>Computer Use is unavailable: component or policy preparation failed. Ordinary chat remains available.</value>
+  </data>
+  <data name="ComputerUse.Status.DesktopBusy" xml:space="preserve">
+    <value>Computer Use is busy in another session or MyCodex instance. This request was not queued; retry after that operation finishes.</value>
+  </data>
+  <data name="ComputerUse.Status.GeometryUnavailable" xml:space="preserve">
+    <value>Computer Use could not click because screenshot geometry is unavailable. The session remains active; capture a fresh screenshot before choosing another action.</value>
+  </data>
+  <data name="ComputerUse.Status.WindowObserverNotReady" xml:space="preserve">
+    <value>The official Computer Use executor could not initialize its window-opened observer. The session remains active; inspect the current windows before attempting another action.</value>
+  </data>
+  <data name="ComputerUse.Status.TargetObscured" xml:space="preserve">
+    <value>Computer Use did not click because another window covers the target. The session remains active; activate the target and capture a fresh screenshot before choosing another action.</value>
+  </data>
+  <data name="ComputerUse.Status.ObservationStale" xml:space="preserve">
+    <value>Computer Use detected user input after the previous observation. The session remains active; read the window again before choosing another action.</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadReferencedByFork" xml:space="preserve">
+    <value>Cannot permanently delete this history because a forked conversation still references it. You can archive the conversation instead.</value>
+  </data>
+  <data name="SessionArchive.Unconfirmed" xml:space="preserve">
+    <value>The runtime has not confirmed that this conversation was archived. It remains in the list.</value>
+  </data>
+  <data name="Automation.Target.ScopeMismatch" xml:space="preserve">
+    <value>This automation does not belong to the current target or uses an incompatible working directory.</value>
+  </data>
+  <data name="Automation.Target.AlreadyRunning" xml:space="preserve">
+    <value>This automation is already running.</value>
+  </data>
+  <data name="Automation.Assignment.NotFound" xml:space="preserve">
+    <value>The pending automation no longer exists.</value>
+  </data>
+  <data name="Automation.Assignment.Reserved" xml:space="preserve">
+    <value>This automation is already being assigned to another target. Retry with that target.</value>
+  </data>
+  <data name="UpdateManifest.Error.InsecureUrl" xml:space="preserve">
+    <value>Update URL must use HTTPS: {0}</value>
+  </data>
+  <data name="RemoteRelay.Error.OwnershipUnreadable" xml:space="preserve">
+    <value>Phone connection state could not be read. Details are in the application log; please send it for support. The existing service was left unchanged.</value>
+  </data>
+  <data name="RemoteRelay.Error.RecoveryBusy" xml:space="preserve">
+    <value>Phone connection needs to repair its state. Exit all MyCodex windows and open only one target to retry. If this continues, restart Windows and retry.</value>
+  </data>
+  <data name="AppServerClient.Error.ResumeConfigUnavailable" xml:space="preserve">
+    <value>The current provider configuration could not be read. The conversation was not resumed. Reconnect and try again.</value>
+  </data>
+  <data name="TargetExitAll.Error.NotReady" xml:space="preserve">
+    <value>Some targets are starting, closing, or cannot be inspected. Finish those operations and retry.</value>
+  </data>
+  <data name="AppUpdate.Error.InstallerMissing" xml:space="preserve">
+    <value>The downloaded installer is unavailable. Download the update again.</value>
+  </data>
+</root>

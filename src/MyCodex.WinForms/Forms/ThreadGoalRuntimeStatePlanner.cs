@@ -1,0 +1,19 @@
+using System;
+
+namespace MyCodex.WinForms.Forms
+{
+    internal static class ThreadGoalRuntimeStatePlanner
+    {
+        internal static string ResolveEffectiveStatus(string persistedStatus, bool isThreadRunning)
+        {
+            if (!isThreadRunning || string.IsNullOrWhiteSpace(persistedStatus))
+            {
+                return persistedStatus;
+            }
+
+            return string.Equals(persistedStatus, "paused", StringComparison.OrdinalIgnoreCase)
+                ? "active"
+                : persistedStatus;
+        }
+    }
+}

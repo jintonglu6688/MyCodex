@@ -1,0 +1,29 @@
+namespace MyCodex.WinForms.Theming
+{
+    internal enum UiGlyph
+    {
+        Command,
+        Attach,
+        Send,
+        Stop,
+        Workspace,
+        NewSession,
+        Model,
+        User,
+        Codex,
+        System,
+        Processing,
+        CommandOutput,
+        FileChange,
+        Approval,
+        Account,
+        Error,
+        Info,
+        Search,
+        Refresh,
+        Download,
+        Delete,
+        Ok,
+        Cancel
+    }
+}

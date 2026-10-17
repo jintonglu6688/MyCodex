@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <Version>8.0.2</Version>
+    <AssemblyVersion>8.0.2.0</AssemblyVersion>
+    <FileVersion>8.0.2.0</FileVersion>
+    <InformationalVersion>8.0.2</InformationalVersion>
+    <AssemblyInformationalVersion>8.0.2</AssemblyInformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+</Project>

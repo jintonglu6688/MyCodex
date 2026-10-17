@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D6208EEE-8EAE-426B-BD02-1F18C7418D60}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCodex.Shared", "src\MyCodex.Shared\MyCodex.Shared.csproj", "{EA0B770F-79C0-47C7-A8B2-07314F8F4812}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCodex.Domain", "src\MyCodex.Domain\MyCodex.Domain.csproj", "{41416181-351C-4A1E-8DE8-38F26E5378F4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCodex.Application", "src\MyCodex.Application\MyCodex.Application.csproj", "{E48A1426-E6C0-4322-BBCF-4789F7EAE56B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCodex.Infrastructure", "src\MyCodex.Infrastructure\MyCodex.Infrastructure.csproj", "{92620610-A118-48CA-ADCE-2E98AEBB39F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCodex.WinForms", "src\MyCodex.WinForms\MyCodex.WinForms.csproj", "{A0A56B14-F94F-4673-B89D-A777663A15D4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{2D33F9A0-4CAF-414D-B002-ABEED60F7D3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCodex.Application.Tests", "tests\MyCodex.Application.Tests\MyCodex.Application.Tests.csproj", "{6B9FDD4E-8794-413B-8E9F-F4BC4C82C4B0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EA0B770F-79C0-47C7-A8B2-07314F8F4812}.Debug|x64.ActiveCfg = Debug|x64
+		{EA0B770F-79C0-47C7-A8B2-07314F8F4812}.Debug|x64.Build.0 = Debug|x64
+		{EA0B770F-79C0-47C7-A8B2-07314F8F4812}.Release|x64.ActiveCfg = Release|x64
+		{EA0B770F-79C0-47C7-A8B2-07314F8F4812}.Release|x64.Build.0 = Release|x64
+		{41416181-351C-4A1E-8DE8-38F26E5378F4}.Debug|x64.ActiveCfg = Debug|x64
+		{41416181-351C-4A1E-8DE8-38F26E5378F4}.Debug|x64.Build.0 = Debug|x64
+		{41416181-351C-4A1E-8DE8-38F26E5378F4}.Release|x64.ActiveCfg = Release|x64
+		{41416181-351C-4A1E-8DE8-38F26E5378F4}.Release|x64.Build.0 = Release|x64
+		{E48A1426-E6C0-4322-BBCF-4789F7EAE56B}.Debug|x64.ActiveCfg = Debug|x64
+		{E48A1426-E6C0-4322-BBCF-4789F7EAE56B}.Debug|x64.Build.0 = Debug|x64
+		{E48A1426-E6C0-4322-BBCF-4789F7EAE56B}.Release|x64.ActiveCfg = Release|x64
+		{E48A1426-E6C0-4322-BBCF-4789F7EAE56B}.Release|x64.Build.0 = Release|x64
+		{92620610-A118-48CA-ADCE-2E98AEBB39F2}.Debug|x64.ActiveCfg = Debug|x64
+		{92620610-A118-48CA-ADCE-2E98AEBB39F2}.Debug|x64.Build.0 = Debug|x64
+		{92620610-A118-48CA-ADCE-2E98AEBB39F2}.Release|x64.ActiveCfg = Release|x64
+		{92620610-A118-48CA-ADCE-2E98AEBB39F2}.Release|x64.Build.0 = Release|x64
+		{A0A56B14-F94F-4673-B89D-A777663A15D4}.Debug|x64.ActiveCfg = Debug|x64
+		{A0A56B14-F94F-4673-B89D-A777663A15D4}.Debug|x64.Build.0 = Debug|x64
+		{A0A56B14-F94F-4673-B89D-A777663A15D4}.Release|x64.ActiveCfg = Release|x64
+		{A0A56B14-F94F-4673-B89D-A777663A15D4}.Release|x64.Build.0 = Release|x64
+		{6B9FDD4E-8794-413B-8E9F-F4BC4C82C4B0}.Debug|x64.ActiveCfg = Debug|x64
+		{6B9FDD4E-8794-413B-8E9F-F4BC4C82C4B0}.Debug|x64.Build.0 = Debug|x64
+		{6B9FDD4E-8794-413B-8E9F-F4BC4C82C4B0}.Release|x64.ActiveCfg = Release|x64
+		{6B9FDD4E-8794-413B-8E9F-F4BC4C82C4B0}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EA0B770F-79C0-47C7-A8B2-07314F8F4812} = {D6208EEE-8EAE-426B-BD02-1F18C7418D60}
+		{41416181-351C-4A1E-8DE8-38F26E5378F4} = {D6208EEE-8EAE-426B-BD02-1F18C7418D60}
+		{E48A1426-E6C0-4322-BBCF-4789F7EAE56B} = {D6208EEE-8EAE-426B-BD02-1F18C7418D60}
+		{92620610-A118-48CA-ADCE-2E98AEBB39F2} = {D6208EEE-8EAE-426B-BD02-1F18C7418D60}
+		{A0A56B14-F94F-4673-B89D-A777663A15D4} = {D6208EEE-8EAE-426B-BD02-1F18C7418D60}
+		{6B9FDD4E-8794-413B-8E9F-F4BC4C82C4B0} = {2D33F9A0-4CAF-414D-B002-ABEED60F7D3E}
+	EndGlobalSection
+EndGlobal

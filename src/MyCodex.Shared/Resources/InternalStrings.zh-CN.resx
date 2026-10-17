@@ -1,0 +1,1685 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="WorkspaceService.Error.WorkspacePathRequired" xml:space="preserve">
+    <value>工作区路径不能为空。</value>
+  </data>
+  <data name="WorkspaceService.Error.WorkspaceNotFound" xml:space="preserve">
+    <value>指定的工作区不存在。</value>
+  </data>
+  <data name="WorkspaceService.Value.PathUnavailable" xml:space="preserve">
+    <value>(路径不可用)</value>
+  </data>
+  <data name="WorkspaceService.Value.HistoricalWorkspace" xml:space="preserve">
+    <value>(历史工作区)</value>
+  </data>
+  <data name="WorkspaceService.Value.NotGitRepository" xml:space="preserve">
+    <value>(非 Git 仓库)</value>
+  </data>
+  <data name="WorkspaceService.Value.UnknownBranch" xml:space="preserve">
+    <value>(未知分支)</value>
+  </data>
+  <data name="WorkspaceService.Value.DetachedHead" xml:space="preserve">
+    <value>(分离头指针)</value>
+  </data>
+  <data name="SessionService.Title.DefaultSession.Template" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="SessionService.Title.HistorySession.Template" xml:space="preserve">
+    <value>{0} 历史会话</value>
+  </data>
+  <data name="AppServerReviewTarget.Error.BaseBranchRequired" xml:space="preserve">
+    <value>审核基线分支不能为空。</value>
+  </data>
+  <data name="AppServerReviewTarget.Error.CommitShaRequired" xml:space="preserve">
+    <value>审核提交哈希不能为空。</value>
+  </data>
+  <data name="AppServerReviewTarget.Error.CustomInstructionsRequired" xml:space="preserve">
+    <value>自定义审核说明不能为空。</value>
+  </data>
+  <data name="AppServerReviewTarget.Error.UnsupportedTarget" xml:space="preserve">
+    <value>不支持的审核目标。</value>
+  </data>
+  <data name="AppServerLaunchInfo.Error.ExecutablePathRequired" xml:space="preserve">
+    <value>可执行文件路径不能为空。</value>
+  </data>
+  <data name="AppConfigService.Error.VersionRequired" xml:space="preserve">
+    <value>版本号不能为空。</value>
+  </data>
+  <data name="AppConfigService.Error.PlatformRequired" xml:space="preserve">
+    <value>平台不能为空。</value>
+  </data>
+  <data name="AppConfigService.Error.TargetPlatformRequired" xml:space="preserve">
+    <value>目标平台不能为空。</value>
+  </data>
+  <data name="AppConfigService.Error.RuntimePathSegmentInvalid" xml:space="preserve">
+    <value>运行时路径段无效。</value>
+  </data>
+  <data name="TtsNativeLibrary.Error.DllPathRequired" xml:space="preserve">
+    <value>DLL 路径不能为空。</value>
+  </data>
+  <data name="TtsNativeLibrary.Error.EntryPointRequired" xml:space="preserve">
+    <value>入口点名称不能为空。</value>
+  </data>
+  <data name="TtsNativeLibrary.Error.LibraryNotLoaded" xml:space="preserve">
+    <value>DLL 尚未加载。</value>
+  </data>
+  <data name="ScreenReader.Error.NoAvailableService" xml:space="preserve">
+    <value>当前没有可用的朗读接口。</value>
+  </data>
+  <data name="ScreenReader.Error.SpeakTextRequired" xml:space="preserve">
+    <value>朗读文本不能为空。</value>
+  </data>
+  <data name="Common.Value.UnknownError" xml:space="preserve">
+    <value>未知错误</value>
+  </data>
+  <data name="CodexRuntime.Error.NoAvailableRuntime" xml:space="preserve">
+    <value>未检测到可用的 Codex 运行时。</value>
+  </data>
+  <data name="CodexRuntime.Error.ExecutablePathRequired" xml:space="preserve">
+    <value>可执行文件路径不能为空。</value>
+  </data>
+  <data name="CodexRuntime.Error.ExecutableNotFound" xml:space="preserve">
+    <value>未找到 Codex 可执行文件。</value>
+  </data>
+  <data name="CodexRuntime.Error.UnableToStartExecutable" xml:space="preserve">
+    <value>无法启动 Codex 可执行文件。</value>
+  </data>
+  <data name="CodexRuntime.Error.VerificationFailed.Template" xml:space="preserve">
+    <value>Codex 校验失败：{0}</value>
+  </data>
+  <data name="CodexRuntime.Status.NoAvailableRuntime" xml:space="preserve">
+    <value>未检测到可用的 Codex 运行时。请在 App Server 运行时设置中选择运行时来源。</value>
+  </data>
+  <data name="CodexRuntime.Status.BundledRuntimeMissing" xml:space="preserve">
+    <value>内置 Codex 运行时缺失。请重新安装 MyCodex，或在 App Server 运行时设置中切换到系统、自定义或 WSL。</value>
+  </data>
+  <data name="CodexRuntime.Status.SystemRuntimeMissing" xml:space="preserve">
+    <value>未找到系统 Codex。请在 App Server 运行时设置中切换到内置、自定义或 WSL。</value>
+  </data>
+  <data name="CodexRuntime.Status.CustomRuntimeMissing" xml:space="preserve">
+    <value>指定的 Codex 可执行文件不可用。请重新选择文件，或在 App Server 运行时设置中切换来源。</value>
+  </data>
+  <data name="CodexRuntime.Status.WslRuntimeMissing" xml:space="preserve">
+    <value>WSL Codex 运行时不可用。请检查 WSL 设置，或在 App Server 运行时设置中切换来源。</value>
+  </data>
+  <data name="CodexRuntime.Status.UsingCustomExecutable" xml:space="preserve">
+    <value>将使用你指定的 Codex 可执行文件。</value>
+  </data>
+  <data name="CodexRuntime.Status.UsingBundledRuntime.Template" xml:space="preserve">
+    <value>将使用内置 Codex 运行时（{0}）。</value>
+  </data>
+  <data name="CodexRuntime.Status.UsingSystemCodex" xml:space="preserve">
+    <value>将使用系统已安装的 Codex。</value>
+  </data>
+  <data name="CodexRuntime.Status.UsingWslCodex" xml:space="preserve">
+    <value>将使用 WSL Codex 运行时。</value>
+  </data>
+  <data name="CodexRuntime.Status.AvailableRuntimeDetected" xml:space="preserve">
+    <value>已检测到可用的 Codex 运行时。</value>
+  </data>
+  <data name="CodexRuntime.Error.WslExecutableNotFound" xml:space="preserve">
+    <value>未找到 wsl.exe。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Progress.CheckingLatest" xml:space="preserve">
+    <value>正在检查最新 Codex 运行时...</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Progress.Downloading.Template" xml:space="preserve">
+    <value>正在下载 Codex 运行时 {0}...</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Progress.Verifying" xml:space="preserve">
+    <value>正在校验 Codex 运行时包...</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Progress.Extracting" xml:space="preserve">
+    <value>正在解压 Codex 运行时包...</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Progress.Installing" xml:space="preserve">
+    <value>正在安装 Codex 运行时...</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.IntegrityCheckFailed" xml:space="preserve">
+    <value>Codex 运行时包完整性校验失败。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.ExecutableMissing.Template" xml:space="preserve">
+    <value>Codex 运行时包中未包含 {0}。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.LatestVersionMissing" xml:space="preserve">
+    <value>Codex 运行时元数据中没有最新版本号。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.UnexpectedPackageName.Template" xml:space="preserve">
+    <value>Codex 运行时包名称“{0}”不符合预期，应为“{1}”。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.ExtractFailed" xml:space="preserve">
+    <value>Codex 运行时包解压失败。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.MetadataMissing.Template" xml:space="preserve">
+    <value>Codex 运行时元数据中没有 {0}。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.UnsafeArchiveEntry" xml:space="preserve">
+    <value>Codex 运行时归档中包含不安全的条目路径。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.InstallPathEscaped" xml:space="preserve">
+    <value>Codex 运行时安装路径超出捆绑运行时目录。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.MutationBusy" xml:space="preserve">
+    <value>另一个窗口正在更新此共享 Codex 运行时，请完成后重试。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.RuntimeInUse" xml:space="preserve">
+    <value>此 Codex 运行时仍在使用，请正常退出使用它的目标后再替换此版本。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.RuntimeUseUnknown" xml:space="preserve">
+    <value>无法核验哪些进程正在使用 Codex 运行时，不会更改当前检查的版本。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.UnsafeRuntimeLink" xml:space="preserve">
+    <value>Codex 运行时路径不能包含符号链接或目录联接。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.ManifestChanged" xml:space="preserve">
+    <value>安装期间运行时更新信息发生变化，请重新检查更新。</value>
+  </data>
+  <data name="UpdatePackage.Error.FileNameMissing" xml:space="preserve">
+    <value>更新资产文件名缺失。</value>
+  </data>
+  <data name="UpdatePackage.Error.FileNameInvalid" xml:space="preserve">
+    <value>更新资产文件名不能包含路径。</value>
+  </data>
+  <data name="UpdatePackage.Error.DestinationEscaped" xml:space="preserve">
+    <value>更新资产目标路径超出下载目录。</value>
+  </data>
+  <data name="UpdatePackage.Error.SizeMismatch.Template" xml:space="preserve">
+    <value>更新资产大小不匹配。预期 {0} 字节，实际 {1} 字节。</value>
+  </data>
+  <data name="UpdatePackage.Error.Sha256Missing" xml:space="preserve">
+    <value>更新资产 SHA256 缺失。</value>
+  </data>
+  <data name="UpdatePackage.Error.Sha256Mismatch" xml:space="preserve">
+    <value>更新资产 SHA256 校验失败。</value>
+  </data>
+  <data name="AppServerPathMappingPolicy.Error.PathNotMappableToWsl.Template" xml:space="preserve">
+    <value>无法将{0}路径映射到 WSL：{1}。请使用 E:\Repo 这样的 Windows 磁盘路径，WSL 可通过 /mnt/e 访问。</value>
+  </data>
+  <data name="ByCtrl.Error.LibraryNotFound.Template" xml:space="preserve">
+    <value>未找到 {0}。</value>
+  </data>
+  <data name="ByCtrl.Error.LoadFailed.Prefix" xml:space="preserve">
+    <value>加载 byctrl 失败：</value>
+  </data>
+  <data name="ByCtrl.Error.VersionMismatch.Prefix" xml:space="preserve">
+    <value>byctrl 接口版本不匹配：</value>
+  </data>
+  <data name="ByCtrl.Error.BitnessMismatch.Prefix" xml:space="preserve">
+    <value>byctrl 位数不匹配：</value>
+  </data>
+  <data name="ByCtrl.Error.ReadStateFailed.Prefix" xml:space="preserve">
+    <value>读取朗读服务状态失败：</value>
+  </data>
+  <data name="ByCtrl.Error.ReadDetailStateFailed.Prefix" xml:space="preserve">
+    <value>读取朗读服务详细状态失败：</value>
+  </data>
+  <data name="ByCtrl.Error.SpeakTextRequired" xml:space="preserve">
+    <value>朗读文本不能为空。</value>
+  </data>
+  <data name="ByCtrl.Error.SpeakInvokeFailed.Prefix" xml:space="preserve">
+    <value>调用朗读服务失败：</value>
+  </data>
+  <data name="ByCtrl.Error.StopFailed.Prefix" xml:space="preserve">
+    <value>停止朗读失败：</value>
+  </data>
+  <data name="ByCtrl.Error.WriteConfigFailed.Prefix" xml:space="preserve">
+    <value>更新 byctrl 配置失败：</value>
+  </data>
+  <data name="ByCtrl.Operation.Initialize" xml:space="preserve">
+    <value>初始化</value>
+  </data>
+  <data name="ByCtrl.Operation.Speak" xml:space="preserve">
+    <value>朗读</value>
+  </data>
+  <data name="ByCtrl.Operation.Stop" xml:space="preserve">
+    <value>停止朗读</value>
+  </data>
+  <data name="ByCtrl.Error.OperationInvalidArgument.Template" xml:space="preserve">
+    <value>{0}失败：参数无效。</value>
+  </data>
+  <data name="ByCtrl.Error.OperationUnavailable.Template" xml:space="preserve">
+    <value>{0}失败：保益悦听朗读服务不可用。</value>
+  </data>
+  <data name="ByCtrl.Error.OperationFailed.Template" xml:space="preserve">
+    <value>{0}失败。</value>
+  </data>
+  <data name="Nvda.Error.LibraryNotFound.Template" xml:space="preserve">
+    <value>未找到 {0}。</value>
+  </data>
+  <data name="Nvda.Error.CommunicationFailed" xml:space="preserve">
+    <value>无法与 NVDA 通信</value>
+  </data>
+  <data name="Nvda.Error.ReadStateFailed.Prefix" xml:space="preserve">
+    <value>检测 NVDA 状态失败：</value>
+  </data>
+  <data name="Nvda.Error.SpeakTextRequired" xml:space="preserve">
+    <value>朗读文本不能为空。</value>
+  </data>
+  <data name="Nvda.Error.StopExistingSpeechFailed" xml:space="preserve">
+    <value>停止 NVDA 现有朗读失败</value>
+  </data>
+  <data name="Nvda.Error.SpeakInvokeFailed" xml:space="preserve">
+    <value>调用 NVDA 朗读失败</value>
+  </data>
+  <data name="Nvda.Error.SpeakInvokeFailed.Prefix" xml:space="preserve">
+    <value>调用 NVDA 朗读失败：</value>
+  </data>
+  <data name="Nvda.Error.StopFailed" xml:space="preserve">
+    <value>停止 NVDA 朗读失败</value>
+  </data>
+  <data name="Nvda.Error.StopFailed.Prefix" xml:space="preserve">
+    <value>停止 NVDA 朗读失败：</value>
+  </data>
+  <data name="Nvda.Error.LoadFailed.Prefix" xml:space="preserve">
+    <value>加载 NVDA 接口失败：</value>
+  </data>
+  <data name="Nvda.Error.VersionMismatch.Prefix" xml:space="preserve">
+    <value>NVDA 接口版本不匹配：</value>
+  </data>
+  <data name="Nvda.Error.BitnessMismatch.Prefix" xml:space="preserve">
+    <value>NVDA 接口位数不匹配：</value>
+  </data>
+  <data name="Nvda.Error.WithSystemMessage.Template" xml:space="preserve">
+    <value>{0}：{1}</value>
+  </data>
+  <data name="Nvda.Error.WithCode.Template" xml:space="preserve">
+    <value>{0}：错误码 {1}</value>
+  </data>
+  <data name="Zdsr.Error.LibraryNotFound.Template" xml:space="preserve">
+    <value>未找到 {0}。</value>
+  </data>
+  <data name="Zdsr.Error.LoadFailed.Prefix" xml:space="preserve">
+    <value>加载争渡读屏接口失败：</value>
+  </data>
+  <data name="Zdsr.Error.VersionMismatch.Prefix" xml:space="preserve">
+    <value>争渡读屏接口版本不匹配：</value>
+  </data>
+  <data name="Zdsr.Error.BitnessMismatch.Prefix" xml:space="preserve">
+    <value>争渡读屏接口位数不匹配：</value>
+  </data>
+  <data name="Zdsr.Error.NotRunningOrUnauthorized" xml:space="preserve">
+    <value>争渡读屏没有运行或没有授权。</value>
+  </data>
+  <data name="Zdsr.Error.VersionMismatch" xml:space="preserve">
+    <value>争渡读屏接口版本不匹配。</value>
+  </data>
+  <data name="Zdsr.Error.ReadStateFailed.Prefix" xml:space="preserve">
+    <value>读取争渡读屏状态失败：</value>
+  </data>
+  <data name="Zdsr.Error.SpeakTextRequired" xml:space="preserve">
+    <value>朗读文本不能为空。</value>
+  </data>
+  <data name="Zdsr.Error.SpeakInvokeFailed.Prefix" xml:space="preserve">
+    <value>调用争渡读屏失败：</value>
+  </data>
+  <data name="Zdsr.Error.StopFailed.Prefix" xml:space="preserve">
+    <value>停止争渡读屏朗读失败：</value>
+  </data>
+  <data name="Zdsr.Error.InitializeFailed" xml:space="preserve">
+    <value>初始化争渡读屏失败。</value>
+  </data>
+  <data name="Zdsr.Error.SpeakFailed" xml:space="preserve">
+    <value>争渡读屏朗读失败。</value>
+  </data>
+  <data name="AppServerClient.Account.LoginCompleted" xml:space="preserve">
+    <value>登录完成。</value>
+  </data>
+  <data name="AppServerClient.Account.LoginFailed" xml:space="preserve">
+    <value>登录失败。</value>
+  </data>
+  <data name="AppServerClient.Account.StatusUpdated" xml:space="preserve">
+    <value>账号状态已更新。</value>
+  </data>
+  <data name="AppServerClient.Account.StatusUpdatedWithMode.Template" xml:space="preserve">
+    <value>账号状态已更新：{0}{1}</value>
+  </data>
+  <data name="AppServerClient.Approval.Action.AllowForSession" xml:space="preserve">
+    <value>本次会话已允许</value>
+  </data>
+  <data name="AppServerClient.Approval.Action.AllowOnce" xml:space="preserve">
+    <value>已允许一次</value>
+  </data>
+  <data name="AppServerClient.Approval.Action.Rejected" xml:space="preserve">
+    <value>已拒绝</value>
+  </data>
+  <data name="AppServerClient.Approval.Command.Requested.Template" xml:space="preserve">
+    <value>收到命令审批请求：{0}</value>
+  </data>
+  <data name="AppServerClient.Approval.Command.Resolved.Template" xml:space="preserve">
+    <value>{0}命令审批：{1}</value>
+  </data>
+  <data name="AppServerClient.Approval.CommandActions.Prefix" xml:space="preserve">
+    <value>命令动作：</value>
+  </data>
+  <data name="AppServerClient.Approval.FileChange.Requested" xml:space="preserve">
+    <value>收到文件变更审批请求。</value>
+  </data>
+  <data name="AppServerClient.Approval.FileChange.RequestedWithReason.Prefix" xml:space="preserve">
+    <value>收到文件变更审批请求：</value>
+  </data>
+  <data name="AppServerClient.Approval.FileChange.ResolvedSuffix" xml:space="preserve">
+    <value>文件变更审批。</value>
+  </data>
+  <data name="AppServerClient.Approval.PermissionRequestRejected" xml:space="preserve">
+    <value>权限请求已拒绝。</value>
+  </data>
+  <data name="AppServerClient.Approval.Permissions.Requested" xml:space="preserve">
+    <value>收到权限审批请求。</value>
+  </data>
+  <data name="AppServerClient.Approval.Permissions.RequestedWithReason.Prefix" xml:space="preserve">
+    <value>收到权限审批请求：</value>
+  </data>
+  <data name="AppServerClient.Approval.Permissions.ResolvedSuffix" xml:space="preserve">
+    <value>权限审批。</value>
+  </data>
+  <data name="AppServerClient.Approval.Requested" xml:space="preserve">
+    <value>收到审批请求。</value>
+  </data>
+  <data name="AppServerClient.Approval.ResolvedSuffix" xml:space="preserve">
+    <value>审批请求。</value>
+  </data>
+  <data name="AppServerClient.Approval.WriteRoot.Prefix" xml:space="preserve">
+    <value>写入根目录：</value>
+  </data>
+  <data name="AppServerClient.Attachment.File.DefaultName" xml:space="preserve">
+    <value>文件</value>
+  </data>
+  <data name="AppServerClient.Attachment.File.Multi.Template" xml:space="preserve">
+    <value>已附加 {0} 个文件：{1}</value>
+  </data>
+  <data name="AppServerClient.Attachment.File.Single.Template" xml:space="preserve">
+    <value>已附加 1 个文件：{0}</value>
+  </data>
+  <data name="AppServerClient.Attachment.Image.DefaultName" xml:space="preserve">
+    <value>图像</value>
+  </data>
+  <data name="AppServerClient.Attachment.Image.Multi.Template" xml:space="preserve">
+    <value>已附加 {0} 张图像：{1}</value>
+  </data>
+  <data name="AppServerClient.Attachment.Image.Single.Template" xml:space="preserve">
+    <value>已附加 1 张图像：{0}</value>
+  </data>
+  <data name="AppServerClient.Command.CompletedSummary.Template" xml:space="preserve">
+    <value>命令执行完成：{0}，状态：{1}{2}</value>
+  </data>
+  <data name="AppServerClient.Command.ExitCodeSuffix.Template" xml:space="preserve">
+    <value>，退出码：{0}</value>
+  </data>
+  <data name="AppServerClient.ConfigSource.LegacyManaged.Prefix" xml:space="preserve">
+    <value>旧版托管配置：</value>
+  </data>
+  <data name="AppServerClient.ConfigSource.LegacyMdmManaged" xml:space="preserve">
+    <value>旧版 MDM 托管配置</value>
+  </data>
+  <data name="AppServerClient.ConfigSource.Mdm.Template" xml:space="preserve">
+    <value>MDM：{0}/{1}</value>
+  </data>
+  <data name="AppServerClient.ConfigSource.Project.Prefix" xml:space="preserve">
+    <value>项目配置：</value>
+  </data>
+  <data name="AppServerClient.ConfigSource.SessionArguments" xml:space="preserve">
+    <value>会话参数</value>
+  </data>
+  <data name="AppServerClient.ConfigSource.System.Prefix" xml:space="preserve">
+    <value>系统配置：</value>
+  </data>
+  <data name="AppServerClient.ConfigSource.UnknownLayer" xml:space="preserve">
+    <value>未知配置层</value>
+  </data>
+  <data name="AppServerClient.ConfigSource.User.Prefix" xml:space="preserve">
+    <value>用户配置：</value>
+  </data>
+  <data name="AppServerClient.Error.ApprovalRequestIdRequired" xml:space="preserve">
+    <value>审批请求 ID 不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.AppServerExited" xml:space="preserve">
+    <value>Codex App Server 已退出。</value>
+  </data>
+  <data name="AppServerClient.Error.BatchConfigEditsRequired" xml:space="preserve">
+    <value>批量配置编辑不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.CommandRequired" xml:space="preserve">
+    <value>命令不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.CommandTimedOut" xml:space="preserve">
+    <value>命令执行超时。</value>
+  </data>
+  <data name="AppServerClient.Error.ConfigKeyPathRequired" xml:space="preserve">
+    <value>配置键路径不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.ConfigMergeStrategyRequired" xml:space="preserve">
+    <value>配置合并策略不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.ConnectionLost" xml:space="preserve">
+    <value>与 Codex App Server 的连接已中断。</value>
+  </data>
+  <data name="AppServerClient.Error.ConnectionLostWithDetail.Prefix" xml:space="preserve">
+    <value>与 Codex App Server 的连接已中断：</value>
+  </data>
+  <data name="AppServerClient.Error.ForkedThreadIdMissing" xml:space="preserve">
+    <value>App Server 未返回分叉后的线程 ID。</value>
+  </data>
+  <data name="AppServerClient.Error.McpServerNameRequired" xml:space="preserve">
+    <value>MCP 服务器名称不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.NotConnected" xml:space="preserve">
+    <value>App Server 尚未连接。</value>
+  </data>
+  <data name="AppServerClient.Error.PendingApprovalRequestNotFound" xml:space="preserve">
+    <value>未找到待处理的审批请求。</value>
+  </data>
+  <data name="AppServerClient.Error.PendingToolInputRequestNotFound" xml:space="preserve">
+    <value>未找到待处理的工具输入请求。</value>
+  </data>
+  <data name="AppServerClient.Error.PermissionRequestRejectedByUser" xml:space="preserve">
+    <value>用户拒绝了权限请求。</value>
+  </data>
+  <data name="AppServerClient.Error.PluginIdRequired" xml:space="preserve">
+    <value>插件 ID 不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.MarketplaceSourceRequired" xml:space="preserve">
+    <value>市场源不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.PluginMarketplacePathRequired" xml:space="preserve">
+    <value>插件市场路径不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.PluginNameRequired" xml:space="preserve">
+    <value>插件名称不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.ProcessIdRequired" xml:space="preserve">
+    <value>进程 ID 不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.RequestTimeout.Template" xml:space="preserve">
+    <value>App Server 请求超时：{0}，等待约 {1} 秒后仍未收到响应。</value>
+  </data>
+  <data name="AppServerClient.Error.ResumeThreadIdMissing" xml:space="preserve">
+    <value>恢复线程失败：未返回线程 ID。</value>
+  </data>
+  <data name="AppServerClient.Error.ServerRequestNotImplemented" xml:space="preserve">
+    <value>当前版本尚未实现该服务端请求。</value>
+  </data>
+  <data name="AppServerClient.Error.ServerReturnedError" xml:space="preserve">
+    <value>App Server 返回了错误。</value>
+  </data>
+  <data name="AppServerClient.Error.SkillPathRequired" xml:space="preserve">
+    <value>技能路径不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadFilePathRequired" xml:space="preserve">
+    <value>线程文件路径不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadFilePathUnsupported" xml:space="preserve">
+    <value>当前线程文件路径不在支持的 Codex 状态目录中，无法完整删除。</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadIdMissing" xml:space="preserve">
+    <value>App Server 未返回线程 ID。</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadIdRequired" xml:space="preserve">
+    <value>线程 ID 不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadNameRequired" xml:space="preserve">
+    <value>线程名称不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.ToolInputRequestIdRequired" xml:space="preserve">
+    <value>工具输入请求 ID 不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.TurnRequestFailed" xml:space="preserve">
+    <value>当前轮次请求失败。</value>
+  </data>
+  <data name="AppServerClient.Error.UnableToStartAppServer" xml:space="preserve">
+    <value>无法启动 codex app-server。</value>
+  </data>
+  <data name="AppServerClient.Error.UnknownServerError" xml:space="preserve">
+    <value>App Server 返回了未知错误。</value>
+  </data>
+  <data name="AppServerClient.Error.UnsupportedApprovalRequestType" xml:space="preserve">
+    <value>不支持的审批请求类型。</value>
+  </data>
+  <data name="AppServerClient.Error.UnsupportedReviewTarget" xml:space="preserve">
+    <value>不支持的审查目标。</value>
+  </data>
+  <data name="AppServerClient.Error.ValidInputRequired" xml:space="preserve">
+    <value>至少需要一个有效输入项。</value>
+  </data>
+  <data name="AppServerClient.FileChange.Completed" xml:space="preserve">
+    <value>文件变更已完成</value>
+  </data>
+  <data name="AppServerClient.FileChange.PatchUpdated" xml:space="preserve">
+    <value>文件变更已更新。</value>
+  </data>
+  <data name="AppServerClient.Network.WebSearchStarted" xml:space="preserve">
+    <value>网络搜索已开始</value>
+  </data>
+  <data name="AppServerClient.Network.WebSearchCompleted" xml:space="preserve">
+    <value>网络搜索已完成</value>
+  </data>
+  <data name="AppServerClient.FileChange.Line.Moved.Template" xml:space="preserve">
+    <value>已移动 {0} -&gt; {1}</value>
+  </data>
+  <data name="AppServerClient.FileChange.LinePrefix.Added" xml:space="preserve">
+    <value>已新增 </value>
+  </data>
+  <data name="AppServerClient.FileChange.LinePrefix.Deleted" xml:space="preserve">
+    <value>已删除 </value>
+  </data>
+  <data name="AppServerClient.FileChange.LinePrefix.Modified" xml:space="preserve">
+    <value>已修改 </value>
+  </data>
+  <data name="AppServerClient.FileChange.LinePrefix.Processed" xml:space="preserve">
+    <value>已处理 </value>
+  </data>
+  <data name="AppServerClient.FileChange.MoreFiles.Prefix" xml:space="preserve">
+    <value>以及 </value>
+  </data>
+  <data name="AppServerClient.FileChange.MoreFiles.Suffix" xml:space="preserve">
+    <value> 个更多文件</value>
+  </data>
+  <data name="AppServerClient.FileChange.ProcessedPrefix" xml:space="preserve">
+    <value>已处理</value>
+  </data>
+  <data name="AppServerClient.FileChange.ProgressPrefix" xml:space="preserve">
+    <value>正在处理</value>
+  </data>
+  <data name="AppServerClient.FileChange.Summarizing" xml:space="preserve">
+    <value>正在汇总文件变更</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.BearerToken" xml:space="preserve">
+    <value>Bearer Token</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.Initializing" xml:space="preserve">
+    <value>初始化中</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.NotFound" xml:space="preserve">
+    <value>未配置或未登录</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.NotLoggedIn" xml:space="preserve">
+    <value>未登录</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.NotProvided" xml:space="preserve">
+    <value>未提供</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.NotRequiredOrUnknown" xml:space="preserve">
+    <value>不需要或未知</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.OAuth" xml:space="preserve">
+    <value>OAuth</value>
+  </data>
+  <data name="AppServerClient.Mcp.AuthStatus.Unsupported" xml:space="preserve">
+    <value>不支持</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Auth.Template" xml:space="preserve">
+    <value>鉴权：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Capabilities.Template" xml:space="preserve">
+    <value>能力：工具 {0}，资源 {1}，模板 {2}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.DisabledTools.Template" xml:space="preserve">
+    <value>已禁用工具：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Enabled.Template" xml:space="preserve">
+    <value>已启用：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.EnabledTools.Template" xml:space="preserve">
+    <value>已启用工具：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Entry.Template" xml:space="preserve">
+    <value>入口：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Environment.Template" xml:space="preserve">
+    <value>环境变量：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Error.Template" xml:space="preserve">
+    <value>错误：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.OAuthResource.Template" xml:space="preserve">
+    <value>OAuth 资源：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Required.Template" xml:space="preserve">
+    <value>必需：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Runtime.Template" xml:space="preserve">
+    <value>运行状态：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Server.Template" xml:space="preserve">
+    <value>服务器：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Detail.Source.Template" xml:space="preserve">
+    <value>来源：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Environment.Configured" xml:space="preserve">
+    <value>已配置</value>
+  </data>
+  <data name="AppServerClient.Mcp.Environment.Items.Template" xml:space="preserve">
+    <value>{0} 项：{1}</value>
+  </data>
+  <data name="AppServerClient.Mcp.Environment.ItemsWithEllipsis.Template" xml:space="preserve">
+    <value>{0} 项：{1}...</value>
+  </data>
+  <data name="AppServerClient.Mcp.LoginCompleted.Template" xml:space="preserve">
+    <value>MCP 服务器登录完成：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.LoginFailed.Template" xml:space="preserve">
+    <value>MCP 服务器登录失败：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.LoginStatusUpdated.Template" xml:space="preserve">
+    <value>MCP 服务器登录状态已更新：{0}</value>
+  </data>
+  <data name="AppServerClient.Mcp.SourceSummary.Command" xml:space="preserve">
+    <value>命令</value>
+  </data>
+  <data name="AppServerClient.Mcp.SourceSummary.Http" xml:space="preserve">
+    <value>HTTP</value>
+  </data>
+  <data name="AppServerClient.Mcp.Status.Active" xml:space="preserve">
+    <value>活跃</value>
+  </data>
+  <data name="AppServerClient.Mcp.Status.Idle" xml:space="preserve">
+    <value>空闲</value>
+  </data>
+  <data name="AppServerClient.Mcp.Status.SystemError" xml:space="preserve">
+    <value>系统错误</value>
+  </data>
+  <data name="AppServerClient.Mcp.Status.Unloaded" xml:space="preserve">
+    <value>未加载</value>
+  </data>
+  <data name="AppServerClient.Operation.ReplyUnimplementedServerRequest" xml:space="preserve">
+    <value>回复未实现的服务端请求</value>
+  </data>
+  <data name="AppServerClient.Permissions.NetworkAllowed" xml:space="preserve">
+    <value>网络：允许</value>
+  </data>
+  <data name="AppServerClient.Permissions.Read.Prefix" xml:space="preserve">
+    <value>读取：</value>
+  </data>
+  <data name="AppServerClient.Permissions.Write.Prefix" xml:space="preserve">
+    <value>写入：</value>
+  </data>
+  <data name="AppServerClient.RateLimits.Updated" xml:space="preserve">
+    <value>配额信息已更新。</value>
+  </data>
+  <data name="AppServerClient.Apps.ListUpdated" xml:space="preserve">
+    <value>Apps 列表已更新。</value>
+  </data>
+  <data name="AppServerClient.Reasoning.Completed" xml:space="preserve">
+    <value>分析完成</value>
+  </data>
+  <data name="AppServerClient.Reasoning.Started" xml:space="preserve">
+    <value>分析中</value>
+  </data>
+  <data name="AppServerClient.Review.Entered.Prefix" xml:space="preserve">
+    <value>进入审查模式：</value>
+  </data>
+  <data name="AppServerClient.Review.Exited.Prefix" xml:space="preserve">
+    <value>退出审查模式：</value>
+  </data>
+  <data name="AppServerClient.Skills.Changed" xml:space="preserve">
+    <value>检测到技能目录变更。</value>
+  </data>
+  <data name="AppServerClient.Status.Completed" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="AppServerClient.Status.Connected.Template" xml:space="preserve">
+    <value>已连接到 Codex App Server。平台：{0}，代理：{1}</value>
+  </data>
+  <data name="AppServerClient.Status.Ended" xml:space="preserve">
+    <value>已结束</value>
+  </data>
+  <data name="AppServerClient.Status.Failed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="AppServerClient.Status.NoInterruptibleResponse" xml:space="preserve">
+    <value>当前没有可中断的进行中响应。</value>
+  </data>
+  <data name="AppServerClient.Status.Running" xml:space="preserve">
+    <value>运行中</value>
+  </data>
+  <data name="AppServerClient.SystemNotice.AppServerOutputPrefix" xml:space="preserve">
+    <value>App Server：</value>
+  </data>
+  <data name="AppServerClient.SystemNotice.ReadStderrFailed.Prefix" xml:space="preserve">
+    <value>读取 App Server 标准错误失败：</value>
+  </data>
+  <data name="AppServerClient.SystemNotice.UnhandledServerRequest.Prefix" xml:space="preserve">
+    <value>收到未处理的服务端请求：</value>
+  </data>
+  <data name="AppServerClient.SystemNotice.UnparsableMessageIgnored" xml:space="preserve">
+    <value>收到无法解析的 App Server 消息，已忽略。</value>
+  </data>
+  <data name="AppServerClient.Thread.Archived" xml:space="preserve">
+    <value>会话已归档。</value>
+  </data>
+  <data name="AppServerClient.Thread.Deleted" xml:space="preserve">
+    <value>会话已删除。</value>
+  </data>
+  <data name="AppServerClient.Thread.ContextCompacted" xml:space="preserve">
+    <value>会话上下文已压缩。</value>
+  </data>
+  <data name="AppServerClient.Thread.Started" xml:space="preserve">
+    <value>线程已就绪。</value>
+  </data>
+  <data name="AppServerClient.Thread.StatusUpdated.Prefix" xml:space="preserve">
+    <value>线程状态已更新：</value>
+  </data>
+  <data name="AppServerClient.Thread.Unarchived" xml:space="preserve">
+    <value>会话已从归档恢复。</value>
+  </data>
+  <data name="AppServerClient.TokenUsage.Updated" xml:space="preserve">
+    <value>上下文用量已更新。</value>
+  </data>
+  <data name="AppServerClient.ToolInput.Canceled" xml:space="preserve">
+    <value>工具输入已取消。</value>
+  </data>
+  <data name="AppServerClient.ToolInput.QuestionCount.Template" xml:space="preserve">
+    <value>问题数量：{0}</value>
+  </data>
+  <data name="AppServerClient.ToolInput.Requested" xml:space="preserve">
+    <value>收到工具输入请求。</value>
+  </data>
+  <data name="AppServerClient.ToolInput.RequestedWithHeader.Prefix" xml:space="preserve">
+    <value>收到工具输入请求：</value>
+  </data>
+  <data name="AppServerClient.ToolInput.RequestedWithHeaderAndMore.Template" xml:space="preserve">
+    <value>收到工具输入请求：{0}，以及另外 {1} 个问题。</value>
+  </data>
+  <data name="AppServerClient.ToolInput.RequestedWithQuestionCount.Template" xml:space="preserve">
+    <value>收到包含 {0} 个问题的工具输入请求。</value>
+  </data>
+  <data name="AppServerClient.ToolInput.Submitted" xml:space="preserve">
+    <value>工具输入已提交。</value>
+  </data>
+  <data name="AppServerClient.Turn.Completed" xml:space="preserve">
+    <value>当前轮次请求已完成。</value>
+  </data>
+  <data name="AppServerClient.Turn.DiffUpdated" xml:space="preserve">
+    <value>变更摘要已更新。</value>
+  </data>
+  <data name="AppServerClient.Turn.Interrupted" xml:space="preserve">
+    <value>当前响应已中断。</value>
+  </data>
+  <data name="AppServerClient.Turn.PlanUpdated" xml:space="preserve">
+    <value>计划已更新。</value>
+  </data>
+  <data name="AppServerClient.Turn.PlanUpdating" xml:space="preserve">
+    <value>正在更新计划。</value>
+  </data>
+  <data name="AppServerClient.Turn.Started" xml:space="preserve">
+    <value>Codex 正在处理...</value>
+  </data>
+  <data name="AppServerClient.Value.Disabled" xml:space="preserve">
+    <value>已禁用</value>
+  </data>
+  <data name="AppServerClient.Value.Enabled" xml:space="preserve">
+    <value>已启用</value>
+  </data>
+  <data name="AppServerClient.Value.No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="AppServerClient.Value.Unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="AppServerClient.Value.UnknownCommand" xml:space="preserve">
+    <value>（未知命令）</value>
+  </data>
+  <data name="AppServerClient.Value.UnknownDomain" xml:space="preserve">
+    <value>（未知域）</value>
+  </data>
+  <data name="AppServerClient.Value.UnknownFile" xml:space="preserve">
+    <value>（未知文件）</value>
+  </data>
+  <data name="AppServerClient.Value.UnknownKey" xml:space="preserve">
+    <value>（未知键）</value>
+  </data>
+  <data name="AppServerClient.Value.UnknownServer" xml:space="preserve">
+    <value>（未知服务器）</value>
+  </data>
+  <data name="AppServerClient.Value.UnnamedServer" xml:space="preserve">
+    <value>未命名服务器</value>
+  </data>
+  <data name="AppServerClient.Value.Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="AppServerClient.Plan.MessagePrefix" xml:space="preserve">
+    <value>计划：</value>
+  </data>
+  <data name="AppServerClient.Error.RemoteThreadFilePathUnsupported" xml:space="preserve">
+    <value>远程 Unix 会话文件暂时不能通过 Windows 文件访问删除。</value>
+  </data>
+  <data name="AppServerPathMappingPolicy.Error.PathNotMappableToRemoteMac.Template" xml:space="preserve">
+    <value>无法将 {0} 路径映射到远程 Unix：{1}。请使用 /home/name/repo 或 /Users/name/repo 这类 Unix 绝对路径。</value>
+  </data>
+  <data name="CodexRuntime.Status.UsingRemoteMacSsh" xml:space="preserve">
+    <value>将使用远程 Unix SSH Codex 运行时。</value>
+  </data>
+  <data name="CodexRuntime.Status.UsingRemoteUnixSsh" xml:space="preserve">
+    <value>将使用远程 Unix SSH Codex 运行时。</value>
+  </data>
+  <data name="CodexRuntime.Status.RemoteMacSshRuntimeMissing" xml:space="preserve">
+    <value>远程 Unix SSH 运行时不可用。请检查 SSH 设置，或在 App Server 运行时设置中切换运行时来源。</value>
+  </data>
+  <data name="CodexRuntime.Status.RemoteUnixSshRuntimeMissing" xml:space="preserve">
+    <value>远程 Unix SSH 运行时不可用。请检查 SSH 设置，或在 App Server 运行时设置中切换运行时来源。</value>
+  </data>
+  <data name="RemoteMacFileSystemBridge.Error.CommandFailed" xml:space="preserve">
+    <value>远程 SSH 命令执行失败。</value>
+  </data>
+  <data name="RemoteSshLocalPortForward.Error.StartFailed" xml:space="preserve">
+    <value>无法启动 SSH 端口转发。</value>
+  </data>
+<data name="CodexRuntimeUpdate.Error.VersionMetadataMissing.Template" xml:space="preserve">
+    <value>未找到版本 {0} 的 Codex 运行时元数据。</value>
+  </data>
+  <data name="GitCommandRunner.Error.WorkingDirectoryRequired" xml:space="preserve">
+    <value>工作目录不能为空。</value>
+  </data>
+  <data name="GitCommandRunner.Error.WorkingDirectoryNotFound" xml:space="preserve">
+    <value>工作目录不存在。</value>
+  </data>
+  <data name="GitCommandRunner.Error.Timeout" xml:space="preserve">
+    <value>Git 命令执行超时。</value>
+  </data>
+  <data name="GitCommandRunner.Error.CommandFailed" xml:space="preserve">
+    <value>Git 命令执行失败。</value>
+  </data>
+  <data name="GitRepositoryService.Error.WorkspacePathRequired" xml:space="preserve">
+    <value>工作区路径不能为空。</value>
+  </data>
+  <data name="GitRepositoryService.Error.WorkspaceNotFound" xml:space="preserve">
+    <value>指定的工作区不存在。</value>
+  </data>
+  <data name="GitRepositoryService.Error.PathsRequired" xml:space="preserve">
+    <value>至少需要一个文件路径。</value>
+  </data>
+  <data name="GitRepositoryService.Error.CommitMessageRequired" xml:space="preserve">
+    <value>提交信息不能为空。</value>
+  </data>
+  <data name="GitRepositoryService.Error.CommitRefRequired" xml:space="preserve">
+    <value>提交 ID 不能为空。</value>
+  </data>
+  <data name="GitRepositoryService.Error.CommitRefInvalid" xml:space="preserve">
+    <value>提交 ID 不能以短横线开头。</value>
+  </data>
+  <data name="GitRepositoryService.Error.RevisionInvalid" xml:space="preserve">
+    <value>修订引用不能以短横线开头。</value>
+  </data>
+  <data name="GitRepositoryService.Error.StashRefRequired" xml:space="preserve">
+    <value>储藏引用不能为空。</value>
+  </data>
+  <data name="GitRepositoryService.Error.StashRefInvalid" xml:space="preserve">
+    <value>储藏引用不能以短横线开头。</value>
+  </data>
+  <data name="GitRepositoryService.Error.ResetModeInvalid" xml:space="preserve">
+    <value>回滚模式无效。</value>
+  </data>
+  <data name="GitRepositoryService.Error.BranchRequired" xml:space="preserve">
+    <value>分支名称不能为空。</value>
+  </data>
+  <data name="GitRepositoryService.Error.BranchNameInvalid" xml:space="preserve">
+    <value>分支名称不能以短横线开头。</value>
+  </data>
+  <data name="GitRepositoryService.Error.OperationFailed" xml:space="preserve">
+    <value>Git 操作失败。</value>
+  </data>
+  <data name="GitRepositoryService.Error.NoSequencerOperation" xml:space="preserve">
+    <value>当前没有进行中的合并、变基、拣选或还原操作。</value>
+  </data>
+  <data name="GitRepositoryService.Error.MergeSkipUnsupported" xml:space="preserve">
+    <value>合并操作不支持跳过当前步骤。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.MergeBranch" xml:space="preserve">
+    <value>已将所选分支合并到当前分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.MergeBranchNoChanges" xml:space="preserve">
+    <value>当前分支已包含所选分支，无需再次合并。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.MergeBranchSquash" xml:space="preserve">
+    <value>已将所选分支压缩合并到当前分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.MergeBranchSquashNoChanges" xml:space="preserve">
+    <value>当前分支已包含所选分支，无需再次压缩合并。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RebaseCurrentBranch" xml:space="preserve">
+    <value>已将当前分支变基到所选分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RebaseCurrentBranchNoChanges" xml:space="preserve">
+    <value>当前分支已经与所选分支保持最新，无需再次变基。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Initialize" xml:space="preserve">
+    <value>仓库已初始化。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Stage" xml:space="preserve">
+    <value>已暂存</value>
+  </data>
+  <data name="GitRepositoryService.Operation.MarkConflictsResolved" xml:space="preserve">
+    <value>已将选中冲突标记为已解决。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StageAll" xml:space="preserve">
+    <value>已全部暂存</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Unstage" xml:space="preserve">
+    <value>未暂存</value>
+  </data>
+  <data name="GitRepositoryService.Operation.UnstageAll" xml:space="preserve">
+    <value>已全部取消暂存</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Commit" xml:space="preserve">
+    <value>已提交暂存改动。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RevertCommit" xml:space="preserve">
+    <value>已还原选中提交。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RevertCommits" xml:space="preserve">
+    <value>已还原选中提交。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ResetCommit" xml:space="preserve">
+    <value>已回滚当前分支到选中提交。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.CherryPick" xml:space="preserve">
+    <value>已拣选提交。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.SequencerContinue" xml:space="preserve">
+    <value>已继续当前 Git 操作。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.SequencerAbort" xml:space="preserve">
+    <value>已中止当前 Git 操作。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.SequencerSkip" xml:space="preserve">
+    <value>已跳过当前 Git 操作步骤。</value>
+  </data>
+  <data name="GitRepositoryService.Stash.DefaultMessage" xml:space="preserve">
+    <value>MyCodex 储藏</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StashPush" xml:space="preserve">
+    <value>已保存改动到储藏。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StashPushPaths" xml:space="preserve">
+    <value>已保存选中文件到储藏。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ReadStashDiff" xml:space="preserve">
+    <value>已加载储藏差异。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ReadStashFileDiff" xml:space="preserve">
+    <value>已加载储藏文件差异。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StashApply" xml:space="preserve">
+    <value>已应用选中储藏。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StashPop" xml:space="preserve">
+    <value>已弹出选中储藏。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StashDrop" xml:space="preserve">
+    <value>已删除选中储藏。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.CheckoutBranch" xml:space="preserve">
+    <value>已切换分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.CheckoutRemoteBranch" xml:space="preserve">
+    <value>已创建本地跟踪分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.CreateBranch" xml:space="preserve">
+    <value>已创建并切换到新分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RenameCurrentBranch" xml:space="preserve">
+    <value>已重命名当前分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.DeleteBranch" xml:space="preserve">
+    <value>已删除本地分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ForceDeleteBranch" xml:space="preserve">
+    <value>已强制删除本地分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.DeleteRemoteBranch" xml:space="preserve">
+    <value>已删除远程分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Push" xml:space="preserve">
+    <value>已推送当前分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.PushForceWithLease" xml:space="preserve">
+    <value>已使用 force-with-lease 强制推送当前分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.PushSetUpstream" xml:space="preserve">
+    <value>已设置上游分支并推送当前分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.AddRemote" xml:space="preserve">
+    <value>已添加远程仓库。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.SetRemoteUrl" xml:space="preserve">
+    <value>已更新远程仓库地址。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.SetRemotePushUrl" xml:space="preserve">
+    <value>已更新远程仓库推送地址。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RemoveRemote" xml:space="preserve">
+    <value>已删除远程仓库。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.SetUpstream" xml:space="preserve">
+    <value>已更新分支的上游分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.UnsetUpstream" xml:space="preserve">
+    <value>已取消分支的上游分支。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Fetch" xml:space="preserve">
+    <value>已获取远程更新。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Pull" xml:space="preserve">
+    <value>已拉取远程更新。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.Discard" xml:space="preserve">
+    <value>已丢弃选中文件的未暂存改动。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.DeleteUntracked" xml:space="preserve">
+    <value>已删除选中的未跟踪文件。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ReadDiff" xml:space="preserve">
+    <value>已加载选中文件差异。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ReadConflictDetails" xml:space="preserve">
+    <value>已加载冲突详情。</value>
+  </data>
+  <data name="GitRepositoryService.Conflict.EmptyDetails.Template" xml:space="preserve">
+    <value>{0} 当前没有可用的冲突差异。请刷新 Git 状态，并确认该文件仍处于冲突状态。</value>
+  </data>
+  <data name="GitRepositoryService.Untracked.Placeholder.Template" xml:space="preserve">
+    <value>未跟踪文件：{0}
+
+此文件尚未添加到 Git。请打开文件查看当前内容。</value>
+  </data>
+  <data name="GitRepositoryService.Untracked.Empty.Template" xml:space="preserve">
+    <value>未跟踪文件：{0}
+
+此文件为空。</value>
+  </data>
+  <data name="GitCloneService.Error.RepositoryUrlRequired" xml:space="preserve">
+    <value>仓库地址不能为空。</value>
+  </data>
+  <data name="GitCloneService.Error.TargetParentRequired" xml:space="preserve">
+    <value>目标目录不能为空。</value>
+  </data>
+  <data name="GitCloneService.Error.TargetFolderRequired" xml:space="preserve">
+    <value>目标文件夹名称不能为空。</value>
+  </data>
+  <data name="GitCloneService.Error.TargetExists" xml:space="preserve">
+    <value>目标文件夹已存在且不是空文件夹。</value>
+  </data>
+  <data name="GitCloneService.Error.InvalidTargetFolder" xml:space="preserve">
+    <value>目标文件夹名称包含无效字符。</value>
+  </data>
+  <data name="GitEnvironmentService.Error.ValueRequired" xml:space="preserve">
+    <value>内容不能为空。</value>
+  </data>
+  <data name="GitEnvironmentService.Error.Timeout" xml:space="preserve">
+    <value>命令执行超时。</value>
+  </data>
+  <data name="GitEnvironmentService.Runtime.LocalWindows" xml:space="preserve">
+    <value>本地 Windows</value>
+  </data>
+  <data name="GitEnvironmentService.Value.NotDetected" xml:space="preserve">
+    <value>未检测到</value>
+  </data>
+  <data name="GitHubCli.Status.NotInstalled" xml:space="preserve">
+    <value>未安装 GitHub CLI。</value>
+  </data>
+  <data name="GitHubCli.Status.NotAuthenticated" xml:space="preserve">
+    <value>GitHub CLI 尚未登录 GitHub。</value>
+  </data>
+  <data name="GitHubCli.Status.Authenticated" xml:space="preserve">
+    <value>GitHub CLI 已登录 GitHub。</value>
+  </data>
+  <data name="GitHubCli.Error.Timeout" xml:space="preserve">
+    <value>GitHub CLI 命令执行超时。</value>
+  </data>
+  <data name="GitSshKeyService.Details.Directory.Template" xml:space="preserve">
+    <value>SSH 目录：{0}</value>
+  </data>
+  <data name="GitSshKeyService.Details.DirectoryMissing" xml:space="preserve">
+    <value>未找到 SSH 目录。</value>
+  </data>
+  <data name="GitSshKeyService.Details.NoKeys" xml:space="preserve">
+    <value>未找到 SSH 公钥。</value>
+  </data>
+  <data name="GitSshKeyService.Details.ReadFailed.Template" xml:space="preserve">
+    <value>{0}：读取公钥失败：{1}</value>
+  </data>
+  <data name="GitSshKeyService.Details.FingerprintFailed.Template" xml:space="preserve">
+    <value>{0}：读取指纹失败：{1}</value>
+  </data>
+  <data name="GitSshKeyService.Details.Key.Template" xml:space="preserve">
+    <value>{0}：{1}；{2}；私钥：{3}</value>
+  </data>
+  <data name="GitSshKeyService.Value.Unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="GitSshKeyService.Value.NoFingerprint" xml:space="preserve">
+    <value>无指纹</value>
+  </data>
+  <data name="GitSshKeyService.Value.Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="GitSshKeyService.Value.No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="GitSshKeyService.Error.Timeout" xml:space="preserve">
+    <value>命令执行超时。</value>
+  </data>
+  <data name="GitHubCli.Error.RepositoryNameRequired" xml:space="preserve">
+    <value>仓库名称不能为空。</value>
+  </data>
+  <data name="GitHubCli.Error.RepositoryNameInvalid" xml:space="preserve">
+    <value>仓库名称无效。</value>
+  </data>
+  <data name="GitRepositoryService.Error.RemoteNameRequired" xml:space="preserve">
+    <value>远程名称不能为空。</value>
+  </data>
+  <data name="GitRepositoryService.Error.RemoteNameInvalid" xml:space="preserve">
+    <value>远程名称无效。</value>
+  </data>
+  <data name="GitRepositoryService.Error.RemoteUrlRequired" xml:space="preserve">
+    <value>远程地址不能为空。</value>
+  </data>
+  <data name="GitRepositoryService.Error.RemoteUrlInvalid" xml:space="preserve">
+    <value>远程地址无效。</value>
+  </data>
+  <data name="GitRepositoryService.Error.UpstreamRequired" xml:space="preserve">
+    <value>上游分支不能为空。</value>
+  </data>
+  <data name="GitRepositoryService.Error.ReadRemotesFailed" xml:space="preserve">
+    <value>读取 Git 远程仓库失败。</value>
+  </data>
+  <data name="AppServerProtocolCapabilities.Error.FeatureNotSupported.Template" xml:space="preserve">
+    <value>当前 Codex 运行时不支持{0}。请切换到标准运行时或更新的运行时后再使用此功能。</value>
+  </data>
+  <data name="AppServerProtocolCapabilities.Feature.ThisFeature" xml:space="preserve">
+    <value>此功能</value>
+  </data>
+
+  <data name="AppServerClient.McpElicitation.FormRequested.Template" xml:space="preserve"><value>MCP 服务 {0} 请求补充输入：{1}</value></data>
+  <data name="AppServerClient.McpElicitation.ConfirmationRequested.Template" xml:space="preserve"><value>MCP 服务 {0} 请求确认：{1}</value></data>
+  <data name="AppServerClient.McpElicitation.UrlRequested.Template" xml:space="preserve"><value>MCP 服务 {0} 请求打开 URL：{1}</value></data>
+  <data name="AppServerClient.McpElicitation.UnknownServer" xml:space="preserve"><value>MCP 服务</value></data>
+  <data name="AppServerClient.McpElicitation.NoMessage" xml:space="preserve"><value>需要补充输入。</value></data>
+  <data name="AppServerClient.McpElicitation.NoConfirmationMessage" xml:space="preserve"><value>需要用户确认。</value></data>
+  <data name="AppServerClient.McpElicitation.Boolean.True" xml:space="preserve"><value>是</value></data>
+  <data name="AppServerClient.McpElicitation.Boolean.False" xml:space="preserve"><value>否</value></data>
+  <data name="AppServerClient.McpElicitation.Required" xml:space="preserve"><value>必填。</value></data>
+  <data name="AppServerClient.McpElicitation.AllowedValues.Prefix" xml:space="preserve"><value>可选值：</value></data>
+  <data name="AppServerClient.McpElicitation.ArrayInputHint" xml:space="preserve"><value>多个值请用逗号分隔。</value></data>
+  <data name="AppServerClient.Mcp.StartupStatus.Unknown" xml:space="preserve"><value>已更新</value></data>
+  <data name="AppServerClient.Mcp.StartupStatusUpdated.Template" xml:space="preserve"><value>MCP 服务启动状态已更新：{0}，{1}。</value></data>
+  <data name="AppServerClient.Mcp.StartupStatusUpdatedWithMessage.Template" xml:space="preserve"><value>MCP 服务启动状态已更新：{0}，{1}。{2}</value></data>
+  <data name="AppServerClient.Mcp.ReauthenticationRequired.Template" xml:space="preserve"><value>MCP 服务身份验证已过期：{0}。</value></data>
+  <data name="AppServerClient.Protocol.ConfigWarning.Template" xml:space="preserve"><value>配置警告：{0}</value></data>
+  <data name="AppServerClient.Protocol.ConfigWarning.NoDetails" xml:space="preserve"><value>运行时报告了配置警告。</value></data>
+  <data name="AppServerClient.Protocol.DeprecationNotice.Template" xml:space="preserve"><value>弃用提示：{0}</value></data>
+  <data name="AppServerClient.Protocol.DeprecationNotice.NoDetails" xml:space="preserve"><value>运行时报告了弃用提示。</value></data>
+  <data name="AppServerClient.Protocol.GuardianWarning.Template" xml:space="preserve"><value>Guardian 警告：{0}</value></data>
+  <data name="AppServerClient.Protocol.GuardianWarning.NoDetails" xml:space="preserve"><value>运行时报告了 Guardian 警告。</value></data>
+  <data name="AppServerClient.Protocol.RuntimeWarning.Template" xml:space="preserve"><value>运行时警告：{0}</value></data>
+  <data name="AppServerClient.Protocol.RuntimeWarning.NoDetails" xml:space="preserve"><value>运行时报告了一条警告。</value></data>
+  <data name="AppServerClient.Protocol.ModelRerouted.Template" xml:space="preserve"><value>模型已改路由：{0} -&gt; {1}</value></data>
+  <data name="AppServerClient.Protocol.ModelReroutedWithReason.Template" xml:space="preserve"><value>模型已改路由：{0} -&gt; {1}。{2}</value></data>
+  <data name="AppServerClient.Protocol.ModelRerouted.Message.Template" xml:space="preserve"><value>模型已改路由：{0}</value></data>
+  <data name="AppServerClient.Protocol.ModelRerouted.NoDetails" xml:space="preserve"><value>运行时已改路由模型。</value></data>
+  <data name="AppServerClient.Protocol.ModelVerification.Template" xml:space="preserve"><value>模型验证：{0}</value></data>
+  <data name="AppServerClient.Protocol.ModelVerification.ModelStatus.Template" xml:space="preserve"><value>{0}：{1}</value></data>
+  <data name="AppServerClient.Protocol.ModelVerification.NoDetails" xml:space="preserve"><value>运行时报告了模型验证更新。</value></data>
+  <data name="AppServerClient.Protocol.UnhandledNotification.Template" xml:space="preserve"><value>收到未处理的 App Server 通知：{0}</value></data>
+  <data name="AppServerClient.Protocol.UnhandledNotificationWithMessage.Template" xml:space="preserve"><value>收到未处理的 App Server 通知：{0}。{1}</value></data>
+  <data name="AppServerClient.Protocol.UnhandledServerRequest.Template" xml:space="preserve"><value>收到未处理的 App Server 请求：{0}</value></data>
+  <data name="AppServerClient.Protocol.UnhandledServerRequestWithMessage.Template" xml:space="preserve"><value>收到未处理的 App Server 请求：{0}。{1}</value></data>
+  <data name="AppServerClient.Protocol.UnknownMethod" xml:space="preserve"><value>（未知方法）</value></data>
+  <data name="GitRepositoryService.Operation.CommitAmend" xml:space="preserve">
+    <value>已修正上一条提交。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.ReadCommitDiff" xml:space="preserve">
+    <value>已加载提交差异。</value>
+  </data>
+  <data name="GitRepositoryService.Error.StatusFailed" xml:space="preserve">
+    <value>读取 Git 状态失败。</value>
+  </data>
+  <data name="GitRepositoryService.Error.ReadCommitHistoryFailed" xml:space="preserve">
+    <value>读取 Git 提交历史失败。</value>
+  </data>
+  <data name="GitRepositoryService.Error.ReadBranchesFailed" xml:space="preserve">
+    <value>读取 Git 分支失败。</value>
+  </data>
+  <data name="GitRepositoryService.Error.ReadStashesFailed" xml:space="preserve">
+    <value>读取 Git 储藏失败。</value>
+  </data>
+  <data name="GitRepositoryService.Error.ReadWorktreesFailed" xml:space="preserve">
+    <value>读取 Git worktree 失败。</value>
+  </data>
+  <data name="GitDiffService.Error.WorkspacePathRequired" xml:space="preserve">
+    <value>工作区路径不能为空。</value>
+  </data>
+  <data name="GitDiffService.Error.WorkspaceNotFound" xml:space="preserve">
+    <value>工作区路径不存在。</value>
+  </data>
+  <data name="GitDiffService.Error.Timeout" xml:space="preserve">
+    <value>Git 差异命令执行超时。</value>
+  </data>
+  <data name="GitDiffService.Error.GitCommandFailed" xml:space="preserve">
+    <value>Git 差异命令执行失败。</value>
+  </data>
+  <data name="GitEnvironmentService.Runtime.Wsl" xml:space="preserve">
+    <value>WSL</value>
+  </data>
+  <data name="GitEnvironmentService.Runtime.RemoteUnixSsh" xml:space="preserve">
+    <value>远程 Unix SSH</value>
+  </data>
+  <data name="GitHubCli.Error.CommandFailed" xml:space="preserve">
+    <value>GitHub CLI 命令执行失败。</value>
+  </data>
+  <data name="GitHubCli.Error.RemoteInteractiveLoginUnsupported" xml:space="preserve">
+    <value>远程运行时不支持交互式 GitHub 登录。</value>
+  </data>
+  <data name="WslFileSystemBridge.Error.CommandFailed" xml:space="preserve">
+    <value>WSL 文件系统命令执行失败。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.StashBranch" xml:space="preserve">
+    <value>已从选中储藏创建分支。</value>
+  </data>
+  <data name="GitRepositoryService.Diagnostics.GitVersion.Title" xml:space="preserve"><value>Git 可执行文件</value></data>
+  <data name="GitRepositoryService.Diagnostics.GitVersion.Available" xml:space="preserve"><value>Git 可用。</value></data>
+  <data name="GitRepositoryService.Diagnostics.GitVersion.Unavailable" xml:space="preserve"><value>Git 不可用。</value></data>
+  <data name="GitRepositoryService.Diagnostics.GitVersion.Suggestion" xml:space="preserve"><value>安装 Git 或检查运行时 Git 配置。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Repository.Title" xml:space="preserve"><value>仓库</value></data>
+  <data name="GitRepositoryService.Diagnostics.Repository.Valid" xml:space="preserve"><value>当前工作区位于 Git 工作树中。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Repository.Invalid" xml:space="preserve"><value>当前工作区不是 Git 仓库。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Repository.Suggestion" xml:space="preserve"><value>初始化仓库，或打开已有 Git 工作区。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Remote.Title" xml:space="preserve"><value>远程仓库</value></data>
+  <data name="GitRepositoryService.Diagnostics.Remote.Empty" xml:space="preserve"><value>未配置远程仓库。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Remote.Suggestion" xml:space="preserve"><value>在使用拉取或推送流程前添加 origin 远程仓库。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Upstream.Title" xml:space="preserve"><value>上游</value></data>
+  <data name="GitRepositoryService.Diagnostics.Upstream.Empty" xml:space="preserve"><value>当前分支没有上游。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Upstream.Suggestion" xml:space="preserve"><value>发布分支或设置上游后，再执行普通拉取和推送。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Head.Title" xml:space="preserve"><value>HEAD 状态</value></data>
+  <data name="GitRepositoryService.Diagnostics.Head.Branch.Template" xml:space="preserve"><value>当前分支：{0}</value></data>
+  <data name="GitRepositoryService.Diagnostics.Head.Detached" xml:space="preserve"><value>仓库处于 detached HEAD 状态。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Head.Suggestion" xml:space="preserve"><value>普通开发或发布前先切换到分支。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Operation.Title" xml:space="preserve"><value>未完成操作</value></data>
+  <data name="GitRepositoryService.Diagnostics.Operation.None" xml:space="preserve"><value>当前没有进行中的合并、拣选或还原操作。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Operation.Active.Template" xml:space="preserve"><value>当前有一个 {0} 操作正在进行。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Operation.Suggestion" xml:space="preserve"><value>先解决冲突、继续、跳过或中止当前操作，再开始其他 Git 流程。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Lock.Title" xml:space="preserve"><value>锁文件</value></data>
+  <data name="GitRepositoryService.Diagnostics.Lock.RuntimeSkipped" xml:space="preserve"><value>当前运行时无法直接检查锁文件是否存在。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Lock.RuntimeSuggestion" xml:space="preserve"><value>如果 Git 报告索引锁，请先手动检查运行时仓库，不要直接删除锁文件。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Lock.Exists.Template" xml:space="preserve"><value>存在索引锁：{0}</value></data>
+  <data name="GitRepositoryService.Diagnostics.Lock.None" xml:space="preserve"><value>未检测到索引锁文件。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Lock.Suggestion" xml:space="preserve"><value>确认没有 Git 进程运行后，才能考虑处理锁文件。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Ownership.Title" xml:space="preserve"><value>仓库所有权</value></data>
+  <data name="GitRepositoryService.Diagnostics.Ownership.Ok" xml:space="preserve"><value>未检测到 safe.directory 所有权问题。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Ownership.Suggestion" xml:space="preserve"><value>如果你信任此仓库，请按 Git 错误提示把工作区路径加入 safe.directory。</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.Title" xml:space="preserve"><value>工作树状态</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.ReadFailed" xml:space="preserve"><value>读取工作树状态失败。</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.ReadFailedSuggestion" xml:space="preserve"><value>刷新 Git 工作台，并确认仓库路径仍然可用。</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.Detail.Template" xml:space="preserve"><value>分支：{0}&#xD;&#xA;上游：{1}&#xD;&#xA;已暂存：{2}&#xD;&#xA;未暂存：{3}&#xD;&#xA;未跟踪：{4}&#xD;&#xA;冲突：{5}&#xD;&#xA;储藏：{6}&#xD;&#xA;领先：{7}&#xD;&#xA;落后：{8}</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.ConflictSuggestion" xml:space="preserve"><value>先解决冲突，再提交、拉取、推送或继续序列操作。</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.DirtySuggestion" xml:space="preserve"><value>检查变更文件，然后根据需要提交、储藏或丢弃这些改动。</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.BehindSuggestion" xml:space="preserve"><value>如果后续工作依赖最新上游状态，请先拉取或获取远程更新。</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.AheadSuggestion" xml:space="preserve"><value>准备发布本地提交时执行推送。</value></data>
+  <data name="GitRepositoryService.Diagnostics.WorkingTree.StashSuggestion" xml:space="preserve"><value>如果你期望临时改动为空，请检查现有储藏。</value></data>
+  <data name="GitRepositoryService.Diagnostics.ObjectDatabase.Title" xml:space="preserve"><value>对象数据库</value></data>
+  <data name="GitRepositoryService.Diagnostics.ObjectDatabase.Unavailable" xml:space="preserve"><value>无法读取对象数据库统计信息。</value></data>
+  <data name="GitRepositoryService.Diagnostics.ObjectDatabase.UnavailableSuggestion" xml:space="preserve"><value>稍后重新诊断；如果 Git 报告仓库完整性错误，可使用命令行进一步检查。</value></data>
+  <data name="GitRepositoryService.Diagnostics.ObjectDatabase.Empty" xml:space="preserve"><value>Git 未返回对象数据库统计信息。</value></data>
+  <data name="GitRepositoryService.Diagnostics.ObjectDatabase.MaintenanceSuggestion" xml:space="preserve"><value>仓库存在较多 loose object。请在当前 Git 操作结束后，从高级维护流程考虑执行 Git maintenance 或 gc。</value></data>
+  <data name="GitRepositoryService.Diagnostics.Value.Unknown" xml:space="preserve"><value>（未知）</value></data>
+  <data name="GitRepositoryService.Diagnostics.Value.None" xml:space="preserve"><value>（无）</value></data>
+  <data name="GitRepositoryService.Operation.CreateWorktree" xml:space="preserve">
+    <value>已创建工作树。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RemoveWorktree" xml:space="preserve">
+    <value>已移除工作树。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.PruneWorktrees" xml:space="preserve">
+    <value>已清理失效工作树记录。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RepositoryIntegrityCheck" xml:space="preserve">
+    <value>仓库完整性检查完成。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.RepositoryMaintenance" xml:space="preserve">
+    <value>仓库维护完成。</value>
+  </data>
+  <data name="GitRepositoryService.Error.WorktreePathRequired" xml:space="preserve">
+    <value>工作树路径不能为空。</value>
+  </data>
+  <data name="GitRepositoryService.Error.WorktreePathInvalid" xml:space="preserve">
+    <value>工作树路径不能以短横线开头。</value>
+  </data>  <data name="GitRepositoryService.Operation.RenameBranch" xml:space="preserve">
+    <value>已重命名本地分支。</value>
+  </data>
+  <data name="GitRepositoryService.Error.RevisionRequired" xml:space="preserve">
+    <value>版本引用不能为空。</value>
+  </data>
+  <data name="GitRepositoryService.Error.CompareBranchesFailed" xml:space="preserve">
+    <value>比较 Git 分支失败。</value>
+  </data>  <data name="GitHubCli.Error.RepositoryVisibilityInvalid" xml:space="preserve">
+    <value>仓库可见性无效。</value>
+  </data>
+  <data name="GitRepositoryService.Error.PullRequestNumberRequired" xml:space="preserve">
+    <value>PR 编号必须大于 0。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.CheckoutPullRequest" xml:space="preserve">
+    <value>已检出 PR。</value>
+  </data>
+  <data name="GitRepositoryService.Operation.FetchPullRequest" xml:space="preserve">
+    <value>已获取 PR 分支。</value>
+  </data>
+    <data name="AutomationService.Error.IdRequired" xml:space="preserve">
+    <value>自动化 ID 不能为空。</value>
+  </data>
+  <data name="AutomationService.Error.NotFound" xml:space="preserve">
+    <value>未找到自动化。</value>
+  </data>
+  <data name="AutomationService.Error.RunNotFound" xml:space="preserve">
+    <value>未找到自动化运行记录。</value>
+  </data>
+  <data name="AutomationService.Error.NameRequired" xml:space="preserve">
+    <value>自动化名称不能为空。</value>
+  </data>
+  <data name="AutomationService.Error.PromptRequired" xml:space="preserve">
+    <value>自动化提示词不能为空。</value>
+  </data>
+  <data name="AutomationService.Error.WorkspacePathRequired" xml:space="preserve">
+    <value>自动化工作区路径不能为空。</value>
+  </data>
+  <data name="AutomationInputItemPlanner.Error.SkillPathRequired" xml:space="preserve">
+    <value>自动化引用的技能缺少路径：{0}</value>
+  </data>
+  <data name="AutomationInputItemPlanner.Error.PluginPathRequired" xml:space="preserve">
+    <value>自动化引用的插件缺少路径：{0}</value>
+  </data>
+  <data name="AutomationInputItemPlanner.Error.SkillUnavailable" xml:space="preserve">
+    <value>自动化引用的技能不可用：{0}</value>
+  </data>
+  <data name="AutomationInputItemPlanner.Error.PluginUnavailable" xml:space="preserve">
+    <value>自动化引用的插件不可用：{0}</value>
+  </data>
+  <data name="AutomationRunner.Error.AutomationIdRequired" xml:space="preserve">
+    <value>自动化 ID 不能为空。</value>
+  </data>
+  <data name="AutomationRunner.Error.NotFound" xml:space="preserve">
+    <value>未找到自动化。</value>
+  </data>
+  <data name="AutomationRunner.Error.WorkspacePathRequired" xml:space="preserve">
+    <value>自动化工作区路径不能为空。</value>
+  </data>
+  <data name="AutomationRunner.Status.Canceled" xml:space="preserve">
+    <value>自动化已取消。</value>
+  </data>
+  <data name="AutomationModelResolver.Message.AppServerDefault" xml:space="preserve">
+    <value>App Server 默认模型</value>
+  </data>
+  <data name="AutomationModelResolver.Message.Fallback.Template" xml:space="preserve">
+    <value>配置的模型“{0}”在当前认证来源下不可用。本次运行已改用“{1}”。</value>
+  </data>
+  <data name="AutomationRuntimePlanner.Summary.SkippedMissedRun" xml:space="preserve">
+    <value>已跳过错过的自动化运行。</value>
+  </data>
+  <data name="CodingRemote.ThreadOperation.ForkCreated" xml:space="preserve">
+    <value>分叉已创建。</value>
+  </data>
+  <data name="CodingRemote.ThreadOperation.CompactionStarted" xml:space="preserve">
+    <value>已开始压缩上下文。</value>
+  </data>
+  <data name="OfficeCliInstallation.Status.Ready" xml:space="preserve">
+    <value>OfficeCLI 已安装。</value>
+  </data>
+  <data name="OfficeCliInstallation.Status.Partial" xml:space="preserve">
+    <value>OfficeCLI 安装已完成，但仍缺少部分组件。</value>
+  </data>
+  <data name="OfficeCliInstallation.Status.Uninstalled" xml:space="preserve">
+    <value>OfficeCLI 已卸载。</value>
+  </data>
+  <data name="OfficeCliInstallation.Error.ReleaseAssetMissing" xml:space="preserve">
+    <value>OfficeCLI 发布资产不完整。</value>
+  </data>
+  <data name="OfficeCliInstallation.Error.PackageMissing" xml:space="preserve">
+    <value>未找到 OfficeCLI 安装包。</value>
+  </data>
+  <data name="OfficeCliInstallation.Error.ReleaseInvalid" xml:space="preserve">
+    <value>OfficeCLI 发布信息无效。</value>
+  </data>
+  <data name="OfficeCliInstallation.Error.ShaMissing" xml:space="preserve">
+    <value>未找到 OfficeCLI SHA256 校验项。</value>
+  </data>
+  <data name="OfficeCliInstallation.Error.ShaMismatch" xml:space="preserve">
+    <value>OfficeCLI SHA256 校验失败。</value>
+  </data>
+  <data name="OfficeCliInstallation.Error.AllSourcesFailed" xml:space="preserve">
+    <value>OfficeCLI 从 GitCode 镜像和 GitHub 官方源安装均失败。GitCode：{0}；GitHub：{1}</value>
+  </data>
+  <data name="AppServerConversationSummaryRequest.Error.ExactlyOneSourceRequired" xml:space="preserve">
+    <value>必须且只能提供一个会话摘要来源。</value>
+  </data>
+  <data name="AppServerCommandTerminalSize.Error.RowsRequired" xml:space="preserve">
+    <value>终端行数必须大于零。</value>
+  </data>
+  <data name="AppServerCommandTerminalSize.Error.ColumnsRequired" xml:space="preserve">
+    <value>终端列数必须大于零。</value>
+  </data>
+  <data name="AppServerContextInjectionService.Error.SourceNotAllowed" xml:space="preserve">
+    <value>不允许使用该上下文注入来源。</value>
+  </data>
+  <data name="AppServerClient.Windows.WorldWritableWarning.NoSamples" xml:space="preserve">
+    <value>（无示例路径）</value>
+  </data>
+  <data name="AppServerClient.Windows.WorldWritableWarning.ScanFailed" xml:space="preserve">
+    <value>Windows 路径权限扫描未完成。请查看诊断详情。</value>
+  </data>
+  <data name="AppServerClient.Windows.WorldWritableWarning.Template" xml:space="preserve">
+    <value>Windows 检测到可被广泛写入的路径。示例：{0}。</value>
+  </data>
+  <data name="AppServerClient.Error.McpResourceUriRequired" xml:space="preserve">
+    <value>MCP 资源 URI 不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.McpToolNameRequired" xml:space="preserve">
+    <value>MCP 工具名称不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.GuardianEventRequired" xml:space="preserve">
+    <value>Guardian 评估事件不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.WorkspacePathRequired" xml:space="preserve">
+    <value>工作区路径不能为空。</value>
+  </data>
+  <data name="AppServerClient.AutoApprovalReview.Started.Template" xml:space="preserve">
+    <value>自动审批审查已开始：{0}；风险：{1}；操作：{2}</value>
+  </data>
+  <data name="AppServerClient.AutoApprovalReview.Completed.Template" xml:space="preserve">
+    <value>自动审批审查已完成：{0}；状态：{1}；风险：{2}；操作：{3}</value>
+  </data>
+  <data name="AppServerClient.AutoApprovalReview.UnknownReview" xml:space="preserve">
+    <value>（未知审查）</value>
+  </data>
+  <data name="AppServerClient.AutoApprovalReview.UnknownRisk" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="AppServerClient.AutoApprovalReview.UnknownStatus" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="AppServerClient.AutoApprovalReview.UnknownAction" xml:space="preserve">
+    <value>Guardian 操作</value>
+  </data>
+  <data name="AppServerClient.ModerationMetadata.Template" xml:space="preserve">
+    <value>Moderation 元数据：{0}</value>
+  </data>
+  <data name="AppServerMcpToolCallMapper.Label.StructuredContent" xml:space="preserve">
+    <value>结构化内容：</value>
+  </data>
+  <data name="AppServerMcpToolCallMapper.Label.Metadata" xml:space="preserve">
+    <value>元数据：</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.Command" xml:space="preserve">
+    <value>命令</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.Execve" xml:space="preserve">
+    <value>程序执行</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.ApplyPatch" xml:space="preserve">
+    <value>应用补丁</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.NetworkAccess" xml:space="preserve">
+    <value>网络访问</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.McpToolCall" xml:space="preserve">
+    <value>MCP 工具调用</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.RequestPermissions" xml:space="preserve">
+    <value>权限请求</value>
+  </data>
+  <data name="AppServerGuardianApprovalReviewMapper.Action.Unknown" xml:space="preserve">
+    <value>Guardian 操作</value>
+  </data>
+  <data name="AppServerGitDiffPreferenceService.Operation.AppServerDiffLoaded" xml:space="preserve">
+    <value>已从 App Server 加载 Git diff。</value>
+  </data>
+  <data name="AppServerClient.Approval.Source.FullAccessMode" xml:space="preserve">
+    <value>完全访问模式</value>
+  </data>
+  <data name="AppServerClient.Approval.Source.CustomPermission" xml:space="preserve">
+    <value>自定义权限</value>
+  </data>
+  <data name="AppServerClient.Approval.Source.CustomCommandPrefix" xml:space="preserve">
+    <value>自定义命令前缀</value>
+  </data>
+  <data name="AppServerClient.ImageGeneration.Started.Template" xml:space="preserve">
+    <value>图像生成已开始：{0}</value>
+  </data>
+  <data name="AppServerClient.ImageGeneration.Completed.Template" xml:space="preserve">
+    <value>图像生成已完成：{0}</value>
+  </data>
+  <data name="AppServerClient.SubAgent.Activity.Template" xml:space="preserve">
+    <value>子代理活动（{0}）：{1}</value>
+  </data>
+  <data name="AppServerClient.Error.SessionBudgetExceeded" xml:space="preserve">
+    <value>当前会话已达到预算上限。</value>
+  </data>
+  <data name="RemoteRelay.Error.NonLoopbackRequiresTls" xml:space="preserve">
+    <value>内嵌远程服务通过局域网访问时必须启用 TLS。</value>
+  </data>
+  <data name="RemoteRelay.Error.InvalidCertificateFingerprint" xml:space="preserve">
+    <value>内嵌远程服务未返回有效的证书指纹。</value>
+  </data>
+  <data name="RemoteRelay.Error.CertificateValidationFailed" xml:space="preserve">
+    <value>内嵌远程服务证书验证失败。</value>
+  </data>
+  <data name="RemoteRelay.Error.InvalidInternalEndpoint" xml:space="preserve">
+    <value>内嵌远程服务未返回安全的本机回环端点。</value>
+  </data>
+  <data name="SessionFork.UnsupportedAnchor" xml:space="preserve"><value>当前运行时不支持从选定轮次分叉，请更新运行时或使用完整分叉。</value></data>
+  <data name="SessionFork.InvalidAnchor" xml:space="preserve"><value>所选轮次不存在或尚未结束，请刷新会话后选择已结束的轮次。</value></data>
+  <data name="SessionFork.MissingThread" xml:space="preserve"><value>分叉未返回新线程标识。</value></data>
+  <data name="SessionFork.NameFailed" xml:space="preserve"><value>已创建分叉 {0}，但未能保存服务端标题。新会话仍可使用，请稍后重试重命名。</value></data>
+<data name="AppServerReview.SettingsUnavailable" xml:space="preserve"><value>无法应用审核目录或运行设置。线程可能仍在运行或被其他客户端使用，审核未启动。</value></data>
+  <data name="SubAgent.Error.IdentityUnavailable" xml:space="preserve">
+    <value>无法确认子代理身份，未发送消息。</value>
+  </data>
+  <data name="SubAgent.Error.NotLoaded" xml:space="preserve">
+    <value>尚未确认代理处于空闲或运行状态。请由父代理恢复后刷新。</value>
+  </data>
+  <data name="AppServerClient.Approval.Source.FullAccessAutoApprove" xml:space="preserve">
+    <value>按完全访问设置自动批准</value>
+  </data>
+  <data name="AppServerClient.Error.InvalidHistoryPage" xml:space="preserve">
+    <value>运行时返回的历史记录不完整或分页游标重复，请重新加载会话。</value>
+  </data>
+  <data name="AppServerClient.McpApproval.Decision" xml:space="preserve"><value>批准方式</value></data>
+  <data name="AppServerClient.McpApproval.Once" xml:space="preserve"><value>本次允许</value></data>
+  <data name="AppServerClient.McpApproval.Session" xml:space="preserve"><value>本会话允许</value></data>
+  <data name="AppServerClient.McpApproval.Always" xml:space="preserve"><value>始终允许此工具</value></data>
+  <data name="AppServerClient.McpApproval.AlwaysApp" xml:space="preserve"><value>始终允许此应用</value></data>
+  <data name="ComputerUse.Status.Ready" xml:space="preserve">
+    <value>Computer Use 已就绪，可在此本机 Windows 会话中使用。</value>
+  </data>
+  <data name="ComputerUse.Status.PluginDisabled" xml:space="preserve">
+    <value>Computer Use 不可用：插件已禁用或未能启用。</value>
+  </data>
+  <data name="ComputerUse.Status.PolicyDenied" xml:space="preserve">
+    <value>Computer Use 已被当前策略禁用。</value>
+  </data>
+  <data name="ComputerUse.Status.PolicyUnsupported" xml:space="preserve">
+    <value>Computer Use 不可用：无法将当前托管策略安全地传递给本机执行器。</value>
+  </data>
+  <data name="ComputerUse.Status.ConfigConflict" xml:space="preserve">
+    <value>Computer Use 不可用：现有 node_repl 配置已禁用，或与已验证组件冲突。</value>
+  </data>
+  <data name="ComputerUse.Status.ComponentsMissing" xml:space="preserve">
+    <value>Computer Use 不可用：MyCodex 的组件缺失、损坏或存在冲突。请准备或重新安装组件包。</value>
+  </data>
+  <data name="ComputerUse.Status.Incompatible" xml:space="preserve">
+    <value>Computer Use 不可用：当前运行时或组件不支持所需接口。请更新 MyCodex 或选择兼容的运行时；普通聊天仍可继续。</value>
+  </data>
+  <data name="ComputerUse.Status.CleanupFailed" xml:space="preserve">
+    <value>Computer Use 已停止，但无法确认执行器已退出。在退出 MyCodex 前将继续阻止桌面访问。</value>
+  </data>
+  <data name="ComputerUse.Status.ReconnectRequired" xml:space="preserve">
+    <value>此已加载会话暂不可使用 Computer Use。请重新连接运行时，再恢复会话以应用桌面配置。</value>
+  </data>
+  <data name="ComputerUse.Status.ExecutionFailed" xml:space="preserve">
+    <value>Computer Use 因执行器故障而停止，未重放任何输入；可在新回合重试。</value>
+  </data>
+  <data name="ComputerUse.Status.PreparationFailed" xml:space="preserve">
+    <value>Computer Use 不可用：组件或策略准备失败，普通聊天仍可使用。</value>
+  </data>
+  <data name="ComputerUse.Status.DesktopBusy" xml:space="preserve">
+    <value>其他会话或 MyCodex 实例正在使用 Computer Use。本次请求未排队，请在对方操作结束后重试。</value>
+  </data>
+  <data name="ComputerUse.Status.GeometryUnavailable" xml:space="preserve">
+    <value>Computer Use 点击失败：缺少截图几何信息。会话仍可继续，请重新获取截图后再选择操作。</value>
+  </data>
+  <data name="ComputerUse.Status.WindowObserverNotReady" xml:space="preserve">
+    <value>官方 Computer Use 执行器未能初始化窗口打开事件监听。会话仍可继续，请先检查当前窗口，再决定后续操作。</value>
+  </data>
+  <data name="ComputerUse.Status.TargetObscured" xml:space="preserve">
+    <value>Computer Use 未执行点击：目标位置被其他窗口遮挡。会话仍可继续，请激活目标窗口并重新截图后再选择操作。</value>
+  </data>
+  <data name="ComputerUse.Status.ObservationStale" xml:space="preserve">
+    <value>Computer Use 检测到上次观察之后有用户输入。会话仍可继续，请重新读取窗口状态后再选择操作。</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadReferencedByFork" xml:space="preserve">
+    <value>仍有分叉会话引用待删除的历史，无法永久删除。可以改用归档保留历史。</value>
+  </data>
+  <data name="SessionArchive.Unconfirmed" xml:space="preserve">
+    <value>运行时尚未确认此会话已归档，已保留在列表中。</value>
+  </data>
+  <data name="Automation.Target.ScopeMismatch" xml:space="preserve">
+    <value>此自动化任务不属于当前目标，或工作目录与目标不兼容。</value>
+  </data>
+  <data name="Automation.Target.AlreadyRunning" xml:space="preserve">
+    <value>此自动化任务正在运行。</value>
+  </data>
+  <data name="Automation.Assignment.NotFound" xml:space="preserve">
+    <value>此待指定任务已不存在。</value>
+  </data>
+  <data name="Automation.Assignment.Reserved" xml:space="preserve">
+    <value>此任务已开始分配到另一个目标，请使用该目标重试。</value>
+  </data>
+  <data name="UpdateManifest.Error.InsecureUrl" xml:space="preserve">
+    <value>更新地址必须使用 HTTPS：{0}</value>
+  </data>
+  <data name="RemoteRelay.Error.OwnershipUnreadable" xml:space="preserve">
+    <value>暂时无法读取手机连接状态。详细信息已自动写入应用日志，请将日志发送给技术支持。现有服务已保留。</value>
+  </data>
+  <data name="RemoteRelay.Error.RecoveryBusy" xml:space="preserve">
+    <value>手机连接需要修复状态记录。请退出所有 MyCodex 窗口，再只打开一个目标重试；若仍提示此信息，请重启电脑后重试。</value>
+  </data>
+  <data name="AppServerClient.Error.ResumeConfigUnavailable" xml:space="preserve">
+    <value>无法读取当前供应商配置，尚未恢复会话。请重新连接后重试。</value>
+  </data>
+  <data name="TargetExitAll.Error.NotReady" xml:space="preserve">
+    <value>部分目标仍在启动、关闭或无法检查。请查看列表中的目标，待相关操作结束后重试。</value>
+  </data>
+  <data name="AppUpdate.Error.InstallerMissing" xml:space="preserve">
+    <value>下载的安装包已不可用，请重新下载更新。</value>
+  </data>
+</root>

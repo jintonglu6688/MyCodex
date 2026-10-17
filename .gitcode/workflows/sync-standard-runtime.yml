@@ -1,0 +1,168 @@
+name: sync-standard-runtime
+on:
+  schedule:
+    - cron: "0 19 * * *"
+  workflow_dispatch:
+jobs:
+  sync-standard-runtime:
+    runs-on: euleros-2.10.1
+    steps:
+      - uses: checkout-action@0.0.1
+      - name: Sync latest standard Codex runtime from npm
+        env:
+          GITCODE_TOKEN: ${{ secrets.GITCODE_TOKEN }}
+          GITCODE_OWNER: gcw_SpGZ48lW
+          GITCODE_REPO: mycodex-updates
+        run: |
+          set -euo pipefail
+          cd repo_workspace
+          if [ -z "${GITCODE_TOKEN:-}" ]; then
+            echo "GITCODE_TOKEN secret is required."
+            exit 1
+          fi
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import subprocess
+          import urllib.parse
+          import urllib.request
+
+          owner = os.environ["GITCODE_OWNER"]
+          repo = os.environ["GITCODE_REPO"]
+          token = os.environ["GITCODE_TOKEN"]
+          api_base = "https://api.gitcode.com/api/v5"
+          registry_base = "https://registry.npmjs.org"
+          encoded_token = urllib.parse.quote(token, safe="")
+          push_url = f"https://oauth2:{encoded_token}@gitcode.com/{owner}/{repo}.git"
+          manifest_path = pathlib.Path("updates/stable.json")
+          target_triples = {
+              "x86_64-pc-windows-msvc": "win32-x64",
+          }
+
+          def request_json(url, data=None, method=None):
+              headers = {}
+              body = None
+              if data is not None:
+                  body = urllib.parse.urlencode(data).encode("utf-8")
+                  headers["Content-Type"] = "application/x-www-form-urlencoded"
+              req = urllib.request.Request(url, data=body, headers=headers, method=method)
+              with urllib.request.urlopen(req, timeout=120) as response:
+                  return json.loads(response.read().decode("utf-8"))
+
+          def download(url, path):
+              with urllib.request.urlopen(url, timeout=900) as response:
+                  path.write_bytes(response.read())
+
+          def upload_release_file(tag, path):
+              file_name = path.name
+              upload_url = (
+                  f"{api_base}/repos/{owner}/{repo}/releases/{tag}/upload_url"
+                  f"?access_token={encoded_token}&file_name={urllib.parse.quote(file_name, safe='')}"
+              )
+              info = request_json(upload_url)
+              headers = {str(k): str(v) for k, v in info["headers"].items()}
+              data = path.read_bytes()
+              req = urllib.request.Request(info["url"], data=data, headers=headers, method="PUT")
+              with urllib.request.urlopen(req, timeout=900):
+                  pass
+
+          def create_release(tag, name, body):
+              request_json(
+                  f"{api_base}/repos/{owner}/{repo}/releases",
+                  {
+                      "access_token": token,
+                      "tag_name": tag,
+                      "name": name,
+                      "body": body,
+                      "target_commitish": "main",
+                  },
+                  method="POST",
+              )
+
+          def tag_exists(tag):
+              result = subprocess.run(
+                  ["git", "ls-remote", "--tags", "origin", f"refs/tags/{tag}"],
+                  check=True,
+                  text=True,
+                  stdout=subprocess.PIPE,
+              )
+              return bool(result.stdout.strip())
+
+          def delete_tag(tag):
+              if tag_exists(tag):
+                  subprocess.run(["git", "push", push_url, f":refs/tags/{tag}"], check=True)
+
+          def ascii_json(data):
+              return json.dumps(data, ensure_ascii=True, indent=2) + "\n"
+
+          latest = request_json(f"{registry_base}/%40openai%2Fcodex/latest")["version"].strip()
+          manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+          existing = [
+              item for item in manifest.get("runtimes", [])
+              if item.get("source") == "Bundled"
+          ]
+          if existing and all(item.get("version") == latest and item.get("asset", {}).get("url") for item in existing):
+              print(f"Bundled runtime {latest} already published in manifest.")
+              raise SystemExit(0)
+
+          release_tag = f"runtime-standard-{latest}"
+          artifact_dir = pathlib.Path("artifacts/runtime/Bundled") / latest
+          artifact_dir.mkdir(parents=True, exist_ok=True)
+          packages = {}
+          for target, suffix in target_triples.items():
+              metadata = request_json(f"{registry_base}/%40openai%2Fcodex/{latest}-{suffix}")
+              tarball = metadata["dist"]["tarball"]
+              file_name = pathlib.PurePosixPath(urllib.parse.urlparse(tarball).path).name
+              path = artifact_dir / file_name
+              download(tarball, path)
+              packages[target] = {
+                  "path": path,
+                  "fileName": file_name,
+                  "size": path.stat().st_size,
+                  "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+              }
+
+          delete_tag(release_tag)
+          create_release(release_tag, f"Bundled runtime {latest}", f"MyCodex bundled standard runtime {latest}.")
+          for package in packages.values():
+              upload_release_file(release_tag, package["path"])
+
+          runtimes = manifest.setdefault("runtimes", [])
+          for target, package in packages.items():
+              match = next((item for item in runtimes if item.get("source") == "Bundled" and item.get("targetTriple") == target), None)
+              if match is None:
+                  match = {
+                      "source": "Bundled",
+                      "targetTriple": target,
+                      "packageFormat": "npm-tgz",
+                  }
+                  runtimes.append(match)
+              match["version"] = latest
+              match["packageFormat"] = "npm-tgz"
+              match["asset"] = {
+                  "url": f"{api_base}/repos/{owner}/{repo}/releases/{release_tag}/attach_files/{package['fileName']}/download",
+                  "fileName": package["fileName"],
+                  "sha256": package["sha256"],
+                  "size": package["size"],
+              }
+
+          manifest["generatedAt"] = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          manifest_path.write_text(ascii_json(manifest), encoding="utf-8")
+
+          subprocess.run(["git", "config", "user.name", "MyCodex Release Bot"], check=True)
+          subprocess.run(["git", "config", "user.email", "release@mycodex.local"], check=True)
+          subprocess.run(["git", "add", str(manifest_path)], check=True)
+          diff = subprocess.run(["git", "diff", "--cached", "--quiet"])
+          if diff.returncode == 0:
+              print("Manifest unchanged.")
+          else:
+              subprocess.run(["git", "commit", "-m", f"Publish bundled runtime {latest}"], check=True)
+              subprocess.run(["git", "push", push_url, "HEAD:main"], check=True)
+
+          delete_tag("updates-stable")
+          create_release("updates-stable", "Stable Update Manifest", "Stable manifest pointer for MyCodex update checks.")
+          upload_release_file("updates-stable", manifest_path)
+          print(f"Published bundled runtime {latest}.")
+          PY
