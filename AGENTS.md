@@ -30,7 +30,7 @@ Project layout:
 - `src\MyCodex.Domain`: serializable entities and enums only. Keep this free of UI, infrastructure, process, network, execution-target, and persistence implementation concerns.
 - `src\MyCodex.Application`: DTOs, interfaces, capabilities, internal tool contracts, planners, and pure application services. Prefer this layer for behavior that can be tested without WinForms or real processes.
 - `src\MyCodex.Infrastructure`: App Server integration, process launching, WSL/remote bridges, persistence, updates, Plugin Marketplace discovery, Git/GitHub integration, process execution, and screen reader/TTS implementations.
-- `src\MyCodex.WinForms`: `Program`, forms, controls, workbenches, localization, resources, theming, skill UI, and desktop composition.
+- `src\MyCodex.WinForms`: `Program`, forms, controls, workbenches, localization, resources, theming, skill UI, and desktop composition. `Forms` is split into feature subfolders (`Main`, `Git`, `Sessions`, `Settings`, and so on) that all keep the `MyCodex.WinForms.Forms` namespace; put new form files in the matching subfolder and keep only cross-feature helpers at the `Forms` root.
 - `tests\MyCodex.Application.Tests`: NUnit 3 test project covering application, infrastructure, and WinForms behavior.
 - `tools`: PowerShell and batch entry points for builds, installer/update packaging, GitCode distribution, diagnostics, testing, refactoring, and remote support.
 - `docs`: checked-in operational documentation. Confirm a document exists before relying on it, and use current source and configuration to resolve stale guidance.
@@ -150,14 +150,14 @@ When adding behavior:
 
 ## Structural Guardrails
 
-Keep coordination classes split by responsibility. Source guard tests protect ownership boundaries; line counts make growth visible, not an absolute block on a scoped change.
+Keep coordination classes split by responsibility. Source guard tests protect ownership boundaries. `SourceGuards\CodeHealthRatchetTests` caps MainForm size and fields, long methods, large files, and copies of known duplicate helpers; its ceilings only go down. When a change improves a metric, lower that ceiling to the new value. Raise one only for justified, scoped growth and explain why.
 
 - Mapper classes should map one protocol/domain family. Do not add unrelated payload types to a mapper just because it is nearby.
 - Builder/planner classes should return data or commands. They should not directly mutate WinForms controls or start external processes.
 - Before substantial growth in a file near or above 800 lines, look for a focused extraction. Prefer files under roughly 1,200 lines and methods under roughly 80 lines; explain necessary meaningful growth rather than forcing incoherent splits.
 - Keep feature state in focused state objects, panels, planners, or services. Name new files for their responsibility rather than using catch-all partials.
 - Preserve public contracts unless the task changes them. Separate behavior-preserving extraction from behavior changes in the patch.
-- Move tests with extracted behavior, preferring focused service/planner tests over WinForms reflection where possible. Update source guards when ownership moves; preserve behavioral and safety assertions. Adjust line-count baselines only for justified, scoped growth.
+- Move tests with extracted behavior, preferring focused service/planner tests over WinForms reflection where possible. Update source guards when ownership moves; preserve behavioral and safety assertions.
 
 ## App Server And Execution Target Cautions
 
@@ -167,6 +167,7 @@ Important boundaries:
 
 - Preserve `IAppServerClient` public method signatures and event shape unless the task explicitly changes the contract.
 - Preserve App Server JSON-RPC wire format, request IDs, timeout behavior, cancellation behavior, and disconnect behavior.
+- Read App Server payload values with `AppServerJsonValueReader` (or `AppServerJsonValue`) instead of adding private `GetString`/`GetDictionary`/`GetArray` copies; keep a local reader only when its semantics differ, such as invariant-culture conversion.
 - Use existing mapper classes for account config, app summaries, MCP servers, hooks, dynamic tools, filesystem entries, fuzzy search, interaction requests, thread payloads, Windows Sandbox, and protocol capability parsing.
 - Keep dynamic/internal tool registration and execution routed through `Application\InternalTools` contracts and App Server dynamic tool mappers.
 
@@ -235,7 +236,8 @@ Follow the existing C# style:
 - Avoid adding or replacing external dependencies unless the task clearly requires it; follow the existing project-level `PackageReference` conventions when a dependency is justified.
 - For JSON persistence and protocol parsing, prefer the existing `DataContractJsonSerializer` and `JavaScriptSerializer` patterns over introducing a new JSON stack.
 - Use `StringComparison.Ordinal` or `StringComparison.OrdinalIgnoreCase` for non-linguistic comparisons.
-- Use `Path.Combine`, `Path.GetFullPath`, and existing path normalization helpers instead of manual path concatenation.
+- Use `Path.Combine`, `Path.GetFullPath`, and existing path normalization helpers such as `WorkspacePathUtilities` instead of manual path concatenation.
+- Use `TextValueHelper.TrimToNull` and `TextValueHelper.FirstNonEmptyTrimmed` from `MyCodex.Shared.Helpers` instead of adding private copies.
 - Preserve existing `.resx`, project-file, and checked-in asset encoding; do not normalize unrelated encoding or line endings.
 
 Line endings are controlled by `.gitattributes`:
@@ -255,6 +257,7 @@ Use existing helpers and conventions:
 - `UiGlyph` values with `UiTheme.ApplyButton` or `UiTheme.ApplyDialogButton` where the form pattern uses icons.
 - `FormInteractionConventions.ConfigureRefreshButton` for refresh buttons.
 - `FormInteractionConventions.ApplyMnemonic` when assigning or adjusting mnemonic suffixes.
+- `UiControlFactory` for standard dialog controls: `CreateActionButton`, `CreateDialogButton`, `CreateMutedLabel`, `CreateFillTextBox`, `CreateDropDownList`, and `CreateDialogButtonBar`. Do not add a per-form `CreateButton`/`CreateLabel`/`CreateTextBox`/`CreateComboBox` helper when a factory method matches.
 - Existing themed controls such as `ThemedTextBox`, `ChatWorkbenchControl`, and `ActivityVirtualBrowseControl` where they match the workflow.
 
 For controls:
@@ -287,6 +290,9 @@ Typical patterns:
 - Use `[TestFixture]`, `[Test]` / `[TestCase]`, and `Assert.That(...)`; use `[Apartment(ApartmentState.STA)]` for WinForms tests.
 - Use fakes/stubs instead of real network, external processes, GitHub calls, WSL, SSH, or actual Codex processes.
 - Use `TestContext.CurrentContext.WorkDirectory` plus unique subdirectories for file-system tests.
+- Access non-public members and find controls through `TestSupport\FormTestDriver` instead of local reflection helpers.
+- Source guard tests locate and read repository files through `SourceGuards\RepositorySource`, which finds production files by name so folder moves do not break them. Do not hard-code source folder paths.
+- Tag every source guard with a `SourceGuardCategory`. Add retired identifiers and file names to `RetiredIdentifierGuardTests` instead of writing a new `Does.Not.Contain` test. `SourceBehavior` tests stand in for behavior tests; when a change touches the code such a test reads, prefer rewriting it as a behavior test.
 
 When changing UI behavior or an existing UI contract:
 
