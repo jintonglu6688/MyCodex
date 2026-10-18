@@ -12,7 +12,10 @@ namespace MyCodex.Application.Tests.SourceGuards
         /// <summary>Pins code to a specific file, type, or size budget.</summary>
         public const string Placement = "SourceGuard.B";
 
-        /// <summary>Uses source text as a stand-in for runtime behavior; prefer a behavior test when the area changes.</summary>
+        /// <summary>
+        /// Uses source text as a stand-in for runtime behavior. This category is the backlog for behavior tests:
+        /// when a change touches the code such a test reads, rewrite the test to exercise the behavior instead.
+        /// </summary>
         public const string SourceBehavior = "SourceGuard.C";
 
         /// <summary>Enforces layer boundaries, security, privacy, and accessibility rules across the codebase.</summary>
