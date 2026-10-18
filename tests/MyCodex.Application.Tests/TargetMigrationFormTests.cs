@@ -60,6 +60,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [TestCase("Strings.resx")]
         [TestCase("Strings.zh-CN.resx")]
         public void MigrationActions_HaveUniqueMnemonics(string resourceFile)

@@ -25,6 +25,7 @@ namespace MyCodex.Application.Tests
             Assert.That(text, Is.EqualTo("My Channel Name"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ByCtrlService_UsesSpeak2AndDoesNotWriteConf()
         {
@@ -42,6 +43,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_initialize(null)"));
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void WinFormsProject_DoesNotPackageByCtrlConf()
         {

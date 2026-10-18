@@ -11,6 +11,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class MainFormWorkspaceContextMenuSourceTests
     {
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void WorkspaceContextMenu_ExposesAppServerFilesEntry()
         {
@@ -23,6 +24,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_workspaceContextMenu.MenuItems.Add(_workspaceAppServerFilesMenuItem)"));
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void WorkspaceContextMenu_DoesNotExposeOfficeCategoryEntries()
         {
@@ -35,6 +37,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("OnOfficeCategoryNewMenuItemClick"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void FileMenu_OpenCommandOpensCurrentOfficeWorkspaceDirectory()
         {
@@ -45,6 +48,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("ShowAppServerFilesForWorkspaceAsync(selectedItem.Workspace.RootPath);"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void WslWorkspaceOpening_ExposesSeparateWindowsAndWslEntries()
         {
@@ -65,6 +69,7 @@ namespace MyCodex.Application.Tests
             Assert.That(wslOpenHandler, Does.Contain("await OpenUnixWorkspacePathAsync();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeSessionContextMenuHidesSubAgentsAndArchive()
         {
@@ -77,6 +82,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_sessionArchiveMenuItem.Enabled = !isOfficeMode"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void WorkspaceContextMenu_GroupsImportAndSyncEntries()
         {
@@ -92,6 +98,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("_workspaceContextMenu.MenuItems.Add(_workspaceAssociateOtherSessionsMenuItem)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void FileMenu_GroupsImportAndSyncEntries()
         {
@@ -107,6 +114,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_fileMenuItem.MenuItems.Add(_fileImportSyncMenuItem)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ImportOtherSessionsEntries_OpenAssociationDialog()
         {
@@ -120,6 +128,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_workspaceImportOtherSessionsMenuItem.Click += OnWorkspaceAssociateOtherSessionsMenuItemClick"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SessionListFocus_DoesNotTriggerThreadSync()
         {
@@ -131,6 +140,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("LocalSubAgentThreadSyncTimer_Tick"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void LocalThreadSessionWatcher_ForcesFullThreadSyncWhenSessionFileChanges()
         {
@@ -145,6 +155,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("await RunAutomaticThreadSyncAsync(false, true);"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void LocalSubAgentThreadSyncTimer_PollsLocalSessionFilesDuringRuntime()
         {
@@ -157,6 +168,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("await RunLocalCurrentSubAgentThreadSyncAsync();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void WorkspaceContextMenu_FileBrowserEntryTextDoesNotMentionAppServer()
         {
@@ -169,6 +181,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("App Server Files(&F)..."));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void DeletionContextMenus_UseSingleDeleteEntryWithoutPermanentDeleteEntry()
         {

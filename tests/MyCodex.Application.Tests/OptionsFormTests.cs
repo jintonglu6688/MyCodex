@@ -118,6 +118,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OptionsForm_CustomPermissionsUseStandardCheckedListView()
         {
@@ -812,6 +813,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OptionsForm_OfficeCliAsyncCallbacksGuardDisposedForm()
         {
@@ -928,6 +930,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_SettingsMenuUsesOptionsEntry()
         {

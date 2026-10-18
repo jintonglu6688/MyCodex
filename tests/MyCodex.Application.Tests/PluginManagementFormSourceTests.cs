@@ -14,6 +14,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class PluginManagementFormSourceTests
     {
+        [Category(SourceGuardCategory.SourceBehavior)]
         [TestCase("TabControl_SelectedIndexChanged")]
         [TestCase("PluginListView_SelectedIndexChanged")]
         public void FocusAndFilterHandlers_DoNotInvokePluginServiceOperations(string methodName)
@@ -41,6 +42,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void LoadDataAsync_RemoteMarketFailureOnlyUpdatesStatus_WithoutShowingMessageBox()
         {
@@ -69,6 +71,7 @@ namespace MyCodex.Application.Tests
                 "整体加载失败时仍应弹出错误框。");
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void LoadDataAsync_PublishesFinalStatusAfterLeavingBusyState()
         {
@@ -81,6 +84,7 @@ namespace MyCodex.Application.Tests
             Assert.That(finalStatusIndex, Is.GreaterThan(clearBusyIndex));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RemoteMarketOperations_UseFormCancellationToken()
         {
@@ -94,6 +98,7 @@ namespace MyCodex.Application.Tests
             Assert.That(installSelectedPluginBody, Does.Not.Contain("CancellationToken.None"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void TabMetadata_DoesNotAssignAccessibleTabsPrefix_OrTabMnemonics()
         {
@@ -239,6 +244,7 @@ namespace MyCodex.Application.Tests
             Assert.That(result[0].Enabled, Is.True);
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void InstalledList_DeduplicatesOfficialInstalledPluginObservation()
         {
@@ -273,6 +279,7 @@ namespace MyCodex.Application.Tests
             Assert.That(apps[0].Id, Is.EqualTo("connector-github"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ReadPluginDetails_RefreshesAuthorizationActionAfterCachingApps()
         {
@@ -286,6 +293,7 @@ namespace MyCodex.Application.Tests
                 Is.LessThan(body.IndexOf("RefreshActionButtons", StringComparison.Ordinal)));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OpenAuth_RefreshesOnInstallAuthorizationOnlyAfterExplicitAction()
         {
@@ -322,6 +330,7 @@ namespace MyCodex.Application.Tests
             Assert.That(InvokeCanRefreshPluginAuthorization(plugin), Is.False);
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RemoteCatalogRegistration_PrecedesTargetRuntimeInstall()
         {
@@ -348,6 +357,7 @@ namespace MyCodex.Application.Tests
                 "WSL/远端 SSH 已支持目标端安装后，市场项不能再按 Windows 本机运行时一刀切禁用。");
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RemoteCatalog_RequiresExplicitMarketplaceRegistrationBeforePluginInstall()
         {
@@ -406,6 +416,7 @@ namespace MyCodex.Application.Tests
             Assert.That(unavailableMessage, Does.Not.Contain("does not publish a secure App Server marketplace source"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RemoteAppServerMarketplaceInstall_UsesRemoteInstallRequestInsteadOfLocalMarketplacePath()
         {
@@ -427,6 +438,7 @@ namespace MyCodex.Application.Tests
                 "远程市场条目不应先落入需要 marketplacePath 的本地安装请求。");
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RemoteAppServerMarketplaceUninstallAndAuth_UseResolvedIdentityAliases()
         {
@@ -444,6 +456,7 @@ namespace MyCodex.Application.Tests
                 "远程市场插件授权入口缓存应按完整 ID、基础 ID 等别名查找，避免刷新后按钮置灰。");
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void UninstallSelectedPluginAsync_VerifiesRefreshedStateBeforeReportingSuccess()
         {
@@ -458,6 +471,7 @@ namespace MyCodex.Application.Tests
             Assert.That(successIndex, Is.GreaterThan(verificationIndex));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void UninstallAction_UsesSharedCapabilityAndAnnouncesPersistentOutcomes()
         {
@@ -484,6 +498,7 @@ namespace MyCodex.Application.Tests
             Assert.That(operationBody, Does.Not.Contain(".Focus()"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MarketSourceTree_UsesRemoteCatalogBeforeAvailableItemFiltering()
         {
@@ -500,6 +515,7 @@ namespace MyCodex.Application.Tests
                 "市场来源应先读取远程原始来源，再合并可安装项来源。");
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MarketCategories_IncludeRuntimeMarketplacePluginCategories()
         {
@@ -512,6 +528,7 @@ namespace MyCodex.Application.Tests
                 "OpenAI Curated Remote 等 App Server 市场分类来自 plugin/list 的 Category 字段。");
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MarketBrowse_UsesTreeAndExplicitEnterInsteadOfSourceCombo()
         {
@@ -526,6 +543,7 @@ namespace MyCodex.Application.Tests
             Assert.That(keyDownBody, Does.Contain("BrowseSelectedMarketScopeAsync"));
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void MarketBrowse_DoesNotAnnounceTransientStatus()
         {
@@ -535,6 +553,7 @@ namespace MyCodex.Application.Tests
             Assert.That(body, Does.Not.Contain(", true)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MarketLayout_DoesNotSetSplitDistanceOrPanelMinSizeBeforeContainerHasWidth()
         {
@@ -546,6 +565,7 @@ namespace MyCodex.Application.Tests
             Assert.That(body, Does.Not.Contain("Panel2MinSize ="));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void LoadDataAsync_UsesCatalogAndInstalledOfficialObservations()
         {
@@ -559,6 +579,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_installedPlugins"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void LoadDataAsync_ExternalRuntimeWithoutInstalledContractRetainsReadOnlyCatalogObservation()
         {
@@ -574,6 +595,7 @@ namespace MyCodex.Application.Tests
             Assert.That(observationSource, Does.Not.Contain("File."));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RemoteCatalogStatus_UsesLocalVersionFromPluginList()
         {
@@ -585,6 +607,7 @@ namespace MyCodex.Application.Tests
             Assert.That(body, Does.Not.Contain("RuntimeVersion"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MarketplaceRefreshAction_UsesOfficialApiAndAccessibleButton()
         {
@@ -602,6 +625,7 @@ namespace MyCodex.Application.Tests
             Assert.That(operationBody.IndexOf("MessageBox.Show", StringComparison.Ordinal), Is.LessThan(0));
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void PluginManagement_RemovesUnsupportedGlobalEnablementAction()
         {
@@ -639,6 +663,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void PluginFolderAction_UsesResolvedInstalledFolderForButtonMenuAndOpen()
         {
@@ -652,6 +677,7 @@ namespace MyCodex.Application.Tests
             Assert.That(openBody, Does.Contain("ResolveSelectedPluginFolderPath"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [TestCase("TabControl_SelectedIndexChanged")]
         [TestCase("PluginListView_SelectedIndexChanged")]
         public void FocusAndFilterHandlers_DoNotTogglePluginEnabledState(string methodName)
@@ -663,6 +689,7 @@ namespace MyCodex.Application.Tests
             Assert.That(body, Does.Not.Contain("SetPluginEnabledAsync"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void PluginDetails_ProvidesRemoteSkillPreviewWithoutProtocolMethodText()
         {

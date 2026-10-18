@@ -14,6 +14,7 @@ namespace MyCodex.Application.Tests
     {
         private static readonly Regex MnemonicPattern = new Regex(@"\(&(?<key>[A-Za-z0-9])\)", RegexOptions.Compiled);
 
+        [Category(SourceGuardCategory.Assets)]
         [TestCase("GuardianDeniedActionApprovalForm", new[]
         {
             "GuardianDeniedActionApprovalForm.Button.Approve",
@@ -553,6 +554,7 @@ namespace MyCodex.Application.Tests
             Assert.That(duplicates, Is.Empty, formName + " 存在助记符重复。");
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void MainForm_AccountAttachmentAndUserCenterMnemonicsAreDistinct()
         {
@@ -568,6 +570,7 @@ namespace MyCodex.Application.Tests
             Assert.That(ExtractMnemonic(values["MainMenu.UserCenter"]), Is.EqualTo("U"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [TestCase("Strings.resx")]
         [TestCase("Strings.zh-CN.resx")]
         public void MainForm_FileMenuMnemonicsAreUnique(string resourceFileName)
@@ -598,6 +601,7 @@ namespace MyCodex.Application.Tests
                 resourceFileName);
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void AuditedFocusableChoices_AllProvideChineseMnemonics()
         {
@@ -635,6 +639,7 @@ namespace MyCodex.Application.Tests
             Assert.That(missing, Is.Empty, "以下选择项缺少助记符。");
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void AuditedActionButtons_AllProvideChineseMnemonics()
         {
@@ -685,6 +690,7 @@ namespace MyCodex.Application.Tests
             Assert.That(missing, Is.Empty, "以下按钮缺少助记符。");
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void ActiveChineseMnemonicLabels_AllProvideMnemonics()
         {

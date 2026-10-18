@@ -192,6 +192,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AutomationsForm_PassesActivityCallbacksToRunDetailsForm()
         {

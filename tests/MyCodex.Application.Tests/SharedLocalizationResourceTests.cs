@@ -16,6 +16,7 @@ namespace MyCodex.Application.Tests
             @"SharedLocalization\.Text\(""(?<key>[^""]+)""",
             RegexOptions.Compiled);
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void SourceSharedLocalizationKeys_ArePresentInEnglishAndChineseResources()
         {

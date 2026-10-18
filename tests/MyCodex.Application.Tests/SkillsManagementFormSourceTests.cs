@@ -7,6 +7,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class SkillsManagementFormSourceTests
     {
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void SkillsManagementForm_DoesNotExposeAStandaloneSkillMarketplace()
         {
@@ -21,6 +22,7 @@ namespace MyCodex.Application.Tests
             Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "SkillMarketListComposer.cs")), Is.False);
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SkillsManagementMenuItem_DoesNotSelectAStandaloneSkillMarketTarget()
         {
@@ -30,6 +32,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("IsSharedWindowsCodexHomeEnabled()"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SkillsManagementForm_UsesAppServerFileSystemForUserSkillWrites()
         {
@@ -47,6 +50,7 @@ namespace MyCodex.Application.Tests
             Assert.That(editorSource, Does.Not.Contain("Process.Start("));
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void SkillFileEditor_IsPureAndDoesNotReadOrWriteTargetFiles()
         {
@@ -56,6 +60,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("Directory."));
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void SkillsManagementForm_DoesNotShowTabInstructionText()
         {
@@ -67,6 +72,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("AccessibleName = UiLocalization.Text(\"SkillsManagementForm.Label.Skills\", \"Skills\")"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SkillsManagementForm_UninstallUsesObservedUserSkillPathThroughAppServerFileSystem()
         {
@@ -80,6 +86,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("RemoveInstalledSkillBySourcePath"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SkillsManagementForm_CancelsLifetimeWorkBeforeClose()
         {

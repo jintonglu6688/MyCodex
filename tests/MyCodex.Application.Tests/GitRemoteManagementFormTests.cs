@@ -33,6 +33,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void GitRemoteManagementForm_CancelsLifetimeWorkBeforeClose()
         {

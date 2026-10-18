@@ -14,6 +14,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class MainFormModeSourceTests
     {
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void FileMenu_DoesNotExposeRedundantModeSwitchEntry()
         {
@@ -27,6 +28,7 @@ namespace MyCodex.Application.Tests
             Assert.That(modesSource, Does.Not.Contain("UpdateModeMenuState"));
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void FileMenu_DoesNotExposeLegacyOfficeDocumentTaskEntry()
         {
@@ -43,6 +45,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainFormSource, Does.Not.Contain("IWorkbenchHost"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void PersistState_WritesCurrentModeAndPerModeSelections()
         {
@@ -55,6 +58,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("CurrentOfficeSessionId = _currentOfficeSessionId"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void PersistenceRecoveryPending_BlocksModeOnboardingAndAutomaticSaves()
         {
@@ -88,6 +92,7 @@ namespace MyCodex.Application.Tests
             Assert.That(recoverySource, Does.Contain("Close();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OptionsApplyPath_PersistsOfficeModeSettings()
         {
@@ -106,6 +111,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("OfficialOfficeCapabilityEnabled"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OptionsSave_WritesOnlyTheActiveRuntimeModeSettingsFile()
         {
@@ -120,6 +126,7 @@ namespace MyCodex.Application.Tests
             Assert.That(storeSource, Does.Not.Contain("RuntimeScopeId"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void OfficeDirectoryOptions_UseActiveRuntimeContextAndExistingRuntimeBrowser()
         {
@@ -148,6 +155,7 @@ namespace MyCodex.Application.Tests
             Assert.That(applyOptions, Does.Not.Contain("Restart"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeRootChange_PreservesSingletonIdentityAndSessionSelection()
         {
@@ -185,6 +193,7 @@ namespace MyCodex.Application.Tests
             Assert.That(officeRuntimeSource, Does.Not.Contain("Directory.Delete"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SettingsMenu_KeepsAppServerRuntimeSelectionAvailableInBothModes()
         {
@@ -205,6 +214,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainFormSource, Does.Not.Contain("EnforceBundledAppServerRuntime"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeMode_UsesConfiguredRuntimeForAppServerAndState()
         {
@@ -239,6 +249,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainFormSource, Does.Contain("GetConfiguredRuntimeProfileId()"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void PersistedState_LoadsCodingAndOfficeContextsForActiveRuntime()
         {
@@ -256,6 +267,7 @@ namespace MyCodex.Application.Tests
             Assert.That(officeRuntimeSource, Does.Contain("CloneOfficeWorkspaces"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SendPath_IncludesOfficeDeveloperInstructions()
         {
@@ -268,6 +280,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("session.Mode == AppInteractionMode.Office"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void InternalToolContext_SkipsOfficeSessions()
         {
@@ -279,6 +292,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("OfficialOfficeCapabilityEnabled"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SendPath_UsesEffectiveModelForOfficeCollaborationMode()
         {
@@ -289,6 +303,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("client.SendSubAgentMessageAsync(session.ThreadId, request.InputItems"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainSend_RemainsBoundToCapturedSessionAcrossTabSelectionChanges()
         {
@@ -313,6 +328,7 @@ namespace MyCodex.Application.Tests
             Assert.That(abort, Does.Not.Contain("_currentSession"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainSend_ShowsAndClearsAcceptedInputBeforeCreatingMissingThread()
         {
@@ -327,6 +343,7 @@ namespace MyCodex.Application.Tests
             Assert.That(recreateIndex, Is.GreaterThan(clearIndex));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainSend_DefersMetadataUntilSendAcknowledgement()
         {
@@ -341,6 +358,7 @@ namespace MyCodex.Application.Tests
             Assert.That(completion, Does.Contain("if (acknowledged) ScheduleSendMetadataUpdate(session)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void CollaborationMode_UsesCapturedSessionModeAndCachedOfficeRoot()
         {
@@ -359,6 +377,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("Mode = \"daily\""));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void DetachedSessionWorkbench_SeparatesRuntimeProfileFromOfficeDraftScope()
         {
@@ -374,6 +393,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("BuildDetachedComposeDraftScopeKey"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeTabActivation_DoesNotClearBackgroundThreadState()
         {
@@ -386,6 +406,7 @@ namespace MyCodex.Application.Tests
             Assert.That(activation, Does.Not.Contain("ResetThreadVolatileState"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeTabActivation_RestoresIndependentMessageHistoryAndViewport()
         {
@@ -413,6 +434,7 @@ namespace MyCodex.Application.Tests
             Assert.That(openSelectedSession, Does.Contain("HasPendingHistoryReload(_currentSession) || _allChatHistoryItems.Count == 0"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeTabActivation_UsesOnlyCachedInMemoryWorkspaceProjectionTransitively()
         {
@@ -442,6 +464,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainFormSource, Does.Contain("private void RefreshInputStateFromCache()"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void InitialWorkspaceRefresh_CannotCreateAWindowsOfficeDefaultForUnixRuntime()
         {
@@ -456,6 +479,7 @@ namespace MyCodex.Application.Tests
             Assert.That(workspaceRefresh, Does.Not.Contain("ResolveOfficeRootPath(_appConfigSnapshot.OfficeRootPath)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeRootProbeError_GuardsWorkspaceActionsWithoutPruningState()
         {
@@ -471,6 +495,7 @@ namespace MyCodex.Application.Tests
             Assert.That(refresh, Does.Not.Contain("NormalizeAndPruneOfficeCategories"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeWorkspaceRoutes_UseRuntimeFileSystemWithoutCategoryDiscovery()
         {
@@ -489,6 +514,7 @@ namespace MyCodex.Application.Tests
             Assert.That(modesSource, Does.Not.Contain("_appConfigSnapshot.OfficeRootPath"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeImportAutomationAndCacheRoutes_UseTargetIdentity()
         {
@@ -507,6 +533,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainSource, Does.Not.Contain("ResolveOfficeRootPath(_appConfigSnapshot.OfficeRootPath)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SendCancellationStatusMentionsOnlyRuntimeOrAuthenticationChanges()
         {
@@ -521,6 +548,7 @@ namespace MyCodex.Application.Tests
             Assert.That(chineseResources, Does.Not.Contain("由于当前运行源或会话已切换，发送已取消。"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SendPath_UsesEffectiveModelAndReasoningForTurnStartOverrides()
         {
@@ -534,6 +562,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("var turnReasoningEffort = string.IsNullOrWhiteSpace(session.ModelId) ? null : session.ReasoningEffort;"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SendPath_UsesOfficeWorkspaceIdentityForOfficeCollaborationMode()
         {
@@ -545,6 +574,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("IsOfficeSessionOrWorkspace(session, workspace)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeMode_MapsToAppServerDefaultOrPlanCollaborationMode()
         {
@@ -556,6 +586,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("Mode = \"office\""));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_HasModePartialForSwitchFlow()
         {
@@ -570,6 +601,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("RunStartupModeOnboardingIfNeeded"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_UsesTwoAccessibleModeTabsAroundOneSharedWorkbench()
         {
@@ -599,6 +631,7 @@ namespace MyCodex.Application.Tests
             Assert.That(RepositorySource.CountOccurrences(mainFormSource, "_activityBrowseControl = CreateActivityBrowseControl"), Is.EqualTo(1));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeTabs_AttachActivationAfterConfigAndStateInitialization()
         {
@@ -612,6 +645,7 @@ namespace MyCodex.Application.Tests
             Assert.That(initializeTabsIndex, Is.GreaterThan(loadStateIndex));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeTabSelection_IsTheOnlyInMemoryActivationPath()
         {
@@ -634,6 +668,7 @@ namespace MyCodex.Application.Tests
             Assert.That(activation, Does.Not.Contain("RestartAsync"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeTabs_UseDefaultStartupModeButRuntimeReloadPreservesCurrentMode()
         {
@@ -653,6 +688,7 @@ namespace MyCodex.Application.Tests
             Assert.That(initialization, Does.Not.Contain("RuntimeProfile"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RuntimeTargetTransition_ClearsOnlyTransientActivityAndSuppressesOldTargetRecovery()
         {
@@ -678,6 +714,7 @@ namespace MyCodex.Application.Tests
                 Is.LessThan(disconnected.IndexOf("TryRecoverAppServerConnectionAsync", StringComparison.Ordinal)));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeTabSelection_DoesNotRunBehindOwnedModalDialogs()
         {
@@ -689,6 +726,7 @@ namespace MyCodex.Application.Tests
             Assert.That(handler, Does.Contain("if (!Enabled)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeTabs_KeepFocusOnTheTabControlAfterActivation()
         {
@@ -700,6 +738,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("RestoreCurrentModeFocusRole"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeMode_SchedulesOfficeCliOnboardingPrompt()
         {
@@ -714,6 +753,7 @@ namespace MyCodex.Application.Tests
             Assert.That(modesSource, Does.Contain("RestartAppServerAfterOfficeCliEnvironmentChangeAsync"));
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void ManualsAndRepositoryGuidance_DescribeRuntimeAwareCoexistingModeTabs()
         {
@@ -747,6 +787,7 @@ namespace MyCodex.Application.Tests
             Assert.That(guidance, Does.Not.Contain(staleGuidanceClaim));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeCliOnboarding_IsWindowsTargetOnlyAndNeverGatesOfficeTab()
         {
@@ -762,6 +803,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("_officeTabPage.Visible = false"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeSwitch_UpdatesWindowTitle()
         {
@@ -772,6 +814,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("MainForm.Title.Mode.Office"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void FileMenu_DisablesWorkspaceManagementInOfficeMode()
         {
@@ -781,6 +824,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_openWorkspaceFileMenuItem.Enabled = !isOfficeMode"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeVisibility_AppliesOfficeActivityPaneSetting()
         {
@@ -789,6 +833,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_contentSplitContainer.Panel2Collapsed = isOfficeMode && !_appConfigSnapshot.OfficeShowActivityPane"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeVisibility_HidesWorkspaceManagementActionsInOfficeMode()
         {
@@ -806,6 +851,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_sessionArchiveMenuItem.Visible = !isOfficeMode"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeVisibility_HidesCodingOnlyActionsInOfficeMode()
         {
@@ -820,6 +866,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_reviewChatHistoryMenuItem.Visible = !isOfficeMode"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModeSwitch_PreservesComposeDraftsByModeRuntimeIdentity()
         {
@@ -842,6 +889,7 @@ namespace MyCodex.Application.Tests
             Assert.That(officeRuntimeSource, Does.Contain("GetCurrentModeDraftScopeKey"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeMode_DoesNotProjectAWorkspaceList()
         {
@@ -854,6 +902,7 @@ namespace MyCodex.Application.Tests
             Assert.That(workspacesSource, Does.Not.Contain("categoryNameOnly"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SendPath_SkipsGitMetadataUpdatesForOfficeSessions()
         {
@@ -864,6 +913,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("return Task.CompletedTask"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerFileBrowser_DefaultsToOfficeRootInOfficeMode()
         {
@@ -874,6 +924,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_resolvedOfficeRootPath ?? string.Empty"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeMode_RemovesOfficeCategoryLabels()
         {
@@ -885,6 +936,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("MainForm.Label.OfficeCategory"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeMode_UsesLocalWindowsWorkspaceCompatibility()
         {
@@ -897,6 +949,7 @@ namespace MyCodex.Application.Tests
             Assert.That(officeRuntimeSource, Does.Contain("!IsWorkspacePathCompatibleWithCurrentRuntime(workspace.RootPath)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeMode_PreservesOfficeSummaryInCompactHeader()
         {
@@ -909,6 +962,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_branchValueLabel.Text = summary.StatusText"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeWorkspace_DoesNotDiscoverChildDirectories()
         {
@@ -919,6 +973,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("RefreshOfficeCategoriesAsync"));
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void OfficeWorkspace_HasNoManagedCategoryPruning()
         {
@@ -928,6 +983,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("RefreshOfficeCategoriesAsync"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeHistoryImport_UsesSingleWorkspaceMapping()
         {
@@ -937,6 +993,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("CreateOfficeCategoryWorkspace(ResolveOfficeRootPathForHistorySync(), path)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeStateRestore_CollapsesToSingleWorkspace()
         {
@@ -946,6 +1003,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_recentWorkspaces.Add(workspace);"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeMode_RespectsActivityPaneVisibilityOption()
         {
@@ -955,6 +1013,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("_contentSplitContainer.Panel2Collapsed = false"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void InputBoxCtrlEnter_SuppressesKeyBeforeAwaitingSend()
         {
@@ -969,6 +1028,7 @@ namespace MyCodex.Application.Tests
             Assert.That(dispatchBranch.IndexOf("e.Handled = true;", StringComparison.Ordinal), Is.LessThan(dispatchBranch.IndexOf("await SendCurrentInputAsync();", StringComparison.Ordinal)));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SendBootstrap_ClearsUnboundDraftAfterRestoringItToNewSession()
         {
@@ -982,6 +1042,7 @@ namespace MyCodex.Application.Tests
             Assert.That(sendBootstrap, Does.Contain("ClearCurrentModeUnboundComposeState();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SessionCreationAndActivation_UpdatePerModeSessionSelection()
         {
@@ -993,6 +1054,7 @@ namespace MyCodex.Application.Tests
             Assert.That(chatHistoryInteractionSource, Does.Contain("UpdateCurrentModeSessionSelection(session);"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeModeSelectionPersistence_RejectsCodingWorkspaceIds()
         {
@@ -1013,6 +1075,7 @@ namespace MyCodex.Application.Tests
             Assert.That(runtimeConnectionSource, Does.Contain("await LoadWorkspaceAsync(startupWorkspacePath, false, true);"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void OfficeMode_RestoresSavedSessionWhenItStillExists()
         {
@@ -1041,6 +1104,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainFormSource, Does.Contain("MainForm.Message.OfficeNewTaskReady"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeRuntimeRoot_IsResolvedAsynchronouslyAndCachedOutsideConstruction()
         {
@@ -1060,6 +1124,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainFormSource, Does.Not.Contain("RefreshActiveOfficeRuntimeRootAsync().GetAwaiter"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeSessionDeletion_DefaultsLocalHistoryDeletionOn()
         {
@@ -1070,6 +1135,7 @@ namespace MyCodex.Application.Tests
             Assert.That(sessionsSource, Does.Contain("defaultDeleteLocalHistory"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeDirectoryOpenMessage_UsesOfficeWording()
         {
@@ -1079,6 +1145,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("MainForm.Message.OfficeDirectoryOpened.Template"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeMode_UsesSessionOnlyNavigationAndAltOneFocusesSessions()
         {
@@ -1092,6 +1159,7 @@ namespace MyCodex.Application.Tests
             Assert.That(workspaces, Does.Contain("FocusSessionList();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeRootChange_ValidatesBeforeSaveAndDoesNotRefreshCategories()
         {
@@ -1106,6 +1174,7 @@ namespace MyCodex.Application.Tests
             Assert.That(options, Does.Contain("MainForm.Status.OfficeDirectoryChangedFilesNotMoved"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeWorkspaceCompatibility_UsesExactRuntimeSingletonIdentity()
         {
@@ -1117,6 +1186,7 @@ namespace MyCodex.Application.Tests
             Assert.That(compatibility, Does.Not.Contain("StartsWith("));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void GoalSet_StartsGoalExecutionAfterSuccessfulReplacement()
         {

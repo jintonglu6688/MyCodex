@@ -23,6 +23,7 @@ namespace MyCodex.Application.Tests
     [Apartment(ApartmentState.STA)]
     public sealed class RemoteServiceManagementFormTests
     {
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void Source_CancelsLifetimeWorkBeforeClose()
         {

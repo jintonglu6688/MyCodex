@@ -7,6 +7,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class MainFormHostSettingsSourceTests
     {
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void HostSettingsComposition_UsesExistingRuntimeDefaultsAndSafeScopeData()
         {
@@ -25,6 +26,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("ApiKey"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void PermissionLabels_AreSharedByOptionsAndRemoteSettings()
         {
@@ -37,6 +39,7 @@ namespace MyCodex.Application.Tests
             Assert.That(host, Does.Contain("CustomApprovalPermissionDisplayText.Get"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void HostSettingsMutation_RefreshesWithoutReloadingSessionHistory()
         {

@@ -96,6 +96,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void Program_RunsUserCacheMaintenanceBeforeConfiguringDiagnostics()
         {

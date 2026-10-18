@@ -7,6 +7,7 @@ using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
 {
+    [Category(SourceGuardCategory.Assets)]
     [TestFixture]
     public sealed class WinFormsPackagingTests
     {

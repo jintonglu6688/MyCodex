@@ -11,6 +11,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class MainFormShortcutSourceTests
     {
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ProcessCmdKey_CtrlEOpensAppServerFileBrowser()
         {
@@ -20,6 +21,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("OpenAppServerFilesForCurrentWorkspaceAsync();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ProcessCmdKey_AltEOpensAppServerFileBrowserRoot()
         {
@@ -30,6 +32,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("if (keyData == (Keys.Alt | Keys.E))\n            {\n                ShowRuntimeFileExplorer();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ProcessCmdKey_CtrlTopRowDigitsSelectModeTabsOnlyWhenEnabled()
         {
@@ -46,6 +49,7 @@ namespace MyCodex.Application.Tests
             Assert.That(method, Does.Contain("keyData == (Keys.Alt | Keys.D2) || keyData == (Keys.Alt | Keys.NumPad2)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ProcessCmdKey_LeavesCtrlTabNavigationToTabControl()
         {
@@ -56,6 +60,7 @@ namespace MyCodex.Application.Tests
             Assert.That(method, Does.Contain("return base.ProcessCmdKey(ref msg, keyData);"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ProcessCmdKey_EscapeUsesWindowCloseSettingForMainWindow()
         {
@@ -66,6 +71,7 @@ namespace MyCodex.Application.Tests
             Assert.That(method, Does.Contain("HideMainWindowToTray();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void FileMenu_ExposesGlobalFileBrowserEntry()
         {
@@ -79,6 +85,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("Open Global File Browser(&E)..."));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void FileMenu_ExposesWorkspaceAndSessionShortcuts()
         {
@@ -90,6 +97,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("Shortcut = Shortcut.CtrlN"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void WorkspaceAndSessionLists_ExposePrimaryKeyboardActions()
         {
@@ -105,6 +113,7 @@ namespace MyCodex.Application.Tests
             Assert.That(sessionKeyDown, Does.Contain("await RenameSelectedSessionAsync();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ContextMenus_ShowShortcutHintsForMirroredKeyboardActions()
         {
@@ -119,6 +128,7 @@ namespace MyCodex.Application.Tests
             AssertMenuItemShortcut(source, "_removeSelectedAttachmentMenuItem", "Shortcut.Del");
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void FileMenu_DoesNotExposeLegacyRuntimeFileExplorer()
         {
@@ -130,6 +140,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("ShowRuntimeFileExplorer"));
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void AccountMenu_DoesNotExposeStandaloneOpenRouterOrGatewayEntries()
         {
@@ -143,6 +154,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("_accountMenuItem.MenuItems.Add(_gatewayCenterMenuItem)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AccountMenu_OpensBackendAuthenticationCenterWithoutLegacySourceSwitching()
         {
@@ -156,6 +168,7 @@ namespace MyCodex.Application.Tests
             Assert.That(authentication, Does.Not.Contain("RestartAppServerForRuntimeSettingsAsync("));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ModelList_UsesOnlyAppServerObservations()
         {
@@ -170,6 +183,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("ModelConversionSourcePlanner.BuildEnabledModels"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerConnection_DoesNotPrepareLegacyModelRelayForAnyTarget()
         {
@@ -181,6 +195,7 @@ namespace MyCodex.Application.Tests
             Assert.That(gatewayReadyIndex, Is.EqualTo(-1));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerAvailableForAction_DoesNotRefreshLegacyAuthenticationSourceForAnyTarget()
         {
@@ -192,6 +207,7 @@ namespace MyCodex.Application.Tests
             Assert.That(refreshIndex, Is.EqualTo(-1));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void TargetReloadMenu_UsesTheExplicitAppServerRestartPath()
         {
@@ -210,6 +226,7 @@ namespace MyCodex.Application.Tests
             Assert.That(handler, Does.Contain("await RestartAppServerForRuntimeSettingsAsync("));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AutomaticReconnect_DoesNotUseTheExplicitTargetReloadCommand()
         {
@@ -230,6 +247,7 @@ namespace MyCodex.Application.Tests
             Assert.That(reconnect, Does.Contain("await RefreshOfficialConfigStateAfterConnectAsync()"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RuntimeProfileReload_LoadsTargetRuntimeStateWithoutAuthenticationSourceSelection()
         {
@@ -242,6 +260,7 @@ namespace MyCodex.Application.Tests
             Assert.That(method, Does.Not.Contain("RefreshCurrentAuthenticationSourceSelectionAsync"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RuntimeSettingsSwitch_SavesOldRuntimeDraftBeforeChangingRuntimeAndReloadsWithoutResaving()
         {
@@ -258,6 +277,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("ReloadLocalStateForCurrentRuntimeProfileAsync(false)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RuntimeTargetChange_IsMandatoryImmediateStopAndReconnectEvenWhenDisconnected()
         {
@@ -278,6 +298,7 @@ namespace MyCodex.Application.Tests
             Assert.That(hardSwitch, Does.Not.Contain("AppServerRuntimeSavedRestartLater"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RuntimeTargetChange_SavesNewConfigThenUsesTargetDefaultMode()
         {
@@ -300,6 +321,7 @@ namespace MyCodex.Application.Tests
             Assert.That(restart, Does.Contain("_automationRuntimeHost?.Start();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RuntimeTargetSwitchUsesTargetDefaultWhileSameTargetRestartPreservesSelectedMode()
         {
@@ -311,6 +333,7 @@ namespace MyCodex.Application.Tests
             Assert.That(sameTargetRestart, Does.Contain("false,"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RuntimeTargetChange_ConfigSaveFailureRestoresOldSnapshotWithoutStoppingActivity()
         {
@@ -328,6 +351,7 @@ namespace MyCodex.Application.Tests
                 Does.Not.Contain("StopCurrentRuntimeActivityAsync"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RuntimeTargetRestartFailure_RemainsOnNewTargetTabDisconnectedWithoutFallback()
         {
@@ -344,6 +368,7 @@ namespace MyCodex.Application.Tests
             Assert.That(failure, Does.Not.Contain("_automationRuntimeHost?.Start();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RateLimitAutoReset_UsesBackgroundTimerAndSelectedCredit()
         {
@@ -360,6 +385,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("DisposeRateLimitAutoResetTimerOnExit"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RuntimeSettingsRestart_LoadsTargetRuntimeStateBeforeRuntimeMetadata()
         {
@@ -377,6 +403,7 @@ namespace MyCodex.Application.Tests
             Assert.That(configIndex, Is.GreaterThan(reloadIndex));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ApprovalDialog_SendsDecisionWithoutConnectionReadinessProbe()
         {
@@ -392,6 +419,7 @@ namespace MyCodex.Application.Tests
             Assert.That(appServerReadyIndex < 0 || appServerReadyIndex > resolveIndex, Is.True);
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ApprovalDialog_NotifiesOnceBeforeWaitingForItsTargetForeground()
         {
@@ -420,6 +448,7 @@ namespace MyCodex.Application.Tests
             Assert.That(presentation, Does.Not.Contain("Form.ActiveForm"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerFileBrowserClipboardPaste_UsesCustomMarkerWithoutClipboardText()
         {
@@ -432,6 +461,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("ClipboardText"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AttachmentMenuKeyboardOpen_RestoresFocusWhenMenuCloses()
         {
@@ -442,6 +472,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("control.Focus();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AttachmentMenuKeyboardOpen_SuppressesSyntheticButtonClick()
         {
@@ -452,6 +483,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_suppressNextAttachmentButtonClick = false;"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_AccountUsesAltC_UserCenterUsesAltU_AndAttachmentUsesCtrlShiftA()
         {
@@ -465,6 +497,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("OpenAttachmentMenuFromKeyboard();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void HelpMenu_ExposesLogDirectoryEntry()
         {
@@ -478,6 +511,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("UseShellExecute = true"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void HelpMenu_ExposesOfficialWebsiteEntry()
         {
@@ -490,6 +524,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("ExternalUrlLauncher.Open(\"https://mycodex.jtl.world/\")"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ChatHistoryList_UsesLeftRightForTurnAnchorNavigation()
         {

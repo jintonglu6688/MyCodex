@@ -4,6 +4,7 @@ using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
 {
+    [Category(SourceGuardCategory.Architecture)]
     [TestFixture]
     public sealed class RemoteConversationDiagnosticsTests
     {

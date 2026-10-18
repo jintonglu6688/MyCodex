@@ -8,6 +8,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class InstallerBuildScriptTests
     {
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void BuildInstaller_UsesLatestInstalledBundledRuntimeBeforeOfficialLatestFallback()
         {
@@ -23,6 +24,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("$bundledCodexVersion = Get-BundledCodexVersion"));
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void BuildInstaller_CleansPackageRuntimeBeforeCompilingInstaller()
         {
@@ -34,6 +36,7 @@ namespace MyCodex.Application.Tests
             Assert.That(compileIndex, Is.GreaterThan(codexCleanupIndex));
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void BuildInstaller_RemovesRetiredBundledNodeRuntimeBeforeCompilingInstaller()
         {
@@ -46,6 +49,7 @@ namespace MyCodex.Application.Tests
             Assert.That(compileIndex, Is.GreaterThan(cleanupIndex));
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void BuildInstaller_ValidatesBundledCodexRuntimeBeforeCompilingInstaller()
         {
@@ -57,6 +61,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("Test-BundledNodeRuntimeExists"));
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void BuildInstaller_BundlesRemoteServiceButNotProviderRuntime()
         {
@@ -68,6 +73,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain(@"runtime\relay\mycodex-relay.exe"));
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void Installer_DeletesPreviouslyInstalledRuntimeDirectoryBeforeCopyingPackageFiles()
         {
@@ -79,6 +85,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("Stop-MyCodexManagedProcesses.ps1"));
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void Installer_RequiresNormalResourceUserExitBeforeAuthenticationAndRuntimeReplacement()
         {
@@ -98,6 +105,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("ReleaseInstallationReservation()"));
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void OnlineUpdate_LaunchesStandaloneInstallerWithoutClientExitPrecondition()
         {

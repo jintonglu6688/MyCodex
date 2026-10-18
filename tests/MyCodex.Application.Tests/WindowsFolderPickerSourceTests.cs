@@ -9,6 +9,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class WindowsFolderPickerSourceTests
     {
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void WinFormsFolderSelection_UsesCommonItemDialogInsteadOfLegacyFolderBrowserDialog()
         {
@@ -23,6 +24,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void WindowsFolderPicker_UsesVistaCommonFileDialogPickFoldersMode()
         {

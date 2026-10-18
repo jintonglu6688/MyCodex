@@ -124,6 +124,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void WinFormsProject_AlwaysCopiesZdsrApiDllAndDoesNotPackageIni()
         {
@@ -134,6 +135,7 @@ namespace MyCodex.Application.Tests
             Assert.That(project, Does.Not.Contain("ZDSRAPI.ini"));
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void SharedBuildScript_RemovesObsoleteZdsrApiIniAndTextFiles()
         {

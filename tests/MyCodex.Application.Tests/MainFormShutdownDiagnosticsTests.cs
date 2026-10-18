@@ -51,6 +51,7 @@ namespace MyCodex.Application.Tests
             Assert.That(messages, Is.Empty);
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainFormShutdown_UsesBudgetedScreenReaderCleanupInsteadOfBlockingUiThread()
         {
@@ -63,6 +64,7 @@ namespace MyCodex.Application.Tests
             Assert.That(method, Does.Not.Contain("MainFormShutdownDiagnostics.RunStep(\"dispose-screen-reader-service\", () => _screenReaderService.Dispose())"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainFormShutdown_DoesNotDisposeScreenReaderServiceDuringExitCleanup()
         {
@@ -72,6 +74,7 @@ namespace MyCodex.Application.Tests
             Assert.That(method, Does.Not.Contain("_screenReaderService.Dispose()"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ApplicationExit_WindowCloseFileMenuAndTrayUseOneConfirmationImplementation()
         {
@@ -93,6 +96,7 @@ namespace MyCodex.Application.Tests
             Assert.That(confirm, Does.Contain("ExitConfirmationMessageBox.Show"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ApplicationExitStopsLocalAuthenticationAfterAppServerAndRestoresItBeforeConnect()
         {
@@ -113,6 +117,7 @@ namespace MyCodex.Application.Tests
                 Is.LessThan(connect.IndexOf("_appServerClient.ConnectAsync()", StringComparison.Ordinal)));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ApplicationExit_UsesConcisePromptWhenIdleAndDualModeWarningForAnyActiveRuntimeWork()
         {
@@ -131,6 +136,7 @@ namespace MyCodex.Application.Tests
             Assert.That(active, Does.Not.Contain("_currentInteractionMode"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ApplicationExit_ConfirmsThenSavesMergedDualModeStateBeforeCleanup()
         {

@@ -271,6 +271,7 @@ namespace MyCodex.Application.Tests
             Assert.That(client.AddedSource, Is.EqualTo("https://market.jtl.world/git/mycodex-official.git"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_RunsBuiltInMarketplaceBootstrapAtStartupAndTargetReloadButNotReconnect()
         {

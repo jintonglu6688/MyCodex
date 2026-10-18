@@ -8,6 +8,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class MainFormSessionSettingsSourceTests
     {
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SettingsMenu_DoesNotExposeEffectiveConfigOrRuntimeCapabilitiesEntries()
         {
@@ -32,6 +33,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ExtensionsMenu_DoesNotExposeExternalAgentConfigImportEntry()
         {
@@ -42,6 +44,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("RefreshAfterExternalAgentConfigImportAsync"));
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void SettingsMenu_DoesNotExposeQuickFileSearchOrAppServerFilesEntry()
         {
@@ -55,6 +58,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("AppServerFilesMenuItem_Click"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SessionDefaults_UseTargetScopedHostPreferencesAndAppServerObservations()
         {
@@ -67,6 +71,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("ModelConversionSourcePlanner"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RuntimeSessionDefaults_DoNotUseTargetEndpointStorage()
         {
@@ -78,6 +83,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainFormSource, Does.Not.Contain("JsonRuntimeSessionDefaultsStore"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ConversationPath_UsesOnlyAppServerModelObservations()
         {
@@ -109,6 +115,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void NewConversation_AnnouncesFirstObservedModelFallback()
         {
@@ -119,6 +126,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("SpeakAuxiliaryTextWithScreenReader(fallbackMessage)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SettingsMenu_RemoteServiceEntryIsAlwaysAvailable()
         {
@@ -136,6 +144,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainFormSource, Does.Not.Contain("_accountMenuItem.MenuItems.Add(_remoteServiceMenuItem)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RemoteHostRealtimeClient_WiresOfficeRemoteService()
         {
@@ -149,6 +158,7 @@ namespace MyCodex.Application.Tests
             Assert.That(method, Does.Contain("BuildHostSettingsOperator()"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RemoteServiceManagement_RestartUsesSafeBeginInvoke()
         {
@@ -159,6 +169,7 @@ namespace MyCodex.Application.Tests
             Assert.That(method, Does.Not.Contain("BeginInvoke(new Action("));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RemoteServiceManagement_ComposesChannelScopedPairingWorkflow()
         {
@@ -174,6 +185,7 @@ namespace MyCodex.Application.Tests
             Assert.That(formSource, Does.Not.Contain("new JsonRemoteBindingStore()"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RefreshOfficialConfigAfterConnect_ChecksStartupFastModePrompt()
         {

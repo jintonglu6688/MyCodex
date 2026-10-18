@@ -12,6 +12,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class MarketplaceManagementBoundaryTests
     {
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void StartupComposition_DoesNotOwnLegacyMarketplaceOrSkillTargetState()
         {
@@ -24,6 +25,7 @@ namespace MyCodex.Application.Tests
             Assert.That(programSource, Does.Not.Contain("SkillMarketTargetInstaller"));
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void LegacyTargetMirrorAndInstallerImplementations_AreDeleted()
         {
@@ -41,6 +43,7 @@ namespace MyCodex.Application.Tests
             Assert.That(skillEditorSource, Does.Not.Contain("SharedSkillPathResolver"));
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void PluginManagementComposition_UsesOnlyCatalogAndAppServerForTargetState()
         {
@@ -65,6 +68,7 @@ namespace MyCodex.Application.Tests
             Assert.That(remoteList, Does.Not.Contain("AddRuntimeInstalledPluginAttachments"));
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void MutationButtons_UseRuntimeCapabilityPolicyInsteadOfVersionChecks()
         {
@@ -77,6 +81,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("RuntimeVersion.CompareTo"));
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void AppServerPluginOperations_UseMethodSpecificProtocolCapabilities()
         {
@@ -92,6 +97,7 @@ namespace MyCodex.Application.Tests
             Assert.That(ExtractBlock(source, source.IndexOf("UninstallPluginAsync(", StringComparison.Ordinal)), Does.Contain("SupportsPluginMutation"));
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void InstalledPluginConsumers_UseOneOfficialObservationService()
         {
@@ -119,6 +125,7 @@ namespace MyCodex.Application.Tests
             Assert.That(serviceSource, Does.Not.Contain("File."));
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void RemoteCatalogRegistration_IsExplicitAndDoesNotInstallAPlugin()
         {
@@ -195,6 +202,7 @@ namespace MyCodex.Application.Tests
             Assert.That(availability.IsAvailable, Is.True);
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void PluginState_UsesDistinctOfficialInstalledObservationWithSharedSummaryMapper()
         {

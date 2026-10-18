@@ -14,6 +14,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class RelayHostRealtimeClientSourceTests
     {
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void WebSocketSends_UsePerChannelSecureSendGate()
         {

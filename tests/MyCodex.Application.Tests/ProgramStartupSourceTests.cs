@@ -9,6 +9,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class ProgramStartupSourceTests
     {
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerClient_UsesConfiguredRuntimeStoreDirectly()
         {
@@ -23,6 +24,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("JsonAuthenticationSourceSelectionStore"));
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void ProductionComposition_DoesNotRecreateRetiredAuthenticationStores()
         {
@@ -33,6 +35,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainFormSource, Does.Not.Contain("new JsonChatGptAuthBackupStore"));
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void ProductionComposition_DoesNotCreateRetiredProviderOrModelRoutingServices()
         {
@@ -44,6 +47,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("Mimo2" + "Codex"));
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void ProductionSources_DoNotRetainProviderRoutingUnderLegacyNames()
         {
@@ -77,6 +81,7 @@ namespace MyCodex.Application.Tests
             Assert.That(offenders, Is.Empty);
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void BuildAndInstallerSources_DoNotPackageRetiredProviderRuntimes()
         {
@@ -102,6 +107,7 @@ namespace MyCodex.Application.Tests
             Assert.That(offenders, Is.Empty);
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void ProductionAndDistributionSources_DoNotOwnABundledNodeRuntime()
         {
@@ -134,6 +140,7 @@ namespace MyCodex.Application.Tests
             Assert.That(File.Exists(Path.Combine(repositoryRoot, "tools", "runtime", "node-runtime.sha256")), Is.False);
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void ProductionSources_DoNotRetainSharedWindowsCodexHomeSupport()
         {
@@ -145,6 +152,7 @@ namespace MyCodex.Application.Tests
             Assert.That(offendingFiles, Is.Empty);
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void Program_ResolvesTargetBeforeSettingsAndRoutesOnlyFiniteActivation()
         {
@@ -162,6 +170,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("ReadToEnd()"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void Program_DoesNotReloadConfigBeforeMainFormRecoveryBoundary()
         {

@@ -85,6 +85,7 @@ namespace MyCodex.Application.Tests
             });
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void McpManagementForm_SourceCancelsLifetimeWorkBeforeClose()
         {
@@ -114,6 +115,7 @@ namespace MyCodex.Application.Tests
             });
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void McpManagementForm_OnlyReloadsOfficialConfigAfterAnExplicitMcpMutation()
         {

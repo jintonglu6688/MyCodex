@@ -10,6 +10,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class MainFormStructureSourceTests
     {
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void RemovedTurnChangesViewer_LeavesGitWorkbenchAndEncodingChecksAvailable()
         {
@@ -23,6 +24,7 @@ namespace MyCodex.Application.Tests
                 Does.Contain("CheckTurnEncodingSafety(e.ThreadId, state.TurnId, state.DiffText, state.ChangedFiles)"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void CompactLayout_PreservesAccessibleNamesAndCommandPlacement()
         {
@@ -237,6 +239,7 @@ namespace MyCodex.Application.Tests
             "GetWindowStatusText"
         };
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainFormSourceMetrics_ReportSizeTargetsAndBaselines()
         {
@@ -250,6 +253,7 @@ namespace MyCodex.Application.Tests
                 "MainForm source metrics should continue to report large-file size targets and baselines.");
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainFormCoreFile_DoesNotRegainExtractedWorkflowImplementations()
         {
@@ -269,6 +273,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("private async Task RunWorkspaceCommandAsync("));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_OfficeRuntimeStateAndRootLogicLivesInDedicatedPartial()
         {
@@ -285,6 +290,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainSource, Does.Not.Contain("private async Task RefreshActiveOfficeRuntimeRootAsync()"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_ModeActivationAndRuntimeTransitionRemainInBoundedPartials()
         {
@@ -300,6 +306,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainSource, Does.Not.Contain("private async Task StopCurrentRuntimeActivityAsync(string reason)"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainFormCoreFile_PhaseCandidateResponsibilitiesDoNotExpandBeforeExtraction()
         {
@@ -331,6 +338,7 @@ namespace MyCodex.Application.Tests
                 "Phase 6 Activity/Log/Status/Title methods should live outside MainForm.cs after Phase 6.");
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_GoalPlanWorkflowsLiveInDedicatedPartialAndUsePlanner()
         {
@@ -349,6 +357,7 @@ namespace MyCodex.Application.Tests
             Assert.That(CountPrivateMethodDeclarations(goalsSource, Phase1GoalPlanMethodNames), Is.GreaterThanOrEqualTo(20));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_ThreadSyncWorkflowsLiveInDedicatedPartialAndUsePlanner()
         {
@@ -368,6 +377,7 @@ namespace MyCodex.Application.Tests
             Assert.That(CountPrivateMethodDeclarations(threadSyncSource, Phase2ThreadSyncMethodNames), Is.GreaterThanOrEqualTo(27));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_ChatHistoryInteractionLivesInDedicatedPartialAndUsesPlanner()
         {
@@ -388,6 +398,7 @@ namespace MyCodex.Application.Tests
             Assert.That(CountPrivateMethodDeclarations(chatHistorySource, Phase3ChatHistoryMethodNames), Is.GreaterThanOrEqualTo(28));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_RuntimeConnectionLifecycleLivesInDedicatedPartial()
         {
@@ -403,6 +414,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainSource, Does.Not.Contain("private static bool IsAppServerConnectivityFailure("));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_ActivityLogAndStatusTitleLiveInDedicatedPartials()
         {
@@ -428,6 +440,7 @@ namespace MyCodex.Application.Tests
             Assert.That(activitySource, Does.Contain("_activityBrowseControl.SetItems(items)"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void Phase7ListItems_LiveOutsideMainFormCoreFile()
         {
@@ -448,6 +461,7 @@ namespace MyCodex.Application.Tests
             Assert.That(workspaceListItemSource, Does.Not.Contain("categoryNameOnly"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void ExistingMainFormPartials_DeclarePartialClass()
         {
@@ -469,6 +483,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void FutureMainFormPartials_ShouldExistAfterPhase2()
         {
@@ -491,6 +506,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void Phase5BMainFormHelpers_ExistWithExpectedTypes()
         {
@@ -514,6 +530,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void Phase6AuthenticationPresentationHelper_ExistsAndSessionSettingsDelegatesToIt()
         {
@@ -530,6 +547,7 @@ namespace MyCodex.Application.Tests
             Assert.That(helperSource, Does.Not.Contain("RuntimeSessionDefaultsStore"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainFormCoreFile_DelegatesPhase5BPureResponsibilities()
         {
@@ -548,6 +566,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("private string BuildWindowTitle("));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_AutomationIntegration_UsesDedicatedRuntimeHost()
         {
@@ -558,6 +577,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("AutomationRunStatus.Running"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_DelegatesAutomationNavigationDecisions()
         {
@@ -570,6 +590,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("private bool IsAutomationRemotePath(string path)"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_DelegatesSessionWorkspacePlanning()
         {
@@ -591,6 +612,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("private static bool AreAutomationPathsEqual("));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void AppServerEvents_AutomationTerminalEventsRefreshOpenAutomationsForm()
         {
@@ -622,6 +644,7 @@ namespace MyCodex.Application.Tests
                 Is.LessThan(block.IndexOf("_automationsForm.RefreshAutomationState();", System.StringComparison.Ordinal)));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_AutomationsFormReceivesRunActionCallbacks()
         {
@@ -636,6 +659,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_appServerClient.InterruptAsync(run.ThreadId"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_AutomationsFormReceivesModelSelectionCallbacks()
         {
@@ -648,6 +672,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("SupportsReasoningEffortForModel = SupportsReasoningEffortForModel"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_MessageSendingWorkflowLivesInDedicatedPartial()
         {
@@ -664,6 +689,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainSource, Does.Not.Contain("private SendOperationContext CaptureSendOperationContext()"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_SessionDialogWorkflowsLiveInDedicatedPartial()
         {
@@ -676,6 +702,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainSource, Does.Not.Contain("private async Task ShowReviewStartDialogAsync("));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_ForkWorkflowsPassSelectedTurnIdToSegmentedThreadWorkflow()
         {
@@ -688,6 +715,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainWorkflowSource, Does.Contain("await ShowForkSessionDialogAsync(_currentSession);"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_Phase5ProjectInstructionsAndBranchingLiveOutsideCoreFile()
         {
@@ -710,6 +738,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainSource, Does.Not.Contain("private async Task CreateForkSessionAsync("));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_ThreadSyncWorkflowLivesInDedicatedPartial()
         {
@@ -726,6 +755,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainSource, Does.Not.Contain("private async Task ShowThreadAssociationDialogAsync("));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_ModelAndWorkspaceCommandWorkflowsLiveInDedicatedPartials()
         {
@@ -743,6 +773,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainSource, Does.Not.Contain("private async Task RunWorkspaceCommandAsync("));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_ConstructorDelegatesPostReadonlyUiInitialization()
         {
@@ -759,6 +790,7 @@ namespace MyCodex.Application.Tests
             Assert.That(constructorBlock, Does.Not.Contain("_automaticThreadSyncTimer.Tick += AutomaticThreadSyncTimer_Tick;"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_SessionSettingsSubflowsLiveInFocusedPartials()
         {
@@ -778,6 +810,7 @@ namespace MyCodex.Application.Tests
             Assert.That(sessionSettingsSource, Does.Not.Contain("private async Task OpenOptionsAsync()"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void AutomationsForm_EditContextMenuIsWiredToUpdateExistingAutomation()
         {
@@ -791,6 +824,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("BuildUpdateRequest("));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_AutomationRunTargetsCanOpenThreadAndLocalPaths()
         {
@@ -839,6 +873,7 @@ namespace MyCodex.Application.Tests
             Assert.That(chineseResources, Does.Contain("name=\"AutomationsForm.Status.RemotePathOpenUnsupported\""));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_WorkspaceAutomationEntriesAreWired()
         {
@@ -865,6 +900,7 @@ namespace MyCodex.Application.Tests
             Assert.That(englishResources, Does.Contain("Create Project Automation(&amp;A)..."));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void AppServerEvents_CommandOutputWritesTerminalButNotActivityLog()
         {
@@ -878,6 +914,7 @@ namespace MyCodex.Application.Tests
             Assert.That(block, Does.Not.Contain("AppendLog(e.Content)"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void ActivityArea_UsesStableListBoxInsteadOfTextBoxCaret()
         {
@@ -906,6 +943,7 @@ namespace MyCodex.Application.Tests
             Assert.That(renderBlock, Does.Not.Contain("BeginUpdate()"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void ActivityArea_ReliesOnAccessibilityNotificationsInsteadOfManualSpeech()
         {
@@ -924,6 +962,7 @@ namespace MyCodex.Application.Tests
             Assert.That(combinedSource, Does.Not.Contain("SpeakLine(e.Text)"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void ManualBrowse_DelegatesMainWindowStateToTheSharedContext()
         {
@@ -940,6 +979,7 @@ namespace MyCodex.Application.Tests
             Assert.That(hotkeyMethod, Does.Not.Contain("ManualReadTarget.Activity"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void ManualBrowse_ReservesAltEnterForTheVirtualCursor()
         {
@@ -948,6 +988,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_mainManualBrowseContext != null && keyData == (Keys.Alt | Keys.Enter)"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ActivityManualReadTarget_SupportsBoundaryAndPagingHotkeys()
         {
@@ -969,6 +1010,7 @@ namespace MyCodex.Application.Tests
             Assert.That(activityBlock, Does.Contain("ReadRelativeActivityItem(1, PageSize)"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MessageViewerOpenCommandsUseSeparateListAndManualReadCursors()
         {
@@ -989,6 +1031,7 @@ namespace MyCodex.Application.Tests
             Assert.That(hotkeyBlock, Does.Not.Contain("GetPrimaryChatHistoryItem()"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void ActivityArea_ContextMenuUsesSettingsDialogAndClearActivity()
         {
@@ -1009,6 +1052,7 @@ namespace MyCodex.Application.Tests
             Assert.That(contextMenuBlock, Does.Not.Contain("_clearLogMenuItem"));
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void ChatHistory_ContextMenuDoesNotExposeMessageFilters()
         {
@@ -1022,6 +1066,7 @@ namespace MyCodex.Application.Tests
             Assert.That(layoutSource, Does.Not.Contain("MainForm.Context.Filter."));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_CommandLineWorkspaceOpensAndCreatesSessionWhenNoneExists()
         {
@@ -1039,6 +1084,7 @@ namespace MyCodex.Application.Tests
             Assert.That(traySource, Does.Contain("LoadCommandLineWorkspaceAsync(options.WorkspacePath)"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_ForkResolvesRuntimeSettingsBeforeCreatingAndKeepsOverridesInWorkflow()
         {
@@ -1055,6 +1101,7 @@ namespace MyCodex.Application.Tests
 
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_ReviewOwnsFreshSettingsAndPreservesSessionOverrides()
         {
@@ -1065,6 +1112,7 @@ namespace MyCodex.Application.Tests
             Assert.That(RepositorySource.ReadSourceFile("MainForm.cs"), Does.Not.Contain("private async Task StartDetachedReviewAsync("));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_LocalDesktopTurnsDoNotApplyRealtimeHistoryReload()
         {
@@ -1094,6 +1142,7 @@ namespace MyCodex.Application.Tests
             Assert.That(eventBlock, Does.Contain("ClearLocalDesktopRealtimeTurn(e.ThreadId);"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void AppServerEvents_UpdateHiddenSessionThreadStateBeforeVisibleUiFiltering()
         {
@@ -1115,6 +1164,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("RefreshSessionWorkbenches();"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [TestCase("ProtocolWarning", "ProtocolNotice")]
         [TestCase("ProtocolNotice", "ThreadArchivedChanged")]
         public void GlobalProtocolMessages_AreRecordedInCurrentActivityWithoutDuplicatingThreadEvents(string route, string nextRoute)
@@ -1125,6 +1175,7 @@ namespace MyCodex.Application.Tests
             Assert.That(block, Does.Not.Contain(".Focus(").And.Not.Contain(".Select("));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_McpMessageOnlyRequestsRequireConfirmationAndUnsupportedRequestsAreCanceled()
         {
@@ -1145,6 +1196,7 @@ namespace MyCodex.Application.Tests
             Assert.That(confirmationBlock, Does.Contain("CancelToolUserInputRequestAsync(request.RequestId)"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_UsesModelessAppServerFileWindowManager()
         {

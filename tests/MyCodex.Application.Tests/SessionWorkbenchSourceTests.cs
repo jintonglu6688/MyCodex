@@ -7,6 +7,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class SessionWorkbenchSourceTests
     {
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void WorkbenchForm_HandlesOnlyItsOwnThreadEventsAndDoesNotAddScreenReaderSpeech()
         {
@@ -18,6 +19,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain(".Speak("));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_ProvidesContextMenuAndCtrlEnterEntryPointForDetachedWindows()
         {
@@ -30,6 +32,7 @@ namespace MyCodex.Application.Tests
             Assert.That(keyboardSource, Does.Contain("OpenSelectedSessionWorkbench();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void DetachedTerminal_KeepsSessionBoundProcessAndUpdatesTheFormOnItsUiThread()
         {
@@ -40,6 +43,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("form.BeginInvoke"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void DetachedManualBrowse_KeepsOneDynamicContextPerSessionUntilTheSessionCloses()
         {

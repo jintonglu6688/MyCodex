@@ -260,6 +260,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ThemeSource_CustomColorsStayInFactoriesAndMainSplittersUseWindowBackground()
         {

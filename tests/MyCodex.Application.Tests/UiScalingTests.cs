@@ -336,6 +336,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [TestCase("{}", 100)]
         [TestCase("{\"UiFontScalePercent\":125}", 125)]
         [TestCase("{\"UiFontScalePercent\":150}", 150)]
@@ -453,6 +454,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [TestCase("en-US")]
         [TestCase("zh-CN")]
         public void MainWindow_150Percent_ClampsMinimumBeforeBoundsAndKeepsSplitsUsable(string culture)
@@ -531,6 +533,7 @@ namespace MyCodex.Application.Tests
             Assert.That(minimum.Height, Is.LessThanOrEqualTo(area.Height));
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void Manifest_DeclaresSystemDpiAndPreservesAccessibilitySwitches()
         {

@@ -21,6 +21,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class AppServerOfficeDynamicToolFlowTests
     {
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficeModeSource_DoesNotBuildInternalToolContext()
         {

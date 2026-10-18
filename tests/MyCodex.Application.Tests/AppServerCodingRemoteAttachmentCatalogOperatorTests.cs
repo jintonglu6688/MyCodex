@@ -17,6 +17,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class AppServerCodingRemoteAttachmentCatalogOperatorTests
     {
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void DefaultConstructor_UsesTheSameAppServerFacadeForPluginAndSkillObservations()
         {

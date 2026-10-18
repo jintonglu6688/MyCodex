@@ -65,6 +65,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void ValidatorSource_DoesNotOpenOrMutateWindowsCertificateStores()
         {

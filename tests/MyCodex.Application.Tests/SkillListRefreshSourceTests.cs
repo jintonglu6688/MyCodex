@@ -5,6 +5,7 @@ using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
 {
+    [Category(SourceGuardCategory.SourceBehavior)]
     [TestFixture]
     public sealed class SkillListRefreshSourceTests
     {

@@ -7,6 +7,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class OfficePluginOnlyHostTests
     {
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void Program_DoesNotRegisterOfficeInternalToolExecutorByDefault()
         {
@@ -17,6 +18,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("new OfficeDocumentEngine"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_DoesNotBuildInternalToolContextForOfficeSessions()
         {
@@ -28,6 +30,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("OfficialOfficeCapabilityEnabled"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficePromptGuidanceUsesCapabilityFirstToolSelection()
         {

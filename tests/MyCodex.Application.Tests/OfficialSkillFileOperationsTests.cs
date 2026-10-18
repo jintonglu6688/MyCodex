@@ -56,6 +56,7 @@ namespace MyCodex.Application.Tests
             Assert.That(reason, Does.Contain("current App Server observation"));
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void SkillList_DoesNotSynchronizeOrRepairPrivateSkillMirrors()
         {

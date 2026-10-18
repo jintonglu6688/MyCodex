@@ -12,6 +12,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class MainFormGlobalHotKeyTests
     {
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void GlobalHotKey_UsesWin32RegistrationWithNoRepeatAndHandleLifecycle()
         {
@@ -31,6 +32,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("SetWindowsHookEx"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void GlobalHotKey_OnlyHandlesItsOwnMessageAndDoesNotAnnounceThroughTts()
         {
@@ -43,6 +45,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("UIA"));
         }
 
+        [Category(SourceGuardCategory.Placement)]
         [Test]
         public void GlobalHotKey_UsesExistingTrayFlowAndLeavesDisabledMainWindowAlone()
         {
@@ -60,6 +63,7 @@ namespace MyCodex.Application.Tests
             Assert.That(handler, Does.Not.Contain("SelectInteractionModeTab"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void GlobalHotKeyFailureAndTrayLabelsAreLocalized()
         {

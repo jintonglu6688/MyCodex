@@ -9,6 +9,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class PureClientArchitectureGateTests
     {
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void AppConfigPersistence_DoesNotRetainAuthenticationOrPrivateCodexHomeAuthority()
         {
@@ -28,6 +29,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void RetiredAuthenticationAndProviderImplementations_AreDeleted()
         {
@@ -50,6 +52,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void RuntimeEndpointInitialization_DoesNotCreateAuthenticationBackupStorage()
         {
@@ -58,6 +61,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("chatgpt-auth-backups"));
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void ProductionSources_DoNotRetainPrivateOrSharedCodexHomeAuthority()
         {
@@ -70,6 +74,7 @@ namespace MyCodex.Application.Tests
             Assert.That(offenders, Is.Empty);
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void ModelCatalog_ComesOnlyFromOfficialAppServerObservations()
         {
@@ -99,6 +104,7 @@ namespace MyCodex.Application.Tests
             Assert.That(storeSource, Does.Not.Contain("NormalizeLegacyBuiltInDefault"));
         }
 
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void ReasoningCapabilities_ComeOnlyFromOfficialObservationsOrExplicitPreferences()
         {
@@ -115,6 +121,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mapperSource, Does.Contain("supportedReasoningEfforts"));
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void Help_RemainsACompleteUserGuideWithoutRetiredOrInternalImplementationDetails()
         {

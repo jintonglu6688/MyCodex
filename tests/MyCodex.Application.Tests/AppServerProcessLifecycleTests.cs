@@ -94,6 +94,7 @@ namespace MyCodex.Application.Tests
             Assert.Throws<ObjectDisposedException>(() => writer.Write("after dispose"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void CleanupResources_TerminatesAppServerProcessTree()
         {

@@ -147,6 +147,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         [Apartment(ApartmentState.STA)]
         public void UserCenterForm_OffersAccessibleManualQuotaResetControls()

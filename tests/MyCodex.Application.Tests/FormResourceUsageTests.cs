@@ -11,6 +11,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class FormResourceUsageTests
     {
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void ChineseResources_DoNotContainEncodingReplacementMarkers()
         {
@@ -24,6 +25,7 @@ namespace MyCodex.Application.Tests
             Assert.That(corruptedKeys, Is.Empty, "Chinese resources contain encoding replacement markers.");
         }
 
+        [Category(SourceGuardCategory.Assets)]
         [Test]
         public void WinFormsStringResources_AreReferencedByCodeLiterals()
         {

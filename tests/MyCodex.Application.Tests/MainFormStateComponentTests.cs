@@ -2635,6 +2635,7 @@ namespace MyCodex.Application.Tests
             Assert.That(AppServerEventRouting.IsBufferedTurnSummaryEvent(new AppServerEventArgs("assistant", "reply")), Is.False);
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainFormSource_OfficeInstructionsUseCapabilityFirstToolGuidance()
         {

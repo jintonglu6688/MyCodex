@@ -61,6 +61,7 @@ namespace MyCodex.Application.Tests
                 Is.EqualTo(expected));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainFormTitle_UsesNoRuntimeLabelForWindowsAndActiveTargetNameForWslOrSsh()
         {
@@ -74,6 +75,7 @@ namespace MyCodex.Application.Tests
             Assert.That(runtimeName, Does.Contain("return GetCurrentRuntimeDisplayName();"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainFormWorkingTitle_DistinguishesCurrentSessionFromBackgroundWork()
         {
@@ -88,6 +90,7 @@ namespace MyCodex.Application.Tests
             Assert.That(method, Does.Contain("MainForm.WindowStatus.BackgroundWorking"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainFormTitle_ReportsLoginRequiredOnlyWhenAppServerRequiresOfficialLogin()
         {
@@ -100,6 +103,7 @@ namespace MyCodex.Application.Tests
             Assert.That(method, Does.Not.Contain("_authenticationState.IsAuthenticated"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void LiveWorkingIndicators_DoNotTreatInterruptCapabilityAsActiveWork()
         {

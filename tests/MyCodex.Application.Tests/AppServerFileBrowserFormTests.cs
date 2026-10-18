@@ -806,6 +806,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.Retired)]
         [Test]
         public void Commands_DoNotExposeInsertPath()
         {

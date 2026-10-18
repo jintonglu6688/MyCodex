@@ -7,6 +7,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public class AppServerConfigMutationSourceTests
     {
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficialConfigObservation_DoesNotRepairOrWriteGeneralSettings()
         {
@@ -19,6 +20,7 @@ namespace MyCodex.Application.Tests
             Assert.That(events, Does.Not.Contain("WriteConfigBatchAsync("));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void HostSettingsPath_DoesNotOwnOfficialConfigWritesOrLegacyCleanup()
         {
@@ -33,6 +35,7 @@ namespace MyCodex.Application.Tests
             Assert.That(dispatcherSource, Does.Not.Contain("\"official\""));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void McpConfigMutation_ReadsFreshObservationAndSendsExpectedVersion()
         {
@@ -43,6 +46,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("expectedVersion: guard.ExpectedVersion"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void OfficialSettingsMutation_IsExplicitAndUsesFreshVersionGuardedObservation()
         {

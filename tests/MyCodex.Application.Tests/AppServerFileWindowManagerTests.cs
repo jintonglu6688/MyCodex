@@ -145,6 +145,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void PreviewShownHandler_DoesNotRegisterWatchAfterPreviewWasClosedDuringLoad()
         {
@@ -159,6 +160,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("return;"));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void BrowserPreviewRequest_RemembersBrowserAsPreviewCloseReturnTarget()
         {
@@ -179,6 +181,7 @@ namespace MyCodex.Application.Tests
             Assert.That(reactivationIndex, Is.GreaterThan(closeHandlerIndex));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void BrowserPreviewRequest_UsesTextFilePolicyAndScopedLocalPathPolicy()
         {
@@ -196,6 +199,7 @@ namespace MyCodex.Application.Tests
             Assert.That(systemOpenIndex, Is.GreaterThan(policyIndex));
         }
 
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void BrowserAndPreview_AreShownAsIndependentWindows()
         {
