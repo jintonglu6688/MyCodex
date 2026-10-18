@@ -9,14 +9,15 @@ if ([string]::IsNullOrWhiteSpace($repositoryRoot))
 $policyPath = Join-Path $repositoryRoot '.codex\hooks\pre_tool_use_policy.ps1'
 $sessionPath = Join-Path $repositoryRoot '.codex\hooks\session_context.ps1'
 $configPath = Join-Path $repositoryRoot '.codex\hooks.json'
+$claudeConfigPath = Join-Path $repositoryRoot '.claude\settings.json'
 
 function Invoke-Policy
 {
-    param([Parameter(Mandatory = $true)][string] $Command)
+    param([Parameter(Mandatory = $true)][string] $Command, [string] $ToolName = 'Bash')
 
     $payload = [ordered]@{
         hook_event_name = 'PreToolUse'
-        tool_name = 'Bash'
+        tool_name = $ToolName
         tool_input = [ordered]@{ command = $Command }
     } | ConvertTo-Json -Depth 5 -Compress
 
@@ -30,66 +31,97 @@ function Invoke-Policy
 
 function Assert-Blocked
 {
-    param([Parameter(Mandatory = $true)][string] $Command)
+    param([Parameter(Mandatory = $true)][string] $Command, [string] $ToolName = 'Bash')
 
-    $result = Invoke-Policy -Command $Command
+    $result = Invoke-Policy -Command $Command -ToolName $ToolName
     if ($result -notmatch '"permissionDecision":"deny"')
     {
-        throw "Expected command to be blocked: $Command"
+        throw "Expected command to be blocked: $ToolName $Command"
     }
 }
 
 function Assert-Allowed
 {
-    param([Parameter(Mandatory = $true)][string] $Command)
+    param([Parameter(Mandatory = $true)][string] $Command, [string] $ToolName = 'Bash')
 
-    $result = Invoke-Policy -Command $Command
+    $result = Invoke-Policy -Command $Command -ToolName $ToolName
     if (-not [string]::IsNullOrWhiteSpace($result))
     {
-        throw "Expected command to be allowed: $Command"
+        throw "Expected command to be allowed: $ToolName $Command"
     }
+}
+
+function Assert-HookConfiguration
+{
+    param(
+        [Parameter(Mandatory = $true)] $Config,
+        [Parameter(Mandatory = $true)][string] $Name,
+        [Parameter(Mandatory = $true)][string[]] $CommandTools)
+
+    if ($null -ne $Config.hooks.Stop)
+    {
+        throw "$Name hook configuration must omit the lexical Stop gate."
+    }
+    $sessionMatcher = [string]$Config.hooks.SessionStart[0].matcher
+    foreach ($source in @('startup', 'resume', 'clear', 'compact'))
+    {
+        if ($source -notmatch $sessionMatcher -or "other-$source" -match $sessionMatcher)
+        {
+            throw "$Name SessionStart matcher must match only supported sources: $source"
+        }
+    }
+    $toolMatcher = [string]$Config.hooks.PreToolUse[0].matcher
+    $otherTools = @('apply_patch', 'Edit', 'Write', 'mcp__test__Bash', 'mcp__test__PowerShell', 'PowerShellPreview') |
+        Where-Object { $CommandTools -notcontains $_ }
+    if (@($CommandTools | Where-Object { $_ -notmatch $toolMatcher }).Count -gt 0 -or @($otherTools -match $toolMatcher).Count -gt 0)
+    {
+        throw "$Name command policy must match only: $($CommandTools -join ', ')"
+    }
+    if ([string]$Config.hooks.SessionStart[0].hooks[0].command -notmatch [regex]::Escape('.codex\hooks\session_context.ps1') -or
+        [string]$Config.hooks.PreToolUse[0].hooks[0].command -notmatch [regex]::Escape('.codex\hooks\pre_tool_use_policy.ps1'))
+    {
+        throw "$Name hooks must run the shared .codex hook scripts."
+    }
+}
+
+function ConvertTo-EncodedCommand
+{
+    param([Parameter(Mandatory = $true)][string] $Command)
+
+    return [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($Command))
 }
 
 $config = Get-Content -LiteralPath $configPath -Raw -Encoding UTF8 | ConvertFrom-Json
-$sessionMatcher = [string]$config.hooks.SessionStart[0].matcher
-if ($null -ne $config.hooks.Stop)
-{
-    throw 'Hook configuration must omit the lexical Stop gate.'
-}
-foreach ($source in @('startup', 'resume', 'clear', 'compact'))
-{
-    if ($source -notmatch $sessionMatcher -or "other-$source" -match $sessionMatcher)
-    {
-        throw "SessionStart matcher must match only supported sources: $source"
-    }
-}
-$toolMatcher = [string]$config.hooks.PreToolUse[0].matcher
-if ('Bash' -notmatch $toolMatcher -or @('apply_patch', 'Edit', 'Write', 'mcp__test__Bash') -match $toolMatcher)
-{
-    throw 'The command policy must match Bash only.'
-}
-$sessionCommand = [string]$config.hooks.SessionStart[0].hooks[0].commandWindows
-$encodedSessionCommand = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($sessionCommand))
+$claudeConfig = Get-Content -LiteralPath $claudeConfigPath -Raw -Encoding UTF8 | ConvertFrom-Json
+Assert-HookConfiguration -Config $config -Name 'Codex' -CommandTools @('Bash')
+Assert-HookConfiguration -Config $claudeConfig -Name 'Claude Code' -CommandTools @('Bash', 'PowerShell')
+$encodedSessionCommand = ConvertTo-EncodedCommand -Command ([string]$config.hooks.SessionStart[0].hooks[0].commandWindows)
+$encodedClaudeSessionCommand = ConvertTo-EncodedCommand -Command ([string]$claudeConfig.hooks.SessionStart[0].hooks[0].command)
 
-Assert-Allowed -Command 'git clean -ndx'
-Assert-Allowed -Command 'git clean -nfdx'
-Assert-Allowed -Command 'git clean --dry-run --force -d'
-Assert-Allowed -Command "Write-Output 'git reset --hard'"
-Assert-Allowed -Command "Remove-Item -LiteralPath 'E:\Temp\example' -Recurse"
-Assert-Blocked -Command 'git clean -fd'
-Assert-Blocked -Command 'git reset --hard'
-Assert-Blocked -Command "Remove-Item 'E:\Temp\example' -Recurse"
+foreach ($toolName in @('Bash', 'PowerShell'))
+{
+    Assert-Allowed -ToolName $toolName -Command 'git clean -ndx'
+    Assert-Allowed -ToolName $toolName -Command 'git clean -nfdx'
+    Assert-Allowed -ToolName $toolName -Command 'git clean --dry-run --force -d'
+    Assert-Allowed -ToolName $toolName -Command "Write-Output 'git reset --hard'"
+    Assert-Allowed -ToolName $toolName -Command "Remove-Item -LiteralPath 'E:\Temp\example' -Recurse"
+    Assert-Blocked -ToolName $toolName -Command 'git clean -fd'
+    Assert-Blocked -ToolName $toolName -Command 'git reset --hard'
+    Assert-Blocked -ToolName $toolName -Command "Remove-Item 'E:\Temp\example' -Recurse"
+}
+Assert-Blocked -ToolName 'PowerShell' -Command "git status; git reset --hard"
+Assert-Allowed -ToolName 'Write' -Command 'git reset --hard'
 
 function Invoke-SessionContext
 {
-    param([string] $Source, [string] $SessionId)
+    param([string] $Source, [string] $SessionId, [string] $EncodedCommand = $encodedSessionCommand)
 
     $payload = @{
         hook_event_name = 'SessionStart'
         session_id = $SessionId
         source = $Source
     } | ConvertTo-Json -Compress
-    $output = ($payload | powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand $encodedSessionCommand) -join "`n"
+    $output = ($payload | powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand $EncodedCommand) -join "`n"
     if ($LASTEXITCODE -ne 0)
     {
         throw "SessionStart hook failed: $Source"
@@ -130,6 +162,11 @@ try
             if ($context.Contains('No saved working-state file was found after compaction.') -ne $shouldReportMissing)
             {
                 throw 'Incorrect missing recovery note handling.'
+            }
+            $claudeContext = Invoke-SessionContext -Source $source -SessionId $probeId -EncodedCommand $encodedClaudeSessionCommand
+            if ($claudeContext -ne $context)
+            {
+                throw "Claude Code SessionStart hook must match the Codex context: source=$source, hasState=$hasState"
             }
         }
     }

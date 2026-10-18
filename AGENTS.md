@@ -36,7 +36,8 @@ Project layout:
 - `docs`: checked-in operational documentation. Confirm a document exists before relying on it, and use current source and configuration to resolve stale guidance.
 - `.github`: issue and pull request templates.
 - `.gitcode`: GitCode distribution workflows for update manifest validation and other distribution automation.
-- `.codex`: project lifecycle hooks and ignored, per-session recovery notes.
+- `.codex`: development hook scripts shared by Codex and Claude Code, the Codex hook registration, and ignored per-session recovery notes.
+- `.claude` and `CLAUDE.md`: Claude Code hook registration for the shared scripts and an entry file that imports this one; personal `.claude/settings.local.json` is ignored.
 - `help`, `sound`, `tts`, and `updates`: shipped assets and update/distribution metadata.
 
 ## Issue Work
@@ -95,7 +96,7 @@ Focused test example:
 dotnet test tests\MyCodex.Application.Tests\MyCodex.Application.Tests.csproj -c Debug -p:Platform=x64 --no-restore -v:minimal --filter "FullyQualifiedName~FormResourceUsageTests"
 ```
 
-For `.codex` hook changes, run `powershell -NoProfile -ExecutionPolicy Bypass -File .codex\hooks\test_hooks.ps1`.
+For hook changes (`.codex\hooks`, `.codex\hooks.json`, or `.claude\settings.json`), run `powershell -NoProfile -ExecutionPolicy Bypass -File .codex\hooks\test_hooks.ps1`.
 
 Direct build/test commands do not prepare or download the authentication backend or bundled Codex runtime. The WinForms project copies an existing `runtime\auth-core` package when available. Running a chat still requires a working Codex execution target; a successful compile is not a complete runtime or installer setup.
 
@@ -130,10 +131,11 @@ Preserve user-owned work in a dirty worktree. Do not restore, overwrite, stage, 
 
 ### Development hooks
 
-- `.codex/hooks.json` and `.codex/hooks/*.ps1` configure this repository's Codex development workflow on Windows; they are not MyCodex application settings or policies for all app users.
-- Hook availability depends on the Codex runtime and its trust/configuration state. Script tests verify behavior, not whether a new installation has enabled and trusted the hooks. If hooks are unavailable, follow this file and maintain recovery notes manually; do not block ordinary development or change global settings automatically.
+- `.codex/hooks/*.ps1` implement this repository's coding-agent development workflow on Windows. `.codex/hooks.json` registers them for Codex and `.claude/settings.json` registers the same scripts for Claude Code; keep both registrations in step. They are not MyCodex application settings or policies for all app users.
+- `AGENTS.md` is the single source of repository rules for all coding agents. `CLAUDE.md` only imports it and notes Claude Code specifics; do not copy rules into it.
+- Hook availability depends on the agent runtime and its trust/configuration state. Script tests verify behavior, not whether a new installation has enabled and trusted the hooks. If hooks are unavailable, follow this file and maintain recovery notes manually; do not block ordinary development or change global settings automatically.
 - SessionStart provides a current Git snapshot and restores only this session's saved note on resume/compaction. A new checkout has no past session state to restore.
-- PreToolUse checks common direct shell command forms. It is a best-effort guard, not a shell parser or proof that a command is safe. Preserve the Git and path-safety rules even when it returns no decision; report an explicit hook conflict rather than silently disabling the hook.
+- PreToolUse checks common direct shell command forms sent through the `Bash` tool and, in Claude Code, the `PowerShell` tool. It is a best-effort guard, not a shell parser or proof that a command is safe. Preserve the Git and path-safety rules even when it returns no decision; report an explicit hook conflict rather than silently disabling the hook.
 
 ## Architecture Rules
 

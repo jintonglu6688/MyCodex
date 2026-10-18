@@ -35,7 +35,8 @@ if ($null -eq $payload)
 $toolName = [string]$payload.tool_name
 $command = [string]$payload.tool_input.command
 
-if ($toolName -eq 'Bash' -and -not [string]::IsNullOrWhiteSpace($command))
+# Codex and Claude Code send POSIX shell commands as Bash; Claude Code on Windows also has a PowerShell tool.
+if ($toolName -in @('Bash', 'PowerShell') -and -not [string]::IsNullOrWhiteSpace($command))
 {
     # ponytail: direct-command patterns only; use a shell parser if broader coverage becomes necessary.
     $destructiveGitPatterns = @(
