@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal static class SessionCollectionQueries
+    public static class SessionCollectionQueries
     {
-        internal static int CountSessionsInWorkspace(IEnumerable<ChatSession> sessions, string workspaceId)
+        public static int CountSessionsInWorkspace(IEnumerable<ChatSession> sessions, string workspaceId)
         {
             if (sessions == null || string.IsNullOrWhiteSpace(workspaceId))
             {
@@ -27,12 +27,12 @@ namespace MyCodex.WinForms.Forms
             return count;
         }
 
-        internal static int CountSessionsInWorkspace(IEnumerable<ChatSession> sessions, string workspaceId, AppInteractionMode mode)
+        public static int CountSessionsInWorkspace(IEnumerable<ChatSession> sessions, string workspaceId, AppInteractionMode mode)
         {
             return CountSessionsInWorkspace(GetSessionsForWorkspace(sessions, workspaceId, mode), workspaceId);
         }
 
-        internal static ChatSession FindSessionById(IEnumerable<ChatSession> sessions, string sessionId)
+        public static ChatSession FindSessionById(IEnumerable<ChatSession> sessions, string sessionId)
         {
             if (sessions == null || string.IsNullOrWhiteSpace(sessionId))
             {
@@ -51,7 +51,7 @@ namespace MyCodex.WinForms.Forms
             return null;
         }
 
-        internal static ChatSession FindSessionByThreadId(IEnumerable<ChatSession> sessions, string threadId)
+        public static ChatSession FindSessionByThreadId(IEnumerable<ChatSession> sessions, string threadId)
         {
             if (sessions == null || string.IsNullOrWhiteSpace(threadId))
             {
@@ -70,7 +70,7 @@ namespace MyCodex.WinForms.Forms
             return null;
         }
 
-        internal static List<ChatSession> GetSessionsForWorkspace(IEnumerable<ChatSession> sessions, string workspaceId)
+        public static List<ChatSession> GetSessionsForWorkspace(IEnumerable<ChatSession> sessions, string workspaceId)
         {
             var result = new List<ChatSession>();
             if (sessions == null || string.IsNullOrWhiteSpace(workspaceId))
@@ -90,7 +90,7 @@ namespace MyCodex.WinForms.Forms
             return result;
         }
 
-        internal static List<ChatSession> GetSessionsForWorkspace(IEnumerable<ChatSession> sessions, string workspaceId, AppInteractionMode mode)
+        public static List<ChatSession> GetSessionsForWorkspace(IEnumerable<ChatSession> sessions, string workspaceId, AppInteractionMode mode)
         {
             var result = new List<ChatSession>();
             if (sessions == null || string.IsNullOrWhiteSpace(workspaceId))
@@ -111,7 +111,7 @@ namespace MyCodex.WinForms.Forms
             return result;
         }
 
-        internal static List<ChatSession> GetSessionsForActiveRuntimeContexts(
+        public static List<ChatSession> GetSessionsForActiveRuntimeContexts(
             IEnumerable<ChatSession> sessions,
             string codingRuntimeProfileId,
             string officeRuntimeScopeId)
@@ -136,7 +136,7 @@ namespace MyCodex.WinForms.Forms
             return result;
         }
 
-        internal static bool IsSessionInActiveRuntimeContexts(
+        public static bool IsSessionInActiveRuntimeContexts(
             ChatSession session,
             string codingRuntimeProfileId,
             string officeRuntimeScopeId)
@@ -157,7 +157,7 @@ namespace MyCodex.WinForms.Forms
                     StringComparison.OrdinalIgnoreCase);
         }
 
-        internal static WorkspaceInfo FindWorkspaceById(IEnumerable<WorkspaceInfo> workspaces, string workspaceId)
+        public static WorkspaceInfo FindWorkspaceById(IEnumerable<WorkspaceInfo> workspaces, string workspaceId)
         {
             if (workspaces == null || string.IsNullOrWhiteSpace(workspaceId))
             {
@@ -176,7 +176,7 @@ namespace MyCodex.WinForms.Forms
             return null;
         }
 
-        internal static List<string> GetThreadIds(IEnumerable<ChatSession> sessions)
+        public static List<string> GetThreadIds(IEnumerable<ChatSession> sessions)
         {
             var result = new List<string>();
             if (sessions == null)
@@ -195,7 +195,7 @@ namespace MyCodex.WinForms.Forms
             return result;
         }
 
-        internal static List<string> GetThreadIds(IEnumerable<ChatSession> sessions, AppInteractionMode mode)
+        public static List<string> GetThreadIds(IEnumerable<ChatSession> sessions, AppInteractionMode mode)
         {
             var result = new List<string>();
             if (sessions == null)
@@ -214,7 +214,7 @@ namespace MyCodex.WinForms.Forms
             return result;
         }
 
-        internal static bool HasImportedSessions(IEnumerable<ChatSession> sessions)
+        public static bool HasImportedSessions(IEnumerable<ChatSession> sessions)
         {
             if (sessions == null)
             {
@@ -232,7 +232,7 @@ namespace MyCodex.WinForms.Forms
             return false;
         }
 
-        internal static bool HasImportedSessions(IEnumerable<ChatSession> sessions, AppInteractionMode mode)
+        public static bool HasImportedSessions(IEnumerable<ChatSession> sessions, AppInteractionMode mode)
         {
             if (sessions == null)
             {

@@ -1,33 +1,32 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MyCodex.Application.Services;
 using MyCodex.Domain.Enums;
 using MyCodex.Domain.Entities;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal sealed class SessionListEntry
+    public sealed class SessionListEntry
     {
-        internal SessionListEntry(ChatSession session, IReadOnlyList<ChatSession> subAgents)
+        public SessionListEntry(ChatSession session, IReadOnlyList<ChatSession> subAgents)
         {
             Session = session;
             SubAgents = subAgents ?? Array.Empty<ChatSession>();
         }
 
-        internal ChatSession Session { get; }
+        public ChatSession Session { get; }
 
-        internal IReadOnlyList<ChatSession> SubAgents { get; }
+        public IReadOnlyList<ChatSession> SubAgents { get; }
 
-        internal int SubAgentCount
+        public int SubAgentCount
         {
             get { return SubAgents.Count; }
         }
     }
 
-    internal static class SessionListProjection
+    public static class SessionListProjection
     {
-        internal static IReadOnlyList<SessionListEntry> BuildWorkspaceEntries(
+        public static IReadOnlyList<SessionListEntry> BuildWorkspaceEntries(
             IEnumerable<ChatSession> sessions,
             string workspaceId,
             AppInteractionMode interactionMode)
@@ -56,7 +55,7 @@ namespace MyCodex.WinForms.Forms
             return BuildMainEntries(workspaceSessions);
         }
 
-        internal static IReadOnlyList<SessionListEntry> BuildMainEntries(IEnumerable<ChatSession> sessions)
+        public static IReadOnlyList<SessionListEntry> BuildMainEntries(IEnumerable<ChatSession> sessions)
         {
             var orderedSessions = new List<ChatSession>();
             if (sessions != null)
@@ -86,7 +85,7 @@ namespace MyCodex.WinForms.Forms
             return entries;
         }
 
-        internal static bool IsSubAgent(ChatSession session)
+        public static bool IsSubAgent(ChatSession session)
         {
             return session != null &&
                    (session.IsSubAgent ||
@@ -94,7 +93,7 @@ namespace MyCodex.WinForms.Forms
                     !string.IsNullOrWhiteSpace(session.ParentThreadId));
         }
 
-        internal static bool IsWorking(SessionListEntry entry, Func<string, bool> isThreadWorking)
+        public static bool IsWorking(SessionListEntry entry, Func<string, bool> isThreadWorking)
         {
             if (entry == null || isThreadWorking == null)
             {
@@ -117,7 +116,7 @@ namespace MyCodex.WinForms.Forms
             return false;
         }
 
-        internal static int CountWorkingEntries(IEnumerable<SessionListEntry> entries, Func<string, bool> isThreadWorking)
+        public static int CountWorkingEntries(IEnumerable<SessionListEntry> entries, Func<string, bool> isThreadWorking)
         {
             var count = 0;
             if (entries == null)

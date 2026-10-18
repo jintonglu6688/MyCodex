@@ -4,11 +4,11 @@ using System.Linq;
 using MyCodex.Application.DTOs;
 using MyCodex.Domain.Entities;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal static class SessionStorageOperationPlanner
+    public static class SessionStorageOperationPlanner
     {
-        internal static List<ChatSession> SelectFileDeletionSessions(IEnumerable<ChatSession> sessions)
+        public static List<ChatSession> SelectFileDeletionSessions(IEnumerable<ChatSession> sessions)
         {
             return (sessions ?? Enumerable.Empty<ChatSession>())
                 .Where(session => LocalSessionRemovalEligibility.CanPermanentlyDeleteSession(session) &&
@@ -16,7 +16,7 @@ namespace MyCodex.WinForms.Forms
                 .ToList();
         }
 
-        internal static List<ChatSession> SelectArchivableSessions(IEnumerable<ChatSession> sessions)
+        public static List<ChatSession> SelectArchivableSessions(IEnumerable<ChatSession> sessions)
         {
             var result = new List<ChatSession>();
             if (sessions == null)
@@ -35,7 +35,7 @@ namespace MyCodex.WinForms.Forms
             return result;
         }
 
-        internal static int CountNonNullSessions(IEnumerable<ChatSession> sessions)
+        public static int CountNonNullSessions(IEnumerable<ChatSession> sessions)
         {
             if (sessions == null)
             {
@@ -54,7 +54,7 @@ namespace MyCodex.WinForms.Forms
             return count;
         }
 
-        internal static string ResolveSessionPathFromThreadSummaries(IEnumerable<AppServerThreadSummary> threads, string threadId)
+        public static string ResolveSessionPathFromThreadSummaries(IEnumerable<AppServerThreadSummary> threads, string threadId)
         {
             if (threads == null || string.IsNullOrWhiteSpace(threadId))
             {
@@ -74,14 +74,14 @@ namespace MyCodex.WinForms.Forms
             return null;
         }
 
-        internal static string ResolveSessionPathFromThreadDetails(AppServerThreadDetails details)
+        public static string ResolveSessionPathFromThreadDetails(AppServerThreadDetails details)
         {
             return details == null || string.IsNullOrWhiteSpace(details.SessionPath)
                 ? null
                 : details.SessionPath;
         }
 
-        internal static bool ShouldIgnoreThreadReadInvalidOperation(InvalidOperationException exception)
+        public static bool ShouldIgnoreThreadReadInvalidOperation(InvalidOperationException exception)
         {
             if (exception == null || string.IsNullOrWhiteSpace(exception.Message))
             {

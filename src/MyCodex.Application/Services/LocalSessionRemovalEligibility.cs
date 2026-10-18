@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using MyCodex.Domain.Entities;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal static class LocalSessionRemovalEligibility
+    public static class LocalSessionRemovalEligibility
     {
-        internal static bool HasThreadSessions(IEnumerable<ChatSession> sessions, string workspaceId)
+        public static bool HasThreadSessions(IEnumerable<ChatSession> sessions, string workspaceId)
         {
             foreach (var session in SessionCollectionQueries.GetSessionsForWorkspace(sessions, workspaceId))
             {
@@ -19,7 +19,7 @@ namespace MyCodex.WinForms.Forms
             return false;
         }
 
-        internal static bool CanPermanentlyDeleteWorkspace(IEnumerable<ChatSession> sessions, string workspaceId)
+        public static bool CanPermanentlyDeleteWorkspace(IEnumerable<ChatSession> sessions, string workspaceId)
         {
             foreach (var session in SessionCollectionQueries.GetSessionsForWorkspace(sessions, workspaceId))
             {
@@ -32,7 +32,7 @@ namespace MyCodex.WinForms.Forms
             return false;
         }
 
-        internal static bool CanPermanentlyDeleteSession(ChatSession session)
+        public static bool CanPermanentlyDeleteSession(ChatSession session)
         {
             return session != null &&
                    (!string.IsNullOrWhiteSpace(session.SessionPath) || !string.IsNullOrWhiteSpace(session.ThreadId));

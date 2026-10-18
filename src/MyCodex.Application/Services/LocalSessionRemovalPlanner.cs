@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal sealed class LocalSessionRemovalPlan
+    public sealed class LocalSessionRemovalPlan
     {
         public LocalSessionRemovalPlan(
             IList<WorkspaceInfo> retainedWorkspaces,
@@ -41,9 +40,9 @@ namespace MyCodex.WinForms.Forms
         public bool HasChanges { get; }
     }
 
-    internal static class LocalSessionRemovalPlanner
+    public static class LocalSessionRemovalPlanner
     {
-        internal static LocalSessionRemovalPlan BuildWorkspaceRemoval(
+        public static LocalSessionRemovalPlan BuildWorkspaceRemoval(
             WorkspaceInfo workspace,
             IList<WorkspaceInfo> recentWorkspaces,
             IList<ChatSession> sessions,
@@ -98,7 +97,7 @@ namespace MyCodex.WinForms.Forms
                 true);
         }
 
-        internal static LocalSessionRemovalPlan BuildSessionRemoval(
+        public static LocalSessionRemovalPlan BuildSessionRemoval(
             ChatSession session,
             IList<WorkspaceInfo> recentWorkspaces,
             IList<ChatSession> sessions,

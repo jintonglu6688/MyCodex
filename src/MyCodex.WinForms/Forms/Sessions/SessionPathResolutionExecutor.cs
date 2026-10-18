@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
 
 namespace MyCodex.WinForms.Forms

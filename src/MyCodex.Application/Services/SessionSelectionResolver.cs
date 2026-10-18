@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal sealed class SessionSelectionResult
+    public sealed class SessionSelectionResult
     {
         public SessionSelectionResult(WorkspaceInfo workspace, ChatSession session)
         {
@@ -18,9 +18,9 @@ namespace MyCodex.WinForms.Forms
         public ChatSession Session { get; }
     }
 
-    internal static class SessionSelectionResolver
+    public static class SessionSelectionResolver
     {
-        internal static ChatSession ResolveCurrentSession(
+        public static ChatSession ResolveCurrentSession(
             WorkspaceInfo currentWorkspace,
             ChatSession currentSession,
             IEnumerable<ChatSession> sessions)
@@ -68,7 +68,7 @@ namespace MyCodex.WinForms.Forms
             return null;
         }
 
-        internal static ChatSession ResolveCurrentSession(
+        public static ChatSession ResolveCurrentSession(
             WorkspaceInfo currentWorkspace,
             ChatSession currentSession,
             IEnumerable<ChatSession> sessions,
@@ -120,7 +120,7 @@ namespace MyCodex.WinForms.Forms
             return null;
         }
 
-        internal static SessionSelectionResult RestoreSelection(
+        public static SessionSelectionResult RestoreSelection(
             IList<WorkspaceInfo> recentWorkspaces,
             IEnumerable<ChatSession> sessions,
             WorkspaceInfo currentWorkspace,
@@ -153,7 +153,7 @@ namespace MyCodex.WinForms.Forms
             return new SessionSelectionResult(selectedWorkspace, selectedSession);
         }
 
-        internal static SessionSelectionResult RestoreOfficeSelection(
+        public static SessionSelectionResult RestoreOfficeSelection(
             IEnumerable<WorkspaceInfo> workspaces,
             IEnumerable<ChatSession> sessions,
             string workspaceId,
