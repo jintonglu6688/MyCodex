@@ -34,24 +34,24 @@ namespace MyCodex.WinForms.Forms
             TabStop = false;
             UiTheme.ApplyForm(this);
 
-            _allowButton = CreateButton(
+            _allowButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text("RemotePairingConfirmationForm.Button.Allow", "Allow(&A)"),
                 UiLocalization.Text("RemotePairingConfirmationForm.Accessible.Allow", "Allow pairing"),
                 0,
-                DialogResult.OK,
-                UiGlyph.Ok);
-            _rejectButton = CreateButton(
+                UiGlyph.Ok,
+                DialogResult.OK);
+            _rejectButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text("RemotePairingConfirmationForm.Button.Reject", "Reject(&R)"),
                 UiLocalization.Text("RemotePairingConfirmationForm.Accessible.Reject", "Reject pairing"),
                 1,
-                DialogResult.No,
-                UiGlyph.Cancel);
-            _laterButton = CreateButton(
+                UiGlyph.Cancel,
+                DialogResult.No);
+            _laterButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text("RemotePairingConfirmationForm.Button.Later", "Later(&L)"),
                 UiLocalization.Text("RemotePairingConfirmationForm.Accessible.Later", "Decide later"),
                 2,
-                DialogResult.Cancel,
-                UiGlyph.Cancel);
+                UiGlyph.Cancel,
+                DialogResult.Cancel);
 
             _detailsListBox = new ListBox
             {
@@ -146,25 +146,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(label, false);
             return label;
-        }
-
-        private static Button CreateButton(
-            string text,
-            string accessibleName,
-            int tabIndex,
-            DialogResult dialogResult,
-            UiGlyph glyph)
-        {
-            var button = new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                AutoSize = true,
-                TabIndex = tabIndex,
-                DialogResult = dialogResult
-            };
-            UiTheme.ApplyDialogButton(button, glyph);
-            return button;
         }
 
         private static string FormatDigitReadableCode(string value)

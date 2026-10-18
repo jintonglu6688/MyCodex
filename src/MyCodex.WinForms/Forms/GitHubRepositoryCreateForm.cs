@@ -26,9 +26,9 @@ namespace MyCodex.WinForms.Forms
             ClientSize = new Size(620, 250);
             UiTheme.ApplyForm(this);
 
-            _nameTextBox = CreateTextBox(UiLocalization.Text("GitHubRepositoryCreateForm.Accessible.Name", "Repository name"), 0);
+            _nameTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubRepositoryCreateForm.Accessible.Name", "Repository name"), 0);
             _nameTextBox.Text = initialName ?? string.Empty;
-            _descriptionTextBox = CreateTextBox(UiLocalization.Text("GitHubRepositoryCreateForm.Accessible.Description", "Description"), 1);
+            _descriptionTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubRepositoryCreateForm.Accessible.Description", "Description"), 1);
             _privateCheckBox = new CheckBox
             {
                 Dock = DockStyle.Fill,
@@ -51,14 +51,16 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyCheckBox(_addReadmeCheckBox);
 
-            _okButton = CreateButton(
+            _okButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubRepositoryCreateForm.Button.Create", "Create(&O)"),
                 UiLocalization.Text("GitHubRepositoryCreateForm.Accessible.Create", "Create"),
-                4);
-            _cancelButton = CreateButton(
+                4,
+                112);
+            _cancelButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubRepositoryCreateForm.Button.Cancel", "&Cancel"),
                 UiLocalization.Text("GitHubRepositoryCreateForm.Accessible.Cancel", "Cancel"),
-                5);
+                5,
+                112);
             UiTheme.ApplyButton(_okButton, UiGlyph.Ok);
             UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
 
@@ -125,9 +127,9 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, allowReadme ? 34F : 0F));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
-            root.Controls.Add(CreateLabel(UiLocalization.Text("GitHubRepositoryCreateForm.Label.Name", "Repository name")), 0, 0);
+            root.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitHubRepositoryCreateForm.Label.Name", "Repository name")), 0, 0);
             root.Controls.Add(_nameTextBox, 0, 1);
-            root.Controls.Add(CreateLabel(UiLocalization.Text("GitHubRepositoryCreateForm.Label.Description", "Description")), 0, 2);
+            root.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitHubRepositoryCreateForm.Label.Description", "Description")), 0, 2);
             root.Controls.Add(_descriptionTextBox, 0, 3);
             root.Controls.Add(_privateCheckBox, 0, 4);
             if (allowReadme)
@@ -148,45 +150,6 @@ namespace MyCodex.WinForms.Forms
             footer.Controls.Add(_okButton);
             root.Controls.Add(footer, 0, 6);
             Controls.Add(root);
-        }
-
-        private static Label CreateLabel(string text)
-        {
-            var label = new Label
-            {
-                Dock = DockStyle.Fill,
-                Text = text,
-                TextAlign = ContentAlignment.MiddleLeft,
-                TabStop = false
-            };
-            UiTheme.ApplyLabel(label, true);
-            return label;
-        }
-
-        private static TextBox CreateTextBox(string accessibleName, int tabIndex)
-        {
-            var textBox = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                AccessibleName = accessibleName,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyTextBox(textBox, false, false);
-            return textBox;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 112,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
     }
 }

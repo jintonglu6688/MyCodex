@@ -159,10 +159,11 @@ namespace MyCodex.WinForms.Forms
             AddFilterOption(_issueScopeFilterComboBox, UiLocalization.Text("GitHubRepositoryDetailsForm.Filter.IssueScope.Assigned", "Assigned to me"), "assigned");
             AddFilterOption(_issueScopeFilterComboBox, UiLocalization.Text("GitHubRepositoryDetailsForm.Filter.IssueScope.Created", "Created by me"), "authored");
             _issueScopeFilterComboBox.SelectedIndex = 0;
-            _issueApplyFilterButton = CreateButton(
+            _issueApplyFilterButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubRepositoryDetailsForm.Button.ApplyIssueFilter", "Apply(&A)"),
                 UiLocalization.Text("GitHubRepositoryDetailsForm.Accessible.ApplyIssueFilter", "Apply issue filter"),
-                0);
+                0,
+                112);
             _pullRequestStateFilterComboBox = CreateFilterComboBox(UiLocalization.Text("GitHubRepositoryDetailsForm.Accessible.PullRequestStateFilter", "PR state"));
             AddFilterOption(_pullRequestStateFilterComboBox, UiLocalization.Text("GitHubRepositoryDetailsForm.Filter.State.All", "All"), "all");
             AddFilterOption(_pullRequestStateFilterComboBox, UiLocalization.Text("GitHubRepositoryDetailsForm.Filter.State.Open", "Open"), "open");
@@ -175,10 +176,11 @@ namespace MyCodex.WinForms.Forms
             AddFilterOption(_pullRequestScopeFilterComboBox, UiLocalization.Text("GitHubRepositoryDetailsForm.Filter.Scope.Assigned", "Assigned to me"), "assigned");
             AddFilterOption(_pullRequestScopeFilterComboBox, UiLocalization.Text("GitHubRepositoryDetailsForm.Filter.Scope.ReviewRequested", "Review requested"), "review-requested");
             _pullRequestScopeFilterComboBox.SelectedIndex = 0;
-            _pullRequestApplyFilterButton = CreateButton(
+            _pullRequestApplyFilterButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubRepositoryDetailsForm.Button.ApplyPullRequestFilter", "Apply(&A)"),
                 UiLocalization.Text("GitHubRepositoryDetailsForm.Accessible.ApplyPullRequestFilter", "Apply PR filter"),
-                0);
+                0,
+                112);
             _branchesContextMenu = new ContextMenu();
             _copyBranchNameMenuItem = new MenuItem(UiLocalization.Text("GitHubRepositoryDetailsForm.Menu.CopyBranchName", "Copy Branch Name(&N)"));
             _copyBranchCommitShaMenuItem = new MenuItem(UiLocalization.Text("GitHubRepositoryDetailsForm.Menu.CopyCommitSha", "Copy Commit SHA(&S)"));
@@ -226,14 +228,16 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(_statusLabel, true);
 
-            _refreshButton = CreateButton(
+            _refreshButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubRepositoryDetailsForm.Button.Refresh", "Refresh(&R)"),
                 UiLocalization.Text("GitHubRepositoryDetailsForm.Accessible.Refresh", "Refresh"),
-                2);
-            _closeButton = CreateButton(
+                2,
+                112);
+            _closeButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubRepositoryDetailsForm.Button.Close", "Close(&C)"),
                 UiLocalization.Text("GitHubRepositoryDetailsForm.Accessible.Close", "Close"),
-                3);
+                3,
+                112);
             FormInteractionConventions.ConfigureRefreshButton(_refreshButton);
             UiTheme.ApplyButton(_refreshButton, UiGlyph.Refresh);
             UiTheme.ApplyButton(_issueApplyFilterButton, UiGlyph.Search);
@@ -2456,20 +2460,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(textBox, true, true);
             return textBox;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 112,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
 
         private void SelectFirstItemOrShowEmpty(ListView listView, string emptyText)

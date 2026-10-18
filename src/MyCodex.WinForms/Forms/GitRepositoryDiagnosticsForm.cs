@@ -60,22 +60,22 @@ namespace MyCodex.WinForms.Forms
             _diagnosticListView = CreateDiagnosticListView();
             _detailsTextBox = CreateDetailsTextBox();
             _maintenanceOutputTextBox = CreateMaintenanceOutputTextBox();
-            _refreshButton = CreateButton(
+            _refreshButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitRepositoryDiagnosticsForm.Button.Refresh", "Refresh(&R)"),
                 UiLocalization.Text("GitRepositoryDiagnosticsForm.Accessible.Refresh", "Refresh"),
                 1,
                 118);
-            _integrityCheckButton = CreateButton(
+            _integrityCheckButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitRepositoryDiagnosticsForm.Button.IntegrityCheck", "Check Integrity(&F)"),
                 UiLocalization.Text("GitRepositoryDiagnosticsForm.Accessible.IntegrityCheck", "Check integrity"),
                 1,
                 150);
-            _maintenanceButton = CreateButton(
+            _maintenanceButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitRepositoryDiagnosticsForm.Button.Maintenance", "Run Maintenance(&M)"),
                 UiLocalization.Text("GitRepositoryDiagnosticsForm.Accessible.Maintenance", "Run maintenance"),
                 2,
                 150);
-            _closeButton = CreateButton(
+            _closeButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitRepositoryDiagnosticsForm.Button.Close", "Close(&E)"),
                 UiLocalization.Text("GitRepositoryDiagnosticsForm.Accessible.Close", "Close"),
                 2,
@@ -495,20 +495,6 @@ namespace MyCodex.WinForms.Forms
                 default:
                     return severity ?? string.Empty;
             }
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, int width)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = width,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
 
         private static string BuildOperationOutput(GitOperationResult result)

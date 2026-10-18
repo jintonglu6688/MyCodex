@@ -31,17 +31,19 @@ namespace MyCodex.WinForms.Forms
             ClientSize = new Size(640, 230);
             UiTheme.ApplyForm(this);
 
-            _nameTextBox = CreateTextBox(UiLocalization.Text("GitRemoteEditForm.Accessible.Name", "Name"), 0);
-            _fetchUrlTextBox = CreateTextBox(UiLocalization.Text("GitRemoteEditForm.Accessible.FetchUrl", "Fetch URL"), 1);
-            _pushUrlTextBox = CreateTextBox(UiLocalization.Text("GitRemoteEditForm.Accessible.PushUrl", "Push URL"), 2);
-            _okButton = CreateButton(
+            _nameTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitRemoteEditForm.Accessible.Name", "Name"), 0);
+            _fetchUrlTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitRemoteEditForm.Accessible.FetchUrl", "Fetch URL"), 1);
+            _pushUrlTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitRemoteEditForm.Accessible.PushUrl", "Push URL"), 2);
+            _okButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitRemoteEditForm.Button.Save", "Save(&S)"),
                 UiLocalization.Text("GitRemoteEditForm.Accessible.Save", "Save"),
-                3);
-            _cancelButton = CreateButton(
+                3,
+                112);
+            _cancelButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitRemoteEditForm.Button.Cancel", "&Cancel"),
                 UiLocalization.Text("GitRemoteEditForm.Accessible.Cancel", "Cancel"),
-                4);
+                4,
+                112);
             UiTheme.ApplyButton(_okButton, UiGlyph.Ok);
             UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
 
@@ -130,11 +132,11 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
 
-            root.Controls.Add(CreateLabel(UiLocalization.Text("GitRemoteEditForm.Label.Name", "Name(&N)")), 0, 0);
+            root.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitRemoteEditForm.Label.Name", "Name(&N)")), 0, 0);
             root.Controls.Add(_nameTextBox, 0, 1);
-            root.Controls.Add(CreateLabel(UiLocalization.Text("GitRemoteEditForm.Label.FetchUrl", "Fetch URL(&F)")), 0, 2);
+            root.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitRemoteEditForm.Label.FetchUrl", "Fetch URL(&F)")), 0, 2);
             root.Controls.Add(_fetchUrlTextBox, 0, 3);
-            root.Controls.Add(CreateLabel(UiLocalization.Text("GitRemoteEditForm.Label.PushUrl", "Push URL(&P)")), 0, 4);
+            root.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitRemoteEditForm.Label.PushUrl", "Push URL(&P)")), 0, 4);
             root.Controls.Add(_pushUrlTextBox, 0, 5);
 
             var footer = new FlowLayoutPanel
@@ -157,45 +159,6 @@ namespace MyCodex.WinForms.Forms
             var target = _isEditMode ? _fetchUrlTextBox : _nameTextBox;
             target.SelectAll();
             target.Focus();
-        }
-
-        private static Label CreateLabel(string text)
-        {
-            var label = new Label
-            {
-                Dock = DockStyle.Fill,
-                Text = text,
-                TextAlign = ContentAlignment.MiddleLeft,
-                TabStop = false
-            };
-            UiTheme.ApplyLabel(label, true);
-            return label;
-        }
-
-        private static TextBox CreateTextBox(string accessibleName, int tabIndex)
-        {
-            var textBox = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                AccessibleName = accessibleName,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyTextBox(textBox, false, false);
-            return textBox;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 112,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
     }
 }

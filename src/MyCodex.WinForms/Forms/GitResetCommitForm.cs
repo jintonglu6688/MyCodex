@@ -72,14 +72,16 @@ namespace MyCodex.WinForms.Forms
             _modeListBox.DoubleClick += (sender, e) => ConfirmAndClose();
             _modeListBox.KeyDown += ModeListBox_KeyDown;
 
-            _resetButton = CreateButton(
+            _resetButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitResetCommitForm.Button.Reset", "Roll Back(&R)"),
                 UiLocalization.Text("GitResetCommitForm.Accessible.Reset", "Roll back"),
-                1);
-            _cancelButton = CreateButton(
+                1,
+                118);
+            _cancelButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitResetCommitForm.Button.Cancel", "&Cancel"),
                 UiLocalization.Text("GitResetCommitForm.Accessible.Cancel", "Cancel"),
-                2);
+                2,
+                118);
             UiTheme.ApplyButton(_resetButton, UiGlyph.Error);
             UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
 
@@ -171,20 +173,6 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(_modeListBox, 0, 1);
             root.Controls.Add(footer, 0, 2);
             Controls.Add(root);
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 118,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
 
         private sealed class ResetModeItem

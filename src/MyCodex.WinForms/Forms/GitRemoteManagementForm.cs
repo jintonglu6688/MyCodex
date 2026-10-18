@@ -66,14 +66,14 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(_operationLogTextBox, false, true);
 
-            _refreshButton = CreateButton(UiLocalization.Text("GitRemoteManagementForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.Refresh", "Refresh"), 0);
-            _addButton = CreateButton(UiLocalization.Text("GitRemoteManagementForm.Button.Add", "Add(&A)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.Add", "Add"), 1);
-            _editButton = CreateButton(UiLocalization.Text("GitRemoteManagementForm.Button.Edit", "Edit(&E)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.Edit", "Edit"), 2);
-            _deleteButton = CreateButton(UiLocalization.Text("GitRemoteManagementForm.Button.Delete", "Delete(&D)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.Delete", "Delete"), 3);
-            _copyNameButton = CreateButton(UiLocalization.Text("GitRemoteManagementForm.Button.CopyName", "Copy Name(&N)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.CopyName", "Copy name"), 4);
-            _copyFetchUrlButton = CreateButton(UiLocalization.Text("GitRemoteManagementForm.Button.CopyFetchUrl", "Copy Fetch(&F)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.CopyFetchUrl", "Copy fetch URL"), 5);
-            _copyPushUrlButton = CreateButton(UiLocalization.Text("GitRemoteManagementForm.Button.CopyPushUrl", "Copy Push(&P)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.CopyPushUrl", "Copy push URL"), 6);
-            _closeButton = CreateButton(UiLocalization.Text("GitRemoteManagementForm.Button.Close", "&Close"), UiLocalization.Text("GitRemoteManagementForm.Accessible.Close", "Close"), 7);
+            _refreshButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitRemoteManagementForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.Refresh", "Refresh"), 0, 118);
+            _addButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitRemoteManagementForm.Button.Add", "Add(&A)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.Add", "Add"), 1, 118);
+            _editButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitRemoteManagementForm.Button.Edit", "Edit(&E)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.Edit", "Edit"), 2, 118);
+            _deleteButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitRemoteManagementForm.Button.Delete", "Delete(&D)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.Delete", "Delete"), 3, 118);
+            _copyNameButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitRemoteManagementForm.Button.CopyName", "Copy Name(&N)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.CopyName", "Copy name"), 4, 118);
+            _copyFetchUrlButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitRemoteManagementForm.Button.CopyFetchUrl", "Copy Fetch(&F)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.CopyFetchUrl", "Copy fetch URL"), 5, 118);
+            _copyPushUrlButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitRemoteManagementForm.Button.CopyPushUrl", "Copy Push(&P)"), UiLocalization.Text("GitRemoteManagementForm.Accessible.CopyPushUrl", "Copy push URL"), 6, 118);
+            _closeButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitRemoteManagementForm.Button.Close", "&Close"), UiLocalization.Text("GitRemoteManagementForm.Accessible.Close", "Close"), 7, 118);
             FormInteractionConventions.ConfigureRefreshButton(_refreshButton);
             UiTheme.ApplyButton(_refreshButton, UiGlyph.Refresh);
             UiTheme.ApplyButton(_addButton, UiGlyph.NewSession);
@@ -624,20 +624,6 @@ namespace MyCodex.WinForms.Forms
             listView.Columns.Add(UiLocalization.Text("GitRemoteManagementForm.Column.PushUrl", "Push URL"), 360);
             UiTheme.ApplyListView(listView);
             return listView;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 118,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
 
         private enum RemoteCopyKind

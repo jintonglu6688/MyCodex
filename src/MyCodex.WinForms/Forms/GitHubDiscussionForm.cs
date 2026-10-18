@@ -84,18 +84,21 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(_statusLabel, true);
 
-            _refreshButton = CreateButton(
+            _refreshButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubDiscussionForm.Button.Refresh", "Refresh(&R)"),
                 UiLocalization.Text("GitHubDiscussionForm.Accessible.Refresh", "Refresh"),
-                3);
-            _commentButton = CreateButton(
+                3,
+                112);
+            _commentButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubDiscussionForm.Button.Comment", "Comment(&C)"),
                 UiLocalization.Text("GitHubDiscussionForm.Accessible.Comment", "Comment"),
-                2);
-            _closeButton = CreateButton(
+                2,
+                112);
+            _closeButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubDiscussionForm.Button.Close", "Close(&L)"),
                 UiLocalization.Text("GitHubDiscussionForm.Accessible.Close", "Close"),
-                4);
+                4,
+                112);
             FormInteractionConventions.ConfigureRefreshButton(_refreshButton);
             UiTheme.ApplyButton(_refreshButton, UiGlyph.Refresh);
             UiTheme.ApplyButton(_commentButton, UiGlyph.Command);
@@ -362,20 +365,6 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(_statusLabel, 0, 3);
             root.Controls.Add(footer, 0, 4);
             Controls.Add(root);
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 112,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
 
         private static string BuildMainDiscussionContent(GitHubDiscussionEntry discussion)

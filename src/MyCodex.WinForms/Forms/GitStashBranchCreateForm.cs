@@ -30,15 +30,17 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(_branchNameTextBox, false, false);
 
-            _createButton = CreateButton(
+            _createButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitStashBranchCreateForm.Button.Create", "Create(&C)"),
                 UiLocalization.Text("GitStashBranchCreateForm.Accessible.Create", "Create"),
                 1,
+                104,
                 DialogResult.OK);
-            _cancelButton = CreateButton(
+            _cancelButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitStashBranchCreateForm.Button.Cancel", "Cancel(&A)"),
                 UiLocalization.Text("GitStashBranchCreateForm.Accessible.Cancel", "Cancel"),
                 2,
+                104,
                 DialogResult.Cancel);
             UiTheme.ApplyButton(_createButton, UiGlyph.Ok);
             UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
@@ -110,21 +112,6 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(_branchNameTextBox, 0, 1);
             root.Controls.Add(footer, 0, 2);
             Controls.Add(root);
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, DialogResult dialogResult)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 104,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex,
-                DialogResult = dialogResult
-            };
         }
     }
 }

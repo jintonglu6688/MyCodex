@@ -82,17 +82,17 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-            _reasoningSummaryComboBox = CreateComboBox(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.ReasoningSummary", "Reasoning summary"), 0);
-            _verbosityComboBox = CreateComboBox(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.Verbosity", "Verbosity"), 1);
+            _reasoningSummaryComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.ReasoningSummary", "Reasoning summary"), 0, DockStyle.Top);
+            _verbosityComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.Verbosity", "Verbosity"), 1, DockStyle.Top);
             _serviceTierCheckBox = CreateCheckBox(
                 UiLocalization.Text("OfficialCodexSettingsForm.Accessible.ServiceTier", "Fast mode"),
                 UiLocalization.Text("OfficialCodexSettingsForm.ServiceTier.FastMode", "Enable fast mode"),
                 2);
-            _webSearchModeComboBox = CreateComboBox(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.WebSearchMode", "Web search mode"), 3);
-            _webSearchContextSizeComboBox = CreateComboBox(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.WebSearchContext", "Search context"), 4);
-            _viewImageToolComboBox = CreateComboBox(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.ViewImage", "Image viewing"), 5);
-            _toolOutputTokenLimitComboBox = CreateComboBox(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.ToolOutputLimit", "Tool output limit"), 6);
-            _projectDocMaxBytesComboBox = CreateComboBox(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.ProjectDocLimit", "Project document limit"), 7);
+            _webSearchModeComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.WebSearchMode", "Web search mode"), 3, DockStyle.Top);
+            _webSearchContextSizeComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.WebSearchContext", "Search context"), 4, DockStyle.Top);
+            _viewImageToolComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.ViewImage", "Image viewing"), 5, DockStyle.Top);
+            _toolOutputTokenLimitComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.ToolOutputLimit", "Tool output limit"), 6, DockStyle.Top);
+            _projectDocMaxBytesComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.ProjectDocLimit", "Project document limit"), 7, DockStyle.Top);
 
             _descriptionTextBox = new TextBox
             {
@@ -195,19 +195,6 @@ namespace MyCodex.WinForms.Forms
         {
             base.OnShown(e);
             _reasoningSummaryComboBox.Focus();
-        }
-
-        private static ComboBox CreateComboBox(string accessibleName, int tabIndex)
-        {
-            var comboBox = new ComboBox
-            {
-                Dock = DockStyle.Top,
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                AccessibleName = accessibleName,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyComboBox(comboBox);
-            return comboBox;
         }
 
         private static CheckBox CreateCheckBox(string accessibleName, string text, int tabIndex)

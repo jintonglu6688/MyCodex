@@ -157,10 +157,10 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 0
             };
             _platformTabControl.SelectedIndexChanged += (sender, e) => ActivateCurrentProviderStateFromTab();
-            _githubFilterTextBox = CreateTextBox(UiLocalization.Text("GitRemoteRepositoriesForm.Accessible.Filter", "Filter"), 3);
-            _refreshButton = CreateButton(UiLocalization.Text("GitRemoteRepositoriesForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitRemoteRepositoriesForm.Accessible.Refresh", "Refresh"), 2, 112);
-            _createRepositoryButton = CreateButton(UiLocalization.Text("GitRemoteRepositoriesForm.Button.CreateRepository", "Create Repository(&C)"), UiLocalization.Text("GitRemoteRepositoriesForm.Accessible.CreateRepository", "Create repository"), 1, 160);
-            _closeButton = CreateButton(UiLocalization.Text("GitRemoteRepositoriesForm.Button.Close", "Close"), UiLocalization.Text("GitRemoteRepositoriesForm.Accessible.Close", "Close"), 7, 112);
+            _githubFilterTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitRemoteRepositoriesForm.Accessible.Filter", "Filter"), 3);
+            _refreshButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitRemoteRepositoriesForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitRemoteRepositoriesForm.Accessible.Refresh", "Refresh"), 2, 112);
+            _createRepositoryButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitRemoteRepositoriesForm.Button.CreateRepository", "Create Repository(&C)"), UiLocalization.Text("GitRemoteRepositoriesForm.Accessible.CreateRepository", "Create repository"), 1, 160);
+            _closeButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitRemoteRepositoriesForm.Button.Close", "Close"), UiLocalization.Text("GitRemoteRepositoriesForm.Accessible.Close", "Close"), 7, 112);
             _visibilityFilterComboBox = CreateFilterComboBox();
             _visibilityFilterComboBox.Items.Add(UiLocalization.Text("GitRemoteRepositoriesForm.Filter.All", "All"));
             _visibilityFilterComboBox.Items.Add(UiLocalization.Text("GitRemoteRepositoriesForm.Filter.Visibility.Public", "Public"));
@@ -1793,7 +1793,7 @@ namespace MyCodex.WinForms.Forms
             primaryFilterRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             primaryFilterRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             primaryFilterRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            primaryFilterRow.Controls.Add(CreateLabel(UiLocalization.Text("GitRemoteRepositoriesForm.Label.Filter", "Filter")), 0, 0);
+            primaryFilterRow.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitRemoteRepositoriesForm.Label.Filter", "Filter")), 0, 0);
             primaryFilterRow.Controls.Add(_githubFilterTextBox, 1, 0);
             primaryFilterRow.Controls.Add(_refreshButton, 2, 0);
             primaryFilterRow.Controls.Add(_createRepositoryButton, 3, 0);
@@ -1813,7 +1813,7 @@ namespace MyCodex.WinForms.Forms
             secondaryFilterRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             secondaryFilterRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             secondaryFilterRow.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
-            secondaryFilterRow.Controls.Add(CreateLabel(UiLocalization.Text("GitRemoteRepositoriesForm.Label.Visibility", "&Visibility")), 0, 0);
+            secondaryFilterRow.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitRemoteRepositoriesForm.Label.Visibility", "&Visibility")), 0, 0);
             secondaryFilterRow.Controls.Add(_visibilityFilterComboBox, 1, 0);
             secondaryFilterRow.Controls.Add(_showOnlyForksCheckBox, 2, 0);
             secondaryFilterRow.Controls.Add(_showOnlyArchivedCheckBox, 3, 0);
@@ -1933,18 +1933,6 @@ namespace MyCodex.WinForms.Forms
             });
         }
 
-        private static TextBox CreateTextBox(string accessibleName, int tabIndex)
-        {
-            var textBox = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                AccessibleName = accessibleName,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyTextBox(textBox, false, false);
-            return textBox;
-        }
-
         private static ComboBox CreateFilterComboBox()
         {
             var comboBox = new ComboBox
@@ -1975,34 +1963,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyCheckBox(checkBox);
             return checkBox;
-        }
-
-        private static Label CreateLabel(string text)
-        {
-            var label = new Label
-            {
-                Dock = DockStyle.Fill,
-                Text = text,
-                TextAlign = ContentAlignment.MiddleLeft,
-                ForeColor = UiTheme.MutedTextColor,
-                TabStop = false
-            };
-            UiTheme.ApplyLabel(label, true);
-            return label;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, int width)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = width,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
 
         private static ListViewItem CreateRepositoryItem(GitHubRepositoryEntry repository)

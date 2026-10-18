@@ -184,18 +184,19 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 0
             };
 
-            _uiFontScaleComboBox = CreateComboBox(UiLocalization.Text("OptionsForm.Accessible.UiFontScale", "Interface font size"), 11);
+            _uiFontScaleComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OptionsForm.Accessible.UiFontScale", "Interface font size"), 11, DockStyle.Top);
             _uiFontScaleComboBox.Items.AddRange(new object[] { "100%", "125%", "150%" });
             _uiFontScaleComboBox.SelectedIndex = appConfig.UiFontScalePercent == 150 ? 2 : appConfig.UiFontScalePercent == 125 ? 1 : 0;
             UiFontScalePercent = appConfig.UiFontScalePercent;
-            _themeComboBox = CreateComboBox(UiLocalization.Text("OptionsForm.Accessible.Theme", "Theme"), 0);
-            _languageComboBox = CreateComboBox(UiLocalization.Text("OptionsForm.Accessible.Language", "Language"), 1);
-            _messageDetailPreviewModeComboBox = CreateComboBox(UiLocalization.Text("OptionsForm.Accessible.MessageDetailPreviewMode", "Message detail preview mode"), 2);
-            _sessionListDisplayOrderComboBox = CreateComboBox(UiLocalization.Text("OptionsForm.Accessible.SessionListDisplayOrder", "Session information order"), 10);
-            _sendMessageShortcutModeComboBox = CreateComboBox(UiLocalization.Text("OptionsForm.Accessible.SendMessageShortcutMode", "Send message shortcut"), 3);
-            _activeTurnFollowUpModeComboBox = CreateComboBox(
+            _themeComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OptionsForm.Accessible.Theme", "Theme"), 0, DockStyle.Top);
+            _languageComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OptionsForm.Accessible.Language", "Language"), 1, DockStyle.Top);
+            _messageDetailPreviewModeComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OptionsForm.Accessible.MessageDetailPreviewMode", "Message detail preview mode"), 2, DockStyle.Top);
+            _sessionListDisplayOrderComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OptionsForm.Accessible.SessionListDisplayOrder", "Session information order"), 10, DockStyle.Top);
+            _sendMessageShortcutModeComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OptionsForm.Accessible.SendMessageShortcutMode", "Send message shortcut"), 3, DockStyle.Top);
+            _activeTurnFollowUpModeComboBox = UiControlFactory.CreateDropDownList(
                 UiLocalization.Text("OptionsForm.Accessible.ActiveTurnFollowUpMode", "Follow-up messages while working"),
-                4);
+                4,
+                DockStyle.Top);
             _mainWindowHotKeyTextBox = new TextBox
             {
                 AccessibleName = UiLocalization.Text("OptionsForm.Accessible.MainWindowHotKey", "Main window global shortcut"),
@@ -206,7 +207,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(_mainWindowHotKeyTextBox, false, false);
             InitializeTargetPreferenceControls(appConfig);
-            _textFileOpenModeComboBox = CreateComboBox(UiLocalization.Text("OptionsForm.Accessible.TextFileOpenMode", "Text file opener"), 6);
+            _textFileOpenModeComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OptionsForm.Accessible.TextFileOpenMode", "Text file opener"), 6, DockStyle.Top);
             _textFileExternalEditorPathTextBox = new TextBox
             {
                 AccessibleName = UiLocalization.Text("OptionsForm.Accessible.TextFileExternalEditorPath", "External editor path"),
@@ -230,7 +231,7 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 9
             };
             UiTheme.ApplyCheckBox(_closeSessionWorkbenchOnEscapeCheckBox);
-            _startupModeComboBox = CreateComboBox(UiLocalization.Text("OptionsForm.Accessible.DefaultStartupMode", "Default startup mode"), 0);
+            _startupModeComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("OptionsForm.Accessible.DefaultStartupMode", "Default startup mode"), 0, DockStyle.Top);
             _officeRuntimeDisplayNameLabel = new Label
             {
                 Text = string.IsNullOrWhiteSpace(_officeDirectoryOptionsContext.RuntimeDisplayName)
@@ -1032,19 +1033,6 @@ namespace MyCodex.WinForms.Forms
                 Controls = { root },
                 TabStop = false
             };
-        }
-
-        private static ComboBox CreateComboBox(string accessibleName, int tabIndex)
-        {
-            var comboBox = new ComboBox
-            {
-                Dock = DockStyle.Top,
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                AccessibleName = accessibleName,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyComboBox(comboBox);
-            return comboBox;
         }
 
         private static Button CreateCommandPrefixButton(

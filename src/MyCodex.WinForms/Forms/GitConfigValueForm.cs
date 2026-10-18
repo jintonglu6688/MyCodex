@@ -31,14 +31,16 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(_valueTextBox, false, false);
 
-            _okButton = CreateButton(
+            _okButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitConfigValueForm.Button.Save", "Save(&S)"),
                 UiLocalization.Text("GitConfigValueForm.Accessible.Save", "Save"),
-                1);
-            _cancelButton = CreateButton(
+                1,
+                112);
+            _cancelButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitConfigValueForm.Button.Cancel", "&Cancel"),
                 UiLocalization.Text("GitConfigValueForm.Accessible.Cancel", "Cancel"),
-                2);
+                2,
+                112);
             UiTheme.ApplyButton(_okButton, UiGlyph.Ok);
             UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
 
@@ -117,20 +119,6 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(_valueTextBox, 0, 1);
             root.Controls.Add(footer, 0, 2);
             Controls.Add(root);
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 112,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
     }
 }

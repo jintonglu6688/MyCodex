@@ -83,7 +83,7 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-            var label = CreateLabel(UiLocalization.Text("GitHubCommentForm.Label.Body", "Comment(&C)"));
+            var label = UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitHubCommentForm.Label.Body", "Comment(&C)"));
             var footer = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -100,20 +100,6 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(_bodyTextBox, 0, 1);
             root.Controls.Add(footer, 0, 2);
             Controls.Add(root);
-        }
-
-        private static Label CreateLabel(string text)
-        {
-            var label = new Label
-            {
-                Text = text,
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft,
-                TabStop = false,
-                UseMnemonic = true
-            };
-            UiTheme.ApplyLabel(label, true);
-            return label;
         }
 
         private static Button CreateButton(string text, string accessibleName, DialogResult dialogResult, int tabIndex)

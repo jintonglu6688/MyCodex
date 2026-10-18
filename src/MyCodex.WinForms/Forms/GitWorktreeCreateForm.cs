@@ -29,25 +29,28 @@ namespace MyCodex.WinForms.Forms
             AutoSizeMode = AutoSizeMode.GrowOnly;
             UiTheme.ApplyForm(this);
 
-            _targetPathTextBox = CreateTextBox(UiLocalization.Text("GitWorktreeCreateForm.Accessible.TargetPath", "Target path"), 0);
+            _targetPathTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitWorktreeCreateForm.Accessible.TargetPath", "Target path"), 0);
             _targetPathTextBox.Text = BuildDefaultTargetPath(workspacePath);
-            _branchNameTextBox = CreateTextBox(UiLocalization.Text("GitWorktreeCreateForm.Accessible.BranchName", "Branch name"), 2);
-            _startPointTextBox = CreateTextBox(UiLocalization.Text("GitWorktreeCreateForm.Accessible.StartPoint", "Start point"), 3);
+            _branchNameTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitWorktreeCreateForm.Accessible.BranchName", "Branch name"), 2);
+            _startPointTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitWorktreeCreateForm.Accessible.StartPoint", "Start point"), 3);
             _startPointTextBox.Text = "HEAD";
-            _browseButton = CreateButton(
+            _browseButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitWorktreeCreateForm.Button.Browse", "Browse(&B)"),
                 UiLocalization.Text("GitWorktreeCreateForm.Accessible.Browse", "Browse"),
                 1,
+                104,
                 DialogResult.None);
-            _createButton = CreateButton(
+            _createButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitWorktreeCreateForm.Button.Create", "Create(&C)"),
                 UiLocalization.Text("GitWorktreeCreateForm.Accessible.Create", "Create"),
                 4,
+                104,
                 DialogResult.OK);
-            _cancelButton = CreateButton(
+            _cancelButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitWorktreeCreateForm.Button.Cancel", "Cancel(&A)"),
                 UiLocalization.Text("GitWorktreeCreateForm.Accessible.Cancel", "Cancel"),
                 5,
+                104,
                 DialogResult.Cancel);
             UiTheme.ApplyButton(_browseButton, UiGlyph.Info);
             UiTheme.ApplyButton(_createButton, UiGlyph.Ok);
@@ -198,18 +201,6 @@ namespace MyCodex.WinForms.Forms
             return label;
         }
 
-        private static TextBox CreateTextBox(string accessibleName, int tabIndex)
-        {
-            var textBox = new TextBox
-            {
-                AccessibleName = accessibleName,
-                Dock = DockStyle.Fill,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyTextBox(textBox, false, false);
-            return textBox;
-        }
-
         private static string BuildDefaultTargetPath(string workspacePath)
         {
             if (string.IsNullOrWhiteSpace(workspacePath))
@@ -283,21 +274,6 @@ namespace MyCodex.WinForms.Forms
             {
                 return false;
             }
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, DialogResult dialogResult)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 104,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex,
-                DialogResult = dialogResult
-            };
         }
     }
 }

@@ -56,9 +56,9 @@ namespace MyCodex.WinForms.Forms
             _createTabPage = new TabPage(UiLocalization.Text("GitRepositoryPublishForm.Tab.CreateGitHubRepository", "Create GitHub Repository"));
             _manualTabPage = new TabPage(UiLocalization.Text("GitRepositoryPublishForm.Tab.Manual", "Manual"));
             _githubRepositoryListView = CreateGitHubRepositoryListView();
-            _createNameTextBox = CreateTextBox(UiLocalization.Text("GitRepositoryPublishForm.Accessible.Name", "Repository name"), 2);
+            _createNameTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitRepositoryPublishForm.Accessible.Name", "Repository name"), 2);
             _createNameTextBox.Text = _preferredRepositoryName;
-            _createDescriptionTextBox = CreateTextBox(UiLocalization.Text("GitRepositoryPublishForm.Accessible.Description", "Description"), 3);
+            _createDescriptionTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitRepositoryPublishForm.Accessible.Description", "Description"), 3);
             _createPrivateCheckBox = new CheckBox
             {
                 Dock = DockStyle.Fill,
@@ -69,16 +69,18 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 4
             };
             UiTheme.ApplyCheckBox(_createPrivateCheckBox);
-            _manualRemoteUrlTextBox = CreateTextBox(UiLocalization.Text("GitRepositoryPublishForm.Accessible.RemoteUrl", "Remote URL"), 5);
+            _manualRemoteUrlTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitRepositoryPublishForm.Accessible.RemoteUrl", "Remote URL"), 5);
 
-            _okButton = CreateButton(
+            _okButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitRepositoryPublishForm.Button.Continue", "Continue(&O)"),
                 UiLocalization.Text("GitRepositoryPublishForm.Accessible.Continue", "Continue"),
-                6);
-            _cancelButton = CreateButton(
+                6,
+                112);
+            _cancelButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitRepositoryPublishForm.Button.Cancel", "&Cancel"),
                 UiLocalization.Text("GitRepositoryPublishForm.Accessible.Cancel", "Cancel"),
-                7);
+                7,
+                112);
             UiTheme.ApplyButton(_okButton, UiGlyph.Ok);
             UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
 
@@ -248,9 +250,9 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
-            root.Controls.Add(CreateLabel(UiLocalization.Text("GitRepositoryPublishForm.Label.Name", "Repository name")), 0, 0);
+            root.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitRepositoryPublishForm.Label.Name", "Repository name")), 0, 0);
             root.Controls.Add(_createNameTextBox, 0, 1);
-            root.Controls.Add(CreateLabel(UiLocalization.Text("GitRepositoryPublishForm.Label.Description", "Description")), 0, 2);
+            root.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitRepositoryPublishForm.Label.Description", "Description")), 0, 2);
             root.Controls.Add(_createDescriptionTextBox, 0, 3);
             root.Controls.Add(_createPrivateCheckBox, 0, 4);
             root.Controls.Add(CreateHintLabel(UiLocalization.Text("GitRepositoryPublishForm.Hint.CreateGitHubRepository", "The repository will be created on GitHub and bound as origin. Local commits are not pushed automatically.")), 0, 5);
@@ -272,7 +274,7 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
 
-            root.Controls.Add(CreateLabel(UiLocalization.Text("GitRepositoryPublishForm.Label.RemoteUrl", "Remote URL")), 0, 0);
+            root.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitRepositoryPublishForm.Label.RemoteUrl", "Remote URL")), 0, 0);
             root.Controls.Add(_manualRemoteUrlTextBox, 0, 1);
             root.Controls.Add(CreateHintLabel(UiLocalization.Text("GitRepositoryPublishForm.Hint.RemoteUrl", "Example: https://github.com/user/repo.git or git@github.com:user/repo.git")), 0, 2);
             _manualTabPage.Controls.Add(root);
@@ -420,19 +422,6 @@ namespace MyCodex.WinForms.Forms
                 : UiLocalization.Text("GitRepositoryPublishForm.Value.Public", "Public");
         }
 
-        private static Label CreateLabel(string text)
-        {
-            var label = new Label
-            {
-                Dock = DockStyle.Fill,
-                Text = text,
-                TextAlign = ContentAlignment.MiddleLeft,
-                TabStop = false
-            };
-            UiTheme.ApplyLabel(label, true);
-            return label;
-        }
-
         private static Label CreateHintLabel(string text)
         {
             var label = new Label
@@ -445,32 +434,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(label, true);
             return label;
-        }
-
-        private static TextBox CreateTextBox(string accessibleName, int tabIndex)
-        {
-            var textBox = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                AccessibleName = accessibleName,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyTextBox(textBox, false, false);
-            return textBox;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 112,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
     }
 }

@@ -55,15 +55,17 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(_targetTextBox, true, true);
 
-            _okButton = CreateButton(
+            _okButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitWorktreeSwitchForm.Button.OK", "OK(&O)"),
                 UiLocalization.Text("GitWorktreeSwitchForm.Accessible.OK", "OK"),
                 2,
+                104,
                 DialogResult.OK);
-            _cancelButton = CreateButton(
+            _cancelButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitWorktreeSwitchForm.Button.Cancel", "Cancel(&C)"),
                 UiLocalization.Text("GitWorktreeSwitchForm.Accessible.Cancel", "Cancel"),
                 3,
+                104,
                 DialogResult.Cancel);
             UiTheme.ApplyButton(_okButton, UiGlyph.Ok);
             UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
@@ -144,21 +146,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(label, true);
             return label;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, DialogResult dialogResult)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 104,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex,
-                DialogResult = dialogResult
-            };
         }
 
         private sealed class ModeOption

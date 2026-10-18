@@ -63,7 +63,7 @@ namespace MyCodex.WinForms.Forms
             KeyPreview = true;
             UiTheme.ApplyForm(this);
 
-            _locationComboBox = CreateComboBox(UiLocalization.Text("SkillEditForm.Accessible.Location", "Save location"), 0);
+            _locationComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("SkillEditForm.Accessible.Location", "Save location"), 0, DockStyle.Top);
             _nameTextBox = CreateTextBox(UiLocalization.Text("SkillEditForm.Accessible.Name", "Internal name"), 1, false, false, !_isNew);
             _displayNameTextBox = CreateTextBox(UiLocalization.Text("SkillEditForm.Accessible.DisplayName", "Display name"), 2, false, false, false);
             _shortDescriptionTextBox = CreateTextBox(UiLocalization.Text("SkillEditForm.Accessible.ShortDescription", "Short description"), 3, false, false, false);
@@ -142,19 +142,6 @@ namespace MyCodex.WinForms.Forms
             {
                 textBox.SelectAll();
             }
-        }
-
-        private static ComboBox CreateComboBox(string accessibleName, int tabIndex)
-        {
-            var comboBox = new ComboBox
-            {
-                Dock = DockStyle.Top,
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                AccessibleName = accessibleName,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyComboBox(comboBox);
-            return comboBox;
         }
 
         private static TextBox CreateTextBox(string accessibleName, int tabIndex, bool multiline, bool isCode, bool isReadOnly)

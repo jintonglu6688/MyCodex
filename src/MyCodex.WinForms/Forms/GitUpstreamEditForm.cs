@@ -26,19 +26,21 @@ namespace MyCodex.WinForms.Forms
             ClientSize = new Size(640, 170);
             UiTheme.ApplyForm(this);
 
-            _branchTextBox = CreateTextBox(UiLocalization.Text("GitUpstreamEditForm.Accessible.Branch", "Local branch"), 0);
+            _branchTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitUpstreamEditForm.Accessible.Branch", "Local branch"), 0);
             _branchTextBox.ReadOnly = true;
             _branchTextBox.Text = branchName ?? string.Empty;
-            _upstreamComboBox = CreateComboBox(UiLocalization.Text("GitUpstreamEditForm.Accessible.Upstream", "Upstream branch"), 1);
+            _upstreamComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("GitUpstreamEditForm.Accessible.Upstream", "Upstream branch"), 1, DockStyle.Fill);
             PopulateUpstreamComboBox(remoteBranches, upstream);
-            _okButton = CreateButton(
+            _okButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitUpstreamEditForm.Button.Save", "Save(&S)"),
                 UiLocalization.Text("GitUpstreamEditForm.Accessible.Save", "Save"),
-                2);
-            _cancelButton = CreateButton(
+                2,
+                112);
+            _cancelButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitUpstreamEditForm.Button.Cancel", "&Cancel"),
                 UiLocalization.Text("GitUpstreamEditForm.Accessible.Cancel", "Cancel"),
-                3);
+                3,
+                112);
             UiTheme.ApplyButton(_okButton, UiGlyph.Ok);
             UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
 
@@ -91,9 +93,9 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
-            root.Controls.Add(CreateLabel(UiLocalization.Text("GitUpstreamEditForm.Label.Branch", "Local branch(&B)")), 0, 0);
+            root.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitUpstreamEditForm.Label.Branch", "Local branch(&B)")), 0, 0);
             root.Controls.Add(_branchTextBox, 0, 1);
-            root.Controls.Add(CreateLabel(UiLocalization.Text("GitUpstreamEditForm.Label.Upstream", "Upstream branch(&U)")), 0, 2);
+            root.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitUpstreamEditForm.Label.Upstream", "Upstream branch(&U)")), 0, 2);
             root.Controls.Add(_upstreamComboBox, 0, 3);
 
             var footer = new FlowLayoutPanel
@@ -109,44 +111,6 @@ namespace MyCodex.WinForms.Forms
             footer.Controls.Add(_okButton);
             root.Controls.Add(footer, 0, 4);
             Controls.Add(root);
-        }
-
-        private static Label CreateLabel(string text)
-        {
-            var label = new Label
-            {
-                Dock = DockStyle.Fill,
-                Text = text,
-                TextAlign = ContentAlignment.MiddleLeft,
-                TabStop = false
-            };
-            UiTheme.ApplyLabel(label, true);
-            return label;
-        }
-
-        private static TextBox CreateTextBox(string accessibleName, int tabIndex)
-        {
-            var textBox = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                AccessibleName = accessibleName,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyTextBox(textBox, false, false);
-            return textBox;
-        }
-
-        private static ComboBox CreateComboBox(string accessibleName, int tabIndex)
-        {
-            var comboBox = new ComboBox
-            {
-                Dock = DockStyle.Fill,
-                AccessibleName = accessibleName,
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyComboBox(comboBox);
-            return comboBox;
         }
 
         private void PopulateUpstreamComboBox(IReadOnlyList<GitBranchEntry> remoteBranches, string upstream)
@@ -176,20 +140,6 @@ namespace MyCodex.WinForms.Forms
             {
                 _upstreamComboBox.SelectedIndex = 0;
             }
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 112,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
     }
 }

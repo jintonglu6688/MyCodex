@@ -40,14 +40,16 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyCheckBox(_includeUntrackedCheckBox);
 
-            _saveButton = CreateButton(
+            _saveButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitStashCreateForm.Button.Save", "Save(&S)"),
                 UiLocalization.Text("GitStashCreateForm.Accessible.Save", "Save"),
-                2);
-            _cancelButton = CreateButton(
+                2,
+                118);
+            _cancelButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitStashCreateForm.Button.Cancel", "&Cancel"),
                 UiLocalization.Text("GitStashCreateForm.Accessible.Cancel", "Cancel"),
-                3);
+                3,
+                118);
             UiTheme.ApplyButton(_saveButton, UiGlyph.Ok);
             UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
 
@@ -112,20 +114,6 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(_includeUntrackedCheckBox, 0, 2);
             root.Controls.Add(footer, 0, 3);
             Controls.Add(root);
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 118,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
     }
 }

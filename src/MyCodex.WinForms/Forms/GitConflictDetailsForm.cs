@@ -60,9 +60,9 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(_detailsTextBox, true, true);
 
-            _refreshButton = CreateButton(UiLocalization.Text("GitConflictDetailsForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitConflictDetailsForm.Accessible.Refresh", "Refresh"), 1);
-            _copyButton = CreateButton(UiLocalization.Text("GitConflictDetailsForm.Button.Copy", "Copy(&C)"), UiLocalization.Text("GitConflictDetailsForm.Accessible.Copy", "Copy"), 2);
-            _closeButton = CreateButton(UiLocalization.Text("GitConflictDetailsForm.Button.Close", "Close(&E)"), UiLocalization.Text("GitConflictDetailsForm.Accessible.Close", "Close"), 3);
+            _refreshButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitConflictDetailsForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitConflictDetailsForm.Accessible.Refresh", "Refresh"), 1, 118);
+            _copyButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitConflictDetailsForm.Button.Copy", "Copy(&C)"), UiLocalization.Text("GitConflictDetailsForm.Accessible.Copy", "Copy"), 2, 118);
+            _closeButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitConflictDetailsForm.Button.Close", "Close(&E)"), UiLocalization.Text("GitConflictDetailsForm.Accessible.Close", "Close"), 3, 118);
             FormInteractionConventions.ConfigureRefreshButton(_refreshButton);
             UiTheme.ApplyButton(_refreshButton, UiGlyph.Refresh);
             UiTheme.ApplyButton(_copyButton, UiGlyph.CommandOutput);
@@ -218,20 +218,6 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(_detailsTextBox, 0, 1);
             root.Controls.Add(footer, 0, 2);
             Controls.Add(root);
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 118,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
     }
 }

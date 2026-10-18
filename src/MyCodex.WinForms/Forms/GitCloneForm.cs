@@ -82,11 +82,11 @@ namespace MyCodex.WinForms.Forms
             _manualTabPage = new TabPage(UiLocalization.Text("GitCloneForm.Tab.Manual", "Manual"));
             _githubTabPage = new TabPage(UiLocalization.Text("GitCloneForm.Tab.GitHub", "GitHub"));
             _sourceTabControl = CreateSourceTabControl();
-            _repositoryUrlTextBox = CreateTextBox(UiLocalization.Text("GitCloneForm.Accessible.RepositoryUrl", "Repository URL"), 0);
-            _githubFilterTextBox = CreateTextBox(UiLocalization.Text("GitCloneForm.Accessible.GitHubFilter", "GitHub filter"), 1);
+            _repositoryUrlTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitCloneForm.Accessible.RepositoryUrl", "Repository URL"), 0);
+            _githubFilterTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitCloneForm.Accessible.GitHubFilter", "GitHub filter"), 1);
             _githubRepositoriesListView = CreateGitHubRepositoriesListView();
-            _targetParentTextBox = CreateTextBox(UiLocalization.Text("GitCloneForm.Accessible.TargetParent", "Target directory"), 5);
-            _targetFolderTextBox = CreateTextBox(UiLocalization.Text("GitCloneForm.Accessible.TargetFolder", "Target folder"), 7);
+            _targetParentTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitCloneForm.Accessible.TargetParent", "Target directory"), 5);
+            _targetFolderTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitCloneForm.Accessible.TargetFolder", "Target folder"), 7);
             _outputTextBox = CreateOutputTextBox();
             _statusLabel = new Label
             {
@@ -232,7 +232,7 @@ namespace MyCodex.WinForms.Forms
             };
             row.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
             row.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            row.Controls.Add(CreateLabel(UiLocalization.Text("GitCloneForm.Label.RepositoryUrl", "Git URL")), 0, 0);
+            row.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitCloneForm.Label.RepositoryUrl", "Git URL")), 0, 0);
             row.Controls.Add(_repositoryUrlTextBox, 0, 1);
             return row;
         }
@@ -253,7 +253,7 @@ namespace MyCodex.WinForms.Forms
             row.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
             row.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
             row.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            row.Controls.Add(CreateLabel(UiLocalization.Text("GitCloneForm.Label.GitHubRepositories", "GitHub repositories")), 0, 0);
+            row.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitCloneForm.Label.GitHubRepositories", "GitHub repositories")), 0, 0);
             row.Controls.Add(_githubFilterTextBox, 0, 1);
             row.Controls.Add(_refreshRepositoriesButton, 1, 1);
             row.Controls.Add(_useSshCloneUrlCheckBox, 2, 1);
@@ -278,8 +278,8 @@ namespace MyCodex.WinForms.Forms
             row.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
             row.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
-            row.Controls.Add(CreateLabel(UiLocalization.Text("GitCloneForm.Label.TargetParent", "Target directory")), 0, 0);
-            row.Controls.Add(CreateLabel(UiLocalization.Text("GitCloneForm.Label.TargetFolder", "Target folder")), 2, 0);
+            row.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitCloneForm.Label.TargetParent", "Target directory")), 0, 0);
+            row.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitCloneForm.Label.TargetFolder", "Target folder")), 2, 0);
             row.Controls.Add(_targetParentTextBox, 0, 1);
             row.Controls.Add(_browseButton, 1, 1);
             row.Controls.Add(_targetFolderTextBox, 2, 1);
@@ -819,18 +819,6 @@ namespace MyCodex.WinForms.Forms
             }
         }
 
-        private static TextBox CreateTextBox(string accessibleName, int tabIndex)
-        {
-            var textBox = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                AccessibleName = accessibleName,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyTextBox(textBox, false, false);
-            return textBox;
-        }
-
         private static TabControl CreateSourceTabControl()
         {
             var tabControl = new TabControl
@@ -877,20 +865,6 @@ namespace MyCodex.WinForms.Forms
             listView.Columns.Add(UiLocalization.Text("GitCloneForm.Column.UpdatedAt", "Updated"), 150);
             UiTheme.ApplyListView(listView);
             return listView;
-        }
-
-        private static Label CreateLabel(string text)
-        {
-            var label = new Label
-            {
-                Dock = DockStyle.Fill,
-                Text = text,
-                TextAlign = ContentAlignment.MiddleLeft,
-                ForeColor = UiTheme.MutedTextColor,
-                TabStop = false
-            };
-            UiTheme.ApplyLabel(label, true);
-            return label;
         }
 
         private static Button CreateButton(string text, string accessibleName, int tabIndex, int width)

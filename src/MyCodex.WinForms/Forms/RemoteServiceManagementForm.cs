@@ -97,18 +97,18 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(_serverStateLabel, false);
 
-            _embeddedRelayActionButton = CreateButton(
+            _embeddedRelayActionButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text("RemoteServiceManagementForm.Button.StartEmbeddedRelay", "Start Remote Service(&T)"),
                 UiLocalization.Text("RemoteServiceManagementForm.Accessible.Button.StartEmbeddedRelay", "Start remote service"),
                 0,
                 UiGlyph.Ok);
-            _generatePairingCodeButton = CreateButton(
+            _generatePairingCodeButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text("RemoteServiceManagementForm.Button.GeneratePairingCode", "Generate Pairing Code(&G)"),
                 UiLocalization.Text("RemoteServiceManagementForm.Accessible.Button.GeneratePairingCode", "Generate pairing code"),
                 2,
                 UiGlyph.NewSession);
             InitializeFirewallControls(embeddedRelayFirewallService);
-            _serverSettingsButton = CreateButton(
+            _serverSettingsButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text("RemoteServiceManagementForm.Button.ServerSettings", "Connection Settings(&S)..."),
                 UiLocalization.Text("RemoteServiceManagementForm.Accessible.Button.ServerSettings", "Connection settings"),
                 0,
@@ -129,17 +129,17 @@ namespace MyCodex.WinForms.Forms
                     _removeDeviceMenuItem
                 });
             _devicesListView.ContextMenu = _devicesContextMenu;
-            _refreshDevicesButton = CreateButton(
+            _refreshDevicesButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text("RemoteServiceManagementForm.Button.RefreshDevices", "Refresh(&F)"),
                 UiLocalization.Text("RemoteServiceManagementForm.Accessible.Button.RefreshDevices", "Refresh"),
                 0,
                 UiGlyph.Refresh);
-            _diagnosticsButton = CreateButton(
+            _diagnosticsButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text("RemoteServiceManagementForm.Button.Diagnostics", "Diagnostics(&I)"),
                 UiLocalization.Text("RemoteServiceManagementForm.Accessible.Button.Diagnostics", "Diagnostics"),
                 0,
                 UiGlyph.Info);
-            _closeButton = CreateButton(
+            _closeButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text("RemoteServiceManagementForm.Button.Close", "C&lose"),
                 UiLocalization.Text("RemoteServiceManagementForm.Accessible.Button.Close", "Close"),
                 0,
@@ -1189,19 +1189,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(label, true);
             return label;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, UiGlyph glyph)
-        {
-            var button = new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                AutoSize = true,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyDialogButton(button, glyph);
-            return button;
         }
 
         private static ListView CreateDevicesListView()

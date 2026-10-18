@@ -69,9 +69,9 @@ namespace MyCodex.WinForms.Forms
             AutoScroll = true;
             UiTheme.ApplyForm(this);
 
-            _nameTextBox = CreateTextBox(UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name"), 0);
-            _kindComboBox = CreateComboBox(UiLocalization.Text("AutomationEditForm.Accessible.Kind", "Automation type"), 1);
-            _scheduleKindComboBox = CreateComboBox(UiLocalization.Text("AutomationEditForm.Accessible.ScheduleKind", "Schedule"), 2);
+            _nameTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name"), 0);
+            _kindComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("AutomationEditForm.Accessible.Kind", "Automation type"), 1, DockStyle.Fill);
+            _scheduleKindComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("AutomationEditForm.Accessible.ScheduleKind", "Schedule"), 2, DockStyle.Fill);
             _intervalInput = new NumericUpDown
             {
                 AccessibleName = UiLocalization.Text("AutomationEditForm.Accessible.Interval", "Interval"),
@@ -102,14 +102,14 @@ namespace MyCodex.WinForms.Forms
                 Value = DateTime.Today.AddHours(8)
             };
 
-            _dayOfWeekComboBox = CreateComboBox(UiLocalization.Text("AutomationEditForm.Accessible.DayOfWeek", "Day of week"), 5);
+            _dayOfWeekComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("AutomationEditForm.Accessible.DayOfWeek", "Day of week"), 5, DockStyle.Fill);
 
-            _modelComboBox = CreateComboBox(UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model"), 6);
-            _reasoningEffortComboBox = CreateComboBox(UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort"), 7);
-            _approvalModeComboBox = CreateComboBox(UiLocalization.Text("AutomationEditForm.Accessible.ApprovalMode", "Approval mode"), 8);
+            _modelComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model"), 6, DockStyle.Fill);
+            _reasoningEffortComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort"), 7, DockStyle.Fill);
+            _approvalModeComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("AutomationEditForm.Accessible.ApprovalMode", "Approval mode"), 8, DockStyle.Fill);
             _modelComboBox.SelectedIndexChanged += (sender, e) => UpdateReasoningEffortChoices(null);
 
-            _promptTextBox = CreateTextBox(UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt"), 9);
+            _promptTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt"), 9);
             _promptTextBox.Multiline = true;
             _promptTextBox.ScrollBars = ScrollBars.Vertical;
 
@@ -965,31 +965,6 @@ namespace MyCodex.WinForms.Forms
             panel.Controls.Add(label, 0, 0);
             panel.Controls.Add(control, 0, 1);
             return panel;
-        }
-
-        private static TextBox CreateTextBox(string accessibleName, int tabIndex)
-        {
-            var textBox = new TextBox
-            {
-                AccessibleName = accessibleName,
-                Dock = DockStyle.Fill,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyTextBox(textBox, false, false);
-            return textBox;
-        }
-
-        private static ComboBox CreateComboBox(string accessibleName, int tabIndex)
-        {
-            var comboBox = new ComboBox
-            {
-                AccessibleName = accessibleName,
-                Dock = DockStyle.Fill,
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyComboBox(comboBox);
-            return comboBox;
         }
 
         private static Button CreateButton(string text, string accessibleName, int tabIndex, DialogResult result)

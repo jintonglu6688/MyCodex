@@ -94,13 +94,16 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(_statusLabel, false);
 
-            _newButton = CreateButton(UiLocalization.Text("AutomationsForm.Button.New", "New(&N)"), UiLocalization.Text("AutomationsForm.Accessible.New", "New"), 1);
-            _runNowButton = CreateButton(UiLocalization.Text("AutomationsForm.Button.RunNow", "Run Now(&R)"), UiLocalization.Text("AutomationsForm.Accessible.RunNow", "Run now"), 2);
-            _detailsButton = CreateButton(UiLocalization.Text("AutomationsForm.Button.Details", "Details(&D)"), UiLocalization.Text("AutomationsForm.Accessible.Details", "Details"), 3, UiGlyph.Info);
-            _openThreadButton = CreateButton(UiLocalization.Text("AutomationsForm.Button.OpenThread", "Open thread(&O)"), UiLocalization.Text("AutomationsForm.Accessible.OpenThread", "Open thread"), 4, UiGlyph.Info);
-            _stopRunButton = CreateButton(UiLocalization.Text("AutomationsForm.Button.StopRun", "Stop run(&T)"), UiLocalization.Text("AutomationsForm.Accessible.StopRun", "Stop run"), 5, UiGlyph.Stop);
-            _assignPendingButton = CreateButton(UiLocalization.Text("AutomationsForm.Button.AssignPending", "Assign old tasks(&P)..."),
-                UiLocalization.Text("AutomationsForm.Accessible.AssignPending", "Assign old tasks"), 6);
+            _newButton = UiControlFactory.CreateDialogButton(UiLocalization.Text("AutomationsForm.Button.New", "New(&N)"), UiLocalization.Text("AutomationsForm.Accessible.New", "New"), 1, UiGlyph.Info);
+            _runNowButton = UiControlFactory.CreateDialogButton(UiLocalization.Text("AutomationsForm.Button.RunNow", "Run Now(&R)"), UiLocalization.Text("AutomationsForm.Accessible.RunNow", "Run now"), 2, UiGlyph.Info);
+            _detailsButton = UiControlFactory.CreateDialogButton(UiLocalization.Text("AutomationsForm.Button.Details", "Details(&D)"), UiLocalization.Text("AutomationsForm.Accessible.Details", "Details"), 3, UiGlyph.Info);
+            _openThreadButton = UiControlFactory.CreateDialogButton(UiLocalization.Text("AutomationsForm.Button.OpenThread", "Open thread(&O)"), UiLocalization.Text("AutomationsForm.Accessible.OpenThread", "Open thread"), 4, UiGlyph.Info);
+            _stopRunButton = UiControlFactory.CreateDialogButton(UiLocalization.Text("AutomationsForm.Button.StopRun", "Stop run(&T)"), UiLocalization.Text("AutomationsForm.Accessible.StopRun", "Stop run"), 5, UiGlyph.Stop);
+            _assignPendingButton = UiControlFactory.CreateDialogButton(
+                UiLocalization.Text("AutomationsForm.Button.AssignPending", "Assign old tasks(&P)..."),
+                UiLocalization.Text("AutomationsForm.Accessible.AssignPending", "Assign old tasks"),
+                6,
+                UiGlyph.Info);
             _assignPendingButton.Click += (sender, e) =>
             {
                 AssignPendingAutomations?.Invoke();
@@ -901,20 +904,6 @@ namespace MyCodex.WinForms.Forms
             listView.Columns.Add(UiLocalization.Text("AutomationsForm.Column.Type", "Type"), 140);
             listView.Columns.Add(UiLocalization.Text("AutomationsForm.Column.Status", "Status"), 120);
             listView.Columns.Add(UiLocalization.Text("AutomationsForm.Column.Time", "Time"), 180);
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, UiGlyph glyph = UiGlyph.Info)
-        {
-            var button = new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                AutoSize = true,
-                TabIndex = tabIndex,
-                UseMnemonic = true
-            };
-            UiTheme.ApplyDialogButton(button, glyph);
-            return button;
         }
 
         private static string FormatDate(DateTime? value)

@@ -81,17 +81,17 @@ namespace MyCodex.WinForms.Forms
             _serverModeComboBox.Items.Add(UiLocalization.Text("RemoteServiceSettingsForm.Mode.Embedded", "Built-in service"));
             _serverModeComboBox.Items.Add(UiLocalization.Text("RemoteServiceSettingsForm.Mode.External", "Public service"));
             UiTheme.ApplyComboBox(_serverModeComboBox);
-            _serviceHostTextBox = CreateTextBox(UiLocalization.Text("RemoteServiceSettingsForm.Accessible.ServiceHost", "Public address"), 1);
+            _serviceHostTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("RemoteServiceSettingsForm.Accessible.ServiceHost", "Public address"), 1);
             _portNumericUpDown = CreatePortControl();
             _useTlsCheckBox = CreateCheckBox(
                 UiLocalization.Text("RemoteServiceSettingsForm.Label.UseTls", "Use TLS"),
                 UiLocalization.Text("RemoteServiceSettingsForm.Accessible.UseTls", "Use TLS"),
                 3);
-            _tenantIdTextBox = CreateTextBox(UiLocalization.Text("RemoteServiceSettingsForm.Accessible.TenantId", "Tenant ID"), 4);
-            _accessSecretTextBox = CreateTextBox(UiLocalization.Text("RemoteServiceSettingsForm.Accessible.AccessSecret", "Access secret"), 5);
+            _tenantIdTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("RemoteServiceSettingsForm.Accessible.TenantId", "Tenant ID"), 4);
+            _accessSecretTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("RemoteServiceSettingsForm.Accessible.AccessSecret", "Access secret"), 5);
             _accessSecretTextBox.UseSystemPasswordChar = true;
-            _thisPcNameTextBox = CreateTextBox(UiLocalization.Text("RemoteServiceSettingsForm.Accessible.ThisPcName", "This PC name"), 6);
-            _hostIdTextBox = CreateTextBox(UiLocalization.Text("RemoteServiceSettingsForm.Accessible.HostId", "Host ID"), 7);
+            _thisPcNameTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("RemoteServiceSettingsForm.Accessible.ThisPcName", "This PC name"), 6);
+            _hostIdTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("RemoteServiceSettingsForm.Accessible.HostId", "Host ID"), 7);
             _hostIdTextBox.ReadOnly = true;
             _startWithApplicationCheckBox = CreateCheckBox(
                 UiLocalization.Text(
@@ -114,7 +114,7 @@ namespace MyCodex.WinForms.Forms
                 TabStop = false
             };
             UiTheme.ApplyLabel(_serverInfoStatusLabel, false);
-            _importServerInfoButton = CreateButton(
+            _importServerInfoButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text(
                     "RemoteServiceSettingsForm.Button.ImportServerInfo",
                     "Import Server Info(&I)"),
@@ -123,7 +123,7 @@ namespace MyCodex.WinForms.Forms
                     "Import server information"),
                 8,
                 UiGlyph.FileChange);
-            _detectServerButton = CreateButton(
+            _detectServerButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text(
                     "RemoteServiceSettingsForm.Button.DetectServer",
                     "Detect Server(&T)"),
@@ -132,12 +132,12 @@ namespace MyCodex.WinForms.Forms
                     "Detect server"),
                 9,
                 UiGlyph.Refresh);
-            _saveButton = CreateButton(
+            _saveButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text("RemoteServiceSettingsForm.Button.Save", "Save(&S)"),
                 UiLocalization.Text("RemoteServiceSettingsForm.Accessible.Button.Save", "Save"),
                 10,
                 UiGlyph.Ok);
-            _cancelButton = CreateButton(
+            _cancelButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text("RemoteServiceSettingsForm.Button.Cancel", "Cancel(&C)"),
                 UiLocalization.Text("RemoteServiceSettingsForm.Accessible.Button.Cancel", "Cancel"),
                 11,
@@ -151,10 +151,11 @@ namespace MyCodex.WinForms.Forms
                 _cancelButton.AccessibleName = UiLocalization.Text("SharedRemoteService.Accessible.Close", "Close");
             }
             FormClosing += (sender, e) => { if (_isBusy) e.Cancel = true; };
-            _firewallSettingsButton = CreateButton(
+            _firewallSettingsButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text("SharedRemoteService.Button.Firewall", "Local network access(&A)..."),
                 UiLocalization.Text("RemoteServiceManagementForm.Accessible.Button.AllowFirewall", "Allow local network access"),
-                9, UiGlyph.Approval);
+                9,
+                UiGlyph.Approval);
             _firewallSettingsButton.Visible = configureFirewall != null;
             _firewallSettingsButton.Click += (sender, e) => configureFirewall?.Invoke(this);
 
@@ -665,18 +666,6 @@ namespace MyCodex.WinForms.Forms
             return label;
         }
 
-        private static TextBox CreateTextBox(string accessibleName, int tabIndex)
-        {
-            var textBox = new TextBox
-            {
-                AccessibleName = accessibleName,
-                Dock = DockStyle.Fill,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyTextBox(textBox, false, false);
-            return textBox;
-        }
-
         private static NumericUpDown CreatePortControl()
         {
             var control = new NumericUpDown
@@ -706,19 +695,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyCheckBox(checkBox);
             return checkBox;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, UiGlyph glyph)
-        {
-            var button = new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                AutoSize = true,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyDialogButton(button, glyph);
-            return button;
         }
 
         private static bool IsEmbeddedMode(string mode)

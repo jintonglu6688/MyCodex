@@ -106,10 +106,10 @@ namespace MyCodex.WinForms.Forms
             KeyPreview = true;
             UiTheme.ApplyForm(this);
 
-            _keywordTextBox = CreateTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.Keyword", "Keyword"), 0);
-            _languageTextBox = CreateTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.Language", "Language"), 1);
-            _topicTextBox = CreateTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.Topic", "Topic"), 2);
-            _licenseTextBox = CreateTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.License", "License"), 7);
+            _keywordTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.Keyword", "Keyword"), 0);
+            _languageTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.Language", "Language"), 1);
+            _topicTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.Topic", "Topic"), 2);
+            _licenseTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.License", "License"), 7);
             _sortComboBox = CreateComboBox(UiLocalization.Text("GitHubStoreForm.Accessible.Sort", "Sort"));
             _sortComboBox.TabIndex = 3;
             _sortComboBox.Items.Add(new SearchSortItem(UiLocalization.Text("GitHubStoreForm.Sort.BestMatch", "Best Match"), null));
@@ -135,19 +135,19 @@ namespace MyCodex.WinForms.Forms
             _storePresetComboBox.Items.Add(new SearchSortItem(UiLocalization.Text("GitHubStoreForm.Preset.RecentCreated", "Recent Created"), "recent-created"));
             _storePresetComboBox.SelectedIndex = 0;
 
-            _minStarsTextBox = CreateTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.MinStars", "Min stars"), 8);
-            _maxStarsTextBox = CreateTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.MaxStars", "Max stars"), 9);
-            _minForksTextBox = CreateTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.MinForks", "Min forks"), 10);
-            _maxForksTextBox = CreateTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.MaxForks", "Max forks"), 11);
-            _minOpenIssuesTextBox = CreateTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.MinOpenIssues", "Min open issues"), 12);
-            _maxOpenIssuesTextBox = CreateTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.MaxOpenIssues", "Max open issues"), 13);
+            _minStarsTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.MinStars", "Min stars"), 8);
+            _maxStarsTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.MaxStars", "Max stars"), 9);
+            _minForksTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.MinForks", "Min forks"), 10);
+            _maxForksTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.MaxForks", "Max forks"), 11);
+            _minOpenIssuesTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.MinOpenIssues", "Min open issues"), 12);
+            _maxOpenIssuesTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.MaxOpenIssues", "Max open issues"), 13);
             _limitComboBox = CreateComboBox(UiLocalization.Text("GitHubStoreForm.Accessible.Limit", "Limit"));
             _limitComboBox.TabIndex = 3;
             _limitComboBox.Items.Add(new SearchSortItem(UiLocalization.Text("GitHubStoreForm.Limit.10", "10"), "10"));
             _limitComboBox.Items.Add(new SearchSortItem(UiLocalization.Text("GitHubStoreForm.Limit.20", "20"), "20"));
             _limitComboBox.Items.Add(new SearchSortItem(UiLocalization.Text("GitHubStoreForm.Limit.30", "30"), "30"));
             _limitComboBox.SelectedIndex = 1;
-            _rankingLanguageTextBox = CreateTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.RankingLanguage", "Ranking language"), 1);
+            _rankingLanguageTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubStoreForm.Accessible.RankingLanguage", "Ranking language"), 1);
             _rankingLimitComboBox = CreateComboBox(UiLocalization.Text("GitHubStoreForm.Accessible.RankingLimit", "Ranking limit"));
             _rankingLimitComboBox.TabIndex = 2;
             _rankingLimitComboBox.Items.Add(new SearchSortItem(UiLocalization.Text("GitHubStoreForm.Limit.10", "10"), "10"));
@@ -175,17 +175,17 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyCheckBox(_showAdvancedSearchCheckBox);
 
-            _searchButton = CreateButton(
+            _searchButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubStoreForm.Button.Search", "Search(&S)"),
                 UiLocalization.Text("GitHubStoreForm.Accessible.Search", "Search"),
                 14,
                 106);
-            _rankingRefreshButton = CreateButton(
+            _rankingRefreshButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubStoreForm.Button.RefreshRanking", "Load Rankings(&R)"),
                 UiLocalization.Text("GitHubStoreForm.Accessible.RefreshRanking", "Load rankings"),
                 3,
                 132);
-            _closeButton = CreateButton(
+            _closeButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubStoreForm.Button.Close", "Close"),
                 UiLocalization.Text("GitHubStoreForm.Accessible.Close", "Close"),
                 15,
@@ -1331,18 +1331,6 @@ namespace MyCodex.WinForms.Forms
                 || lower.Contains("403");
         }
 
-        private static TextBox CreateTextBox(string accessibleName, int tabIndex)
-        {
-            var textBox = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                AccessibleName = accessibleName,
-                TabIndex = tabIndex
-            };
-            UiTheme.ApplyTextBox(textBox, false, false);
-            return textBox;
-        }
-
         private static ComboBox CreateComboBox(string accessibleName)
         {
             var comboBox = new ComboBox
@@ -1354,21 +1342,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyComboBox(comboBox);
             return comboBox;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, int width)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = width,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabStop = true,
-                TabIndex = tabIndex
-            };
         }
 
         private static ListView CreateRepositoryListView()

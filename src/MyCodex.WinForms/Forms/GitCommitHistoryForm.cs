@@ -176,18 +176,21 @@ namespace MyCodex.WinForms.Forms
             _branchContextMenu.MenuItems.Add(_copyBranchUpstreamMenuItem);
             _historyTreeView.ContextMenu = _branchContextMenu;
 
-            _refreshButton = CreateButton(
+            _refreshButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitCommitHistoryForm.Button.Refresh", "Refresh(&R)"),
                 UiLocalization.Text("GitCommitHistoryForm.Accessible.Refresh", "Refresh"),
-                1);
-            _loadDetailsButton = CreateButton(
+                1,
+                118);
+            _loadDetailsButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitCommitHistoryForm.Button.LoadDetails", "Load Details(&D)"),
                 UiLocalization.Text("GitCommitHistoryForm.Accessible.LoadDetails", "Load details"),
-                2);
-            _closeButton = CreateButton(
+                2,
+                118);
+            _closeButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitCommitHistoryForm.Button.Close", "Close(&E)"),
                 UiLocalization.Text("GitCommitHistoryForm.Accessible.Close", "Close"),
-                3);
+                3,
+                118);
             FormInteractionConventions.ConfigureRefreshButton(_refreshButton);
             UiTheme.ApplyButton(_refreshButton, UiGlyph.Refresh);
             UiTheme.ApplyButton(_loadDetailsButton, UiGlyph.Info);
@@ -2832,20 +2835,6 @@ namespace MyCodex.WinForms.Forms
                     "Revert {0} selected commits?\r\n\r\nGit will process them in the order shown in the list.\r\n\r\n{1}\r\n\r\nThis creates new commit(s) that reverse the selected commits."),
                 items.Length,
                 string.Join(Environment.NewLine, lines.ToArray()));
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 118,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
 
         private async Task ForceDeleteSelectedBranchAsync()

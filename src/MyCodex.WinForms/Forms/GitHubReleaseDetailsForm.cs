@@ -76,14 +76,16 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(_statusLabel, true);
 
-            _refreshButton = CreateButton(
+            _refreshButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubReleaseDetailsForm.Button.Refresh", "Refresh(&R)"),
                 UiLocalization.Text("GitHubReleaseDetailsForm.Accessible.Refresh", "Refresh"),
-                2);
-            _closeButton = CreateButton(
+                2,
+                112);
+            _closeButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("GitHubReleaseDetailsForm.Button.Close", "Close(&C)"),
                 UiLocalization.Text("GitHubReleaseDetailsForm.Accessible.Close", "Close"),
-                3);
+                3,
+                112);
             FormInteractionConventions.ConfigureRefreshButton(_refreshButton);
             UiTheme.ApplyButton(_refreshButton, UiGlyph.Refresh);
             UiTheme.ApplyButton(_closeButton, UiGlyph.Cancel);
@@ -282,20 +284,6 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(_statusLabel, 0, 3);
             root.Controls.Add(footer, 0, 4);
             Controls.Add(root);
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 112,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
 
         private static string BuildReleaseNotesContent(GitHubReleaseDetailEntry release)

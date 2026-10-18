@@ -56,8 +56,8 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(_warningLabel, true);
 
-            _okButton = CreateButton(UiLocalization.Text("GitCommitMessageEditForm.Button.OK", "Amend(&A)"), UiLocalization.Text("GitCommitMessageEditForm.Accessible.OK", "Amend"), 2);
-            _cancelButton = CreateButton(UiLocalization.Text("GitCommitMessageEditForm.Button.Cancel", "Cancel(&C)"), UiLocalization.Text("GitCommitMessageEditForm.Accessible.Cancel", "Cancel"), 3);
+            _okButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitCommitMessageEditForm.Button.OK", "Amend(&A)"), UiLocalization.Text("GitCommitMessageEditForm.Accessible.OK", "Amend"), 2, 118);
+            _cancelButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitCommitMessageEditForm.Button.Cancel", "Cancel(&C)"), UiLocalization.Text("GitCommitMessageEditForm.Accessible.Cancel", "Cancel"), 3, 118);
             UiTheme.ApplyButton(_okButton, UiGlyph.Ok);
             UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
             _okButton.Click += (sender, e) => Accept();
@@ -120,8 +120,8 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-            var subjectLabel = CreateLabel(UiLocalization.Text("GitCommitMessageEditForm.Label.Subject", "Subject"));
-            var bodyLabel = CreateLabel(UiLocalization.Text("GitCommitMessageEditForm.Label.Body", "Details"));
+            var subjectLabel = UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitCommitMessageEditForm.Label.Subject", "Subject"));
+            var bodyLabel = UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitCommitMessageEditForm.Label.Body", "Details"));
             var footer = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -141,34 +141,6 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(_warningLabel, 0, 4);
             root.Controls.Add(footer, 0, 5);
             Controls.Add(root);
-        }
-
-        private static Label CreateLabel(string text)
-        {
-            var label = new Label
-            {
-                Dock = DockStyle.Fill,
-                ForeColor = UiTheme.MutedTextColor,
-                Text = text ?? string.Empty,
-                TextAlign = ContentAlignment.MiddleLeft,
-                TabStop = false
-            };
-            UiTheme.ApplyLabel(label, true);
-            return label;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 118,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
     }
 }

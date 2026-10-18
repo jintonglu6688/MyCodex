@@ -55,7 +55,7 @@ namespace MyCodex.WinForms.Forms
                 TabStop = false
             };
             UiTheme.ApplyLabel(_firewallStateLabel, false);
-            _allowFirewallButton = CreateButton(
+            _allowFirewallButton = UiControlFactory.CreateDialogButton(
                 UiLocalization.Text(
                     "RemoteServiceManagementForm.Button.AllowFirewall",
                     "Allow Local Network Access(&A)"),

@@ -90,14 +90,14 @@ namespace MyCodex.WinForms.Forms
             _fileContextMenu.MenuItems.Add(_copyDiffMenuItem);
             _fileListView.ContextMenu = _fileContextMenu;
 
-            _saveButton = CreateButton(UiLocalization.Text("GitStashManagementForm.Button.Save", "Save(&S)"), UiLocalization.Text("GitStashManagementForm.Accessible.Save", "Save"), 1);
-            _loadDetailsButton = CreateButton(UiLocalization.Text("GitStashManagementForm.Button.LoadDetails", "Load Details(&L)"), UiLocalization.Text("GitStashManagementForm.Accessible.LoadDetails", "Load details"), 2);
-            _branchButton = CreateButton(UiLocalization.Text("GitStashManagementForm.Button.CreateBranch", "Create Branch(&B)"), UiLocalization.Text("GitStashManagementForm.Accessible.CreateBranch", "Create branch"), 3);
-            _applyButton = CreateButton(UiLocalization.Text("GitStashManagementForm.Button.Apply", "Apply(&A)"), UiLocalization.Text("GitStashManagementForm.Accessible.Apply", "Apply"), 4);
-            _popButton = CreateButton(UiLocalization.Text("GitStashManagementForm.Button.Pop", "Pop(&P)"), UiLocalization.Text("GitStashManagementForm.Accessible.Pop", "Pop"), 5);
-            _dropButton = CreateButton(UiLocalization.Text("GitStashManagementForm.Button.Drop", "Drop(&D)"), UiLocalization.Text("GitStashManagementForm.Accessible.Drop", "Drop"), 6);
-            _refreshButton = CreateButton(UiLocalization.Text("GitStashManagementForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitStashManagementForm.Accessible.Refresh", "Refresh"), 7);
-            _closeButton = CreateButton(UiLocalization.Text("GitStashManagementForm.Button.Close", "Close(&E)"), UiLocalization.Text("GitStashManagementForm.Accessible.Close", "Close"), 8);
+            _saveButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitStashManagementForm.Button.Save", "Save(&S)"), UiLocalization.Text("GitStashManagementForm.Accessible.Save", "Save"), 1, 118);
+            _loadDetailsButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitStashManagementForm.Button.LoadDetails", "Load Details(&L)"), UiLocalization.Text("GitStashManagementForm.Accessible.LoadDetails", "Load details"), 2, 118);
+            _branchButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitStashManagementForm.Button.CreateBranch", "Create Branch(&B)"), UiLocalization.Text("GitStashManagementForm.Accessible.CreateBranch", "Create branch"), 3, 118);
+            _applyButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitStashManagementForm.Button.Apply", "Apply(&A)"), UiLocalization.Text("GitStashManagementForm.Accessible.Apply", "Apply"), 4, 118);
+            _popButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitStashManagementForm.Button.Pop", "Pop(&P)"), UiLocalization.Text("GitStashManagementForm.Accessible.Pop", "Pop"), 5, 118);
+            _dropButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitStashManagementForm.Button.Drop", "Drop(&D)"), UiLocalization.Text("GitStashManagementForm.Accessible.Drop", "Drop"), 6, 118);
+            _refreshButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitStashManagementForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitStashManagementForm.Accessible.Refresh", "Refresh"), 7, 118);
+            _closeButton = UiControlFactory.CreateActionButton(UiLocalization.Text("GitStashManagementForm.Button.Close", "Close(&E)"), UiLocalization.Text("GitStashManagementForm.Accessible.Close", "Close"), 8, 118);
             FormInteractionConventions.ConfigureRefreshButton(_refreshButton);
             UiTheme.ApplyButton(_saveButton, UiGlyph.Ok);
             UiTheme.ApplyButton(_loadDetailsButton, UiGlyph.Info);
@@ -933,20 +933,6 @@ namespace MyCodex.WinForms.Forms
                 default:
                     return changeKind;
             }
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 118,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 0, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
     }
 }
