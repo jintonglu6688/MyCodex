@@ -159,6 +159,17 @@ Keep coordination classes split by responsibility. Source guard tests protect ow
 - Preserve public contracts unless the task changes them. Separate behavior-preserving extraction from behavior changes in the patch.
 - Move tests with extracted behavior, preferring focused service/planner tests over WinForms reflection where possible. Update source guards when ownership moves; preserve behavioral and safety assertions.
 
+### Refactor when touched
+
+These cleanups are not standalone tasks. When a change already touches the area, do the matching cleanup as a separate behavior-preserving step (its own commit when committing), then make the requested change:
+
+- MainForm: before changing a feature whose code still sits in `MainForm.cs` or a mixed-purpose partial, extract that feature into a focused partial, helper, or planner, and lower the `CodeHealthRatchetTests` ceilings it improves.
+- Git/GitHub forms (`Forms\Git`): when changing one, move layout, list, progress, or credential code it repeats from sibling forms into a shared control or helper, alongside `UiControlFactory`.
+- WSL/Remote Unix SSH pairs that still duplicate logic (`WslFileSystemBridge`/`RemoteMacFileSystemBridge`, `WslGitCommandRunner`/`RemoteMacGitCommandRunner`, `WslGitEnvironmentService`/`RemoteMacGitEnvironmentService`): apply every change to both sides. When the pair's shared logic is substantial, move it into a `Unix*` core over `UnixCommandInvoker`, following `UnixGitSshKeyService`, `UnixGitCloneService`, and `UnixRuntimeFileSystemOperations`. Keep the public `Wsl*`/`RemoteMac*` classes as thin wrappers that supply operation-name prefix, timeouts, and shell differences, and keep scripts, operation names, and timeouts unchanged.
+- Pure planners still under WinForms because they consume WinForms types (such as `ChatHistoryItem` or `AppServerEventRoute`): move them to `Application\Services` only together with replacing that dependency by an Application type; do not move WinForms types down just to relocate a planner.
+- Interfaces: remove members that have no production caller, together with their implementations, helpers, and tests. Keep a member only when a current, concrete feature needs it.
+- `SourceBehavior` tests: rewrite as behavior tests when the change touches the code they read (see Test Conventions).
+
 ## App Server And Execution Target Cautions
 
 `AppServerClient` is the facade for `IAppServerClient` and sits on the send path, reconnect path, stdout/stderr readers, timeout handling, pending request handling, App Server event delivery, dynamic tools, and execution-target setup flows. Treat changes there as high risk.
