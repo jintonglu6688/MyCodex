@@ -74,14 +74,7 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-            var buttons = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                TabStop = false
-            };
+            var buttons = UiControlFactory.CreateDialogButtonBar();
             buttons.Controls.Add(_closeButton);
 
             root.Controls.Add(_diagnosticsTextBox, 0, 0);

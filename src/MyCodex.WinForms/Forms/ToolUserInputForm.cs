@@ -99,14 +99,7 @@ namespace MyCodex.WinForms.Forms
 
             scrollPanel.Controls.Add(questionsPanel);
 
-            var buttonPanel = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                TabStop = false
-            };
+            var buttonPanel = UiControlFactory.CreateDialogButtonBar();
 
             _okButton = new Button
             {

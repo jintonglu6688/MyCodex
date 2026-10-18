@@ -103,14 +103,7 @@ namespace MyCodex.WinForms.Forms
                 Margin = new Padding(0, UiTheme.ControlSpacing, 0, UiTheme.ControlSpacing)
             };
 
-            var buttons = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                TabStop = false
-            };
+            var buttons = UiControlFactory.CreateDialogButtonBar();
             _sendButton = CreateButton(
                 UiLocalization.Text("AsyncInputForm.Button.Send", "&Send answers"),
                 UiLocalization.Text("AsyncInputForm.Accessible.Send", "Send answers"),

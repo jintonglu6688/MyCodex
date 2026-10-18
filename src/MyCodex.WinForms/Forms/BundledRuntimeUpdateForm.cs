@@ -70,11 +70,7 @@ namespace MyCodex.WinForms.Forms
             UiTheme.ApplyDialogButton(_cancelButton, UiGlyph.Cancel);
             _retryButton.Click += async (sender, args) => await RunUpdateAsync();
             _cancelButton.Click += (sender, args) => RequestCancel();
-            var buttons = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill, AutoSize = true, FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false, TabStop = false
-            };
+            var buttons = UiControlFactory.CreateDialogButtonBar();
             buttons.Controls.Add(_cancelButton);
             buttons.Controls.Add(_retryButton);
             var layout = new TableLayoutPanel

@@ -1840,15 +1840,7 @@ namespace MyCodex.WinForms.Forms
             footer.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             footer.Controls.Add(_statusLabel, 0, 0);
 
-            var buttons = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                BackColor = UiTheme.WindowBackColor,
-                TabStop = false
-            };
+            var buttons = UiControlFactory.CreateDialogButtonBar(UiTheme.WindowBackColor);
             buttons.Controls.Add(_closeButton);
             footer.Controls.Add(buttons, 1, 0);
             return footer;

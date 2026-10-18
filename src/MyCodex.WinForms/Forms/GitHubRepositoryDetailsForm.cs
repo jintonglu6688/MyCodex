@@ -2214,15 +2214,7 @@ namespace MyCodex.WinForms.Forms
                 TabStop = false
             };
 
-            var footer = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                BackColor = UiTheme.WindowBackColor,
-                TabStop = false
-            };
+            var footer = UiControlFactory.CreateDialogButtonBar(UiTheme.WindowBackColor);
             footer.Controls.Add(_refreshButton);
 
             root.Controls.Add(heading, 0, 0);
@@ -3046,15 +3038,7 @@ namespace MyCodex.WinForms.Forms
 
         private static Control CreateDialogFooter(params Button[] buttons)
         {
-            var footer = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                BackColor = UiTheme.WindowBackColor,
-                TabStop = false
-            };
+            var footer = UiControlFactory.CreateDialogButtonBar(UiTheme.WindowBackColor);
             foreach (var button in buttons ?? new Button[0])
             {
                 if (button != null)

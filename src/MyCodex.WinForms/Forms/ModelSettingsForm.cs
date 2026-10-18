@@ -138,14 +138,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(_descriptionTextBox, false, true);
 
-            var buttonPanel = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                TabStop = false
-            };
+            var buttonPanel = UiControlFactory.CreateDialogButtonBar();
 
             _okButton = new Button
             {

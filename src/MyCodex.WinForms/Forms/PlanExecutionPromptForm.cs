@@ -63,14 +63,7 @@ namespace MyCodex.WinForms.Forms
             contentPanel.Controls.Add(promptLabel, 0, 0);
             contentPanel.Controls.Add(_planTextBox, 0, 1);
 
-            var buttonPanel = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                TabStop = false
-            };
+            var buttonPanel = UiControlFactory.CreateDialogButtonBar();
 
             _continueButton = new Button
             {

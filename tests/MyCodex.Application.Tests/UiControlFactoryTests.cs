@@ -144,6 +144,32 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Test]
+        public void CreateDialogButtonBar_MatchesReplacedFooterPanels()
+        {
+            using (var parent = new Panel { BackColor = Color.LightYellow })
+            using (var inherited = UiControlFactory.CreateDialogButtonBar())
+            using (var themed = UiControlFactory.CreateDialogButtonBar(UiTheme.WindowBackColor))
+            {
+                parent.Controls.Add(inherited);
+
+                Assert.Multiple(() =>
+                {
+                    foreach (var panel in new[] { inherited, themed })
+                    {
+                        Assert.That(panel.Dock, Is.EqualTo(DockStyle.Fill));
+                        Assert.That(panel.FlowDirection, Is.EqualTo(FlowDirection.RightToLeft));
+                        Assert.That(panel.WrapContents, Is.False);
+                        Assert.That(panel.AutoSize, Is.True);
+                        Assert.That(panel.TabStop, Is.False);
+                    }
+
+                    Assert.That(inherited.BackColor, Is.EqualTo(Color.LightYellow), "Without a color the footer inherits its parent's back color.");
+                    Assert.That(themed.BackColor, Is.EqualTo(UiTheme.WindowBackColor));
+                });
+            }
+        }
+
         private static void AssertSameButton(Button actual, Button expected)
         {
             Assert.Multiple(() =>

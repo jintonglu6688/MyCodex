@@ -107,14 +107,7 @@ namespace MyCodex.WinForms.Forms
             choicesPanel.Controls.Add(_officeRadioButton);
             choicesPanel.Controls.Add(_codingRadioButton);
 
-            var buttonPanel = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                TabStop = false
-            };
+            var buttonPanel = UiControlFactory.CreateDialogButtonBar();
             buttonPanel.Controls.Add(_okButton);
 
             root.Controls.Add(titleLabel, 0, 0);

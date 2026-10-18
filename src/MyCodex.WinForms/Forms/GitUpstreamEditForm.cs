@@ -98,15 +98,7 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitUpstreamEditForm.Label.Upstream", "Upstream branch(&U)")), 0, 2);
             root.Controls.Add(_upstreamComboBox, 0, 3);
 
-            var footer = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                BackColor = UiTheme.WindowBackColor,
-                TabStop = false
-            };
+            var footer = UiControlFactory.CreateDialogButtonBar(UiTheme.WindowBackColor);
             footer.Controls.Add(_cancelButton);
             footer.Controls.Add(_okButton);
             root.Controls.Add(footer, 0, 4);

@@ -151,14 +151,7 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(descriptionLabel, 0, 8);
             root.Controls.Add(_descriptionTextBox, 1, 8);
 
-            var buttonPanel = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                TabStop = false
-            };
+            var buttonPanel = UiControlFactory.CreateDialogButtonBar();
             buttonPanel.Controls.Add(_cancelButton);
             buttonPanel.Controls.Add(_okButton);
             buttonPanel.Visible = showDialogButtons;

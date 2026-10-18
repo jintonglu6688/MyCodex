@@ -139,15 +139,7 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitRemoteEditForm.Label.PushUrl", "Push URL(&P)")), 0, 4);
             root.Controls.Add(_pushUrlTextBox, 0, 5);
 
-            var footer = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                BackColor = UiTheme.WindowBackColor,
-                TabStop = false
-            };
+            var footer = UiControlFactory.CreateDialogButtonBar(UiTheme.WindowBackColor);
             footer.Controls.Add(_cancelButton);
             footer.Controls.Add(_okButton);
             root.Controls.Add(footer, 0, 6);

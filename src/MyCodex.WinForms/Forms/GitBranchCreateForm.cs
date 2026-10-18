@@ -115,15 +115,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(nameLabel, true);
 
-            var footer = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                BackColor = UiTheme.WindowBackColor,
-                TabStop = false
-            };
+            var footer = UiControlFactory.CreateDialogButtonBar(UiTheme.WindowBackColor);
             footer.Controls.Add(_cancelButton);
             footer.Controls.Add(_createButton);
 

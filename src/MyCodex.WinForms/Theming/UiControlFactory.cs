@@ -105,5 +105,29 @@ namespace MyCodex.WinForms.Theming
             UiTheme.ApplyComboBox(comboBox);
             return comboBox;
         }
+
+        /// <summary>
+        /// Creates a right-to-left, non-wrapping, auto-sized footer panel for dialog buttons. Its back color is
+        /// inherited from the parent; use the overload with a color when the footer must paint its own background.
+        /// </summary>
+        internal static FlowLayoutPanel CreateDialogButtonBar()
+        {
+            return new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.RightToLeft,
+                WrapContents = false,
+                AutoSize = true,
+                TabStop = false
+            };
+        }
+
+        /// <summary>Creates a dialog button footer panel with an explicit back color.</summary>
+        internal static FlowLayoutPanel CreateDialogButtonBar(Color backColor)
+        {
+            var panel = CreateDialogButtonBar();
+            panel.BackColor = backColor;
+            return panel;
+        }
     }
 }

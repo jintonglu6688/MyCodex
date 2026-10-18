@@ -66,15 +66,7 @@ namespace MyCodex.WinForms.Forms
             _commandListView.DoubleClick += CommandListView_DoubleClick;
             _commandListView.KeyDown += CommandListView_KeyDown;
 
-            var buttonPanel = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                BackColor = UiTheme.WindowBackColor,
-                TabStop = false
-            };
+            var buttonPanel = UiControlFactory.CreateDialogButtonBar(UiTheme.WindowBackColor);
 
             _closeButton = CreateButton("CommandPresetForm.Button.Close", "Close(&C)", "CommandPresetForm.Accessible.Close", "Close", 6);
             UiTheme.ApplyButton(_closeButton, UiGlyph.Cancel);

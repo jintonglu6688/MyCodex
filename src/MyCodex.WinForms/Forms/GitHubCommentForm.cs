@@ -84,15 +84,7 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
             var label = UiControlFactory.CreateMutedLabel(UiLocalization.Text("GitHubCommentForm.Label.Body", "Comment(&C)"));
-            var footer = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                BackColor = UiTheme.WindowBackColor,
-                TabStop = false
-            };
+            var footer = UiControlFactory.CreateDialogButtonBar(UiTheme.WindowBackColor);
             footer.Controls.Add(_okButton);
             footer.Controls.Add(_cancelButton);
 

@@ -88,14 +88,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyDialogButton(_cancelButton, UiGlyph.Cancel);
 
-            var buttonPanel = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                AutoSize = true,
-                TabStop = false
-            };
+            var buttonPanel = UiControlFactory.CreateDialogButtonBar();
             buttonPanel.Controls.Add(_cancelButton);
             buttonPanel.Controls.Add(_deleteButton);
 
