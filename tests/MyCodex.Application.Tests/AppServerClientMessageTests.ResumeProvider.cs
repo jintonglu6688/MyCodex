@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.AppServer;
 using NUnit.Framework;
 
@@ -23,7 +24,7 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_inputWriter", writer);
                 var parameters = new Dictionary<string, object>
                 {
                     { "threadId", "original-thread" }, { "cwd", workspace },
@@ -49,7 +50,7 @@ namespace MyCodex.Application.Tests
                 CompleteRequest(client, Convert.ToString(resume["id"], CultureInfo.InvariantCulture),
                     new Dictionary<string, object> { { "thread", new Dictionary<string, object> { { "id", "original-thread" } } } });
                 await operation;
-                SetPrivateField(client, "_inputWriter", null);
+                FormTestDriver.SetField(client, "_inputWriter", null);
             }
         }
 
@@ -68,19 +69,19 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_inputWriter", writer);
                 var operation = InvokeComputerUseRequest(client, "thread/resume", new Dictionary<string, object>
                 {
                     { "threadId", "original" }, { "cwd", "/work" }
                 }, CancellationToken.None);
                 var read = ReadLastWrittenMessage(await WaitForWrittenLineCountAsync(stream, 1));
-                SetPrivateField(client, "_connectionEpoch", GetPrivateField<long>(client, "_connectionEpoch") + 1);
+                FormTestDriver.SetField(client, "_connectionEpoch", FormTestDriver.Field<long>(client, "_connectionEpoch") + 1);
                 CompleteRequest(client, Convert.ToString(read["id"], CultureInfo.InvariantCulture),
                     new Dictionary<string, object> { { "config", new Dictionary<string, object> { { "model_provider", "old-runtime" } } } });
                 var failure = Assert.ThrowsAsync<InvalidOperationException>(async () => await operation);
                 Assert.That(failure.InnerException, Is.TypeOf<AppServerTransportWriteException>());
                 Assert.That(Encoding.UTF8.GetString(stream.ToArray()), Does.Not.Contain("thread/resume"));
-                SetPrivateField(client, "_inputWriter", null);
+                FormTestDriver.SetField(client, "_inputWriter", null);
             }
         }
     }

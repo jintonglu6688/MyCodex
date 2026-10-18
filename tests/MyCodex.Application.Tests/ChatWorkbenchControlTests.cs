@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Shared.Constants;
 using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Forms;
@@ -44,17 +45,17 @@ namespace MyCodex.Application.Tests
             using (UseCulture("en-US"))
             using (var control = new ChatWorkbenchControl(CreateCallbacks()))
             {
-                Assert.That(FindSingleControl<ChatHistoryListBox>(control).AccessibleName, Is.EqualTo("Messages"));
-                var input = FindSingleControl<AttachmentComposerTextBox>(control);
+                Assert.That(FormTestDriver.Single<ChatHistoryListBox>(control).AccessibleName, Is.EqualTo("Messages"));
+                var input = FormTestDriver.Single<AttachmentComposerTextBox>(control);
                 Assert.That(input.AccessibleName, Is.EqualTo("Input"));
                 Assert.That(input, Is.InstanceOf<TextBox>());
                 Assert.That(input, Is.Not.InstanceOf<RichTextBox>());
 
-                var pendingItems = FindControls<ListBox>(control)
+                var pendingItems = FormTestDriver.Descendants<ListBox>(control)
                     .Single(listBox => string.Equals(listBox.AccessibleName, "Pending items", StringComparison.Ordinal));
                 Assert.That(pendingItems.TabIndex, Is.EqualTo(3));
 
-                var buttons = FindControls<Button>(control).ToList();
+                var buttons = FormTestDriver.Descendants<Button>(control).ToList();
                 Assert.That(buttons.Any(button => string.Equals(button.AccessibleName, "Insert", StringComparison.Ordinal)), Is.True);
                 Assert.That(buttons.Any(button => string.Equals(button.AccessibleName, "Send", StringComparison.Ordinal)), Is.True);
                 Assert.That(buttons.Any(button => string.Equals(button.AccessibleName, "Stop", StringComparison.Ordinal)), Is.True);
@@ -86,7 +87,7 @@ namespace MyCodex.Application.Tests
                 var texts = Enumerable.Range(0, 12).Select(index => index == 0
                     ? new string('x', 100000) + "\r\nlast line" : "message " + index).ToArray();
                 control.ReplaceHistoryItems(texts.Select(text => CreateChatItem("thread", "turn", "User", text)));
-                var history = FindSingleControl<ChatHistoryListBox>(control);
+                var history = FormTestDriver.Single<ChatHistoryListBox>(control);
                 history.Dock = DockStyle.None;
                 history.ClientSize = new Size(400, history.ItemHeight * 3);
                 var handle = history.Handle;
@@ -746,7 +747,7 @@ namespace MyCodex.Application.Tests
                         CreateChatItem("thread-1", "turn-1", "User", "first"),
                         CreateChatItem("thread-1", "turn-2", "Codex", "second")
                     });
-                    var listBox = FindSingleControl<ChatHistoryListBox>(control);
+                    var listBox = FormTestDriver.Single<ChatHistoryListBox>(control);
 
                     listBox.ProcessExplorerSelectionKeyForTests(Keys.Control | Keys.A);
 
@@ -773,7 +774,7 @@ namespace MyCodex.Application.Tests
                 {
                     control.SetInputText("please inspect ");
                     control.AddPendingAttachments(new[] { CreateFileAttachment() });
-                    var input = FindSingleControl<AttachmentComposerTextBox>(control);
+                    var input = FormTestDriver.Single<AttachmentComposerTextBox>(control);
                     Assert.That(
                         input.Text,
                         Is.EqualTo("please inspect " + Environment.NewLine + "[File: a.txt]" + Environment.NewLine));
@@ -847,7 +848,7 @@ namespace MyCodex.Application.Tests
                 {
                     var item = CreateChatItem("thread-1", "turn-1", "Codex", "# Reply");
                     control.ReplaceHistoryItems(new[] { item });
-                    var listBox = FindSingleControl<ChatHistoryListBox>(control);
+                    var listBox = FormTestDriver.Single<ChatHistoryListBox>(control);
                     listBox.SelectedIndex = 0;
                     var args = new KeyEventArgs(Keys.Alt | Keys.Enter);
 
@@ -873,7 +874,7 @@ namespace MyCodex.Application.Tests
                     var selectedItem = CreateChatItem("thread-1", "turn-1", "Codex", "# Selected");
                     var focusedItem = CreateChatItem("thread-1", "turn-2", "User", "# Focused");
                     control.ReplaceHistoryItems(new[] { selectedItem, focusedItem });
-                    var listBox = FindSingleControl<ChatHistoryListBox>(control);
+                    var listBox = FormTestDriver.Single<ChatHistoryListBox>(control);
                     listBox.SelectSingleIndex(0);
                     listBox.ProcessExplorerSelectionKeyForTests(Keys.Control | Keys.Down);
                     var args = new KeyEventArgs(Keys.Enter);
@@ -895,7 +896,7 @@ namespace MyCodex.Application.Tests
                 var firstItem = CreateChatItem("thread-1", "turn-1", "Codex", "# First");
                 var secondItem = CreateChatItem("thread-1", "turn-2", "User", "# Second");
                 control.ReplaceHistoryItems(new[] { firstItem, secondItem });
-                var listBox = FindSingleControl<ChatHistoryListBox>(control);
+                var listBox = FormTestDriver.Single<ChatHistoryListBox>(control);
                 listBox.SelectSingleIndex(0);
 
                 var items = control.GetHistoryItems();
@@ -916,7 +917,7 @@ namespace MyCodex.Application.Tests
                 var firstItem = CreateChatItem("thread-1", "turn-1", "User", "first message");
                 var focusedItem = CreateChatItem("thread-1", "turn-2", "Codex", "focused message");
                 control.ReplaceHistoryItems(new[] { systemHeader, firstItem, focusedItem });
-                var listBox = FindSingleControl<ChatHistoryListBox>(control);
+                var listBox = FormTestDriver.Single<ChatHistoryListBox>(control);
                 listBox.SelectSingleIndex(2);
 
                 var reloadedFirstItem = CreateChatItem("thread-1", "turn-1", "User", "first message");
@@ -942,7 +943,7 @@ namespace MyCodex.Application.Tests
                     var firstItem = CreateChatItem("thread-1", "turn-1", "Codex", "# First");
                     var focusedItem = CreateChatItem("thread-1", "turn-2", "User", "# Focused");
                     control.ReplaceHistoryItems(new[] { firstItem, focusedItem });
-                    var listBox = FindSingleControl<ChatHistoryListBox>(control);
+                    var listBox = FormTestDriver.Single<ChatHistoryListBox>(control);
                     listBox.SelectSingleIndex(0);
                     listBox.ProcessExplorerSelectionKeyForTests(Keys.Control | Keys.Down);
                     var args = new KeyEventArgs(Keys.Alt | Keys.Enter);
@@ -1041,7 +1042,7 @@ namespace MyCodex.Application.Tests
         {
             var method = typeof(ChatWorkbenchControl).GetMethod("HistoryListBox_KeyDown", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             Assert.That(method, Is.Not.Null);
-            var listBox = FindSingleControl<ChatHistoryListBox>(control);
+            var listBox = FormTestDriver.Single<ChatHistoryListBox>(control);
             method.Invoke(control, new object[] { listBox, args });
         }
 
@@ -1049,24 +1050,8 @@ namespace MyCodex.Application.Tests
         {
             var method = typeof(ChatWorkbenchControl).GetMethod("InputTextBox_KeyDown", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             Assert.That(method, Is.Not.Null);
-            var textBox = FindSingleControl<AttachmentComposerTextBox>(control);
+            var textBox = FormTestDriver.Single<AttachmentComposerTextBox>(control);
             method.Invoke(control, new object[] { textBox, args });
-        }
-
-        private static T FindSingleControl<T>(Control root)
-            where T : Control
-        {
-            return FindControls<T>(root).Single();
-        }
-
-        private static IEnumerable<T> FindControls<T>(Control root)
-            where T : Control
-        {
-            return root
-                .Controls
-                .Cast<Control>()
-                .SelectMany(Flatten)
-                .OfType<T>();
         }
 
         private static IEnumerable<Control> Flatten(Control control)

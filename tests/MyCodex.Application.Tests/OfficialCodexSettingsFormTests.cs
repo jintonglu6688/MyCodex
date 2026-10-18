@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Localization;
 using NUnit.Framework;
@@ -19,9 +20,9 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new OfficialCodexSettingsForm(new AppServerConfigSnapshot()))
             {
-                var reasoning = GetField<ComboBox>(form, "_reasoningSummaryComboBox");
-                var fastMode = GetField<CheckBox>(form, "_serviceTierCheckBox");
-                var description = GetField<TextBox>(form, "_descriptionTextBox");
+                var reasoning = FormTestDriver.Field<ComboBox>(form, "_reasoningSummaryComboBox");
+                var fastMode = FormTestDriver.Field<CheckBox>(form, "_serviceTierCheckBox");
+                var description = FormTestDriver.Field<TextBox>(form, "_descriptionTextBox");
 
                 Assert.That(reasoning.AccessibleName, Is.EqualTo(UiLocalization.Text("OfficialCodexSettingsForm.Accessible.ReasoningSummary", "Reasoning summary")));
                 Assert.That(reasoning.TabIndex, Is.Zero);
@@ -44,7 +45,7 @@ namespace MyCodex.Application.Tests
             {
                 InvokeApplySelection(form);
 
-                Assert.That(GetField<CheckBox>(form, "_serviceTierCheckBox").Checked, Is.True);
+                Assert.That(FormTestDriver.Field<CheckBox>(form, "_serviceTierCheckBox").Checked, Is.True);
                 Assert.That(form.ServiceTier, Is.EqualTo("priority"));
             }
         }
@@ -54,7 +55,7 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new OfficialCodexSettingsForm(new AppServerConfigSnapshot()))
             {
-                var comboBox = GetField<ComboBox>(form, "_webSearchModeComboBox");
+                var comboBox = FormTestDriver.Field<ComboBox>(form, "_webSearchModeComboBox");
                 var indexed = comboBox.Items.Cast<object>().First(item =>
                     string.Equals(GetChoiceValue(item), "indexed", System.StringComparison.Ordinal));
                 comboBox.SelectedItem = indexed;
@@ -80,8 +81,8 @@ namespace MyCodex.Application.Tests
             {
                 InvokeApplySelection(form);
 
-                Assert.That(GetField<CheckBox>(form, "_serviceTierCheckBox").ThreeState, Is.False);
-                Assert.That(GetField<CheckBox>(form, "_serviceTierCheckBox").Checked, Is.False);
+                Assert.That(FormTestDriver.Field<CheckBox>(form, "_serviceTierCheckBox").ThreeState, Is.False);
+                Assert.That(FormTestDriver.Field<CheckBox>(form, "_serviceTierCheckBox").Checked, Is.False);
                 Assert.That(form.ServiceTier, Is.EqualTo("flex"));
                 Assert.That(form.ToolOutputTokenLimit, Is.EqualTo(4096L));
             }
@@ -106,13 +107,6 @@ namespace MyCodex.Application.Tests
         {
             var property = item.GetType().GetProperty("Value", BindingFlags.Instance | BindingFlags.Public);
             return property.GetValue(item, null) as string;
-        }
-
-        private static T GetField<T>(OfficialCodexSettingsForm form, string fieldName) where T : class
-        {
-            var field = typeof(OfficialCodexSettingsForm).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(field, Is.Not.Null);
-            return (T)field.GetValue(form);
         }
 
         private static void InvokeApplySelection(OfficialCodexSettingsForm form)

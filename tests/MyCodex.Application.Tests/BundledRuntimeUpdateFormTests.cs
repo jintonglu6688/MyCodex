@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.Codex;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
@@ -27,18 +28,18 @@ namespace MyCodex.Application.Tests
             {
                 form.RunUpdateAsync().GetAwaiter().GetResult();
                 Assert.That(form.DialogResult, Is.EqualTo(DialogResult.None));
-                Assert.That(Field<Label>(form, "_statusLabel").Text, Does.Contain("synthetic download failure"));
-                Assert.That(Field<Button>(form, "_retryButton").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Does.Contain("synthetic download failure"));
+                Assert.That(FormTestDriver.Field<Button>(form, "_retryButton").Enabled, Is.True);
                 Assert.That(form.FormBorderStyle, Is.EqualTo(FormBorderStyle.Sizable));
                 Assert.That(form.MinimumSize.Width, Is.GreaterThanOrEqualTo(460));
-                Assert.That(Field<Label>(form, "_statusLabel").TabStop, Is.False);
-                Assert.That(Field<ProgressBar>(form, "_progressBar").TabStop, Is.False);
-                Assert.That(Field<ProgressBar>(form, "_progressBar").AccessibleName, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<ProgressBar>(form, "_progressBar").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<ProgressBar>(form, "_progressBar").AccessibleName, Is.Not.Empty);
                 Assert.That(form.Controls.OfType<TextBox>(), Is.Empty);
-                Assert.That(Field<Button>(form, "_retryButton").AccessibleName, Is.Not.Empty);
-                Assert.That(Field<Button>(form, "_cancelButton").AccessibleName, Is.Not.Empty);
-                Assert.That(Field<Button>(form, "_retryButton").TabIndex, Is.LessThan(Field<Button>(form, "_cancelButton").TabIndex));
-                Assert.That(form.CancelButton, Is.SameAs(Field<Button>(form, "_cancelButton")));
+                Assert.That(FormTestDriver.Field<Button>(form, "_retryButton").AccessibleName, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<Button>(form, "_cancelButton").AccessibleName, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<Button>(form, "_retryButton").TabIndex, Is.LessThan(FormTestDriver.Field<Button>(form, "_cancelButton").TabIndex));
+                Assert.That(form.CancelButton, Is.SameAs(FormTestDriver.Field<Button>(form, "_cancelButton")));
                 form.RunUpdateAsync().GetAwaiter().GetResult();
                 Assert.That(form.DialogResult, Is.EqualTo(DialogResult.OK));
                 Assert.That(attempts, Is.EqualTo(2));
@@ -54,7 +55,7 @@ namespace MyCodex.Application.Tests
             {
                 form.RunUpdateAsync().GetAwaiter().GetResult();
                 Assert.That(form.DialogResult, Is.EqualTo(DialogResult.None));
-                Assert.That(Field<Button>(form, "_retryButton").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(form, "_retryButton").Enabled, Is.True);
             }
         }
 
@@ -68,7 +69,7 @@ namespace MyCodex.Application.Tests
                 Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(culture);
                 using (var form = new BundledRuntimeUpdateForm(Info(), (status, progress, token) => throw new AssertionException("Must not install while inspecting controls."), CancellationToken.None))
                 {
-                    var texts = new[] { Field<Button>(form, "_retryButton").Text, Field<Button>(form, "_cancelButton").Text };
+                    var texts = new[] { FormTestDriver.Field<Button>(form, "_retryButton").Text, FormTestDriver.Field<Button>(form, "_cancelButton").Text };
                     var keys = texts.Select(text => char.ToUpperInvariant(text[text.IndexOf('&') + 1])).ToArray();
                     Assert.That(texts.All(text => text.Contains("&")), Is.True);
                     Assert.That(keys.Distinct().Count(), Is.EqualTo(2));
@@ -112,11 +113,11 @@ namespace MyCodex.Application.Tests
                 var elapsed = System.Diagnostics.Stopwatch.StartNew();
                 timer.Tick += (sender, args) =>
                 {
-                    var progress = Field<ProgressBar>(form, "_progressBar");
+                    var progress = FormTestDriver.Field<ProgressBar>(form, "_progressBar");
                     if (progress.Value != 37 && elapsed.Elapsed < TimeSpan.FromSeconds(3)) return;
                     timer.Stop();
                     observedProgress = progress.Value == 37 && progress.Style == ProgressBarStyle.Continuous;
-                    var cancel = Field<Button>(form, "_cancelButton");
+                    var cancel = FormTestDriver.Field<Button>(form, "_cancelButton");
                     focusStayedOnCancel = form.ActiveControl == cancel;
                     form.SelectNextControl(cancel, true, true, true, true);
                     focusStayedOnCancel &= form.ActiveControl == cancel;
@@ -138,7 +139,6 @@ namespace MyCodex.Application.Tests
             }
         }
 
-        private static T Field<T>(object form, string name) => (T)form.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(form);
         private static CodexRuntimeUpdateInfo Info() => new CodexRuntimeUpdateInfo
         { InstalledVersion = "0.162.0", LatestVersion = "0.162.1", TargetTriple = "x86_64-pc-windows-msvc" };
     }

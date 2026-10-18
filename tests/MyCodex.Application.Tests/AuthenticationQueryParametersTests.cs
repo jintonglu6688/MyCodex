@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
@@ -22,16 +23,16 @@ namespace MyCodex.Application.Tests
                 dialog.ShowInTaskbar = false;
                 dialog.Size = dialog.MinimumSize;
                 dialog.Show();
-                var name = Field<TextBox>(dialog, "_name");
-                var value = Field<TextBox>(dialog, "_value");
+                var name = FormTestDriver.Field<TextBox>(dialog, "_name");
+                var value = FormTestDriver.Field<TextBox>(dialog, "_value");
                 Assert.That(name.Focused, Is.True);
                 Assert.That(name.AccessibleName, Is.Not.Empty);
                 Assert.That(value.AccessibleName, Is.Not.Empty);
                 Assert.That(dialog.Save(), Is.False);
                 name.Text = " existing ";
                 Assert.That(dialog.Save(), Is.False);
-                Assert.That(Field<Label>(dialog, "_status").Text, Is.Not.Empty);
-                Assert.That(Field<Label>(dialog, "_status").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(dialog, "_status").Text, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<Label>(dialog, "_status").TabStop, Is.False);
                 name.Text = " new-name ";
                 value.Text = "  a&b=中文  ";
                 dialog.SelectNextControl(name, true, true, true, false);
@@ -53,8 +54,8 @@ namespace MyCodex.Application.Tests
             {
                 form.Controls.Add(control);
                 form.Show();
-                var list = Field<ListView>(control, "_list");
-                var add = Field<Button>(control, "_add");
+                var list = FormTestDriver.Field<ListView>(control, "_list");
+                var add = FormTestDriver.Field<Button>(control, "_add");
                 Assert.That(list.AccessibleName, Is.Not.Empty);
                 Assert.That(control.Read(), Is.EquivalentTo(original));
                 list.Focus();
@@ -62,7 +63,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(add.Focused, Is.True);
                 EditDialog(form, () => add.PerformClick(), dialog =>
                 {
-                    Field<TextBox>(dialog, "_name").Text = "empty-value";
+                    FormTestDriver.Field<TextBox>(dialog, "_name").Text = "empty-value";
                     Assert.That(dialog.Save(), Is.True);
                 });
                 Assert.That(control.Read()["empty-value"], Is.EqualTo(string.Empty));
@@ -70,15 +71,15 @@ namespace MyCodex.Application.Tests
                 Assert.That(list.Focused, Is.True);
                 EditDialog(form, () => PressKey(list, Keys.Enter), dialog =>
                 {
-                    Field<TextBox>(dialog, "_name").Text = "renamed";
-                    Field<TextBox>(dialog, "_value").Text = "new value";
+                    FormTestDriver.Field<TextBox>(dialog, "_name").Text = "renamed";
+                    FormTestDriver.Field<TextBox>(dialog, "_value").Text = "new value";
                     Assert.That(dialog.Save(), Is.True);
                 });
                 Assert.That(control.Read().ContainsKey("empty-value"), Is.False);
                 Assert.That(control.Read()["renamed"], Is.EqualTo("new value"));
                 EditDialog(form, () => list.ContextMenu.MenuItems[0].PerformClick(), dialog =>
                 {
-                    Field<TextBox>(dialog, "_value").Text = "discarded";
+                    FormTestDriver.Field<TextBox>(dialog, "_value").Text = "discarded";
                     ((Button)dialog.CancelButton).PerformClick();
                 });
                 Assert.That(control.Read()["renamed"], Is.EqualTo("new value"));
@@ -124,11 +125,6 @@ namespace MyCodex.Application.Tests
             var args = new KeyEventArgs(key);
             typeof(Control).GetMethod("OnKeyDown", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(control, new object[] { args });
             Assert.That(args.SuppressKeyPress, Is.True);
-        }
-
-        private static T Field<T>(object value, string name) where T : class
-        {
-            return value.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(value) as T;
         }
     }
 }

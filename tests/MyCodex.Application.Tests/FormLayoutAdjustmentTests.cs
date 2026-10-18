@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.Codex;
@@ -77,7 +78,7 @@ namespace MyCodex.Application.Tests
                     HostKeyFingerprint = "SHA256:abc123"
                 }))
             {
-                var diagnostics = GetPrivateField<TextBox>(form, "_diagnosticsTextBox");
+                var diagnostics = FormTestDriver.Field<TextBox>(form, "_diagnosticsTextBox");
 
                 Assert.That(diagnostics.Text, Does.Contain("OpenSSH"));
                 Assert.That(diagnostics.Text, Does.Contain("known_hosts"));
@@ -94,7 +95,7 @@ namespace MyCodex.Application.Tests
             using (var form = CreateWslSettingsForm(CodexRuntimeSources.RemoteUnixSsh,
                 new RemoteMacSshConfigSnapshot { HostName = hostName, ShellCommand = shell }))
             {
-                Assert.That(GetPrivateField<TextBox>(form, "_remoteShellTextBox").Text, Is.EqualTo(expectedShell));
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_remoteShellTextBox").Text, Is.EqualTo(expectedShell));
             }
         }
 
@@ -150,15 +151,6 @@ namespace MyCodex.Application.Tests
                 new CodexRuntimeUpdateService(appConfigService),
                 null,
                 text => { });
-        }
-
-        private static T GetPrivateField<T>(object target, string fieldName) where T : class
-        {
-            var field = target.GetType().GetField(
-                fieldName,
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            Assert.That(field, Is.Not.Null);
-            return field.GetValue(target) as T;
         }
 
         private static IEnumerable<Button> FindButtons(Control root)

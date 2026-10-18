@@ -10,6 +10,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
 using MyCodex.Application.Tests.SourceGuards;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.AuthenticationCenter;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Infrastructure.Codex;
@@ -52,33 +53,33 @@ namespace MyCodex.Application.Tests
                 var coordinator = new AuthenticationMcpCoordinator(native, runtime, new RuntimeOperationGate().TryEnterTransition);
                 using (var form = new McpManagementForm(new RecordingMcpConnectionClient(), config, runtime, null, null, coordinator))
                 {
-                    var list = FindControl<ListView>(form, "MCP Servers");
+                    var list = FormTestDriver.FindControl<ListView>(form, "MCP Servers");
                     var ignored = form.Handle;
                     ignored = list.Handle;
-                    InvokePrivateTask(form, "LoadServerStatusesAsync", true);
+                    FormTestDriver.InvokeAndWait(form, "LoadServerStatusesAsync", true);
                     list.Items[0].Selected = true;
                     Assert.That(imports + writes, Is.Zero, "Reading and selecting must not import or write.");
-                    var import = FindControl<Button>(form, "Import global settings");
+                    var import = FormTestDriver.FindControl<Button>(form, "Import global settings");
                     Assert.That(import.TabStop, Is.True);
                     Assert.That(import.TabIndex, Is.GreaterThan(0));
-                    InvokePrivateTask(form, "SetSelectedServerEnabledAsync", false);
+                    FormTestDriver.InvokeAndWait(form, "SetSelectedServerEnabledAsync", false);
                     Assert.That(writes, Is.EqualTo(1));
                     Assert.That(config.WriteConfigBatchCallCount, Is.Zero);
                     Assert.That(runtime.ReloadMcpConfigCallCount, Is.EqualTo(1));
                     Assert.That(list.Items.Count, Is.EqualTo(1), "Disabled archive must remain visible.");
-                    InvokePrivateTask(form, "ImportNativeMcpAsync");
+                    FormTestDriver.InvokeAndWait(form, "ImportNativeMcpAsync");
                     Assert.That(imports, Is.EqualTo(1));
                     Assert.That(runtime.ReloadMcpConfigCallCount, Is.EqualTo(2));
                     Assert.That(form.MinimumSize.Width, Is.GreaterThanOrEqualTo(980));
                     runtime.FailReload = true;
-                    InvokePrivateTask(form, "ImportNativeMcpAsync");
+                    FormTestDriver.InvokeAndWait(form, "ImportNativeMcpAsync");
                     Assert.That(coordinator.ReloadPending, Is.True);
                     form.Show();
-                    var retry = FindControl<Button>(form, "Retry loading MCP");
+                    var retry = FormTestDriver.FindControl<Button>(form, "Retry loading MCP");
                     retry.Focus();
                     runtime.FailReload = false;
-                    InvokePrivateTask(form, "RetryNativeMcpAsync");
-                    Assert.That(GetPrivateField<Label>(form, "_statusLabel").Text, Is.EqualTo("MCP configuration loaded."));
+                    FormTestDriver.InvokeAndWait(form, "RetryNativeMcpAsync");
+                    Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Is.EqualTo("MCP configuration loaded."));
                     Assert.That(list.Focused, Is.True);
                     Assert.That(imports, Is.EqualTo(2), "Retry reload must not repeat import.");
                 }
@@ -105,12 +106,12 @@ namespace MyCodex.Application.Tests
             {
                 using (var form = new McpManagementForm(CreateClient()))
                 {
-                    var diagnosticsButton = FindControl<Button>(form, "Advanced Diagnostics");
+                    var diagnosticsButton = FormTestDriver.FindControl<Button>(form, "Advanced Diagnostics");
 
                     Assert.That(diagnosticsButton.TabIndex, Is.GreaterThanOrEqualTo(0));
                     Assert.That(diagnosticsButton.AccessibleName, Is.EqualTo("Advanced Diagnostics"));
-                    Assert.That(FindControlOrDefault<Button>(form, "View Resource"), Is.Null);
-                    Assert.That(FindControlOrDefault<Button>(form, "Test Tool"), Is.Null);
+                    Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, "View Resource"), Is.Null);
+                    Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, "Test Tool"), Is.Null);
                 }
             });
         }
@@ -154,13 +155,13 @@ namespace MyCodex.Application.Tests
                 using (var form = new McpManagementForm(connectionClient, configClient, mcpClient, null, null))
                 {
                     configClient.ConfigSnapshot.Origins["mcp_servers.demo"] = new AppServerConfigOrigin { Version = "v17" };
-                    var servers = FindControl<ListView>(form, "MCP Servers");
+                    var servers = FormTestDriver.FindControl<ListView>(form, "MCP Servers");
                     var ignored = form.Handle;
                     ignored = servers.Handle;
-                    InvokePrivateTask(form, "LoadServerStatusesAsync", true);
+                    FormTestDriver.InvokeAndWait(form, "LoadServerStatusesAsync", true);
                     servers.Items[0].Selected = true;
 
-                    InvokePrivateTask(form, "SetSelectedServerEnabledAsync", false);
+                    FormTestDriver.InvokeAndWait(form, "SetSelectedServerEnabledAsync", false);
 
                     Assert.Multiple(() =>
                     {
@@ -187,7 +188,7 @@ namespace MyCodex.Application.Tests
                 using (var screenReader = new RecordingScreenReaderService())
                 using (var form = new McpManagementForm(client, screenReader))
                 {
-                    var filter = FindControl<ComboBox>(form, "Filter");
+                    var filter = FormTestDriver.FindControl<ComboBox>(form, "Filter");
                     form.ActiveControl = filter;
                     var ignored = form.Handle;
 
@@ -195,7 +196,7 @@ namespace MyCodex.Application.Tests
                     client.RaiseReauthenticationRequired("GITHUB");
 
                     Assert.That(
-                        GetPrivateField<Label>(form, "_statusLabel").Text,
+                        FormTestDriver.Field<Label>(form, "_statusLabel").Text,
                         Is.EqualTo("Authentication for github has expired. Refresh status, select the server, then choose Login.")
                             .IgnoreCase);
                     Assert.That(screenReader.SpokenTexts, Is.EqualTo(new[]
@@ -219,18 +220,15 @@ namespace MyCodex.Application.Tests
                 using (var screenReader = new RecordingScreenReaderService())
                 using (var form = new McpManagementForm(client, screenReader))
                 {
-                    var filter = FindControl<ComboBox>(form, "Filter");
+                    var filter = FormTestDriver.FindControl<ComboBox>(form, "Filter");
                     form.ActiveControl = filter;
                     var ignored = form.Handle;
-                    var serverList = FindControl<ListView>(form, "MCP Servers");
+                    var serverList = FormTestDriver.FindControl<ListView>(form, "MCP Servers");
                     ignored = serverList.Handle;
                     client.RaiseReauthenticationRequired("github");
                     Assert.That(client.StartOauthLoginCallCount, Is.EqualTo(0));
 
-                    InvokePrivateTask(
-                        form,
-                        "LoadServerStatusesAsync",
-                        true);
+                    FormTestDriver.InvokeAndWait(form, "LoadServerStatusesAsync", true);
 
                     Assert.Multiple(() =>
                     {
@@ -272,18 +270,18 @@ namespace MyCodex.Application.Tests
                 {
                     using (var form = new McpManagementForm(client, screenReader, state))
                     {
-                        var filter = FindControl<ComboBox>(form, "Filter");
+                        var filter = FormTestDriver.FindControl<ComboBox>(form, "Filter");
                         form.ActiveControl = filter;
                         var ignored = form.Handle;
-                        var serverList = FindControl<ListView>(form, "MCP Servers");
+                        var serverList = FormTestDriver.FindControl<ListView>(form, "MCP Servers");
                         ignored = serverList.Handle;
 
-                        InvokePrivateTask(form, "LoadServerStatusesAsync", true);
+                        FormTestDriver.InvokeAndWait(form, "LoadServerStatusesAsync", true);
 
                         Assert.Multiple(() =>
                         {
                             Assert.That(
-                                GetPrivateField<Label>(form, "_statusLabel").Text,
+                                FormTestDriver.Field<Label>(form, "_statusLabel").Text,
                                 Is.EqualTo("Authentication for github has expired. Refresh status, select the server, then choose Login."));
                             Assert.That(serverList.SelectedItems, Has.Count.EqualTo(1));
                             Assert.That(
@@ -310,7 +308,7 @@ namespace MyCodex.Application.Tests
                 using (var screenReader = new RecordingScreenReaderService())
                 using (var form = new McpManagementForm(client, screenReader, state))
                 {
-                    var filter = FindControl<ComboBox>(form, "Filter");
+                    var filter = FormTestDriver.FindControl<ComboBox>(form, "Filter");
                     form.ActiveControl = filter;
                     var ignored = form.Handle;
 
@@ -324,7 +322,7 @@ namespace MyCodex.Application.Tests
                         Assert.That(mainNotification.ShouldSpeak, Is.True);
                         Assert.That(state.ConsumePending(), Is.Null);
                         Assert.That(
-                            GetPrivateField<Label>(form, "_statusLabel").Text,
+                            FormTestDriver.Field<Label>(form, "_statusLabel").Text,
                             Is.EqualTo("Authentication for github has expired. Refresh status, select the server, then choose Login."));
                         Assert.That(client.StartOauthLoginCallCount, Is.EqualTo(0));
                         Assert.That(screenReader.SpokenTexts, Is.Empty);
@@ -349,9 +347,9 @@ namespace MyCodex.Application.Tests
 
                 using (var form = new McpDiagnosticsForm(CreateClient(), server))
                 {
-                    Assert.That(FindControl<Button>(form, "Read Resource"), Is.Not.Null);
-                    Assert.That(FindControl<Button>(form, "Test Tool Call"), Is.Not.Null);
-                    Assert.That(FindControl<TextBox>(form, "Diagnostics details").Text, Does.Contain("codex_apps"));
+                    Assert.That(FormTestDriver.FindControl<Button>(form, "Read Resource"), Is.Not.Null);
+                    Assert.That(FormTestDriver.FindControl<Button>(form, "Test Tool Call"), Is.Not.Null);
+                    Assert.That(FormTestDriver.FindControl<TextBox>(form, "Diagnostics details").Text, Does.Contain("codex_apps"));
                 }
             });
         }
@@ -368,12 +366,12 @@ namespace MyCodex.Application.Tests
 
                 using (var form = new McpResourceViewerForm("github", "resource://demo", result))
                 {
-                    var textBox = FindControl<TextBox>(form, "Resource content");
+                    var textBox = FormTestDriver.FindControl<TextBox>(form, "Resource content");
 
                     Assert.That(textBox.ReadOnly, Is.True);
                     Assert.That(textBox.Text, Does.Contain("# A"));
                     Assert.That(textBox.Text, Does.Contain("Blob content"));
-                    Assert.That(FindControlOrDefault<Button>(form, "Close"), Is.Null);
+                    Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, "Close"), Is.Null);
                 }
             });
         }
@@ -386,8 +384,8 @@ namespace MyCodex.Application.Tests
             {
                 using (var form = new McpToolTestForm(CreateClient(), "thread-1", "github"))
                 {
-                    Assert.That(FindControlOrDefault<Button>(form, "Close"), Is.Null);
-                    Assert.That(FindControl<Button>(form, "Run Tool"), Is.Not.Null);
+                    Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, "Close"), Is.Null);
+                    Assert.That(FormTestDriver.FindControl<Button>(form, "Run Tool"), Is.Not.Null);
                 }
             });
         }
@@ -415,8 +413,8 @@ namespace MyCodex.Application.Tests
 
                 using (var form = new ResourceUriInputForm(resources))
                 {
-                    var listBox = FindControl<ListBox>(form, "Resources");
-                    var textBox = FindControl<TextBox>(form, "Resource URI");
+                    var listBox = FormTestDriver.FindControl<ListBox>(form, "Resources");
+                    var textBox = FormTestDriver.FindControl<TextBox>(form, "Resource URI");
 
                     Assert.That(listBox.Items, Has.Count.EqualTo(2));
                     Assert.That(listBox.SelectedIndex, Is.EqualTo(0));
@@ -462,49 +460,6 @@ namespace MyCodex.Application.Tests
             }
         }
 
-        private static T FindControl<T>(Control root, string accessibleName)
-            where T : Control
-        {
-            foreach (Control child in root.Controls)
-            {
-                var typed = child as T;
-                if (typed != null && string.Equals(typed.AccessibleName, accessibleName, StringComparison.Ordinal))
-                {
-                    return typed;
-                }
-
-                var nested = FindControlOrDefault<T>(child, accessibleName);
-                if (nested != null)
-                {
-                    return nested;
-                }
-            }
-
-            Assert.Fail("Control not found: " + accessibleName);
-            return null;
-        }
-
-        private static T FindControlOrDefault<T>(Control root, string accessibleName)
-            where T : Control
-        {
-            foreach (Control child in root.Controls)
-            {
-                var typed = child as T;
-                if (typed != null && string.Equals(typed.AccessibleName, accessibleName, StringComparison.Ordinal))
-                {
-                    return typed;
-                }
-
-                var nested = FindControlOrDefault<T>(child, accessibleName);
-                if (nested != null)
-                {
-                    return nested;
-                }
-            }
-
-            return null;
-        }
-
         private static AppServerClient CreateClient()
         {
             var appDataPath = System.IO.Path.Combine(TestContext.CurrentContext.WorkDirectory, Guid.NewGuid().ToString("N"));
@@ -517,29 +472,6 @@ namespace MyCodex.Application.Tests
         {
             var appDataPath = System.IO.Path.Combine(TestContext.CurrentContext.WorkDirectory, Guid.NewGuid().ToString("N"));
             return new RecordingAppServerClient(appDataPath, servers);
-        }
-
-        private static void InvokePrivate(object target, string methodName, params object[] args)
-        {
-            var method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(method, Is.Not.Null, "Private method not found: " + methodName);
-            method.Invoke(target, args);
-        }
-
-        private static void InvokePrivateTask(object target, string methodName, params object[] args)
-        {
-            var method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(method, Is.Not.Null, "Private method not found: " + methodName);
-            var task = method.Invoke(target, args) as Task;
-            Assert.That(task, Is.Not.Null, "Private method did not return a Task: " + methodName);
-            task.GetAwaiter().GetResult();
-        }
-
-        private static T GetPrivateField<T>(object target, string fieldName)
-        {
-            var field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(field, Is.Not.Null, "Private field not found: " + fieldName);
-            return (T)field.GetValue(target);
         }
 
         private sealed class RecordingScreenReaderService : IScreenReaderService

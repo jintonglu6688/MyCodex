@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Infrastructure.Codex;
@@ -34,7 +35,7 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture())
             {
-                var history = Get<ChatHistoryListBox>(fixture.Form, "_chatHistoryListBox");
+                var history = FormTestDriver.Field<ChatHistoryListBox>(fixture.Form, "_chatHistoryListBox");
                 history.Dock = DockStyle.None;
                 history.ClientSize = new Size(400, history.ItemHeight * 3);
                 var handle = history.Handle;
@@ -78,7 +79,7 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture())
             {
-                var history = Get<ChatHistoryListBox>(fixture.Form, "_chatHistoryListBox");
+                var history = FormTestDriver.Field<ChatHistoryListBox>(fixture.Form, "_chatHistoryListBox");
                 history.Dock = DockStyle.None;
                 history.ClientSize = new Size(400, history.ItemHeight * 3);
                 var handle = history.Handle;
@@ -100,13 +101,13 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture())
             {
-                Assert.That(Invoke(fixture.Form, "GetCurrentRuntimeDisplayName"), Is.EqualTo(UiLocalization.Text("Target.Name.Local", "This PC")));
+                Assert.That(FormTestDriver.Invoke(fixture.Form, "GetCurrentRuntimeDisplayName"), Is.EqualTo(UiLocalization.Text("Target.Name.Local", "This PC")));
                 Assert.That(fixture.Form.Text, Does.StartWith("MyCodex"));
-                Assert.That(Invoke(fixture.Form, "GetCurrentWindowRuntimeDisplayName"), Is.Null);
-                Assert.That(Invoke(fixture.Form, "BuildRuntimeFileWindowTitle", "Files"), Is.EqualTo("Files"));
-                Assert.That(Get<NotifyIcon>(fixture.Form, "_trayIcon").Text, Does.StartWith(UiLocalization.Text("Target.Name.Local", "This PC") + " — "));
+                Assert.That(FormTestDriver.Invoke(fixture.Form, "GetCurrentWindowRuntimeDisplayName"), Is.Null);
+                Assert.That(FormTestDriver.Invoke(fixture.Form, "BuildRuntimeFileWindowTitle", "Files"), Is.EqualTo("Files"));
+                Assert.That(FormTestDriver.Field<NotifyIcon>(fixture.Form, "_trayIcon").Text, Does.StartWith(UiLocalization.Text("Target.Name.Local", "This PC") + " — "));
                 fixture.Catalog.AddWsl("Linux", new WslAppServerConfigSnapshot { DistributionName = "Debian" });
-                Invoke(fixture.Form, "RefreshWindowTitle");
+                FormTestDriver.Invoke(fixture.Form, "RefreshWindowTitle");
                 Assert.That(fixture.Form.Text, Does.StartWith("MyCodex"));
             }
         }
@@ -117,12 +118,12 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture())
             {
-                Set(fixture.Form, "_fixedTarget", new TargetProfileSnapshot { Id = "other", Kind = kind, Name = name });
-                Invoke(fixture.Form, "RefreshWindowTitle");
+                FormTestDriver.SetField(fixture.Form, "_fixedTarget", new TargetProfileSnapshot { Id = "other", Kind = kind, Name = name });
+                FormTestDriver.Invoke(fixture.Form, "RefreshWindowTitle");
 
                 Assert.That(fixture.Form.Text, Does.StartWith(name + " - MyCodex"));
-                Assert.That(Invoke(fixture.Form, "GetCurrentWindowRuntimeDisplayName"), Is.EqualTo(name));
-                Assert.That(Invoke(fixture.Form, "BuildRuntimeFileWindowTitle", "Files"), Is.EqualTo(name + " - Files"));
+                Assert.That(FormTestDriver.Invoke(fixture.Form, "GetCurrentWindowRuntimeDisplayName"), Is.EqualTo(name));
+                Assert.That(FormTestDriver.Invoke(fixture.Form, "BuildRuntimeFileWindowTitle", "Files"), Is.EqualTo(name + " - Files"));
             }
         }
 
@@ -131,8 +132,8 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture())
             {
-                var targets = Get<MenuItem>(fixture.Form, "_targetsMenuItem");
-                var manager = Get<MenuItem>(fixture.Form, "_appServerRuntimeSettingsMenuItem");
+                var targets = FormTestDriver.Field<MenuItem>(fixture.Form, "_targetsMenuItem");
+                var manager = FormTestDriver.Field<MenuItem>(fixture.Form, "_appServerRuntimeSettingsMenuItem");
                 for (var opening = 0; opening < 3; opening++)
                 {
                     if (opening == 1) fixture.Catalog.AddWsl("Linux & test", new WslAppServerConfigSnapshot { DistributionName = "Debian" });
@@ -164,10 +165,10 @@ namespace MyCodex.Application.Tests
                     {
                         closer.Tick += (sender, args) =>
                         {
-                            var dialog = Get<TargetManagerForm>(fixture.Form, "_targetManagerForm");
+                            var dialog = FormTestDriver.Field<TargetManagerForm>(fixture.Form, "_targetManagerForm");
                             if (dialog == null || !dialog.Visible) return;
                             opened = true;
-                            if (!Get<bool>(dialog, "_busy")) dialog.Close();
+                            if (!FormTestDriver.Field<bool>(dialog, "_busy")) dialog.Close();
                             else if (timeout.Elapsed > TimeSpan.FromSeconds(5)) dialog.Dispose();
                         };
                         closer.Start();
@@ -189,19 +190,19 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture())
             {
-                Set(fixture.Form, "_fixedTarget", new TargetProfileSnapshot { Id = "windows", Kind = kind, Name = name });
-                var targetName = (string)Invoke(fixture.Form, "GetCurrentRuntimeDisplayName");
+                FormTestDriver.SetField(fixture.Form, "_fixedTarget", new TargetProfileSnapshot { Id = "windows", Kind = kind, Name = name });
+                var targetName = (string)FormTestDriver.Invoke(fixture.Form, "GetCurrentRuntimeDisplayName");
                 var store = new JsonRemoteServiceConfigStore(fixture.Paths);
                 var snapshot = store.Load();
                 RemoteServiceConfigPlanner.SelectMode(snapshot, "External");
                 snapshot.RemoteEnabled = false;
                 store.Save(snapshot);
-                Invoke(fixture.Form, "PrepareOwnedRemoteDisplayName", store, store.Load());
+                FormTestDriver.Invoke(fixture.Form, "PrepareOwnedRemoteDisplayName", store, store.Load());
                 var sharedPath = Path.Combine(fixture.Paths.GetSharedDataDirectory(), "config", "relay-service.json");
                 var sharedBefore = File.ReadAllBytes(sharedPath);
                 var identityBefore = File.ReadAllBytes(fixture.Paths.GetRemoteServiceConfigFilePath());
-                var settings = Get<MenuItem>(fixture.Form, "_settingsMenuItem");
-                var connection = Get<MenuItem>(fixture.Form, "_remoteServiceMenuItem");
+                var settings = FormTestDriver.Field<MenuItem>(fixture.Form, "_settingsMenuItem");
+                var connection = FormTestDriver.Field<MenuItem>(fixture.Form, "_remoteServiceMenuItem");
                 Assert.That(connection.Parent, Is.SameAs(settings));
                 Assert.That(connection.MenuItems.Count, Is.Zero);
                 Assert.That(settings.MenuItems.Count, Is.EqualTo(6));
@@ -223,8 +224,8 @@ namespace MyCodex.Application.Tests
                             opened = true;
                             focused = dialog.ActiveControl == dialog.InitialFocusControlForTests;
                             correctOwner = dialog.Owner == managementOwner;
-                            Get<TargetWindowGroup>(fixture.Form, "_targetWindowGroup").RefreshTitles();
-                            Get<TargetWindowGroup>(fixture.Form, "_targetWindowGroup").RefreshTitles();
+                            FormTestDriver.Field<TargetWindowGroup>(fixture.Form, "_targetWindowGroup").RefreshTitles();
+                            FormTestDriver.Field<TargetWindowGroup>(fixture.Form, "_targetWindowGroup").RefreshTitles();
                             title = dialog.Text;
                             dialog.Close();
                             return;
@@ -232,7 +233,7 @@ namespace MyCodex.Application.Tests
                         var management = System.Windows.Forms.Application.OpenForms.OfType<RemoteServiceManagementForm>().FirstOrDefault();
                         if (management == null || !management.Visible || !management.Enabled) return;
                         managementOwner = management;
-                        var button = Get<Button>(management, "_serverSettingsButton");
+                        var button = FormTestDriver.Field<Button>(management, "_serverSettingsButton");
                         button.PerformClick();
                         restoredFocus = management.ActiveControl == button;
                         management.Close();
@@ -272,7 +273,7 @@ namespace MyCodex.Application.Tests
                     return true;
                 }, IntPtr.Zero);
                 responder.Start();
-                var offered = (Task<bool>)Invoke(fixture.Form, "OfferBundledRuntimeUpdateAsync", new CodexRuntimeUpdateInfo
+                var offered = (Task<bool>)FormTestDriver.Invoke(fixture.Form, "OfferBundledRuntimeUpdateAsync", new CodexRuntimeUpdateInfo
                 {
                     InstalledVersion = "0.162.1", LatestVersion = "0.163.0", TargetTriple = "x86_64-pc-windows-msvc"
                 }, CancellationToken.None);
@@ -280,8 +281,8 @@ namespace MyCodex.Application.Tests
                 Assert.That(offered.GetAwaiter().GetResult(), Is.False);
                 Assert.That(sawConfirmation, Is.True);
                 Assert.That(defaultedToNo, Is.True);
-                Assert.That(Get<bool>(fixture.Form, "_isExitRequested"), Is.False);
-                Assert.That(Get<CodexRuntimeUpdateResult>(fixture.Form, "_installedBundledRuntimeUpdate"), Is.Null);
+                Assert.That(FormTestDriver.Field<bool>(fixture.Form, "_isExitRequested"), Is.False);
+                Assert.That(FormTestDriver.Field<CodexRuntimeUpdateResult>(fixture.Form, "_installedBundledRuntimeUpdate"), Is.Null);
                 Assert.That(System.Windows.Forms.Application.OpenForms.OfType<BundledRuntimeUpdateForm>(), Is.Empty);
                 Assert.That(fixture.Client.ConnectCalls + fixture.Client.RestartCalls, Is.Zero);
             }
@@ -301,16 +302,16 @@ namespace MyCodex.Application.Tests
                     InstalledVersion = "0.162.0", LatestVersion = "0.162.1", TargetTriple = "x86_64-pc-windows-msvc"
                 }), (info, token) => finished.Task);
                 var updating = coordinator.EnsureAsync(MyCodex.Shared.Constants.CodexRuntimeSources.Bundled, CancellationToken.None);
-                Set(fixture.Form, "_bundledRuntimeUpdates", coordinator);
+                FormTestDriver.SetField(fixture.Form, "_bundledRuntimeUpdates", coordinator);
                 var args = method == "RestartAppServerForRuntimeSettingsAsync"
                     ? new object[] { MyCodex.Domain.Enums.AppInteractionMode.Coding, false, null, null } : new object[0];
-                var task = (Task)Invoke(fixture.Form, method, args);
+                var task = (Task)FormTestDriver.Invoke(fixture.Form, method, args);
                 Assert.That(task.IsCompleted, Is.False);
                 Assert.That(fixture.Client.ConnectCalls + fixture.Client.RestartCalls, Is.Zero);
                 Assert.That(coordinator.HasPendingUpdate, Is.True);
                 var runtimeSettings = method == "RestartAppServerForRuntimeSettingsAsync";
                 // That path prepares a real authentication host after the gate; stop before external work.
-                if (runtimeSettings) Get<CancellationTokenSource>(fixture.Form, "_targetShutdownCancellation").Cancel();
+                if (runtimeSettings) FormTestDriver.Field<CancellationTokenSource>(fixture.Form, "_targetShutdownCancellation").Cancel();
                 finished.SetResult(false);
                 PumpUntil(() => task.IsCompleted && updating.IsCompleted);
                 task.GetAwaiter().GetResult();
@@ -325,7 +326,7 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture())
             {
-                Invoke(fixture.Form, "CompleteTargetStartup");
+                FormTestDriver.Invoke(fixture.Form, "CompleteTargetStartup");
                 var edit = fixture.Catalog.LoadRuntimeSettings("windows");
                 edit.CodexRuntimeSource = MyCodex.Shared.Constants.CodexRuntimeSources.System;
                 Assert.That(Apply(fixture.Form, edit).Success, Is.True);
@@ -343,7 +344,7 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture())
             {
-                Invoke(fixture.Form, "CompleteTargetStartup");
+                FormTestDriver.Invoke(fixture.Form, "CompleteTargetStartup");
                 var edit = fixture.Catalog.LoadRuntimeSettings("windows");
                 edit.Name = "Must remain a draft";
                 var configBytes = File.ReadAllBytes(fixture.Paths.GetConfigFilePath());
@@ -369,8 +370,8 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture(withSshTarget: true))
             {
-                Invoke(fixture.Form, "CompleteTargetStartup");
-                var targetId = Get<TargetProfileSnapshot>(fixture.Form, "_fixedTarget").Id;
+                FormTestDriver.Invoke(fixture.Form, "CompleteTargetStartup");
+                var targetId = FormTestDriver.Field<TargetProfileSnapshot>(fixture.Form, "_fixedTarget").Id;
                 var edit = fixture.Catalog.LoadRuntimeSettings(targetId);
                 edit.RemoteSsh.HostName = "correct.example";
                 var before = File.ReadAllBytes(fixture.Paths.GetConfigFilePath());
@@ -404,7 +405,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(wire.Success, Is.False);
                 Assert.That(status.Success, Is.True, status.Error);
                 Assert.That(status.Status.Lifecycle, Is.EqualTo(TargetInstanceLifecycle.Starting));
-                Assert.That(Get<System.Windows.Forms.Timer>(fixture.Form, "_targetStatusTimer").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<System.Windows.Forms.Timer>(fixture.Form, "_targetStatusTimer").Enabled, Is.False);
                 Assert.That(fixture.Catalog.GetTarget("windows").Name, Is.EqualTo(originalName));
                 Assert.That(fixture.Client.ConnectCalls, Is.Zero);
                 Assert.That(fixture.Client.RestartCalls, Is.Zero);
@@ -416,15 +417,15 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture())
             {
-                Invoke(fixture.Form, "CompleteTargetStartup");
+                FormTestDriver.Invoke(fixture.Form, "CompleteTargetStartup");
                 var edit = fixture.Catalog.LoadRuntimeSettings("windows");
                 edit.Name = "Too late";
                 var queued = fixture.Form.HandleTargetInstanceRequestAsync(new TargetInstanceRequest
                 {
                     Operation = TargetInstanceOperation.ApplyRuntimeSettings, RuntimeSettings = edit
                 });
-                Set(fixture.Form, "_isExitRequested", true);
-                Invoke(fixture.Form, "MarkTargetClosing");
+                FormTestDriver.SetField(fixture.Form, "_isExitRequested", true);
+                FormTestDriver.Invoke(fixture.Form, "MarkTargetClosing");
                 PumpUntil(() => queued.IsCompleted);
 
                 Assert.That(queued.GetAwaiter().GetResult().Success, Is.False);
@@ -442,7 +443,7 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture())
             {
-                Invoke(fixture.Form, "CompleteTargetStartup");
+                FormTestDriver.Invoke(fixture.Form, "CompleteTargetStartup");
                 var beforeTarget = fixture.Catalog.GetTarget("windows");
                 var identityStore = new JsonRemoteServiceConfigStore(fixture.Paths);
                 var beforeIdentity = identityStore.LoadTargetIdentity();
@@ -458,8 +459,8 @@ namespace MyCodex.Application.Tests
                 Assert.That(reply.SettingsSaved, Is.True);
                 Assert.That(fixture.Form.Text, Does.Not.Contain("Renamed workstation"));
                 Assert.That(fixture.Form.Text, Does.StartWith("MyCodex"));
-                Assert.That(Invoke(fixture.Form, "GetCurrentRuntimeDisplayName"), Is.EqualTo("Renamed workstation"));
-                Assert.That(Get<NotifyIcon>(fixture.Form, "_trayIcon").Text, Does.Contain("Renamed workstation"));
+                Assert.That(FormTestDriver.Invoke(fixture.Form, "GetCurrentRuntimeDisplayName"), Is.EqualTo("Renamed workstation"));
+                Assert.That(FormTestDriver.Field<NotifyIcon>(fixture.Form, "_trayIcon").Text, Does.Contain("Renamed workstation"));
                 var afterTarget = fixture.Catalog.GetTarget("windows");
                 Assert.That(afterTarget.Id, Is.EqualTo(beforeTarget.Id));
                 Assert.That(afterTarget.RuntimeScopeId, Is.EqualTo(beforeTarget.RuntimeScopeId));
@@ -536,7 +537,7 @@ namespace MyCodex.Application.Tests
         private static extern uint GetMenuItemID(IntPtr menu, int position);
         private static TargetInstanceReply Apply(MainForm form, TargetRuntimeSettings settings)
         {
-            var task = (Task<TargetInstanceReply>)Invoke(form, "ApplyOwnedTargetRuntimeSettingsAsync", settings);
+            var task = (Task<TargetInstanceReply>)FormTestDriver.Invoke(form, "ApplyOwnedTargetRuntimeSettingsAsync", settings);
             PumpUntil(() => task.IsCompleted);
             return task.GetAwaiter().GetResult();
         }
@@ -551,10 +552,6 @@ namespace MyCodex.Application.Tests
             }
             Assert.That(complete(), Is.True, "The isolated UI operation did not complete.");
         }
-
-        private static T Get<T>(object target, string name) => (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
-        private static void Set(object target, string name, object value) => target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
-        private static object Invoke(object target, string name, params object[] args) => target.GetType().GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(target, args);
 
         private sealed class TargetFormFixture : IDisposable
         {
@@ -588,7 +585,7 @@ namespace MyCodex.Application.Tests
                 var runtime = new CodexRuntimeManager(Paths);
                 Client = new OfflineClient(runtime, Config);
                 Form = new MainForm(Client, State, Config, Paths, new Reader(), runtime);
-                Set(Form, "_bundledRuntimeUpdates", new BundledRuntimeUpdateCoordinator(token =>
+                FormTestDriver.SetField(Form, "_bundledRuntimeUpdates", new BundledRuntimeUpdateCoordinator(token =>
                 {
                     RuntimeChecks++;
                     return Task.FromResult(new CodexRuntimeUpdateInfo { InstalledVersion = "0.162.1", LatestVersion = "0.162.1" });
@@ -604,12 +601,12 @@ namespace MyCodex.Application.Tests
                 // Never raise MainForm.FormClosed: its production teardown can stop real user services.
                 Microsoft.Win32.SystemEvents.UserPreferenceChanged -= (Microsoft.Win32.UserPreferenceChangedEventHandler)
                     Delegate.CreateDelegate(typeof(Microsoft.Win32.UserPreferenceChangedEventHandler), Form, "OnSystemUserPreferenceChanged");
-                Get<System.Windows.Forms.Timer>(Form, "_targetStatusTimer")?.Dispose();
-                Invoke(Form, "DisposeThreadSyncTimersOnExit");
-                Invoke(Form, "DisposeLocalSyncTimersOnExit");
-                Invoke(Form, "DisposeRateLimitAutoResetTimerOnExit");
-                Invoke(Form, "DisposeRemoteHostService");
-                Invoke(Form, "DisposeTrayIconOnExit");
+                FormTestDriver.Field<System.Windows.Forms.Timer>(Form, "_targetStatusTimer")?.Dispose();
+                FormTestDriver.Invoke(Form, "DisposeThreadSyncTimersOnExit");
+                FormTestDriver.Invoke(Form, "DisposeLocalSyncTimersOnExit");
+                FormTestDriver.Invoke(Form, "DisposeRateLimitAutoResetTimerOnExit");
+                FormTestDriver.Invoke(Form, "DisposeRemoteHostService");
+                FormTestDriver.Invoke(Form, "DisposeTrayIconOnExit");
                 Form.Dispose();
                 _instance.Dispose();
                 Client.Dispose();

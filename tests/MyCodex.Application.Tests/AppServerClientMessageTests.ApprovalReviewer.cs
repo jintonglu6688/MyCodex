@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
 using NUnit.Framework;
@@ -33,9 +34,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var operation = client.CreateThreadAsync(workspace, mode, null, null);
                 var request = ReadLastWrittenMessage(await WaitForWrittenLineCountAsync(stream, 1));
@@ -70,11 +71,11 @@ namespace MyCodex.Application.Tests
                 using (var stream = new MemoryStream())
                 using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
                 {
-                    SetPrivateField(client, "_isConnected", true);
-                    SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                    SetPrivateField(client, "_inputWriter", writer);
-                    if (alreadyLoaded) GetPrivateField<HashSet<string>>(client, "_loadedThreadIds").Add("thread-1");
-                    GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes")["thread-1"] =
+                    FormTestDriver.SetField(client, "_isConnected", true);
+                    FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                    FormTestDriver.SetField(client, "_inputWriter", writer);
+                    if (alreadyLoaded) FormTestDriver.Field<HashSet<string>>(client, "_loadedThreadIds").Add("thread-1");
+                    FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes")["thread-1"] =
                         mode == ApprovalMode.FullAccess ? ApprovalMode.Auto : ApprovalMode.FullAccess;
 
                     var operation = client.SendUserMessageAsync("thread-1", TestContext.CurrentContext.WorkDirectory,

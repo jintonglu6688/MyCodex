@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.AuthenticationCenter;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
@@ -107,7 +108,7 @@ namespace MyCodex.Application.Tests
                 response["liveState"] = "unavailable";
                 response["syncError"] = "capture_incomplete";
                 form.RefreshAsync().GetAwaiter().GetResult();
-                Assert.That(Field<Label>(form, "_statusLabel").Text, Does.Contain("Automatic capture did not finish"));
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Does.Contain("Automatic capture did not finish"));
                 Assert.That(list.Items.Cast<ListViewItem>().All(item => item.SubItems[4].Text == "Saved"), Is.True);
                 Assert.That(reader.SpeakCalls, Is.Zero);
             }
@@ -137,7 +138,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(list.Items[1].SubItems[4].Text, Is.EqualTo("Current"));
                 Assert.That(((AuthenticationProvider)list.SelectedItems[0].Tag).Id, Is.EqualTo("a"));
                 Assert.That(list.FocusedItem, Is.SameAs(list.SelectedItems[0]));
-                Assert.That(Field<Label>(form, "_identityLabel").Text, Does.Contain("Live B"));
+                Assert.That(FormTestDriver.Field<Label>(form, "_identityLabel").Text, Does.Contain("Live B"));
                 Assert.That(identityCalls, Is.Zero);
                 Assert.That(reader.SpeakCalls, Is.Zero);
                 Assert.That(methods, Is.EqualTo(new[] { "status", "gui/provider/list", "status", "gui/provider/list" }));
@@ -168,12 +169,12 @@ namespace MyCodex.Application.Tests
                 Assert.That(list.Items.Cast<ListViewItem>().All(item => item.SubItems[4].Text == "Saved"), Is.True);
                 Assert.That(((AuthenticationProvider)list.SelectedItems[0].Tag).Id, Is.EqualTo("b"));
                 Assert.That(list.FocusedItem, Is.SameAs(list.SelectedItems[0]));
-                Assert.That(Field<MenuItem>(form, "_editMenuItem").Enabled, Is.True);
-                Assert.That(Field<Label>(form, "_statusLabel").Text, Does.Contain(statusText));
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_editMenuItem").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Does.Contain(statusText));
                 if (state == "signed_out" || state == "unavailable")
-                    Assert.That(Field<Label>(form, "_statusLabel").Text, Does.Contain("credentials"));
-                Assert.That(Field<Label>(form, "_statusLabel").TabStop, Is.False);
-                Assert.That(Field<Label>(form, "_identityLabel").Text, Does.Not.Contain("Stale cached identity"));
+                    Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Does.Contain("credentials"));
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(form, "_identityLabel").Text, Does.Not.Contain("Stale cached identity"));
                 Assert.That(reader.SpeakCalls, Is.Zero);
                 Assert.That(methods.Count, Is.EqualTo(4));
             }
@@ -201,7 +202,7 @@ namespace MyCodex.Application.Tests
         private static ListView Initialize(AuthenticationCenterForm form)
         {
             var formHandle = form.Handle;
-            var list = Field<ListView>(form, "_providersList");
+            var list = FormTestDriver.Field<ListView>(form, "_providersList");
             var listHandle = list.Handle;
             form.RefreshAsync().GetAwaiter().GetResult();
             return list;
@@ -252,11 +253,6 @@ namespace MyCodex.Application.Tests
                 { "id", id }, { "version", "v-" + id }, { "name", "Saved " + id },
                 { "kind", "chatgpt" }, { "accountId", "account-" + id }, { "accountLabel", "Saved identity " + id }
             };
-        }
-
-        private static T Field<T>(object instance, string name)
-        {
-            return (T)instance.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(instance);
         }
 
         private sealed class Reader : IScreenReaderService

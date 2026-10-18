@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
@@ -26,22 +27,17 @@ namespace MyCodex.Application.Tests
             });
             var official = new AppServerConfigSnapshot { ModelId = "configured", ModelReasoningEffort = "high" };
             Set(form, "_globalServerConfigSnapshot", official);
-            Assert.That(Invoke(form, "GetConfiguredDefaultModelId"), Is.EqualTo("configured"));
-            Assert.That(Invoke(form, "GetConfiguredDefaultReasoningEffort"), Is.EqualTo("high"));
+            Assert.That(FormTestDriver.Invoke(form, "GetConfiguredDefaultModelId"), Is.EqualTo("configured"));
+            Assert.That(FormTestDriver.Invoke(form, "GetConfiguredDefaultReasoningEffort"), Is.EqualTo("high"));
             official.ModelId = "switched";
             official.ModelReasoningEffort = "low";
-            Assert.That(Invoke(form, "GetConfiguredDefaultModelId"), Is.EqualTo("switched"));
-            Assert.That(Invoke(form, "GetConfiguredDefaultReasoningEffort"), Is.EqualTo("low"));
+            Assert.That(FormTestDriver.Invoke(form, "GetConfiguredDefaultModelId"), Is.EqualTo("switched"));
+            Assert.That(FormTestDriver.Invoke(form, "GetConfiguredDefaultReasoningEffort"), Is.EqualTo("low"));
         }
 
         private static void Set(MainForm form, string name, object value)
         {
             typeof(MainForm).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(form, value);
-        }
-
-        private static object Invoke(MainForm form, string name)
-        {
-            return typeof(MainForm).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(form, null);
         }
     }
 }

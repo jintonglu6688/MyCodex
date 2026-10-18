@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Tests.SourceGuards;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
 
@@ -50,7 +51,7 @@ namespace MyCodex.Application.Tests
             using (var form = new UserCenterForm(client, client, CreateChatGptState(), screenReader))
             {
                 form.Show();
-                var refreshButton = GetField<Button>(form, "_refreshButton");
+                var refreshButton = FormTestDriver.Field<Button>(form, "_refreshButton");
                 WaitUntil(() => client.RefreshTokenValues.Count > 0 && refreshButton.Enabled);
 
                 Assert.That(screenReader.SpokenTexts, Is.Empty);
@@ -160,9 +161,9 @@ namespace MyCodex.Application.Tests
                        new RecordingAuthenticationClient(),
                        CreateChatGptState()))
             {
-                var creditSelector = GetField<ComboBox>(form, "_resetCreditComboBox");
-                var resetButton = GetField<Button>(form, "_resetQuotaButton");
-                var closeButton = GetField<Button>(form, "_closeButton");
+                var creditSelector = FormTestDriver.Field<ComboBox>(form, "_resetCreditComboBox");
+                var resetButton = FormTestDriver.Field<Button>(form, "_resetQuotaButton");
+                var closeButton = FormTestDriver.Field<Button>(form, "_closeButton");
 
                 Assert.That(creditSelector.DropDownStyle, Is.EqualTo(ComboBoxStyle.DropDownList));
                 Assert.That(creditSelector.AccessibleName, Is.Not.Empty);
@@ -187,9 +188,9 @@ namespace MyCodex.Application.Tests
             using (var form = new ConfirmingUserCenterForm(client, screenReader))
             {
                 form.Show();
-                var resetButton = GetField<Button>(form, "_resetQuotaButton");
+                var resetButton = FormTestDriver.Field<Button>(form, "_resetQuotaButton");
                 WaitUntil(() => resetButton.Enabled);
-                var creditSelector = GetField<ComboBox>(form, "_resetCreditComboBox");
+                var creditSelector = FormTestDriver.Field<ComboBox>(form, "_resetCreditComboBox");
                 creditSelector.SelectedIndex = 2;
                 var spokenBeforeReset = screenReader.SpokenTexts.Count;
 
@@ -199,7 +200,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(form.ConfirmedCreditId, Is.EqualTo("credit-2"));
                 Assert.That(client.ConsumedCreditId, Is.EqualTo("credit-2"));
                 Assert.That(Guid.TryParse(client.ConsumedIdempotencyKey, out _), Is.True);
-                var finalStatus = GetField<Label>(form, "_statusLabel").Text;
+                var finalStatus = FormTestDriver.Field<Label>(form, "_statusLabel").Text;
                 Assert.That(finalStatus, Is.Not.Empty);
                 Assert.That(screenReader.SpokenTexts.Count, Is.GreaterThanOrEqualTo(spokenBeforeReset + 2));
                 Assert.That(screenReader.SpokenTexts.Last(), Is.EqualTo(finalStatus));
@@ -262,14 +263,6 @@ namespace MyCodex.Application.Tests
             }
 
             Assert.That(condition(), Is.True);
-        }
-
-        private static TControl GetField<TControl>(UserCenterForm form, string fieldName)
-            where TControl : Control
-        {
-            var field = typeof(UserCenterForm).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(field, Is.Not.Null, fieldName);
-            return (TControl)field.GetValue(form);
         }
 
         private sealed class RecordingAuthenticationClient : IAppServerAuthenticationClient, IAppServerConnectionClient

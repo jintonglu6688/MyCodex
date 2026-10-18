@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.InternalTools;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
@@ -36,12 +37,12 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
-                var modes = GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                var modes = FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
                 modes["thread-1"] = ApprovalMode.Custom;
-                var toolContexts = GetPrivateField<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
+                var toolContexts = FormTestDriver.Field<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
                 var toolContext = new InternalToolExecutionContext { WorkspacePath = @"E:\Repo" };
                 toolContexts["thread-1"] = toolContext;
                 var operation = client.StartReviewAsync("thread-1", @"E:\Repo", mode, "model",
@@ -57,8 +58,7 @@ namespace MyCodex.Application.Tests
                 {
                     var events = new List<AppServerEventArgs>();
                     client.EventReceived += (sender, item) => events.Add(item);
-                    InvokePrivateInstance(client, "HandleCommandApprovalRequest", "review-approval", "review-approval",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleCommandApprovalRequest", "review-approval", "review-approval", new Dictionary<string, object>
                         {
                             { "threadId", "thread-1" }, { "turnId", "review-turn" },
                             { "itemId", "item-1" }, { "command", "git add README.md" }, { "cwd", @"E:\Repo" }
@@ -87,11 +87,11 @@ namespace MyCodex.Application.Tests
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             using (var cancellation = new CancellationTokenSource())
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
-                SetPrivateField(client, "_lifetimeCts", cancellation);
-                var modes = GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_lifetimeCts", cancellation);
+                var modes = FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
                 modes["thread-1"] = ApprovalMode.Custom;
                 var operation = client.StartReviewAsync("thread-1", @"E:\Repo", ApprovalMode.Custom, "model",
                     AppServerReviewTarget.CreateUncommittedChanges(), false, "high");
@@ -122,12 +122,12 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
-                var modes = GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                var modes = FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
                 modes["source"] = ApprovalMode.ReadOnly;
-                var contexts = GetPrivateField<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
+                var contexts = FormTestDriver.Field<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
                 var sourceContext = new InternalToolExecutionContext { WorkspacePath = @"E:\Repo" };
                 contexts["source"] = sourceContext;
                 var operation = client.StartReviewAsync("source", @"E:\Repo", mode, "model",
@@ -156,8 +156,7 @@ namespace MyCodex.Application.Tests
                 if (mode.HasValue) Assert.That(modes["new-review"], Is.EqualTo(mode));
                 if (mode == ApprovalMode.Custom)
                 {
-                    InvokePrivateInstance(client, "HandleCommandApprovalRequest", "new-approval", "new-approval",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleCommandApprovalRequest", "new-approval", "new-approval", new Dictionary<string, object>
                         {
                             { "threadId", "new-review" }, { "turnId", "review-turn" },
                             { "itemId", "item-1" }, { "command", "git add README.md" }, { "cwd", @"E:\Repo" }
@@ -190,12 +189,12 @@ namespace MyCodex.Application.Tests
                 new Dictionary<string, object> { { "thread", idle } });
             var unsubscribe = ReadLastWrittenMessage(await WaitForWrittenLineCountAsync(stream, 2));
             Assert.That(unsubscribe["method"], Is.EqualTo("thread/unsubscribe"));
-            InvokePrivateInstance(client, "HandleNotification", new Dictionary<string, object>
+            FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
             {
                 { "method", "thread/closed" },
                 { "params", new Dictionary<string, object> { { "threadId", "thread-1" } } }
             });
-            Assert.That(GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes").ContainsKey("thread-1"), Is.False);
+            Assert.That(FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes").ContainsKey("thread-1"), Is.False);
             CompleteRequest(client, Convert.ToString(unsubscribe["id"], CultureInfo.InvariantCulture), new Dictionary<string, object>());
             await CompleteResumeProviderReadAsync(client, stream, 3);
             var resume = ReadLastWrittenMessage(await WaitForWrittenLineCountAsync(stream, 4));

@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Infrastructure.Codex;
@@ -41,12 +42,11 @@ namespace MyCodex.Application.Tests
                 try
                 {
                     var handle = form.Handle;
-                    Set(form, "_connectionStatus", UiLocalization.Text("MainForm.Connection.Connected", "Connected"));
+                    FormTestDriver.SetField(form, "_connectionStatus", UiLocalization.Text("MainForm.Connection.Connected", "Connected"));
                     // The transition owns the fresh read after restarting App Server.
                     var transitionField = recovering ? "_isRecoveringAppServerConnection" : "_isRuntimeWindowTransitionInProgress";
-                    Set(form, transitionField, true);
-                    var read = (Task<AppServerModelConfigurationObservation>)Invoke(form,
-                        "RefreshModelConfigurationAsync", null, false, false);
+                    FormTestDriver.SetField(form, transitionField, true);
+                    var read = (Task<AppServerModelConfigurationObservation>)FormTestDriver.Invoke(form, "RefreshModelConfigurationAsync", null, false, false);
                     PumpUntil(() => client.ConfigReadStarted);
                     if (eventType != null) client.Raise(eventType);
                     client.ConfigReply.SetResult(new AppServerConfigSnapshot { ModelId = "new-provider-model" });
@@ -58,9 +58,9 @@ namespace MyCodex.Application.Tests
                     Assert.That(client.AuthenticationReads, Is.Zero);
                     Assert.That(client.ModelReads, Is.EqualTo(1));
 
-                    Set(form, transitionField, false);
+                    FormTestDriver.SetField(form, transitionField, false);
                     client.Raise("auth_changed");
-                    PumpUntil(() => client.ModelReads == 2 && !(bool)Field(form, "_isLoadingModels"));
+                    PumpUntil(() => client.ModelReads == 2 && !(bool)FormTestDriver.Field<object>(form, "_isLoadingModels"));
                     Assert.That(client.AuthenticationReads, Is.EqualTo(1), "Ordinary account notifications still refresh authentication.");
                 }
                 finally
@@ -69,11 +69,11 @@ namespace MyCodex.Application.Tests
                     // release only the resources this isolated, never-shown form started.
                     Microsoft.Win32.SystemEvents.UserPreferenceChanged -= (Microsoft.Win32.UserPreferenceChangedEventHandler)
                         Delegate.CreateDelegate(typeof(Microsoft.Win32.UserPreferenceChangedEventHandler), form, "OnSystemUserPreferenceChanged");
-                    Invoke(form, "DisposeThreadSyncTimersOnExit");
-                    Invoke(form, "DisposeLocalSyncTimersOnExit");
-                    Invoke(form, "DisposeRateLimitAutoResetTimerOnExit");
-                    Invoke(form, "DisposeRemoteHostService");
-                    Invoke(form, "DisposeTrayIconOnExit");
+                    FormTestDriver.Invoke(form, "DisposeThreadSyncTimersOnExit");
+                    FormTestDriver.Invoke(form, "DisposeLocalSyncTimersOnExit");
+                    FormTestDriver.Invoke(form, "DisposeRateLimitAutoResetTimerOnExit");
+                    FormTestDriver.Invoke(form, "DisposeRemoteHostService");
+                    FormTestDriver.Invoke(form, "DisposeTrayIconOnExit");
                 }
             }
         }
@@ -87,21 +87,6 @@ namespace MyCodex.Application.Tests
                 Thread.Sleep(1);
             }
             Assert.That(complete(), Is.True, "The isolated UI operation did not complete.");
-        }
-
-        private static void Set(object target, string name, object value)
-        {
-            target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
-        }
-
-        private static object Field(object target, string name)
-        {
-            return target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
-        }
-
-        private static object Invoke(object target, string name, params object[] args)
-        {
-            return target.GetType().GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(target, args);
         }
 
         private sealed class Client : AppServerClient, IAppServerClient

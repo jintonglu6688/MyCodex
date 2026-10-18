@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.AuthenticationCenter;
 using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Forms;
@@ -26,8 +27,8 @@ namespace MyCodex.Application.Tests
             };
             using (var control = new AuthenticationContextControl(original, false, true))
             {
-                var window = Field<CheckBox>(control, "_window");
-                var limit = Field<TextBox>(control, "_limit");
+                var window = FormTestDriver.Field<CheckBox>(control, "_window");
+                var limit = FormTestDriver.Field<TextBox>(control, "_limit");
                 Assert.That(window.Checked, Is.False);
                 Assert.That(limit.Enabled, Is.False);
                 var result = new Dictionary<string, object>(original);
@@ -53,10 +54,10 @@ namespace MyCodex.Application.Tests
         {
             using (var control = new AuthenticationContextControl(null, false, supported))
             {
-                Assert.That(Field<CheckBox>(control, "_window").Enabled, Is.EqualTo(supported));
-                Assert.That(Field<CheckBox>(control, "_remote").Enabled, Is.EqualTo(supported));
-                Field<CheckBox>(control, "_window").Checked = true;
-                Field<CheckBox>(control, "_remote").Checked = true;
+                Assert.That(FormTestDriver.Field<CheckBox>(control, "_window").Enabled, Is.EqualTo(supported));
+                Assert.That(FormTestDriver.Field<CheckBox>(control, "_remote").Enabled, Is.EqualTo(supported));
+                FormTestDriver.Field<CheckBox>(control, "_window").Checked = true;
+                FormTestDriver.Field<CheckBox>(control, "_remote").Checked = true;
                 var result = new Dictionary<string, object>();
                 control.Apply(result);
                 Assert.That(result.Count, Is.EqualTo(supported ? 3 : 0));
@@ -84,10 +85,10 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(new AuthenticationSaveResult { Provider = provider, Reconnected = true });
             }))
             {
-                var context = Field<AuthenticationContextControl>(form, "_context");
-                Field<CheckBox>(context, "_window").Checked = true;
-                Field<TextBox>(context, "_limit").Text = "850000";
-                if (kind != "chatgpt") { Field<CheckBox>(context, "_remote").Checked = true; }
+                var context = FormTestDriver.Field<AuthenticationContextControl>(form, "_context");
+                FormTestDriver.Field<CheckBox>(context, "_window").Checked = true;
+                FormTestDriver.Field<TextBox>(context, "_limit").Text = "850000";
+                if (kind != "chatgpt") { FormTestDriver.Field<CheckBox>(context, "_remote").Checked = true; }
                 await form.SaveAsync();
                 Assert.That(saved.Advanced["modelContextWindow"], Is.EqualTo(1000000L));
                 Assert.That(saved.Advanced["autoCompactTokenLimit"], Is.EqualTo(850000L));
@@ -105,8 +106,8 @@ namespace MyCodex.Application.Tests
         {
             using (var control = new AuthenticationContextControl(null, false, true))
             {
-                Field<CheckBox>(control, "_window").Checked = true;
-                Field<TextBox>(control, "_limit").Text = value;
+                FormTestDriver.Field<CheckBox>(control, "_window").Checked = true;
+                FormTestDriver.Field<TextBox>(control, "_limit").Text = value;
                 Assert.Throws<AuthenticationCenterException>(() => control.Apply(new Dictionary<string, object>()));
             }
         }
@@ -144,10 +145,10 @@ namespace MyCodex.Application.Tests
                 form.Size = form.MinimumSize;
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
-                var context = Field<AuthenticationContextControl>(form, "_context");
-                var remote = Field<CheckBox>(context, "_remote");
-                var window = Field<CheckBox>(context, "_window");
-                var limit = Field<TextBox>(context, "_limit");
+                var context = FormTestDriver.Field<AuthenticationContextControl>(form, "_context");
+                var remote = FormTestDriver.Field<CheckBox>(context, "_remote");
+                var window = FormTestDriver.Field<CheckBox>(context, "_window");
+                var limit = FormTestDriver.Field<TextBox>(context, "_limit");
                 Assert.That(remote.Visible, Is.EqualTo(kind != "chatgpt"));
                 Assert.That(window.AccessibleName, Is.Not.Empty);
                 Assert.That(limit.AccessibleName, Is.Not.Empty);
@@ -161,20 +162,15 @@ namespace MyCodex.Application.Tests
                 window.Focus();
                 form.SelectNextControl(window, true, true, true, false);
                 Assert.That(limit.Focused, Is.True);
-                var content = Field<Panel>(form, "_content");
+                var content = FormTestDriver.Field<Panel>(form, "_content");
                 Assert.That(content.ClientRectangle.Contains(content.PointToClient(limit.PointToScreen(new System.Drawing.Point(1, limit.Height - 1)))), Is.True);
                 Assert.That(content.HorizontalScroll.Visible, Is.False);
                 form.SelectNextControl(limit, true, true, true, false);
-                Assert.That(Field<Button>(form, "_saveButton").Focused, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(form, "_saveButton").Focused, Is.True);
                 limit.Text = "invalid";
                 await form.SaveAsync();
                 Assert.That(limit.Focused, Is.True, "Invalid input stays editable and receives focus before the form is disabled.");
             }
-        }
-
-        private static T Field<T>(object value, string name) where T : class
-        {
-            return value.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(value) as T;
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
 
@@ -23,8 +24,8 @@ namespace MyCodex.Application.Tests
             using (var label = new ToolStripStatusLabel())
             using (var indicator = new ToolStripStatusLabel())
             {
-                Set(form, "_statusLabel", label);
-                Set(form, "_statusIndicator", indicator);
+                FormTestDriver.SetField(form, "_statusLabel", label);
+                FormTestDriver.SetField(form, "_statusIndicator", indicator);
                 try
                 {
                     Show(form, new AppServerEventArgs("protocol_warning", "CUA failed", threadId: "thread", reason: "computer_use/PreparationFailed"), true);
@@ -40,8 +41,6 @@ namespace MyCodex.Application.Tests
         {
             Invoke(form, "SetAppServerStatus", new[] { typeof(AppServerEventArgs), typeof(bool), typeof(string) }, e, high, null);
         }
-        private static void Set(object value, string name, object field)
-        { typeof(MainForm).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(value, field); }
         private static void Invoke(object value, string name, Type[] types, params object[] args)
         { typeof(MainForm).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic, null, types, null).Invoke(value, args); }
     }

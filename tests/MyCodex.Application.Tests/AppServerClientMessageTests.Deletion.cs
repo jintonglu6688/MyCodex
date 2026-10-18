@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.WinForms.Forms;
@@ -29,10 +30,10 @@ namespace MyCodex.Application.Tests
                 using (var stream = new MemoryStream())
                 using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
                 {
-                    SetPrivateField(client, "_isConnected", true);
-                    SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                    SetPrivateField(client, "_inputWriter", writer);
-                    var loaded = GetPrivateField<HashSet<string>>(client, "_loadedThreadIds");
+                    FormTestDriver.SetField(client, "_isConnected", true);
+                    FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                    FormTestDriver.SetField(client, "_inputWriter", writer);
+                    var loaded = FormTestDriver.Field<HashSet<string>>(client, "_loadedThreadIds");
                     loaded.Add("thread-1");
                     var plan = SessionPermanentDeletionPlanner.Build(
                         new[] { new ChatSession { ThreadId = "thread-1" } },
@@ -44,7 +45,7 @@ namespace MyCodex.Application.Tests
                     var error = forkReference
                         ? "cannot delete thread thread-1: forked history still references it"
                         : expectedReason;
-                    var transport = GetPrivateField<AppServerProtocolTransport>(client, "_protocolTransport");
+                    var transport = FormTestDriver.Field<AppServerProtocolTransport>(client, "_protocolTransport");
                     string ignored;
                     Assert.That(transport.TryHandleResponse(new Dictionary<string, object>
                     {

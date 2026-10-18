@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Tests.Fakes;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Localization;
 using NUnit.Framework;
@@ -210,22 +211,22 @@ namespace MyCodex.Application.Tests
 
                 Assert.That(form.FormBorderStyle, Is.EqualTo(FormBorderStyle.Sizable));
                 Assert.That(form.MinimumSize.Width, Is.GreaterThanOrEqualTo(640));
-                var question = FindControl<Control>(form, "1. Describe the issue.");
+                var question = FormTestDriver.FindControlOrDefault<Control>(form, "1. Describe the issue.");
                 Assert.That(question, Is.Not.InstanceOf<TextBox>());
                 Assert.That(question.AccessibleRole, Is.EqualTo(AccessibleRole.StaticText));
                 Assert.That(question.TabStop, Is.True);
-                var secondQuestion = FindControl<Control>(form, "2. Choose one.");
+                var secondQuestion = FormTestDriver.FindControlOrDefault<Control>(form, "2. Choose one.");
                 Assert.That(secondQuestion, Is.Not.Null);
-                Assert.That(FindControl<Control>(form, "3. Choose from many."), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Control>(form, "3. Choose from many."), Is.Not.Null);
                 var answerName = UiLocalization.Text("AsyncInputForm.Accessible.Answer", "Answer");
-                Assert.That(FindControl<TextBox>(form, answerName), Is.Not.Null);
-                Assert.That(FindControl<ComboBox>(form, answerName), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<TextBox>(form, answerName), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<ComboBox>(form, answerName), Is.Not.Null);
                 Assert.That(FindDescendants<RadioButton>(form), Has.Count.EqualTo(4));
                 Assert.That(FindDescendants<ComboBox>(form), Has.Count.EqualTo(2));
 
-                var send = FindControl<Button>(form, UiLocalization.Text("AsyncInputForm.Accessible.Send", "Send answers"));
+                var send = FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AsyncInputForm.Accessible.Send", "Send answers"));
                 Assert.That(send.Enabled, Is.False);
-                var answer = FindControl<TextBox>(form, answerName);
+                var answer = FormTestDriver.FindControlOrDefault<TextBox>(form, answerName);
                 Assert.That(answer.AcceptsReturn, Is.True);
                 answer.Text = "Only this answer";
                 Assert.That(send.Enabled, Is.True, "partial answers should be accepted");
@@ -253,16 +254,14 @@ namespace MyCodex.Application.Tests
                 System.Windows.Forms.Application.DoEvents();
                 Assert.That(answer.Focused, Is.True, "later requests should not move focus or rebuild the current draft");
 
-                var picker = FindControl<ComboBox>(
-                    form,
-                    UiLocalization.Text("AsyncInputForm.Accessible.RequestPicker", "Pending request"));
+                var picker = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AsyncInputForm.Accessible.RequestPicker", "Pending request"));
                 picker.SelectedIndex = 1;
                 picker.SelectedIndex = 0;
-                Assert.That(FindControl<TextBox>(form, answerName).Text, Is.EqualTo("Only this answer"));
+                Assert.That(FormTestDriver.FindControlOrDefault<TextBox>(form, answerName).Text, Is.EqualTo("Only this answer"));
                 form.Hide();
                 form.RefreshRequests();
                 form.Show();
-                Assert.That(FindControl<TextBox>(form, answerName).Text, Is.EqualTo("Only this answer"));
+                Assert.That(FormTestDriver.FindControlOrDefault<TextBox>(form, answerName).Text, Is.EqualTo("Only this answer"));
                 form.Hide();
             }
         }
@@ -285,15 +284,15 @@ namespace MyCodex.Application.Tests
                 };
                 form.Show();
                 var answerName = UiLocalization.Text("AsyncInputForm.Accessible.Answer", "Answer");
-                FindControl<TextBox>(form, answerName).Text = "draft";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, answerName).Text = "draft";
 
-                FindControl<Button>(form, UiLocalization.Text("AsyncInputForm.Accessible.Later", "Answer later")).PerformClick();
+                FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AsyncInputForm.Accessible.Later", "Answer later")).PerformClick();
                 Assert.That(form.Visible, Is.False);
                 Assert.That(queue.Count, Is.EqualTo(2));
 
                 form.Show();
-                Assert.That(FindControl<TextBox>(form, answerName).Text, Is.EqualTo("draft"));
-                FindControl<Button>(form, UiLocalization.Text("AsyncInputForm.Accessible.Ignore", "Ignore request")).PerformClick();
+                Assert.That(FormTestDriver.FindControlOrDefault<TextBox>(form, answerName).Text, Is.EqualTo("draft"));
+                FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AsyncInputForm.Accessible.Ignore", "Ignore request")).PerformClick();
                 Assert.That(queue.Count, Is.EqualTo(1));
                 Assert.That(queue.Find(first.Key), Is.Null);
                 form.Hide();
@@ -314,7 +313,7 @@ namespace MyCodex.Application.Tests
                 form.RefreshRequests();
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
-                var question = FindControl<Control>(form, "1. " + longQuestion);
+                var question = FormTestDriver.FindControlOrDefault<Control>(form, "1. " + longQuestion);
                 var preferred = question.GetPreferredSize(new Size(question.Width, 0));
 
                 Assert.That(question.Height, Is.GreaterThanOrEqualTo(preferred.Height));
@@ -344,17 +343,17 @@ namespace MyCodex.Application.Tests
             using (var form = new AsyncInputRequestForm(queue))
             {
                 form.RefreshRequests(request.Key);
-                var input = FindControl<TextBox>(form, otherName);
+                var input = FormTestDriver.FindControlOrDefault<TextBox>(form, otherName);
                 Assert.That(input, Is.Not.Null, "Every choice question must provide a custom answer field.");
                 form.Show();
-                var send = FindControl<Button>(form, UiLocalization.Text("AsyncInputForm.Accessible.Send", "Send answers"));
-                var status = FindControl<Label>(form, UiLocalization.Text("AsyncInputForm.Accessible.Status", "Status"));
+                var send = FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AsyncInputForm.Accessible.Send", "Send answers"));
+                var status = FormTestDriver.FindControlOrDefault<Label>(form, UiLocalization.Text("AsyncInputForm.Accessible.Status", "Status"));
                 var submitted = 0;
                 form.SubmitRequested += (sender, args) => submitted++;
                 Assert.That(input.Visible, Is.False);
                 Assert.That(input.Enabled, Is.False);
                 Assert.That(input.Multiline && input.AcceptsReturn, Is.True);
-                FindControl<TextBox>(form, UiLocalization.Text("AsyncInputForm.Accessible.Answer", "Answer")).Text = "Details";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AsyncInputForm.Accessible.Answer", "Answer")).Text = "Details";
                 Assert.That(send.Enabled, Is.True, "Unanswered questions must still allow partial responses.");
 
                 SelectChoice(form, optionCount, true);
@@ -375,7 +374,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(input.Enabled, Is.True);
                 var choice = optionCount <= 4
                     ? (Control)FindDescendants<RadioButton>(form).Last()
-                    : FindControl<ComboBox>(form, UiLocalization.Text("AsyncInputForm.Accessible.Answer", "Answer"));
+                    : FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AsyncInputForm.Accessible.Answer", "Answer"));
                 choice.Focus();
                 Assert.That(form.SelectNextControl(choice, true, true, true, true), Is.True);
                 Assert.That(input.Focused, Is.True, "Tab from Other should enter the custom answer field.");
@@ -384,10 +383,10 @@ namespace MyCodex.Application.Tests
                 Assert.That(input.Text, Is.EqualTo(draft));
                 Assert.That(input.Visible || input.Enabled, Is.False);
                 Assert.That(request.Answers["async-1"], Is.EqualTo("Option 1"));
-                var picker = FindControl<ComboBox>(form, UiLocalization.Text("AsyncInputForm.Accessible.RequestPicker", "Pending request"));
+                var picker = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AsyncInputForm.Accessible.RequestPicker", "Pending request"));
                 picker.SelectedIndex = 1;
                 picker.SelectedIndex = 0;
-                input = FindControl<TextBox>(form, otherName);
+                input = FormTestDriver.FindControlOrDefault<TextBox>(form, otherName);
                 Assert.That(input.Text, Is.EqualTo(draft));
                 Assert.That(input.Visible || input.Enabled, Is.False);
                 SelectChoice(form, optionCount, true);
@@ -395,7 +394,7 @@ namespace MyCodex.Application.Tests
                 form.Hide();
                 form.RefreshRequests(request.Key);
                 form.Show();
-                input = FindControl<TextBox>(form, otherName);
+                input = FormTestDriver.FindControlOrDefault<TextBox>(form, otherName);
                 Assert.That(input.Visible && input.Enabled, Is.True, "Restore Other even when its text matches a preset.");
                 Assert.That(input.Text, Is.EqualTo(draft));
                 send.PerformClick();
@@ -421,16 +420,16 @@ namespace MyCodex.Application.Tests
                 form.RefreshRequests();
                 SelectChoice(form, optionCount, true);
                 var otherName = UiLocalization.Text("AsyncInputForm.Accessible.OtherAnswer", "Other answer");
-                FindControl<TextBox>(form, otherName).Text = "  ";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, otherName).Text = "  ";
                 form.RefreshRequests();
                 form.Show();
-                var input = FindControl<TextBox>(form, otherName);
+                var input = FormTestDriver.FindControlOrDefault<TextBox>(form, otherName);
                 Assert.That(input.Visible && input.Enabled, Is.True);
                 Assert.That(input.Text, Is.EqualTo("  "));
                 Assert.That(request.Answers, Is.Empty);
                 Assert.That(AsyncInputRequestQueue.BuildResponseText(request), Is.Empty);
-                Assert.That(FindControl<Button>(form, UiLocalization.Text("AsyncInputForm.Accessible.Send", "Send answers")).Enabled, Is.False);
-                Assert.That(FindControl<Label>(form, UiLocalization.Text("AsyncInputForm.Accessible.Status", "Status")).Text,
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AsyncInputForm.Accessible.Send", "Send answers")).Enabled, Is.False);
+                Assert.That(FormTestDriver.FindControlOrDefault<Label>(form, UiLocalization.Text("AsyncInputForm.Accessible.Status", "Status")).Text,
                     Is.EqualTo(UiLocalization.Text("AsyncInputForm.Error.OtherRequired", "Please enter your answer for Other.")));
                 SelectChoice(form, optionCount, false);
                 form.SetBusy(true, "Sending");
@@ -449,7 +448,7 @@ namespace MyCodex.Application.Tests
             }
             else
             {
-                var choices = FindControl<ComboBox>(form, UiLocalization.Text("AsyncInputForm.Accessible.Answer", "Answer"));
+                var choices = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AsyncInputForm.Accessible.Answer", "Answer"));
                 choices.SelectedIndex = other ? choices.Items.Count - 1 : 0;
             }
         }
@@ -481,13 +480,6 @@ namespace MyCodex.Application.Tests
             }
 
             return result;
-        }
-
-        private static T FindControl<T>(Control root, string accessibleName)
-            where T : Control
-        {
-            return FindDescendants<T>(root).FirstOrDefault(control =>
-                string.Equals(control.AccessibleName, accessibleName, StringComparison.Ordinal));
         }
 
         private static List<T> FindDescendants<T>(Control root)

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
 
@@ -21,10 +22,10 @@ namespace MyCodex.Application.Tests
             using (var screenReader = new RecordingScreenReaderService())
             using (var form = CreateForm(screenReader))
             {
-                var registerButton = GetField<Button>(form, "_registerMarketplaceButton");
-                var installButton = GetField<Button>(form, "_installButton");
-                var contextMenu = GetField<ContextMenu>(form, "_pluginContextMenu");
-                var statusLabel = GetField<Label>(form, "_statusLabel");
+                var registerButton = FormTestDriver.Field<Button>(form, "_registerMarketplaceButton");
+                var installButton = FormTestDriver.Field<Button>(form, "_installButton");
+                var contextMenu = FormTestDriver.Field<ContextMenu>(form, "_pluginContextMenu");
+                var statusLabel = FormTestDriver.Field<Label>(form, "_statusLabel");
 
                 Assert.That(registerButton.AccessibleName, Is.Not.Null.And.Not.Empty);
                 Assert.That(registerButton.TabIndex, Is.EqualTo(2));
@@ -41,10 +42,10 @@ namespace MyCodex.Application.Tests
             using (var screenReader = new RecordingScreenReaderService())
             using (var form = CreateForm(screenReader))
             {
-                Assert.That(GetField<Button>(form, "_uninstallButton").TabIndex, Is.EqualTo(4));
-                Assert.That(GetField<Button>(form, "_openAuthButton").TabIndex, Is.EqualTo(5));
-                Assert.That(GetField<Button>(form, "_openFolderButton").TabIndex, Is.EqualTo(6));
-                Assert.That(GetField<Button>(form, "_closeButton").TabIndex, Is.EqualTo(7));
+                Assert.That(FormTestDriver.Field<Button>(form, "_uninstallButton").TabIndex, Is.EqualTo(4));
+                Assert.That(FormTestDriver.Field<Button>(form, "_openAuthButton").TabIndex, Is.EqualTo(5));
+                Assert.That(FormTestDriver.Field<Button>(form, "_openFolderButton").TabIndex, Is.EqualTo(6));
+                Assert.That(FormTestDriver.Field<Button>(form, "_closeButton").TabIndex, Is.EqualTo(7));
                 Assert.That(form.Text, Does.Contain("Preview").Or.Contain("预览"));
             }
         }
@@ -65,7 +66,7 @@ namespace MyCodex.Application.Tests
 
                 method.Invoke(form, new object[] { "Marketplace registered.", true });
 
-                Assert.That(GetField<Label>(form, "_statusLabel").Text, Is.EqualTo("Marketplace registered."));
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Is.EqualTo("Marketplace registered."));
                 Assert.That(screenReader.LastSpokenText, Is.EqualTo("Marketplace registered."));
             }
         }
@@ -79,14 +80,6 @@ namespace MyCodex.Application.Tests
                 appServerClient,
                 new StubPluginMarketCatalogClient(),
                 screenReaderService);
-        }
-
-        private static T GetField<T>(object instance, string name)
-            where T : class
-        {
-            var field = instance.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(field, Is.Not.Null, "Field not found: " + name);
-            return field.GetValue(instance) as T;
         }
 
         private sealed class StubPluginMarketCatalogClient : IPluginMarketCatalogClient

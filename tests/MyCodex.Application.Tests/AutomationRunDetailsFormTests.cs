@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Forms;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.WinForms.Controls;
@@ -39,18 +40,18 @@ namespace MyCodex.Application.Tests
             {
                 Assert.That(form.Text, Is.EqualTo(UiLocalization.Text("AutomationRunDetailsForm.Title", "Automation run details")));
                 Assert.That(form.MinimumSize.Width, Is.GreaterThanOrEqualTo(760));
-                Assert.That(FindControl<ChatHistoryListBox>(form, UiLocalization.Text("AutomationRunDetailsForm.Accessible.Conversation", "Messages")), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<ChatHistoryListBox>(form, UiLocalization.Text("AutomationRunDetailsForm.Accessible.Conversation", "Messages")), Is.Not.Null);
                 Assert.That(FindActivityControl(form, UiLocalization.Text("AutomationRunDetailsForm.Accessible.Activity", "Activity")), Is.Not.Null);
-                Assert.That(FindControl<Label>(form, UiLocalization.Text("AutomationRunDetailsForm.Accessible.Status", "Status")), Is.Not.Null);
-                Assert.That(FindControl<Button>(form, StripMnemonic(UiLocalization.Text("AutomationRunDetailsForm.Button.Refresh", "Refresh(&R)"))), Is.Not.Null);
-                Assert.That(FindControl<Button>(form, StripMnemonic(UiLocalization.Text("AutomationRunDetailsForm.Button.OpenThread", "Open in main window"))), Is.Not.Null);
-                Assert.That(FindControl<Button>(form, StripMnemonic(UiLocalization.Text("AutomationRunDetailsForm.Button.OpenWorkspace", "Open workspace"))), Is.Not.Null);
-                Assert.That(FindControl<Button>(form, StripMnemonic(UiLocalization.Text("AutomationRunDetailsForm.Button.Close", "Close"))), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Label>(form, UiLocalization.Text("AutomationRunDetailsForm.Accessible.Status", "Status")), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, StripMnemonic(UiLocalization.Text("AutomationRunDetailsForm.Button.Refresh", "Refresh(&R)"))), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, StripMnemonic(UiLocalization.Text("AutomationRunDetailsForm.Button.OpenThread", "Open in main window"))), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, StripMnemonic(UiLocalization.Text("AutomationRunDetailsForm.Button.OpenWorkspace", "Open workspace"))), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, StripMnemonic(UiLocalization.Text("AutomationRunDetailsForm.Button.Close", "Close"))), Is.Not.Null);
 
-                Assert.That(FindControl<TextBox>(form, "Summary"), Is.Null);
-                Assert.That(FindControl<TextBox>(form, "Error"), Is.Null);
-                Assert.That(FindControl<ListView>(form, "Generated artifacts"), Is.Null);
-                Assert.That(FindControl<ListView>(form, "Changed files"), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<TextBox>(form, "Summary"), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<TextBox>(form, "Error"), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<ListView>(form, "Generated artifacts"), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<ListView>(form, "Changed files"), Is.Null);
             }
         }
 
@@ -61,7 +62,7 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
 
-                var handled = InvokeProcessCmdKey(form, Keys.Escape);
+                var handled = FormTestDriver.ProcessCmdKey(form, Keys.Escape);
 
                 Assert.That(handled, Is.True);
                 Assert.That(form.IsDisposed, Is.True);
@@ -104,12 +105,12 @@ namespace MyCodex.Application.Tests
                 form.Show();
                 WaitForCondition(() =>
                 {
-                    var history = FindControl<ChatHistoryListBox>(form, UiLocalization.Text("AutomationRunDetailsForm.Accessible.Conversation", "Messages"));
+                    var history = FormTestDriver.FindControlOrDefault<ChatHistoryListBox>(form, UiLocalization.Text("AutomationRunDetailsForm.Accessible.Conversation", "Messages"));
                     return history != null &&
                            history.Items.OfType<ChatHistoryItem>().Any(item => item.FullText == "Codex: done");
                 });
 
-                var history = FindControl<ChatHistoryListBox>(form, UiLocalization.Text("AutomationRunDetailsForm.Accessible.Conversation", "Messages"));
+                var history = FormTestDriver.FindControlOrDefault<ChatHistoryListBox>(form, UiLocalization.Text("AutomationRunDetailsForm.Accessible.Conversation", "Messages"));
                 Assert.That(history.Items.OfType<ChatHistoryItem>().Select(item => item.FullText).ToArray(), Does.Contain("User: collect news"));
                 Assert.That(history.Items.OfType<ChatHistoryItem>().Select(item => item.FullText).ToArray(), Does.Contain("Codex: done"));
 
@@ -151,7 +152,7 @@ namespace MyCodex.Application.Tests
                 form.Show();
                 WaitForConversationItem(form, "Codex: load 1");
 
-                var refreshButton = FindControl<Button>(form, StripMnemonic(UiLocalization.Text("AutomationRunDetailsForm.Button.Refresh", "Refresh(&R)")));
+                var refreshButton = FormTestDriver.FindControlOrDefault<Button>(form, StripMnemonic(UiLocalization.Text("AutomationRunDetailsForm.Button.Refresh", "Refresh(&R)")));
                 refreshButton.PerformClick();
 
                 WaitForConversationItem(form, "Codex: load 2");
@@ -213,26 +214,6 @@ namespace MyCodex.Application.Tests
             Assert.That(disposed, Is.True);
         }
 
-        private static T FindControl<T>(Control root, string accessibleName) where T : Control
-        {
-            foreach (Control child in root.Controls)
-            {
-                var typed = child as T;
-                if (typed != null && child.AccessibleName == accessibleName)
-                {
-                    return typed;
-                }
-
-                var nested = FindControl<T>(child, accessibleName);
-                if (nested != null)
-                {
-                    return nested;
-                }
-            }
-
-            return null;
-        }
-
         private static Control FindActivityControl(Control root, string accessibleName)
         {
             foreach (Control child in root.Controls)
@@ -257,9 +238,7 @@ namespace MyCodex.Application.Tests
         {
             WaitForCondition(() =>
             {
-                var history = FindControl<ChatHistoryListBox>(
-                    form,
-                    UiLocalization.Text("AutomationRunDetailsForm.Accessible.Conversation", "Messages"));
+                var history = FormTestDriver.FindControlOrDefault<ChatHistoryListBox>(form, UiLocalization.Text("AutomationRunDetailsForm.Accessible.Conversation", "Messages"));
                 return history != null &&
                        history.Items.OfType<ChatHistoryItem>().Any(item => item.FullText == fullText);
             });
@@ -270,14 +249,6 @@ namespace MyCodex.Application.Tests
             return string.IsNullOrWhiteSpace(value)
                 ? string.Empty
                 : value.Replace("&", string.Empty).Replace("...", string.Empty).Trim();
-        }
-
-        private static bool InvokeProcessCmdKey(Form form, Keys keyData)
-        {
-            var message = new Message();
-            return (bool)typeof(Form)
-                .GetMethod("ProcessCmdKey", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-                .Invoke(form, new object[] { message, keyData });
         }
 
         private static void WaitForCondition(Func<bool> condition)

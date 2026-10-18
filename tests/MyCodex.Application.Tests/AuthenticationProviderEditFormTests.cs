@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.AuthenticationCenter;
 using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Forms;
@@ -35,7 +36,7 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(new AuthenticationSaveResult { Provider = provider, Reconnected = true });
             }))
             {
-                Field<TextBox>(form, "_nameTextBox").Text = "Renamed";
+                FormTestDriver.Field<TextBox>(form, "_nameTextBox").Text = "Renamed";
                 await form.SaveAsync();
                 Assert.That(saved, Is.Not.Null);
                 Assert.That(saved.Name, Is.EqualTo("Renamed"));
@@ -81,10 +82,10 @@ namespace MyCodex.Application.Tests
                 new AuthenticationProviderPreset { Id = "chatgpt", Name = "Personal ChatGPT", Kind = "chatgpt", Available = true }, false,
                 code => actions.Add("copied"), url => actions.Add("opened"), save: async (edit, token) => new AuthenticationSaveResult { Provider = await client.SaveAsync(edit, token), Reconnected = true }))
             {
-                var login = Field<AuthenticationLoginControl>(editor, "_login");
+                var login = FormTestDriver.Field<AuthenticationLoginControl>(editor, "_login");
                 var starting = login.StartLoginAsync();
                 Assert.That(starting.IsCompleted, Is.False);
-                Assert.That(Field<Button>(editor, "_saveButton").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(editor, "_saveButton").Enabled, Is.False);
                 startReply.SetResult(new Dictionary<string, object>
                 {
                     { "loginId", loginId }, { "status", "pending" }, { "userCode", "TEST-CODE" },
@@ -101,22 +102,22 @@ namespace MyCodex.Application.Tests
                 });
                 await polling;
                 Assert.That(login.AccountId, Is.EqualTo("archived-account"));
-                Assert.That(Field<Button>(editor, "_saveButton").Enabled, Is.True);
-                var status = Field<TextBox>(editor, "_statusLabel");
+                Assert.That(FormTestDriver.Field<Button>(editor, "_saveButton").Enabled, Is.True);
+                var status = FormTestDriver.Field<TextBox>(editor, "_statusLabel");
                 Assert.That(status.Text, Does.Contain("Test account"), "The configuration status must show the login result, not only speak it.");
                 Assert.That(status.ReadOnly, Is.True);
                 Assert.That(status.TabStop, Is.False);
                 await editor.SaveAsync();
                 Assert.That(editor.SavedProvider, Is.Null);
                 Assert.That(login.AccountId, Is.EqualTo("archived-account"));
-                Assert.That(Field<Button>(editor, "_saveButton").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(editor, "_saveButton").Enabled, Is.True);
                 await editor.SaveAsync();
                 Assert.That(editor.SavedProvider.AccountId, Is.EqualTo("archived-account"));
                 Assert.That(saves, Is.EqualTo(2));
                 using (var center = new AuthenticationCenterForm(client))
                 {
                     await center.RefreshAsync(editor.SavedProvider.Id);
-                    var list = Field<ListView>(center, "_providersList");
+                    var list = FormTestDriver.Field<ListView>(center, "_providersList");
                     Assert.That(list.Items.Count, Is.EqualTo(1));
                     Assert.That(list.Items[0].Text, Is.EqualTo("Personal ChatGPT"));
                     Assert.That(((AuthenticationProvider)list.Items[0].Tag).AccountId, Is.EqualTo("archived-account"));
@@ -138,7 +139,7 @@ namespace MyCodex.Application.Tests
             });
             using (var form = new AuthenticationProviderEditForm(client, template: new AuthenticationProviderPreset { Id = "custom", Name = "Test", Kind = "responses", AllowsProtocolSelection = true, BaseUrl = "https://example.test/v1", Model = "a" }, save: async (edit, token) => new AuthenticationSaveResult { Provider = await client.SaveAsync(edit, token), Reconnected = true }))
             {
-                Field<AuthenticationModelsControl>(form, "_models").Models = new List<AuthenticationCatalogModel> { new AuthenticationCatalogModel { Model = "a", DisplayName = "Manual", Metadata = new Dictionary<string, object> { { "future", "keep" } } } };
+                FormTestDriver.Field<AuthenticationModelsControl>(form, "_models").Models = new List<AuthenticationCatalogModel> { new AuthenticationCatalogModel { Model = "a", DisplayName = "Manual", Metadata = new Dictionary<string, object> { { "future", "keep" } } } };
                 await form.SaveAsync();
                 await form.SaveAsync();
                 Assert.That(writes.Count, Is.EqualTo(2));
@@ -156,10 +157,10 @@ namespace MyCodex.Application.Tests
             using (var form = new AuthenticationProviderEditForm(client, template: new AuthenticationProviderPreset { Id = "custom", Name = "Test", Kind = "responses", AllowsProtocolSelection = true, BaseUrl = "https://example.test/v1" }, save: async (edit, token) => new AuthenticationSaveResult { Provider = await client.SaveAsync(edit, token), Reconnected = true }))
             {
                 var pending = form.FetchModelsAsync();
-                Field<TextBox>(form, "_urlTextBox").Text = "https://changed.test/v1";
+                FormTestDriver.Field<TextBox>(form, "_urlTextBox").Text = "https://changed.test/v1";
                 response.SetResult(new Dictionary<string, object> { { "models", new[] { new Dictionary<string, object> { { "model", "wrong-server" } } } } });
                 await pending;
-                Assert.That(Field<AuthenticationModelsControl>(form, "_models").Models, Is.Empty);
+                Assert.That(FormTestDriver.Field<AuthenticationModelsControl>(form, "_models").Models, Is.Empty);
             }
         }
 
@@ -193,7 +194,7 @@ namespace MyCodex.Application.Tests
             }))
             {
                 advanced.Kind = "anthropic";
-                Field<CheckBox>(advanced, "_impersonate").Checked = true;
+                FormTestDriver.Field<CheckBox>(advanced, "_impersonate").Checked = true;
                 var anthropic = advanced.Read();
                 Assert.That(anthropic["anthropicAuthHeader"], Is.EqualTo("x-api-key"));
                 Assert.That(anthropic["impersonateClaudeCode"], Is.True);
@@ -218,7 +219,7 @@ namespace MyCodex.Application.Tests
             });
             using (var form = new AuthenticationProviderEditForm(client, new AuthenticationProvider { Id = "a", Name = "A", Kind = "responses", BaseUrl = "https://example.test/v1", Model = "a", HasApiKey = true }, save: async (edit, token) => new AuthenticationSaveResult { Provider = await client.SaveAsync(edit, token), Reconnected = true }))
             {
-                Field<CheckBox>(form, "_clearKeyCheckBox").Checked = true;
+                FormTestDriver.Field<CheckBox>(form, "_clearKeyCheckBox").Checked = true;
                 await form.FetchModelsAsync();
                 Assert.That(fetch.ContainsKey("providerId"), Is.False);
                 Assert.That(fetch.ContainsKey("apiKey"), Is.False);
@@ -248,24 +249,24 @@ namespace MyCodex.Application.Tests
                 form.ShowInTaskbar = false;
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
-                var content = Field<Panel>(form, "_content");
+                var content = FormTestDriver.Field<Panel>(form, "_content");
                 Assert.That(content.AutoScroll, Is.True);
-                Assert.That(Field<TableLayoutPanel>(form, "_sections").Controls.Count, Is.EqualTo(4));
-                var models = Field<AuthenticationModelsControl>(form, "_models");
-                Assert.That(Field<TextBox>(form, "_urlTextBox").Text, Is.EqualTo("https://api.deepseek.com"));
+                Assert.That(FormTestDriver.Field<TableLayoutPanel>(form, "_sections").Controls.Count, Is.EqualTo(4));
+                var models = FormTestDriver.Field<AuthenticationModelsControl>(form, "_models");
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_urlTextBox").Text, Is.EqualTo("https://api.deepseek.com"));
                 Assert.That(models.DefaultModel, Is.EqualTo("deepseek-v4-flash"));
                 System.Windows.Forms.Application.DoEvents();
-                var list = Field<ListView>(models, "_list");
+                var list = FormTestDriver.Field<ListView>(models, "_list");
                 Assert.That(list.Items.Count, Is.EqualTo(2));
-                var clear = Field<CheckBox>(form, "_clearKeyCheckBox");
+                var clear = FormTestDriver.Field<CheckBox>(form, "_clearKeyCheckBox");
                 clear.Focus();
                 form.SelectNextControl(clear, true, true, true, false);
                 Assert.That(list.Visible && list.Enabled && list.Focused, Is.True,
                     "Tab after basic settings must enter the model list.");
                 System.Windows.Forms.Application.DoEvents();
-                var advanced = Field<AuthenticationAdvancedControl>(form, "_advanced");
-                var fullUrl = Field<CheckBox>(advanced, "_full");
-                var add = Field<Button>(models, "_fetch").Parent.Controls[1];
+                var advanced = FormTestDriver.Field<AuthenticationAdvancedControl>(form, "_advanced");
+                var fullUrl = FormTestDriver.Field<CheckBox>(advanced, "_full");
+                var add = FormTestDriver.Field<Button>(models, "_fetch").Parent.Controls[1];
                 add.Focus();
                 form.SelectNextControl(add, true, true, true, false);
                 Assert.That(fullUrl.Visible && fullUrl.Enabled && fullUrl.Focused, Is.True,
@@ -289,20 +290,20 @@ namespace MyCodex.Application.Tests
                 form.ShowInTaskbar = false;
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
-                Assert.That(Field<AuthenticationModelsControl>(form, "_models"), Is.Null);
-                Assert.That(Field<AuthenticationAdvancedControl>(form, "_advanced"), Is.Null);
-                Assert.That(Field<TableLayoutPanel>(form, "_sections").Controls.Count, Is.EqualTo(2));
-                var name = Field<TextBox>(form, "_nameTextBox");
-                var login = Field<AuthenticationLoginControl>(form, "_login");
+                Assert.That(FormTestDriver.Field<AuthenticationModelsControl>(form, "_models"), Is.Null);
+                Assert.That(FormTestDriver.Field<AuthenticationAdvancedControl>(form, "_advanced"), Is.Null);
+                Assert.That(FormTestDriver.Field<TableLayoutPanel>(form, "_sections").Controls.Count, Is.EqualTo(2));
+                var name = FormTestDriver.Field<TextBox>(form, "_nameTextBox");
+                var login = FormTestDriver.Field<AuthenticationLoginControl>(form, "_login");
                 name.Focus();
                 form.SelectNextControl(name, true, true, true, false);
-                Assert.That(Field<TextBox>(login, "_code").Focused, Is.True,
+                Assert.That(FormTestDriver.Field<TextBox>(login, "_code").Focused, Is.True,
                     "Tab from the provider name must enter the sign-in controls.");
-                form.SelectNextControl(Field<TextBox>(login, "_code"), true, true, true, false);
-                Assert.That(Field<Button>(login, "_start").Focused, Is.True,
+                form.SelectNextControl(FormTestDriver.Field<TextBox>(login, "_code"), true, true, true, false);
+                Assert.That(FormTestDriver.Field<Button>(login, "_start").Focused, Is.True,
                     "Tab must skip the sign-in status and reach the login button.");
-                form.SelectNextControl(Field<Button>(login, "_start"), false, true, true, false);
-                Assert.That(Field<TextBox>(login, "_code").Focused, Is.True,
+                form.SelectNextControl(FormTestDriver.Field<Button>(login, "_start"), false, true, true, false);
+                Assert.That(FormTestDriver.Field<TextBox>(login, "_code").Focused, Is.True,
                     "Shift+Tab must also skip the sign-in status.");
             }
         }
@@ -341,26 +342,21 @@ namespace MyCodex.Application.Tests
                 form.Size = form.MinimumSize;
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
-                var content = Field<Panel>(form, "_content");
-                var advanced = Field<AuthenticationAdvancedControl>(form, "_advanced");
-                var query = Field<AuthenticationQueryParametersControl>(advanced, "_query");
-                var add = Field<Button>(query, "_add");
+                var content = FormTestDriver.Field<Panel>(form, "_content");
+                var advanced = FormTestDriver.Field<AuthenticationAdvancedControl>(form, "_advanced");
+                var query = FormTestDriver.Field<AuthenticationQueryParametersControl>(advanced, "_query");
+                var add = FormTestDriver.Field<Button>(query, "_add");
                 add.Focus();
                 System.Windows.Forms.Application.DoEvents();
                 Assert.That(add.Focused, Is.True);
                 Assert.That(content.ClientRectangle.Contains(content.PointToClient(add.PointToScreen(new System.Drawing.Point(1, add.Height - 1)))), Is.True,
                     "Keyboard focus must scroll the last setting into view.");
                 Assert.That(content.HorizontalScroll.Visible, Is.False);
-                Assert.That(Field<Button>(form, "_saveButton").Visible, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(form, "_saveButton").Visible, Is.True);
                 form.SelectNextControl(add, true, true, true, false);
-                Assert.That(Field<Button>(form, "_saveButton").Focused, Is.True,
+                Assert.That(FormTestDriver.Field<Button>(form, "_saveButton").Focused, Is.True,
                     "Tab from the last setting must skip the configuration status and reach Save.");
             }
-        }
-
-        private static T Field<T>(object value, string name) where T : class
-        {
-            return value.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(value) as T;
         }
     }
 }

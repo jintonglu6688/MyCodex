@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Tests.SourceGuards;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Localization;
 using NUnit.Framework;
@@ -320,7 +321,7 @@ namespace MyCodex.Application.Tests
             {
                 form.SuppressFindReplaceDialogForTests = true;
 
-                var handled = InvokeProcessCmdKey(form, keyData);
+                var handled = FormTestDriver.ProcessCmdKey(form, keyData);
 
                 Assert.That(handled, Is.True);
                 Assert.That(form.FindReplaceDialogOpenCountForTests, Is.EqualTo(1));
@@ -337,7 +338,7 @@ namespace MyCodex.Application.Tests
             {
                 form.SuppressGoToLineDialogForTests = true;
 
-                var handled = InvokeProcessCmdKey(form, Keys.Control | Keys.G);
+                var handled = FormTestDriver.ProcessCmdKey(form, Keys.Control | Keys.G);
 
                 Assert.That(handled, Is.True);
                 Assert.That(form.GoToLineDialogOpenCountForTests, Is.EqualTo(1));
@@ -354,7 +355,7 @@ namespace MyCodex.Application.Tests
             {
                 form.SuppressFindReplaceDialogForTests = true;
 
-                var handled = InvokeProcessCmdKey(form, keyData);
+                var handled = FormTestDriver.ProcessCmdKey(form, keyData);
 
                 Assert.That(handled, Is.True);
                 Assert.That(form.FindReplaceDialogOpenCountForTests, Is.EqualTo(1));
@@ -371,16 +372,16 @@ namespace MyCodex.Application.Tests
             {
                 form.FindTextForTests = "public";
 
-                Assert.That(InvokeProcessCmdKey(form, Keys.F3), Is.True);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.F3), Is.True);
                 var firstStart = form.SelectionStartForTests;
                 Assert.That(form.SelectedTextForTests, Is.EqualTo("public"));
 
-                Assert.That(InvokeProcessCmdKey(form, Keys.F3), Is.True);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.F3), Is.True);
                 var secondStart = form.SelectionStartForTests;
                 Assert.That(secondStart, Is.GreaterThan(firstStart));
                 Assert.That(form.SelectedTextForTests, Is.EqualTo("public"));
 
-                Assert.That(InvokeProcessCmdKey(form, Keys.Shift | Keys.F3), Is.True);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Shift | Keys.F3), Is.True);
                 Assert.That(form.SelectionStartForTests, Is.EqualTo(firstStart));
                 Assert.That(form.SelectedTextForTests, Is.EqualTo("public"));
             }
@@ -489,16 +490,6 @@ namespace MyCodex.Application.Tests
                 Assert.That(dialog.LineNumberAccessibleNameForTests, Is.EqualTo(UiLocalization.Text("AppServerFilePreviewForm.Accessible.LineNumber", "Line number")));
                 Assert.That(dialog.InitialFocusAccessibleNameForTests, Is.EqualTo(UiLocalization.Text("AppServerFilePreviewForm.Accessible.LineNumber", "Line number")));
             }
-        }
-
-        private static bool InvokeProcessCmdKey(AppServerFilePreviewForm form, Keys keyData)
-        {
-            var method = typeof(AppServerFilePreviewForm).GetMethod(
-                "ProcessCmdKey",
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            Assert.That(method, Is.Not.Null);
-            var message = new Message();
-            return (bool)method.Invoke(form, new object[] { message, keyData });
         }
 
         private sealed class QueueFileLoader

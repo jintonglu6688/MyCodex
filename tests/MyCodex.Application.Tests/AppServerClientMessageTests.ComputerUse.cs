@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Infrastructure.ComputerUse;
 using NUnit.Framework;
@@ -55,8 +56,8 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_computerUse", manager);
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_computerUse", manager);
+                FormTestDriver.SetField(client, "_inputWriter", writer);
                 var parameters = new Dictionary<string, object>
                 {
                     { "threadId", "original-thread" }, { "cwd", TestContext.CurrentContext.WorkDirectory },
@@ -82,8 +83,8 @@ namespace MyCodex.Application.Tests
                 }
                 finally
                 {
-                    SetPrivateField(client, "_computerUse", null);
-                    SetPrivateField(client, "_inputWriter", null);
+                    FormTestDriver.SetField(client, "_computerUse", null);
+                    FormTestDriver.SetField(client, "_inputWriter", null);
                     client.Dispose();
                 }
             }
@@ -100,8 +101,8 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_computerUse", manager);
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_computerUse", manager);
+                FormTestDriver.SetField(client, "_inputWriter", writer);
                 try
                 {
                     var operation = InvokeComputerUseRequest(client, "turn/start",
@@ -114,8 +115,8 @@ namespace MyCodex.Application.Tests
                 }
                 finally
                 {
-                    SetPrivateField(client, "_computerUse", null);
-                    SetPrivateField(client, "_inputWriter", null);
+                    FormTestDriver.SetField(client, "_computerUse", null);
+                    FormTestDriver.SetField(client, "_inputWriter", null);
                     client.Dispose();
                 }
             }
@@ -137,8 +138,8 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_computerUse", manager);
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_computerUse", manager);
+                FormTestDriver.SetField(client, "_inputWriter", writer);
                 try
                 {
                     var operation = InvokeComputerUseRequest(client, "thread/start",
@@ -150,8 +151,8 @@ namespace MyCodex.Application.Tests
                 }
                 finally
                 {
-                    SetPrivateField(client, "_computerUse", null);
-                    SetPrivateField(client, "_inputWriter", null);
+                    FormTestDriver.SetField(client, "_computerUse", null);
+                    FormTestDriver.SetField(client, "_inputWriter", null);
                     client.Dispose();
                 }
             }
@@ -173,15 +174,15 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_computerUse", manager);
-                SetPrivateField(client, "_inputWriter", writer);
-                SetPrivateField(client, "_connectionEpoch", 1L);
+                FormTestDriver.SetField(client, "_computerUse", manager);
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_connectionEpoch", 1L);
                 try
                 {
                     var operation = InvokeComputerUseRequest(client, "thread/fork",
                         new Dictionary<string, object> { { "threadId", "old-thread" }, { "cwd", TestContext.CurrentContext.WorkDirectory } }, CancellationToken.None);
                     await entered.Task;
-                    SetPrivateField(client, "_connectionEpoch", 2L);
+                    FormTestDriver.SetField(client, "_connectionEpoch", 2L);
                     continuePreparation.TrySetResult(true);
                     var failure = Assert.CatchAsync(async () => await operation);
                     Assert.That(failure, Is.TypeOf<OperationCanceledException>().Or.TypeOf<InvalidOperationException>());
@@ -189,8 +190,8 @@ namespace MyCodex.Application.Tests
                 }
                 finally
                 {
-                    SetPrivateField(client, "_computerUse", null);
-                    SetPrivateField(client, "_inputWriter", null);
+                    FormTestDriver.SetField(client, "_computerUse", null);
+                    FormTestDriver.SetField(client, "_inputWriter", null);
                     client.Dispose();
                 }
             }
@@ -278,8 +279,8 @@ namespace MyCodex.Application.Tests
             {
                 var existing = registered ? RegisterComputerUseBinding(manager, "loaded-thread") : null;
                 if (existing != null) existing.Pipe = @"\\.\pipe\mycodex-cua-existing";
-                SetPrivateField(client, "_computerUse", manager);
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_computerUse", manager);
+                FormTestDriver.SetField(client, "_inputWriter", writer);
                 try
                 {
                     var parameters = new Dictionary<string, object>
@@ -302,7 +303,7 @@ namespace MyCodex.Application.Tests
                     Assert.That(lookups, Is.EqualTo(new[] { "thread/loaded/list", "thread/loaded/list" }));
                     Assert.That(controls, Is.Empty, "The running MCP must retain the pipe it actually loaded.");
                     Assert.That(statuses, Is.EqualTo(registered ? new string[0] : new[] { "ReconnectRequired" }));
-                    var bindings = GetPrivateField<Dictionary<string, ComputerUseSessionBinding>>(manager, "_threads");
+                    var bindings = FormTestDriver.Field<Dictionary<string, ComputerUseSessionBinding>>(manager, "_threads");
                     if (registered)
                     {
                         Assert.That(bindings["loaded-thread"], Is.SameAs(existing));
@@ -312,8 +313,8 @@ namespace MyCodex.Application.Tests
                 }
                 finally
                 {
-                    SetPrivateField(client, "_computerUse", null);
-                    SetPrivateField(client, "_inputWriter", null);
+                    FormTestDriver.SetField(client, "_computerUse", null);
+                    FormTestDriver.SetField(client, "_inputWriter", null);
                     client.Dispose();
                 }
             }
@@ -381,7 +382,7 @@ namespace MyCodex.Application.Tests
         private static ComputerUseSessionBinding RegisterComputerUseBinding(ComputerUseSessionManager manager, string thread)
         {
             var binding = new ComputerUseSessionBinding { Slot = "slot-" + thread, Thread = thread };
-            GetPrivateField<Dictionary<string, ComputerUseSessionBinding>>(manager, "_threads").Add(thread, binding);
+            FormTestDriver.Field<Dictionary<string, ComputerUseSessionBinding>>(manager, "_threads").Add(thread, binding);
             return binding;
         }
 

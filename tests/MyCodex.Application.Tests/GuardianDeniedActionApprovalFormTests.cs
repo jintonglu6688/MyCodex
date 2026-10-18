@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Localization;
@@ -35,8 +36,8 @@ namespace MyCodex.Application.Tests
 
                 using (var form = new GuardianDeniedActionApprovalForm(request))
                 {
-                    var details = FindControl<TextBox>(form, UiLocalization.Text("GuardianDeniedActionApprovalForm.Accessible.Details", "Denied action details"));
-                    var approve = FindControl<Button>(form, UiLocalization.Text("GuardianDeniedActionApprovalForm.Accessible.Approve", "Approve denied action"));
+                    var details = FormTestDriver.FindControl<TextBox>(form, UiLocalization.Text("GuardianDeniedActionApprovalForm.Accessible.Details", "Denied action details"));
+                    var approve = FormTestDriver.FindControl<Button>(form, UiLocalization.Text("GuardianDeniedActionApprovalForm.Accessible.Approve", "Approve denied action"));
                     var summary = (AccessibleStaticTextControl)typeof(GuardianDeniedActionApprovalForm)
                         .GetField("_summaryControl", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
                         .GetValue(form);
@@ -85,49 +86,6 @@ namespace MyCodex.Application.Tests
                 CultureInfo.CurrentCulture = originalCulture;
                 CultureInfo.CurrentUICulture = originalUiCulture;
             }
-        }
-
-        private static T FindControl<T>(Control root, string accessibleName)
-            where T : Control
-        {
-            foreach (Control child in root.Controls)
-            {
-                var typed = child as T;
-                if (typed != null && string.Equals(typed.AccessibleName, accessibleName, StringComparison.Ordinal))
-                {
-                    return typed;
-                }
-
-                var nested = FindControlOrDefault<T>(child, accessibleName);
-                if (nested != null)
-                {
-                    return nested;
-                }
-            }
-
-            Assert.Fail("Control not found: " + accessibleName);
-            return null;
-        }
-
-        private static T FindControlOrDefault<T>(Control root, string accessibleName)
-            where T : Control
-        {
-            foreach (Control child in root.Controls)
-            {
-                var typed = child as T;
-                if (typed != null && string.Equals(typed.AccessibleName, accessibleName, StringComparison.Ordinal))
-                {
-                    return typed;
-                }
-
-                var nested = FindControlOrDefault<T>(child, accessibleName);
-                if (nested != null)
-                {
-                    return nested;
-                }
-            }
-
-            return null;
         }
     }
 }

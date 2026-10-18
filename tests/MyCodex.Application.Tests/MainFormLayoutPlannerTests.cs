@@ -6,6 +6,7 @@ using System.Threading;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.WinForms.Forms;
@@ -89,9 +90,9 @@ namespace MyCodex.Application.Tests
             name.AccessibleName = "Session title";
             path.AccessibleName = "Session details";
             branch.AccessibleName = "Sync status";
-            SetField(form, "_workspaceNameValueLabel", name);
-            SetField(form, "_workspacePathValueLabel", path);
-            SetField(form, "_branchValueLabel", branch);
+            FormTestDriver.SetField(form, "_workspaceNameValueLabel", name);
+            FormTestDriver.SetField(form, "_workspacePathValueLabel", path);
+            FormTestDriver.SetField(form, "_branchValueLabel", branch);
             using (var panel = (Control)typeof(MainForm).GetMethod("CreateHeaderPanel", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(form, null))
             {
                 panel.Width = 416;
@@ -123,12 +124,12 @@ namespace MyCodex.Application.Tests
         public void OfficeHeader_PreservesTitleDirectoryModelAndSyncInTwoLines(bool hasSession)
         {
             var form = (MainForm)FormatterServices.GetUninitializedObject(typeof(MainForm));
-            SetField(form, "_sessionDefaultsService", new SessionDefaultsService());
-            SetField(form, "_availableModels", new List<AppServerModelOption>());
-            SetField(form, "_currentSession", hasSession ? new ChatSession { Title = "Weekly report", ModelId = "gpt-5.5" } : null);
-            SetField(form, "_currentWorkspace", hasSession
+            FormTestDriver.SetField(form, "_sessionDefaultsService", new SessionDefaultsService());
+            FormTestDriver.SetField(form, "_availableModels", new List<AppServerModelOption>());
+            FormTestDriver.SetField(form, "_currentSession", hasSession ? new ChatSession { Title = "Weekly report", ModelId = "gpt-5.5" } : null);
+            FormTestDriver.SetField(form, "_currentWorkspace", hasSession
                 ? new WorkspaceInfo { RootPath = "/home/user/MyCodex-office", Kind = WorkspaceKind.Office } : null);
-            SetField(form, "_threadSyncSummary", hasSession ? "  Up to date  " : null);
+            FormTestDriver.SetField(form, "_threadSyncSummary", hasSession ? "  Up to date  " : null);
             var summary = (SessionHeaderSummary)typeof(MainForm)
                 .GetMethod("BuildOfficeHeaderSummary", BindingFlags.NonPublic | BindingFlags.Instance)
                 .Invoke(form, new object[] { "(Not selected)", "Not synced yet" });
@@ -158,11 +159,6 @@ namespace MyCodex.Application.Tests
         public void CombineDetails_OmitsEmptyParts(string context, string status, string expected)
         {
             Assert.That(SessionHeaderSummaryBuilder.CombineDetails(context, status, " / "), Is.EqualTo(expected));
-        }
-
-        private static void SetField(MainForm form, string name, object value)
-        {
-            typeof(MainForm).GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).SetValue(form, value);
         }
     }
 }

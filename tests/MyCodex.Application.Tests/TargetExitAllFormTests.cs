@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.Instances;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
@@ -38,11 +39,11 @@ namespace MyCodex.Application.Tests
                 }
                 Assert.That(load.IsCompleted, Is.True);
                 load.GetAwaiter().GetResult();
-                Assert.That(Field<ListView>(form, "_targets").Items.Count, Is.EqualTo(1), "Do not hide the reason installation was blocked.");
-                Assert.That(Field<ListView>(form, "_targets").Items[0].Text, Is.EqualTo("This PC"));
-                Assert.That(Field<ListView>(form, "_targets").Items[0].SubItems[1].Text, Is.Not.Empty);
-                Assert.That(Field<Button>(form, "_exit").Enabled, Is.False);
-                Assert.That(Field<Button>(form, "_cancel").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<ListView>(form, "_targets").Items.Count, Is.EqualTo(1), "Do not hide the reason installation was blocked.");
+                Assert.That(FormTestDriver.Field<ListView>(form, "_targets").Items[0].Text, Is.EqualTo("This PC"));
+                Assert.That(FormTestDriver.Field<ListView>(form, "_targets").Items[0].SubItems[1].Text, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<Button>(form, "_exit").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_cancel").Enabled, Is.True);
             }
         }
 
@@ -58,8 +59,8 @@ namespace MyCodex.Application.Tests
             });
             using (var form = new TargetExitAllForm(coordinator, instance => "Local", "MyCodex Test"))
             {
-                var targets = Field<ListView>(form, "_targets");
-                var cancel = Field<Button>(form, "_cancel");
+                var targets = FormTestDriver.Field<ListView>(form, "_targets");
+                var cancel = FormTestDriver.Field<Button>(form, "_cancel");
                 Assert.That(targets.View, Is.EqualTo(View.Details));
                 Assert.That(targets.MultiSelect, Is.False);
                 Assert.That(targets.AccessibleName, Is.Not.Empty);
@@ -69,25 +70,20 @@ namespace MyCodex.Application.Tests
                 Assert.That(form.AcceptButton, Is.SameAs(cancel));
                 Assert.That(form.CancelButton, Is.SameAs(cancel));
                 Assert.That(form.ActiveControl, Is.SameAs(cancel));
-                Assert.That(Field<Button>(form, "_exit").Enabled, Is.False);
-                Assert.That(Field<Button>(form, "_wait").Visible, Is.False);
-                Assert.That(Field<Label>(form, "_status").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_exit").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_wait").Visible, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(form, "_status").TabStop, Is.False);
                 Assert.That(cancel.Parent.TabStop, Is.False);
                 var previous = -1;
                 foreach (var field in new[] { "_exit", "_wait", "_cancel" })
                 {
-                    var button = Field<Button>(form, field);
+                    var button = FormTestDriver.Field<Button>(form, field);
                     Assert.That(button.AccessibleName, Is.Not.Empty);
                     Assert.That(button.TabIndex, Is.GreaterThan(previous));
                     previous = button.TabIndex;
                 }
                 Assert.That(requests, Is.Zero);
             }
-        }
-
-        private static T Field<T>(object instance, string name)
-        {
-            return (T)instance.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(instance);
         }
     }
 }

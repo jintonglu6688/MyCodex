@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.InternalTools;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
@@ -57,10 +58,7 @@ namespace MyCodex.Application.Tests
         {
             WithCulture("en-US", () =>
             {
-                var timeoutException = InvokePrivateStatic<TimeoutException>(
-                    "CreateRequestTimeoutException",
-                    "threads/list",
-                    15000);
+                var timeoutException = FormTestDriver.InvokeStatic<TimeoutException>(typeof(AppServerClient), "CreateRequestTimeoutException", "threads/list", 15000);
 
                 Assert.That(timeoutException, Is.Not.Null);
                 Assert.That(
@@ -123,20 +121,20 @@ namespace MyCodex.Application.Tests
             using (var lifetimeA = new CancellationTokenSource())
             using (var lifetimeB = new CancellationTokenSource())
             {
-                InvokePrivateInstance(client, "ApplyRuntimeProcessStartResult", new AppServerRuntimeProcessStartResult
+                FormTestDriver.Invoke(client, "ApplyRuntimeProcessStartResult", new AppServerRuntimeProcessStartResult
                 {
                     InputWriter = writerA,
                     LifetimeCts = lifetimeA
                 });
-                var firstEpoch = GetPrivateField<long>(client, "_connectionEpoch");
-                InvokePrivateInstance(client, "ApplyRuntimeProcessStartResult", new AppServerRuntimeProcessStartResult
+                var firstEpoch = FormTestDriver.Field<long>(client, "_connectionEpoch");
+                FormTestDriver.Invoke(client, "ApplyRuntimeProcessStartResult", new AppServerRuntimeProcessStartResult
                 {
                     InputWriter = writerB,
                     LifetimeCts = lifetimeB
                 });
 
                 Assert.That(firstEpoch, Is.EqualTo(1L));
-                Assert.That(GetPrivateField<long>(client, "_connectionEpoch"), Is.EqualTo(2L));
+                Assert.That(FormTestDriver.Field<long>(client, "_connectionEpoch"), Is.EqualTo(2L));
             }
         }
 
@@ -150,25 +148,25 @@ namespace MyCodex.Application.Tests
             using (var writerB = new StreamWriter(streamB, new UTF8Encoding(false), 1024, true))
             using (var replacementLifetime = new CancellationTokenSource())
             {
-                var writeLock = GetPrivateField<SemaphoreSlim>(client, "_writeLock");
-                var transport = GetPrivateField<AppServerProtocolTransport>(client, "_protocolTransport");
-                SetPrivateField(client, "_inputWriter", writerA);
-                SetPrivateField(client, "_connectionEpoch", 1L);
-                SetPrivateField(client, "_isConnected", true);
+                var writeLock = FormTestDriver.Field<SemaphoreSlim>(client, "_writeLock");
+                var transport = FormTestDriver.Field<AppServerProtocolTransport>(client, "_protocolTransport");
+                FormTestDriver.SetField(client, "_inputWriter", writerA);
+                FormTestDriver.SetField(client, "_connectionEpoch", 1L);
+                FormTestDriver.SetField(client, "_isConnected", true);
 
                 await writeLock.WaitAsync().ConfigureAwait(false);
                 Task<IDictionary<string, object>> sendTask = null;
                 try
                 {
-                    var initialRequestId = GetPrivateField<int>(transport, "_nextRequestId");
+                    var initialRequestId = FormTestDriver.Field<int>(transport, "_nextRequestId");
                     sendTask = InvokeSendRequestAsync(client, "test/stale-write");
                     await WaitForRequestIdAdvanceAsync(transport, initialRequestId).ConfigureAwait(false);
 
-                    SetPrivateField(client, "_inputWriter", writerB);
-                    SetPrivateField(client, "_lifetimeCts", replacementLifetime);
-                    SetPrivateField(client, "_connectionEpoch", 2L);
-                    SetPrivateField(client, "_connectionLostHandled", false);
-                    SetPrivateField(client, "_isConnected", true);
+                    FormTestDriver.SetField(client, "_inputWriter", writerB);
+                    FormTestDriver.SetField(client, "_lifetimeCts", replacementLifetime);
+                    FormTestDriver.SetField(client, "_connectionEpoch", 2L);
+                    FormTestDriver.SetField(client, "_connectionLostHandled", false);
+                    FormTestDriver.SetField(client, "_isConnected", true);
                 }
                 finally
                 {
@@ -176,13 +174,13 @@ namespace MyCodex.Application.Tests
                 }
 
                 Assert.ThrowsAsync<InvalidOperationException>(async () => await sendTask.ConfigureAwait(false));
-                Assert.That(GetPrivateField<bool>(client, "_isConnected"), Is.True);
-                Assert.That(GetPrivateField<StreamWriter>(client, "_inputWriter"), Is.SameAs(writerB));
-                Assert.That(GetPrivateField<CancellationTokenSource>(client, "_lifetimeCts"), Is.SameAs(replacementLifetime));
+                Assert.That(FormTestDriver.Field<bool>(client, "_isConnected"), Is.True);
+                Assert.That(FormTestDriver.Field<StreamWriter>(client, "_inputWriter"), Is.SameAs(writerB));
+                Assert.That(FormTestDriver.Field<CancellationTokenSource>(client, "_lifetimeCts"), Is.SameAs(replacementLifetime));
                 Assert.That(replacementLifetime.IsCancellationRequested, Is.False);
 
-                SetPrivateField(client, "_inputWriter", null);
-                SetPrivateField(client, "_lifetimeCts", null);
+                FormTestDriver.SetField(client, "_inputWriter", null);
+                FormTestDriver.SetField(client, "_lifetimeCts", null);
             }
 
             client.Dispose();
@@ -196,20 +194,17 @@ namespace MyCodex.Application.Tests
             var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true);
             try
             {
-                var transport = GetPrivateField<AppServerProtocolTransport>(client, "_protocolTransport");
+                var transport = FormTestDriver.Field<AppServerProtocolTransport>(client, "_protocolTransport");
                 var epochAdvanced = 0;
-                SetPrivateField(client, "_inputWriter", writer);
-                SetPrivateField(client, "_connectionEpoch", 1L);
-                SetPrivateField(client, "_connectionLostHandled", false);
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(
-                    transport,
-                    "_connectionEpochProvider",
-                    new Func<long>(() =>
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_connectionEpoch", 1L);
+                FormTestDriver.SetField(client, "_connectionLostHandled", false);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(transport, "_connectionEpochProvider", new Func<long>(() =>
                     {
                         if (Interlocked.Exchange(ref epochAdvanced, 1) == 0)
                         {
-                            SetPrivateField(client, "_connectionEpoch", 2L);
+                            FormTestDriver.SetField(client, "_connectionEpoch", 2L);
                         }
 
                         return 2L;
@@ -218,13 +213,13 @@ namespace MyCodex.Application.Tests
                 var sendTask = InvokeSendRequestAsync(client, "test/current-epoch-write-failure");
 
                 Assert.ThrowsAsync<InvalidOperationException>(async () => await sendTask.ConfigureAwait(false));
-                Assert.That(GetPrivateField<long>(client, "_connectionEpoch"), Is.EqualTo(2L));
-                Assert.That(GetPrivateField<bool>(client, "_isConnected"), Is.False);
-                Assert.That(GetPrivateField<StreamWriter>(client, "_inputWriter"), Is.Null);
+                Assert.That(FormTestDriver.Field<long>(client, "_connectionEpoch"), Is.EqualTo(2L));
+                Assert.That(FormTestDriver.Field<bool>(client, "_isConnected"), Is.False);
+                Assert.That(FormTestDriver.Field<StreamWriter>(client, "_inputWriter"), Is.Null);
             }
             finally
             {
-                SetPrivateField(client, "_inputWriter", null);
+                FormTestDriver.SetField(client, "_inputWriter", null);
                 client.Dispose();
                 stream.Dispose();
             }
@@ -243,19 +238,19 @@ namespace MyCodex.Application.Tests
             {
                 try
                 {
-                    var writeLock = GetPrivateField<SemaphoreSlim>(client, "_writeLock");
-                    var transport = GetPrivateField<AppServerProtocolTransport>(client, "_protocolTransport");
-                    SetPrivateField(client, "_process", process);
-                    SetPrivateField(client, "_inputWriter", writerA);
-                    SetPrivateField(client, "_connectionEpoch", 1L);
-                    SetPrivateField(client, "_isConnected", true);
-                    GetPrivateField<HashSet<string>>(client, "_loadedThreadIds").Add("thread-1");
+                    var writeLock = FormTestDriver.Field<SemaphoreSlim>(client, "_writeLock");
+                    var transport = FormTestDriver.Field<AppServerProtocolTransport>(client, "_protocolTransport");
+                    FormTestDriver.SetField(client, "_process", process);
+                    FormTestDriver.SetField(client, "_inputWriter", writerA);
+                    FormTestDriver.SetField(client, "_connectionEpoch", 1L);
+                    FormTestDriver.SetField(client, "_isConnected", true);
+                    FormTestDriver.Field<HashSet<string>>(client, "_loadedThreadIds").Add("thread-1");
 
                     await writeLock.WaitAsync().ConfigureAwait(false);
                     Task compactTask = null;
                     try
                     {
-                        var initialRequestId = GetPrivateField<int>(transport, "_nextRequestId");
+                        var initialRequestId = FormTestDriver.Field<int>(transport, "_nextRequestId");
                         compactTask = client.SubmitCompactThreadRequestAsync(
                             "thread-1",
                             TestContext.CurrentContext.WorkDirectory,
@@ -263,11 +258,11 @@ namespace MyCodex.Application.Tests
                             null);
                         await WaitForRequestIdAdvanceAsync(transport, initialRequestId).ConfigureAwait(false);
 
-                        SetPrivateField(client, "_inputWriter", writerB);
-                        SetPrivateField(client, "_lifetimeCts", replacementLifetime);
-                        SetPrivateField(client, "_connectionEpoch", 2L);
-                        SetPrivateField(client, "_connectionLostHandled", false);
-                        SetPrivateField(client, "_isConnected", true);
+                        FormTestDriver.SetField(client, "_inputWriter", writerB);
+                        FormTestDriver.SetField(client, "_lifetimeCts", replacementLifetime);
+                        FormTestDriver.SetField(client, "_connectionEpoch", 2L);
+                        FormTestDriver.SetField(client, "_connectionLostHandled", false);
+                        FormTestDriver.SetField(client, "_isConnected", true);
                     }
                     finally
                     {
@@ -275,13 +270,13 @@ namespace MyCodex.Application.Tests
                     }
 
                     Assert.ThrowsAsync<InvalidOperationException>(async () => await compactTask.ConfigureAwait(false));
-                    Assert.That(GetPrivateField<bool>(client, "_isConnected"), Is.True);
-                    Assert.That(GetPrivateField<StreamWriter>(client, "_inputWriter"), Is.SameAs(writerB));
+                    Assert.That(FormTestDriver.Field<bool>(client, "_isConnected"), Is.True);
+                    Assert.That(FormTestDriver.Field<StreamWriter>(client, "_inputWriter"), Is.SameAs(writerB));
                     Assert.That(replacementLifetime.IsCancellationRequested, Is.False);
 
-                    SetPrivateField(client, "_process", null);
-                    SetPrivateField(client, "_inputWriter", null);
-                    SetPrivateField(client, "_lifetimeCts", null);
+                    FormTestDriver.SetField(client, "_process", null);
+                    FormTestDriver.SetField(client, "_inputWriter", null);
+                    FormTestDriver.SetField(client, "_lifetimeCts", null);
                 }
                 finally
                 {
@@ -301,23 +296,23 @@ namespace MyCodex.Application.Tests
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             using (var replacementLifetime = new CancellationTokenSource())
             {
-                SetPrivateField(client, "_process", replacementProcess);
-                SetPrivateField(client, "_inputWriter", writer);
-                SetPrivateField(client, "_lifetimeCts", replacementLifetime);
-                SetPrivateField(client, "_connectionEpoch", 2L);
-                SetPrivateField(client, "_connectionLostHandled", false);
-                SetPrivateField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", replacementProcess);
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_lifetimeCts", replacementLifetime);
+                FormTestDriver.SetField(client, "_connectionEpoch", 2L);
+                FormTestDriver.SetField(client, "_connectionLostHandled", false);
+                FormTestDriver.SetField(client, "_isConnected", true);
 
-                InvokePrivateInstance(client, "OnProcessExited", staleProcess, EventArgs.Empty);
+                FormTestDriver.Invoke(client, "OnProcessExited", staleProcess, EventArgs.Empty);
 
-                Assert.That(GetPrivateField<bool>(client, "_isConnected"), Is.True);
-                Assert.That(GetPrivateField<Process>(client, "_process"), Is.SameAs(replacementProcess));
-                Assert.That(GetPrivateField<StreamWriter>(client, "_inputWriter"), Is.SameAs(writer));
+                Assert.That(FormTestDriver.Field<bool>(client, "_isConnected"), Is.True);
+                Assert.That(FormTestDriver.Field<Process>(client, "_process"), Is.SameAs(replacementProcess));
+                Assert.That(FormTestDriver.Field<StreamWriter>(client, "_inputWriter"), Is.SameAs(writer));
                 Assert.That(replacementLifetime.IsCancellationRequested, Is.False);
 
-                SetPrivateField(client, "_process", null);
-                SetPrivateField(client, "_inputWriter", null);
-                SetPrivateField(client, "_lifetimeCts", null);
+                FormTestDriver.SetField(client, "_process", null);
+                FormTestDriver.SetField(client, "_inputWriter", null);
+                FormTestDriver.SetField(client, "_lifetimeCts", null);
             }
 
             client.Dispose();
@@ -449,10 +444,10 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
-                GetPrivateField<HashSet<string>>(client, "_loadedThreadIds").Add("thread-1");
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                FormTestDriver.Field<HashSet<string>>(client, "_loadedThreadIds").Add("thread-1");
 
                 var task = client.SendUserMessageAsync(
                     "thread-1",
@@ -496,13 +491,13 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
-                var loadedThreadIds = GetPrivateField<HashSet<string>>(client, "_loadedThreadIds");
-                var activeTurnIds = GetPrivateField<Dictionary<string, string>>(client, "_activeTurnIds");
-                var approvalModes = GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
+                var loadedThreadIds = FormTestDriver.Field<HashSet<string>>(client, "_loadedThreadIds");
+                var activeTurnIds = FormTestDriver.Field<Dictionary<string, string>>(client, "_activeTurnIds");
+                var approvalModes = FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
                 loadedThreadIds.Add("thread-1");
                 activeTurnIds["thread-1"] = "turn-1";
                 approvalModes["thread-1"] = ApprovalMode.FullAccess;
@@ -518,7 +513,7 @@ namespace MyCodex.Application.Tests
                 var parameters = AppServerJsonValue.GetDictionary(message, "params");
                 Assert.That(parameters["threadId"], Is.EqualTo("thread-1"));
 
-                var transport = GetPrivateField<AppServerProtocolTransport>(client, "_protocolTransport");
+                var transport = FormTestDriver.Field<AppServerProtocolTransport>(client, "_protocolTransport");
                 string errorMessage;
                 Assert.That(
                     transport.TryHandleResponse(
@@ -542,9 +537,9 @@ namespace MyCodex.Application.Tests
         {
             using (var client = CreateClient())
             {
-                var loadedThreadIds = GetPrivateField<HashSet<string>>(client, "_loadedThreadIds");
-                var activeTurnIds = GetPrivateField<Dictionary<string, string>>(client, "_activeTurnIds");
-                var approvalModes = GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
+                var loadedThreadIds = FormTestDriver.Field<HashSet<string>>(client, "_loadedThreadIds");
+                var activeTurnIds = FormTestDriver.Field<Dictionary<string, string>>(client, "_activeTurnIds");
+                var approvalModes = FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
                 loadedThreadIds.Add("thread-1");
                 activeTurnIds["thread-1"] = "turn-1";
                 approvalModes["thread-1"] = ApprovalMode.FullAccess;
@@ -552,10 +547,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "thread/deleted" },
                         { "params", new Dictionary<string, object> { { "threadId", "thread-1" } } }
@@ -575,9 +567,9 @@ namespace MyCodex.Application.Tests
         {
             using (var client = CreateClient())
             {
-                var loadedThreadIds = GetPrivateField<HashSet<string>>(client, "_loadedThreadIds");
-                var activeTurnIds = GetPrivateField<Dictionary<string, string>>(client, "_activeTurnIds");
-                var approvalModes = GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
+                var loadedThreadIds = FormTestDriver.Field<HashSet<string>>(client, "_loadedThreadIds");
+                var activeTurnIds = FormTestDriver.Field<Dictionary<string, string>>(client, "_activeTurnIds");
+                var approvalModes = FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
                 loadedThreadIds.Add("thread-1");
                 activeTurnIds["thread-1"] = "turn-1";
                 approvalModes["thread-1"] = ApprovalMode.FullAccess;
@@ -585,10 +577,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "thread/closed" },
                         { "params", new Dictionary<string, object> { { "threadId", "thread-1" } } }
@@ -613,10 +602,7 @@ namespace MyCodex.Application.Tests
                     AppServerEventArgs received = null;
                     client.EventReceived += (sender, args) => received = args;
 
-                    InvokePrivateInstance(
-                        client,
-                        "HandleNotification",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                         {
                             { "method", "item/fileChange/patchUpdated" },
                             { "params", new Dictionary<string, object>
@@ -659,10 +645,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "item/autoApprovalReview/started" },
                         { "params", new Dictionary<string, object>
@@ -693,10 +676,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "turn/moderationMetadata" },
                         { "params", new Dictionary<string, object>
@@ -731,10 +711,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", method },
                         { "params", new Dictionary<string, object> { { "message", "runtime update" } } }
@@ -754,9 +731,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.GetInstalledPluginsAsync();
                 var message = ReadFirstWrittenMessage(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
@@ -831,9 +808,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.ReadPluginSkillAsync("Official", "plugin-one", "github");
                 var message = ReadFirstWrittenMessage(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
@@ -864,9 +841,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.InstallRemotePluginAsync("openai-curated-remote", "github");
                 var message = ReadFirstWrittenMessage(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
@@ -897,9 +874,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.UpgradeMarketplaceAsync("Official");
                 var message = ReadFirstWrittenMessage(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
@@ -930,9 +907,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.AddMarketplaceAsync("https://market.example.com/git/official.git");
                 var message = ReadFirstWrittenMessage(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
@@ -965,9 +942,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.RemoveMarketplaceAsync("mycodex-official");
                 var message = ReadFirstWrittenMessage(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
@@ -996,9 +973,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.GetConversationSummaryAsync(
                     AppServerConversationSummaryRequest.FromConversationId("thread-1"));
@@ -1025,9 +1002,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.ReadMcpResourceAsync("github", "resource://issues", "thread-1", CancellationToken.None);
 
@@ -1052,9 +1029,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.CallMcpToolAsync(
                     new AppServerMcpToolCallRequest
@@ -1090,9 +1067,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var notification = AppServerNotificationFactory.CreateAutoApprovalReviewCompleted(
                     new Dictionary<string, object>
@@ -1128,9 +1105,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.GetGitDiffToRemoteAsync(TestContext.CurrentContext.WorkDirectory, CancellationToken.None);
 
@@ -1154,9 +1131,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.GetConversationSummaryAsync(
                     AppServerConversationSummaryRequest.FromRolloutPath(@"E:\sessions\thread-1.jsonl"));
@@ -1182,9 +1159,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
                 var summaries = new List<AppServerThreadSummary>
                 {
                     new AppServerThreadSummary
@@ -1196,12 +1173,7 @@ namespace MyCodex.Application.Tests
                 };
                 var knownThreadIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "thread-1" };
 
-                var task = InvokePrivateInstance<Task>(
-                    client,
-                    "TryEnrichLocalThreadSummariesWithConversationSummaryAsync",
-                    summaries,
-                    knownThreadIds,
-                    CancellationToken.None);
+                var task = FormTestDriver.Invoke<Task>(client, "TryEnrichLocalThreadSummariesWithConversationSummaryAsync", summaries, knownThreadIds, CancellationToken.None);
 
                 var message = ReadFirstWrittenMessage(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
                 Assert.That(message["method"], Is.EqualTo("getConversationSummary"));
@@ -1223,9 +1195,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
                 var summaries = new List<AppServerThreadSummary>
                 {
                     new AppServerThreadSummary
@@ -1247,12 +1219,7 @@ namespace MyCodex.Application.Tests
                     "thread-2"
                 };
 
-                var task = InvokePrivateInstance<Task>(
-                    client,
-                    "TryEnrichLocalThreadSummariesWithConversationSummaryAsync",
-                    summaries,
-                    knownThreadIds,
-                    CancellationToken.None);
+                var task = FormTestDriver.Invoke<Task>(client, "TryEnrichLocalThreadSummariesWithConversationSummaryAsync", summaries, knownThreadIds, CancellationToken.None);
 
                 var firstMessage = ReadFirstWrittenMessage(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
                 var firstRequestId = Convert.ToString(firstMessage["id"], CultureInfo.InvariantCulture);
@@ -1290,7 +1257,7 @@ namespace MyCodex.Application.Tests
         {
             using (var client = CreateClient())
             {
-                GetPrivateField<Dictionary<string, string>>(client, "_activeTurnIds")["thread-1"] = "turn-2";
+                FormTestDriver.Field<Dictionary<string, string>>(client, "_activeTurnIds")["thread-1"] = "turn-2";
 
                 var result = await client.TrySteerTurnAsync(
                     "thread-1",
@@ -1311,10 +1278,10 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
-                var activeTurnIds = GetPrivateField<Dictionary<string, string>>(client, "_activeTurnIds");
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                var activeTurnIds = FormTestDriver.Field<Dictionary<string, string>>(client, "_activeTurnIds");
                 activeTurnIds["thread-1"] = "turn-stale";
 
                 AppServerEventArgs received = null;
@@ -1345,10 +1312,10 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
-                GetPrivateField<Dictionary<string, string>>(client, "_activeTurnIds")["thread-1"] = "turn-1";
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                FormTestDriver.Field<Dictionary<string, string>>(client, "_activeTurnIds")["thread-1"] = "turn-1";
 
                 var task = client.TrySteerTurnAsync(
                     "thread-1",
@@ -1384,10 +1351,10 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
-                GetPrivateField<Dictionary<string, string>>(client, "_activeTurnIds")["thread-1"] = "turn-1";
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                FormTestDriver.Field<Dictionary<string, string>>(client, "_activeTurnIds")["thread-1"] = "turn-1";
 
                 var task = client.TrySteerTurnAsync(
                     "thread-1",
@@ -1410,9 +1377,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.CancelLoginAsync("login-1");
 
@@ -1454,9 +1421,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
                 var item = new Dictionary<string, object>
                 {
                     { "type", "message" },
@@ -1492,9 +1459,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.ListPermissionProfilesAsync(
                     TestContext.CurrentContext.WorkDirectory,
@@ -1539,9 +1506,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.GetAccountTokenUsageAsync(CancellationToken.None);
 
@@ -1576,9 +1543,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.ConsumeRateLimitResetCreditAsync("reset-key-1", CancellationToken.None);
 
@@ -1609,9 +1576,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.ConsumeRateLimitResetCreditAsync("reset-key-2", "credit-2", CancellationToken.None);
 
@@ -1636,9 +1603,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.ConsumeRateLimitResetCreditAsync("reset-key-3", creditId, CancellationToken.None);
 
@@ -1660,9 +1627,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.ResizeCommandAsync(
                     "process-1",
@@ -1739,19 +1706,16 @@ namespace MyCodex.Application.Tests
                 var registry = new InternalToolRegistry(new IInternalToolExecutor[] { executor });
                 var events = new List<AppServerEventArgs>();
                 client.EventReceived += (sender, args) => events.Add(args);
-                SetPrivateField(client, "_inputWriter", writer);
-                SetPrivateField(client, "_internalToolRegistry", registry);
-                var contexts = GetPrivateField<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_internalToolRegistry", registry);
+                var contexts = FormTestDriver.Field<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
                 contexts["thread-1"] = new InternalToolExecutionContext
                 {
                     Mode = "Coding",
                     WorkspacePath = TestContext.CurrentContext.WorkDirectory,
                 };
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleServerRequest",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleServerRequest", new Dictionary<string, object>
                     {
                         { "id", "tool-request-1" },
                         { "method", "item/tool/call" },
@@ -1800,14 +1764,11 @@ namespace MyCodex.Application.Tests
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
                 writer.AutoFlush = true;
-                SetPrivateField(client, "_inputWriter", writer);
-                var contexts = GetPrivateField<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                var contexts = FormTestDriver.Field<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
                 contexts["thread-1"] = new InternalToolExecutionContext { Mode = "Coding" };
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleServerRequest",
-                    BuildDynamicToolCallMessage("tool-request-constructor", "thread-1", "sample", "ping"));
+                FormTestDriver.Invoke(client, "HandleServerRequest", BuildDynamicToolCallMessage("tool-request-constructor", "thread-1", "sample", "ping"));
 
                 var result = ReadResultDictionary(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
 
@@ -1830,11 +1791,7 @@ namespace MyCodex.Application.Tests
                     }
                 };
 
-                var e = InvokePrivateInstance<AppServerEventArgs>(
-                    client,
-                    "CreateInternalToolsRegisteredEvent",
-                    "thread-1",
-                    toolContext);
+                var e = FormTestDriver.Invoke<AppServerEventArgs>(client, "CreateInternalToolsRegisteredEvent", "thread-1", toolContext);
 
                 Assert.That(e.EventType, Is.EqualTo("internal_tools_registered"));
                 Assert.That(e.Content, Does.Contain("sample/ping"));
@@ -1852,13 +1809,10 @@ namespace MyCodex.Application.Tests
             {
                 writer.AutoFlush = true;
                 var executor = new RecordingInternalToolExecutor(InternalToolResult.FromText(true, "created"));
-                SetPrivateField(client, "_inputWriter", writer);
-                SetPrivateField(client, "_internalToolRegistry", new InternalToolRegistry(new IInternalToolExecutor[] { executor }));
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_internalToolRegistry", new InternalToolRegistry(new IInternalToolExecutor[] { executor }));
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleServerRequest",
-                    BuildDynamicToolCallMessage("tool-request-2", "thread-missing", "sample", "ping"));
+                FormTestDriver.Invoke(client, "HandleServerRequest", BuildDynamicToolCallMessage("tool-request-2", "thread-missing", "sample", "ping"));
 
                 var result = ReadResultDictionary(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
 
@@ -1876,15 +1830,12 @@ namespace MyCodex.Application.Tests
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
                 writer.AutoFlush = true;
-                SetPrivateField(client, "_inputWriter", writer);
-                SetPrivateField(client, "_internalToolRegistry", new InternalToolRegistry(null));
-                var contexts = GetPrivateField<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_internalToolRegistry", new InternalToolRegistry(null));
+                var contexts = FormTestDriver.Field<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
                 contexts["thread-1"] = new InternalToolExecutionContext { Mode = "Coding" };
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleServerRequest",
-                    BuildDynamicToolCallMessage("tool-request-3", "thread-1", "sample", "missing_tool"));
+                FormTestDriver.Invoke(client, "HandleServerRequest", BuildDynamicToolCallMessage("tool-request-3", "thread-1", "sample", "missing_tool"));
 
                 var result = ReadResultDictionary(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
 
@@ -1902,15 +1853,12 @@ namespace MyCodex.Application.Tests
             {
                 writer.AutoFlush = true;
                 var executor = new RecordingInternalToolExecutor(new InvalidOperationException("tool failed"));
-                SetPrivateField(client, "_inputWriter", writer);
-                SetPrivateField(client, "_internalToolRegistry", new InternalToolRegistry(new IInternalToolExecutor[] { executor }));
-                var contexts = GetPrivateField<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_internalToolRegistry", new InternalToolRegistry(new IInternalToolExecutor[] { executor }));
+                var contexts = FormTestDriver.Field<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
                 contexts["thread-1"] = new InternalToolExecutionContext { Mode = "Coding" };
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleServerRequest",
-                    BuildDynamicToolCallMessage("tool-request-4", "thread-1", "sample", "ping"));
+                FormTestDriver.Invoke(client, "HandleServerRequest", BuildDynamicToolCallMessage("tool-request-4", "thread-1", "sample", "ping"));
 
                 var result = ReadResultDictionary(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
 
@@ -1924,10 +1872,7 @@ namespace MyCodex.Application.Tests
         {
             WithCulture("en-US", () =>
             {
-                var timeoutException = InvokePrivateStatic<TimeoutException>(
-                    "CreateRequestTimeoutException",
-                    string.Empty,
-                    500);
+                var timeoutException = FormTestDriver.InvokeStatic<TimeoutException>(typeof(AppServerClient), "CreateRequestTimeoutException", string.Empty, 500);
 
                 Assert.That(timeoutException, Is.Not.Null);
                 Assert.That(
@@ -1941,12 +1886,10 @@ namespace MyCodex.Application.Tests
         {
             WithCulture("en-US", () =>
             {
-                var defaultMessage = InvokePrivateStatic<string>("BuildConnectionLostMessage", (object)null);
+                var defaultMessage = FormTestDriver.InvokeStatic<string>(typeof(AppServerClient), "BuildConnectionLostMessage", (object)null);
                 Assert.That(defaultMessage, Is.EqualTo("Connection to Codex App Server was lost."));
 
-                var detailMessage = InvokePrivateStatic<string>(
-                    "BuildConnectionLostMessage",
-                    new InvalidOperationException("pipe broken"));
+                var detailMessage = FormTestDriver.InvokeStatic<string>(typeof(AppServerClient), "BuildConnectionLostMessage", new InvalidOperationException("pipe broken"));
                 Assert.That(detailMessage, Is.EqualTo("Connection to Codex App Server was lost: pipe broken"));
             });
         }
@@ -2007,7 +1950,7 @@ namespace MyCodex.Application.Tests
                 AppServerHostPlatform.RemoteMac,
                 new[] { passwordFilePath, commandFilePath });
 
-            var redacted = InvokePrivateStatic<string>("BuildConnectionKeyArguments", launchInfo);
+            var redacted = FormTestDriver.InvokeStatic<string>(typeof(AppServerClient), "BuildConnectionKeyArguments", launchInfo);
 
             Assert.That(redacted, Does.Not.Contain(passwordFilePath));
             Assert.That(redacted, Does.Not.Contain(commandFilePath));
@@ -2029,8 +1972,8 @@ namespace MyCodex.Application.Tests
                 "app-server",
                 new Dictionary<string, string> { { "OPENAI_API_KEY", "sk-second" } });
 
-            var firstKey = InvokePrivateStatic<string>("BuildRuntimeConnectionKey", config, first);
-            var secondKey = InvokePrivateStatic<string>("BuildRuntimeConnectionKey", config, second);
+            var firstKey = FormTestDriver.InvokeStatic<string>(typeof(AppServerClient), "BuildRuntimeConnectionKey", config, first);
+            var secondKey = FormTestDriver.InvokeStatic<string>(typeof(AppServerClient), "BuildRuntimeConnectionKey", config, second);
 
             Assert.That(firstKey, Is.Not.EqualTo(secondKey));
             Assert.That(firstKey, Does.Not.Contain("sk-first"));
@@ -2044,8 +1987,8 @@ namespace MyCodex.Application.Tests
             var config = new AppConfigSnapshot();
             var launchInfo = new AppServerLaunchInfo("codex.exe", "app-server", new Dictionary<string, string>());
 
-            var firstKey = InvokePrivateStatic<string>("BuildRuntimeConnectionKey", config, launchInfo);
-            var secondKey = InvokePrivateStatic<string>("BuildRuntimeConnectionKey", config, launchInfo);
+            var firstKey = FormTestDriver.InvokeStatic<string>(typeof(AppServerClient), "BuildRuntimeConnectionKey", config, launchInfo);
+            var secondKey = FormTestDriver.InvokeStatic<string>(typeof(AppServerClient), "BuildRuntimeConnectionKey", config, launchInfo);
 
             Assert.That(firstKey, Is.EqualTo(secondKey));
             Assert.That(secondKey, Does.Not.Contain("mycodex_model_conversion"));
@@ -2059,10 +2002,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "turn/completed" },
                         {
@@ -2105,10 +2045,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "error" },
                         {
@@ -2151,10 +2088,7 @@ namespace MyCodex.Application.Tests
                     AppServerEventArgs received = null;
                     client.EventReceived += (sender, args) => received = args;
 
-                    InvokePrivateInstance(
-                        client,
-                        "HandleNotification",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                         {
                             { "method", "turn/completed" },
                             {
@@ -2202,10 +2136,7 @@ namespace MyCodex.Application.Tests
                     AppServerEventArgs received = null;
                     client.EventReceived += (sender, args) => received = args;
 
-                    InvokePrivateInstance(
-                        client,
-                        "HandleNotification",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                         {
                             { "method", "turn/completed" },
                             {
@@ -2244,10 +2175,7 @@ namespace MyCodex.Application.Tests
                     var received = new List<AppServerEventArgs>();
                     client.EventReceived += (sender, args) => received.Add(args);
 
-                    InvokePrivateInstance(
-                        client,
-                        "HandleNotification",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                         {
                             { "method", "item/started" },
                             {
@@ -2268,10 +2196,7 @@ namespace MyCodex.Application.Tests
                                 }
                             }
                         });
-                    InvokePrivateInstance(
-                        client,
-                        "HandleNotification",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                         {
                             { "method", "item/completed" },
                             {
@@ -2317,10 +2242,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "thread/tokenUsage/updated" },
                         {
@@ -2387,10 +2309,7 @@ namespace MyCodex.Application.Tests
                     AppServerEventArgs received = null;
                     client.EventReceived += (sender, args) => received = args;
 
-                    InvokePrivateInstance(
-                        client,
-                        "HandleNotification",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                         {
                             { "method", "configWarning" },
                             {
@@ -2419,10 +2338,7 @@ namespace MyCodex.Application.Tests
                     AppServerEventArgs received = null;
                     client.EventReceived += (sender, args) => received = args;
 
-                    InvokePrivateInstance(
-                        client,
-                        "HandleNotification",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                         {
                             { "method", "windows/worldWritableWarning" },
                             {
@@ -2457,19 +2373,14 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_inputWriter", writer);
-                var approvalModes = GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                var approvalModes = FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
                 approvalModes["thread-1"] = mode;
 
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleCommandApprovalRequest",
-                    "approval-1",
-                    "approval-1",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleCommandApprovalRequest", "approval-1", "approval-1", new Dictionary<string, object>
                     {
                         { "threadId", "thread-1" },
                         { "turnId", "turn-1" },
@@ -2504,19 +2415,14 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_inputWriter", writer);
-                var approvalModes = GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                var approvalModes = FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
                 approvalModes["thread-1"] = ApprovalMode.Custom;
 
                 var events = new List<AppServerEventArgs>();
                 client.EventReceived += (sender, args) => events.Add(args);
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleCommandApprovalRequest",
-                    "approval-custom-git-stage",
-                    "approval-custom-git-stage",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleCommandApprovalRequest", "approval-custom-git-stage", "approval-custom-git-stage", new Dictionary<string, object>
                     {
                         { "threadId", "thread-1" },
                         { "turnId", "turn-1" },
@@ -2554,19 +2460,14 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_inputWriter", writer);
-                var approvalModes = GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                var approvalModes = FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
                 approvalModes["thread-1"] = ApprovalMode.Custom;
 
                 var events = new List<AppServerEventArgs>();
                 client.EventReceived += (sender, args) => events.Add(args);
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleCommandApprovalRequest",
-                    "approval-1",
-                    "approval-1",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleCommandApprovalRequest", "approval-1", "approval-1", new Dictionary<string, object>
                     {
                         { "threadId", "thread-1" },
                         { "turnId", "turn-1" },
@@ -2595,19 +2496,14 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_inputWriter", writer);
-                var approvalModes = GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                var approvalModes = FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
                 approvalModes["thread-1"] = ApprovalMode.Custom;
 
                 var events = new List<AppServerEventArgs>();
                 client.EventReceived += (sender, args) => events.Add(args);
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleCommandApprovalRequest",
-                    42,
-                    "approval-custom-disabled",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleCommandApprovalRequest", 42, "approval-custom-disabled", new Dictionary<string, object>
                     {
                         { "threadId", "thread-1" },
                         { "turnId", "turn-1" },
@@ -2640,17 +2536,14 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_inputWriter", writer);
-                var approvalModes = GetPrivateField<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                var approvalModes = FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
                 approvalModes["thread-1"] = ApprovalMode.Custom;
 
                 var events = new List<AppServerEventArgs>();
                 client.EventReceived += (sender, args) => events.Add(args);
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleServerRequest",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleServerRequest", new Dictionary<string, object>
                     {
                         { "id", "approval-custom-file-create" },
                         { "method", "item/fileChange/requestApproval" },
@@ -2683,17 +2576,12 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var events = new List<AppServerEventArgs>();
                 client.EventReceived += (sender, args) => events.Add(args);
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleCommandApprovalRequest",
-                    42,
-                    "approval-1",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleCommandApprovalRequest", 42, "approval-1", new Dictionary<string, object>
                     {
                         { "threadId", "thread-1" },
                         { "turnId", "turn-1" },
@@ -3019,20 +2907,12 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_inputWriter", writer);
                 var events = new List<AppServerEventArgs>();
                 client.EventReceived += (sender, args) => events.Add(args);
-                InvokePrivateInstance(
-                    client,
-                    "HandleCommandApprovalRequest",
-                    42,
-                    "request-timeout",
-                    new Dictionary<string, object>());
+                FormTestDriver.Invoke(client, "HandleCommandApprovalRequest", 42, "request-timeout", new Dictionary<string, object>());
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "serverRequest/resolved" },
                         { "params", new Dictionary<string, object> { { "requestId", "request-timeout" } } }
@@ -3056,17 +2936,12 @@ namespace MyCodex.Application.Tests
             using (var writerA = new StreamWriter(streamA, new UTF8Encoding(false), 1024, true))
             using (var writerB = new StreamWriter(streamB, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_inputWriter", writerA);
-                InvokePrivateInstance(
-                    client,
-                    "HandleCommandApprovalRequest",
-                    42,
-                    "request-disconnected",
-                    new Dictionary<string, object>());
+                FormTestDriver.SetField(client, "_inputWriter", writerA);
+                FormTestDriver.Invoke(client, "HandleCommandApprovalRequest", 42, "request-disconnected", new Dictionary<string, object>());
 
-                InvokePrivateInstance(client, "HandleAppServerConnectionLost", "connection lost", 0L, null);
-                SetPrivateField(client, "_inputWriter", writerB);
-                SetPrivateField(client, "_connectionEpoch", 2L);
+                FormTestDriver.Invoke(client, "HandleAppServerConnectionLost", "connection lost", 0L, null);
+                FormTestDriver.SetField(client, "_inputWriter", writerB);
+                FormTestDriver.SetField(client, "_connectionEpoch", 2L);
 
                 Assert.ThrowsAsync<InvalidOperationException>(async () =>
                     await client.ResolveApprovalRequestAsync(
@@ -3086,10 +2961,7 @@ namespace MyCodex.Application.Tests
                     AppServerEventArgs received = null;
                     client.EventReceived += (sender, args) => received = args;
 
-                    InvokePrivateInstance(
-                        client,
-                        "HandleNotification",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                         {
                             { "method", "warning" },
                             {
@@ -3116,10 +2988,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "thread/name/updated" },
                         {
@@ -3147,10 +3016,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "thread/settings/updated" },
                         {
@@ -3176,10 +3042,7 @@ namespace MyCodex.Application.Tests
                     AppServerEventArgs received = null;
                     client.EventReceived += (sender, args) => received = args;
 
-                    InvokePrivateInstance(
-                        client,
-                        "HandleNotification",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                         {
                             { "method", "runtime/newNotice" },
                             {
@@ -3208,10 +3071,7 @@ namespace MyCodex.Application.Tests
                     AppServerEventArgs received = null;
                     client.EventReceived += (sender, args) => received = args;
 
-                    InvokePrivateInstance(
-                        client,
-                        "HandleNotification",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                         {
                             { "method", "mcpServer/startupStatus/updated" },
                             {
@@ -3240,7 +3100,7 @@ namespace MyCodex.Application.Tests
                 var received = new List<AppServerEventArgs>();
                 client.EventReceived += (sender, args) => received.Add(args);
 
-                InvokePrivateInstance(client, "HandleNotification", BuildItemNotification(
+                FormTestDriver.Invoke(client, "HandleNotification", BuildItemNotification(
                     "item/started",
                     new Dictionary<string, object>
                     {
@@ -3250,7 +3110,7 @@ namespace MyCodex.Application.Tests
                         { "revisedPrompt", "A revised prompt" },
                         { "result", "data:image/png;base64,SECRET_STARTED_PAYLOAD" }
                     }));
-                InvokePrivateInstance(client, "HandleNotification", BuildItemNotification(
+                FormTestDriver.Invoke(client, "HandleNotification", BuildItemNotification(
                     "item/completed",
                     new Dictionary<string, object>
                     {
@@ -3280,7 +3140,7 @@ namespace MyCodex.Application.Tests
                 var received = new List<AppServerEventArgs>();
                 client.EventReceived += (sender, args) => received.Add(args);
 
-                InvokePrivateInstance(client, "HandleNotification", BuildItemNotification(
+                FormTestDriver.Invoke(client, "HandleNotification", BuildItemNotification(
                     "item/completed",
                     new Dictionary<string, object>
                     {
@@ -3325,7 +3185,7 @@ namespace MyCodex.Application.Tests
                 var received = new List<AppServerEventArgs>();
                 client.EventReceived += (sender, args) => received.Add(args);
 
-                InvokePrivateInstance(client, "HandleNotification", BuildItemNotification(
+                FormTestDriver.Invoke(client, "HandleNotification", BuildItemNotification(
                     "item/completed",
                     new Dictionary<string, object>
                     {
@@ -3335,7 +3195,7 @@ namespace MyCodex.Application.Tests
                         { "agentPath", "reviewer" },
                         { "agentThreadId", "agent-thread-1" }
                     }));
-                InvokePrivateInstance(client, "HandleNotification", BuildItemNotification(
+                FormTestDriver.Invoke(client, "HandleNotification", BuildItemNotification(
                     "item/completed",
                     new Dictionary<string, object>
                     {
@@ -3363,10 +3223,7 @@ namespace MyCodex.Application.Tests
                     AppServerEventArgs received = null;
                     client.EventReceived += (sender, args) => received = args;
 
-                    InvokePrivateInstance(
-                        client,
-                        "HandleNotification",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                         {
                             { "method", "mcpServer/startupStatus/updated" },
                             {
@@ -3406,10 +3263,7 @@ namespace MyCodex.Application.Tests
 
                 using (var client = CreateClient())
                 {
-                    var inputs = InvokePrivateInstance<List<object>>(
-                        client,
-                        "BuildUserInputs",
-                        (IReadOnlyCollection<AppServerUserInputItem>)new[]
+                    var inputs = FormTestDriver.Invoke<List<object>>(client, "BuildUserInputs", (IReadOnlyCollection<AppServerUserInputItem>)new[]
                         {
                             new AppServerUserInputItem
                             {
@@ -3444,10 +3298,7 @@ namespace MyCodex.Application.Tests
 
                 using (var client = CreateClient())
                 {
-                    var inputs = InvokePrivateInstance<List<object>>(
-                        client,
-                        "BuildUserInputs",
-                        (IReadOnlyCollection<AppServerUserInputItem>)new[]
+                    var inputs = FormTestDriver.Invoke<List<object>>(client, "BuildUserInputs", (IReadOnlyCollection<AppServerUserInputItem>)new[]
                         {
                             new AppServerUserInputItem
                             {
@@ -3477,10 +3328,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "fs/changed" },
                         {
@@ -3509,10 +3357,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "fuzzyFileSearch/sessionUpdated" },
                         {
@@ -3555,10 +3400,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "fuzzyFileSearch/sessionCompleted" },
                         {
@@ -3586,10 +3428,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "windowsSandbox/setupCompleted" },
                         {
@@ -3621,10 +3460,7 @@ namespace MyCodex.Application.Tests
                     AppServerEventArgs received = null;
                     client.EventReceived += (sender, args) => received = args;
 
-                    InvokePrivateInstance(
-                        client,
-                        "HandleNotification",
-                        new Dictionary<string, object>
+                    FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                         {
                             { "method", "externalAgentConfig/import/completed" },
                             { "params", new Dictionary<string, object>() }
@@ -3645,10 +3481,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "item/commandExecution/terminalInteraction" },
                         {
@@ -3686,10 +3519,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "item/commandExecution/terminalInteraction" },
                         {
@@ -3716,10 +3546,7 @@ namespace MyCodex.Application.Tests
                 AppServerEventArgs received = null;
                 client.EventReceived += (sender, args) => received = args;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "command/exec/outputDelta" },
                         {
@@ -3756,10 +3583,7 @@ namespace MyCodex.Application.Tests
                     }
                 });
 
-                var task = InvokePrivateInstance<Task<AppServerCommandExecResult>>(
-                    client,
-                    "ExecuteLocalWindowsCommandStreamingAsync",
-                    new[]
+                var task = FormTestDriver.Invoke<Task<AppServerCommandExecResult>>(client, "ExecuteLocalWindowsCommandStreamingAsync", new[]
                     {
                         "powershell.exe",
                         "-NoProfile",
@@ -3767,11 +3591,7 @@ namespace MyCodex.Application.Tests
                         "Bypass",
                         "-Command",
                         "Write-Output 'first'; Start-Sleep -Milliseconds 1200; Write-Output 'second'"
-                    },
-                    TestContext.CurrentContext.WorkDirectory,
-                    "process-1",
-                    15000L,
-                    callback);
+                    }, TestContext.CurrentContext.WorkDirectory, "process-1", 15000L, callback);
                 var result = task.GetAwaiter().GetResult();
                 stopwatch.Stop();
 
@@ -3788,14 +3608,7 @@ namespace MyCodex.Application.Tests
         {
             using (var client = CreateClient())
             {
-                var task = InvokePrivateInstance<Task<AppServerCommandExecResult>>(
-                    client,
-                    "ExecuteLocalWindowsCommandStreamingAsync",
-                    new[] { "cmd.exe", "/c", "git --version" },
-                    TestContext.CurrentContext.WorkDirectory,
-                    "process-1",
-                    15000L,
-                    new Action<string, string>((text, stream) => { }));
+                var task = FormTestDriver.Invoke<Task<AppServerCommandExecResult>>(client, "ExecuteLocalWindowsCommandStreamingAsync", new[] { "cmd.exe", "/c", "git --version" }, TestContext.CurrentContext.WorkDirectory, "process-1", 15000L, new Action<string, string>((text, stream) => { }));
                 var result = task.GetAwaiter().GetResult();
 
                 Assert.That(result.ExitCode, Is.EqualTo(0), result.StdErr);
@@ -3814,9 +3627,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
                 var streamed = new List<string>();
                 var publicEvents = new List<AppServerEventArgs>();
                 client.EventReceived += (sender, args) => publicEvents.Add(args);
@@ -3838,10 +3651,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(parameters["streamStdoutStderr"], Is.EqualTo(true));
                 Assert.That(AppServerJsonValue.GetDictionary(parameters, "sandboxPolicy")["type"], Is.EqualTo(expectedSandboxType));
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleNotification",
-                    new Dictionary<string, object>
+                FormTestDriver.Invoke(client, "HandleNotification", new Dictionary<string, object>
                     {
                         { "method", "command/exec/outputDelta" },
                         {
@@ -3855,7 +3665,7 @@ namespace MyCodex.Application.Tests
                         }
                     });
 
-                var transport = GetPrivateField<AppServerProtocolTransport>(client, "_protocolTransport");
+                var transport = FormTestDriver.Field<AppServerProtocolTransport>(client, "_protocolTransport");
                 string errorMessage;
                 transport.TryHandleResponse(
                     new Dictionary<string, object>
@@ -3869,7 +3679,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(result.ExitCode, Is.EqualTo(0));
                 Assert.That(streamed, Is.EqualTo(new[] { "stderr:warning" }));
                 Assert.That(publicEvents.Any(item => item.EventType == "command_exec_output"), Is.False);
-                Assert.That(GetPrivateField<Dictionary<string, Action<string, string>>>(client, "_commandOutputReceivers"), Is.Empty);
+                Assert.That(FormTestDriver.Field<Dictionary<string, Action<string, string>>>(client, "_commandOutputReceivers"), Is.Empty);
             }
         }
 
@@ -3881,9 +3691,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
                 var streamed = new List<string>();
 
                 var result = await client.ExecuteCommandAsync(
@@ -3908,9 +3718,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.ExecuteCommandAsync("git status", @"E:\MyCodex", ApprovalMode.ReadOnly, "process-buffered", 15000);
 
@@ -3919,7 +3729,7 @@ namespace MyCodex.Application.Tests
                     text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries).First().TrimStart('\uFEFF'));
                 Assert.That(AppServerJsonValue.GetDictionary(message, "params").ContainsKey("streamStdoutStderr"), Is.False);
 
-                var transport = GetPrivateField<AppServerProtocolTransport>(client, "_protocolTransport");
+                var transport = FormTestDriver.Field<AppServerProtocolTransport>(client, "_protocolTransport");
                 string errorMessage;
                 transport.TryHandleResponse(
                     new Dictionary<string, object>
@@ -3935,10 +3745,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void BuildCommandInputWriteParameters_ShouldIncludeProcessIdAndInput()
         {
-            var parameters = InvokePrivateStatic<Dictionary<string, object>>(
-                "BuildCommandInputWriteParameters",
-                "process-1",
-                "answer\n");
+            var parameters = FormTestDriver.InvokeStatic<Dictionary<string, object>>(typeof(AppServerClient), "BuildCommandInputWriteParameters", "process-1", "answer\n");
 
             Assert.That(parameters["processId"], Is.EqualTo("process-1"));
             Assert.That(parameters["input"], Is.EqualTo("answer\n"));
@@ -3982,19 +3789,6 @@ namespace MyCodex.Application.Tests
             }
         }
 
-        private static T InvokePrivateStatic<T>(string methodName, params object[] args)
-            where T : class
-        {
-            var method = typeof(AppServerClient).GetMethod(
-                methodName,
-                BindingFlags.NonPublic | BindingFlags.Static);
-            Assert.That(method, Is.Not.Null, "Private static method not found: " + methodName);
-
-            var result = method.Invoke(null, args);
-            Assert.That(result, Is.TypeOf<T>(), "Return type mismatch: " + methodName);
-            return (T)result;
-        }
-
         private static void InvokePrivateStaticVoid(string methodName, params object[] args)
         {
             var method = typeof(AppServerClient).GetMethod(
@@ -4003,28 +3797,6 @@ namespace MyCodex.Application.Tests
             Assert.That(method, Is.Not.Null, "Private static method not found: " + methodName);
 
             method.Invoke(null, args);
-        }
-
-        private static void SetPrivateField(object instance, string fieldName, object value)
-        {
-            Assert.That(instance, Is.Not.Null);
-            var field = instance.GetType().GetField(
-                fieldName,
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.That(field, Is.Not.Null, "Private instance field not found: " + fieldName);
-
-            field.SetValue(instance, value);
-        }
-
-        private static T GetPrivateField<T>(object instance, string fieldName)
-        {
-            Assert.That(instance, Is.Not.Null);
-            var field = instance.GetType().GetField(
-                fieldName,
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.That(field, Is.Not.Null, "Private instance field not found: " + fieldName);
-
-            return (T)field.GetValue(instance);
         }
 
         private static Task<IDictionary<string, object>> InvokeSendRequestAsync(AppServerClient client, string methodName)
@@ -4052,7 +3824,7 @@ namespace MyCodex.Application.Tests
         {
             for (var i = 0; i < 100; i++)
             {
-                if (GetPrivateField<int>(transport, "_nextRequestId") > initialRequestId)
+                if (FormTestDriver.Field<int>(transport, "_nextRequestId") > initialRequestId)
                 {
                     return;
                 }
@@ -4196,7 +3968,7 @@ namespace MyCodex.Application.Tests
             string conversationId,
             string preview)
         {
-            var transport = GetPrivateField<AppServerProtocolTransport>(client, "_protocolTransport");
+            var transport = FormTestDriver.Field<AppServerProtocolTransport>(client, "_protocolTransport");
             string errorMessage;
             Assert.That(
                 transport.TryHandleResponse(
@@ -4228,7 +4000,7 @@ namespace MyCodex.Application.Tests
 
         private static void CompleteRequestWithError(AppServerClient client, string requestId, string message)
         {
-            var transport = GetPrivateField<AppServerProtocolTransport>(client, "_protocolTransport");
+            var transport = FormTestDriver.Field<AppServerProtocolTransport>(client, "_protocolTransport");
             string errorMessage;
             Assert.That(
                 transport.TryHandleResponse(
@@ -4253,7 +4025,7 @@ namespace MyCodex.Application.Tests
 
         private static void CompleteRequest(AppServerClient client, string requestId, IDictionary<string, object> result)
         {
-            var transport = GetPrivateField<AppServerProtocolTransport>(client, "_protocolTransport");
+            var transport = FormTestDriver.Field<AppServerProtocolTransport>(client, "_protocolTransport");
             string errorMessage;
             Assert.That(
                 transport.TryHandleResponse(
@@ -4268,7 +4040,7 @@ namespace MyCodex.Application.Tests
 
         private static void CompleteTurnSteerRequest(AppServerClient client, string requestId, string turnId)
         {
-            var transport = GetPrivateField<AppServerProtocolTransport>(client, "_protocolTransport");
+            var transport = FormTestDriver.Field<AppServerProtocolTransport>(client, "_protocolTransport");
             string errorMessage;
             Assert.That(
                 transport.TryHandleResponse(
@@ -4283,7 +4055,7 @@ namespace MyCodex.Application.Tests
 
         private static void CompleteCancelLoginRequest(AppServerClient client, string requestId, string status)
         {
-            var transport = GetPrivateField<AppServerProtocolTransport>(client, "_protocolTransport");
+            var transport = FormTestDriver.Field<AppServerProtocolTransport>(client, "_protocolTransport");
             string errorMessage;
             Assert.That(
                 transport.TryHandleResponse(
@@ -4302,9 +4074,9 @@ namespace MyCodex.Application.Tests
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
-                SetPrivateField(client, "_isConnected", true);
-                SetPrivateField(client, "_process", Process.GetCurrentProcess());
-                SetPrivateField(client, "_inputWriter", writer);
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
 
                 var task = client.CancelLoginAsync("login-1");
                 var message = ReadFirstWrittenMessage(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
@@ -4320,29 +4092,6 @@ namespace MyCodex.Application.Tests
             var contentItems = (object[])result["contentItems"];
             var firstItem = (IDictionary<string, object>)contentItems[0];
             return Convert.ToString(firstItem["text"], CultureInfo.InvariantCulture);
-        }
-
-        private static void InvokePrivateInstance(AppServerClient client, string methodName, params object[] args)
-        {
-            var method = typeof(AppServerClient).GetMethod(
-                methodName,
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.That(method, Is.Not.Null, "Private instance method not found: " + methodName);
-
-            method.Invoke(client, args);
-        }
-
-        private static T InvokePrivateInstance<T>(AppServerClient client, string methodName, params object[] args)
-            where T : class
-        {
-            var method = typeof(AppServerClient).GetMethod(
-                methodName,
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.That(method, Is.Not.Null, "Private instance method not found: " + methodName);
-
-            var result = method.Invoke(client, args);
-            Assert.That(result, Is.AssignableTo<T>(), "Return type mismatch: " + methodName);
-            return (T)result;
         }
 
         private static AppServerClient CreateClient()

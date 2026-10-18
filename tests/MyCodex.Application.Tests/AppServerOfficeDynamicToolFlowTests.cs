@@ -9,6 +9,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.InternalTools;
 using MyCodex.Application.Tests.SourceGuards;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
@@ -40,8 +41,8 @@ namespace MyCodex.Application.Tests
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
                 writer.AutoFlush = true;
-                SetPrivateField(client, "_inputWriter", writer);
-                var contexts = GetPrivateField<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                var contexts = FormTestDriver.Field<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
                 contexts["thread-office"] = new InternalToolExecutionContext
                 {
                     Mode = "Office",
@@ -49,10 +50,7 @@ namespace MyCodex.Application.Tests
                     OfficeRootPath = TestContext.CurrentContext.WorkDirectory
                 };
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleServerRequest",
-                    BuildDynamicToolCallMessage("tool-request-office", "thread-office", "office", "create_document"));
+                FormTestDriver.Invoke(client, "HandleServerRequest", BuildDynamicToolCallMessage("tool-request-office", "thread-office", "office", "create_document"));
 
                 var result = ReadResultDictionary(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
 
@@ -100,14 +98,11 @@ namespace MyCodex.Application.Tests
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
             {
                 writer.AutoFlush = true;
-                SetPrivateField(client, "_inputWriter", writer);
-                var contexts = GetPrivateField<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                var contexts = FormTestDriver.Field<Dictionary<string, InternalToolExecutionContext>>(client, "_internalToolContexts");
                 contexts["thread-generic"] = toolContext.ExecutionContext;
 
-                InvokePrivateInstance(
-                    client,
-                    "HandleServerRequest",
-                    BuildDynamicToolCallMessage("tool-request-generic", "thread-generic", "sample", "ping"));
+                FormTestDriver.Invoke(client, "HandleServerRequest", BuildDynamicToolCallMessage("tool-request-generic", "thread-generic", "sample", "ping"));
 
                 var result = ReadResultDictionary(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
 
@@ -165,27 +160,6 @@ namespace MyCodex.Application.Tests
             var contentItems = (object[])result["contentItems"];
             var firstItem = (IDictionary<string, object>)contentItems[0];
             return Convert.ToString(firstItem["text"], CultureInfo.InvariantCulture);
-        }
-
-        private static void SetPrivateField(AppServerClient client, string fieldName, object value)
-        {
-            var field = typeof(AppServerClient).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.That(field, Is.Not.Null);
-            field.SetValue(client, value);
-        }
-
-        private static T GetPrivateField<T>(AppServerClient client, string fieldName)
-        {
-            var field = typeof(AppServerClient).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.That(field, Is.Not.Null);
-            return (T)field.GetValue(client);
-        }
-
-        private static void InvokePrivateInstance(AppServerClient client, string methodName, params object[] args)
-        {
-            var method = typeof(AppServerClient).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.That(method, Is.Not.Null);
-            method.Invoke(client, args);
         }
 
         private static async Task<string> WaitForWrittenTextAsync(MemoryStream stream)

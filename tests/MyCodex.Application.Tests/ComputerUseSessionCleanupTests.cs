@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.ComputerUse;
 using NUnit.Framework;
 
@@ -23,11 +24,11 @@ namespace MyCodex.Application.Tests
             try
             {
                 if (priorHostUnconfirmed)
-                    Invoke(manager, "StopHost", DisposedHost(false));
-                SetField(manager, "_host", DisposedHost(currentHostConfirmed));
+                    FormTestDriver.Invoke(manager, "StopHost", DisposedHost(false));
+                FormTestDriver.SetField(manager, "_host", DisposedHost(currentHostConfirmed));
 
                 manager.Dispose();
-                await (Task)Invoke(manager, "CleanupAuxiliaryHomeAsync");
+                await (Task)FormTestDriver.Invoke(manager, "CleanupAuxiliaryHomeAsync");
 
                 Assert.That(File.Exists(Path.Combine(root, "policy-marker")), Is.EqualTo(retained));
                 Assert.That(Directory.Exists(root), Is.EqualTo(retained));
@@ -49,10 +50,10 @@ namespace MyCodex.Application.Tests
                 var report = (Action<string, string>)typeof(ComputerUseSessionManager)
                     .GetField("_report", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(manager);
                 report("CleanupFailed", null);
-                SetField(manager, "_host", DisposedHost(true));
+                FormTestDriver.SetField(manager, "_host", DisposedHost(true));
 
                 manager.Dispose();
-                await (Task)Invoke(manager, "CleanupAuxiliaryHomeAsync");
+                await (Task)FormTestDriver.Invoke(manager, "CleanupAuxiliaryHomeAsync");
 
                 Assert.That(File.Exists(Path.Combine(root, "policy-marker")), Is.True);
             }
@@ -66,7 +67,7 @@ namespace MyCodex.Application.Tests
         private static ComputerUseSessionManager CreateManager(string root)
         {
             var manager = new ComputerUseSessionManager("unused", "unused", "unused", null, null);
-            SetField(manager, "_homeRoot", root);
+            FormTestDriver.SetField(manager, "_homeRoot", root);
             return manager;
         }
 
@@ -75,8 +76,8 @@ namespace MyCodex.Application.Tests
             // Model both completed shutdown and another Dispose still in progress without
             // starting a real host, holding desktop ownership, or launching an executor.
             var host = (ComputerUseHostProcess)FormatterServices.GetUninitializedObject(typeof(ComputerUseHostProcess));
-            SetField(host, "_disposed", 1);
-            SetField(host, "_cleanupConfirmed", confirmed ? 1 : 0);
+            FormTestDriver.SetField(host, "_disposed", 1);
+            FormTestDriver.SetField(host, "_cleanupConfirmed", confirmed ? 1 : 0);
             return host;
         }
 
@@ -93,16 +94,6 @@ namespace MyCodex.Application.Tests
             var allowedRoot = Path.GetFullPath(TestContext.CurrentContext.WorkDirectory) + Path.DirectorySeparatorChar;
             Assert.That(Path.GetFullPath(root).StartsWith(allowedRoot, StringComparison.OrdinalIgnoreCase), Is.True);
             if (Directory.Exists(root)) Directory.Delete(root, true);
-        }
-
-        private static void SetField(object instance, string field, object value)
-        {
-            instance.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(instance, value);
-        }
-
-        private static object Invoke(object instance, string method, params object[] arguments)
-        {
-            return instance.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(instance, arguments);
         }
     }
 }

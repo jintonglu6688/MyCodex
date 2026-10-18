@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.ComputerUse;
 using NUnit.Framework;
 
@@ -26,7 +27,7 @@ namespace MyCodex.Application.Tests
             {
                 // An inert host identity: no process is launched, and manager does not own this handle.
                 var host = (ComputerUseHostProcess)FormatterServices.GetUninitializedObject(typeof(ComputerUseHostProcess));
-                Set(host, "_process", current);
+                FormTestDriver.SetField(host, "_process", current);
                 Register(manager, host);
                 var preparationLock = (SemaphoreSlim)manager.GetType().GetField("_prepare", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(manager);
                 await preparationLock.WaitAsync();
@@ -104,7 +105,5 @@ namespace MyCodex.Application.Tests
         { return (Dictionary<string, ComputerUseSessionBinding>)manager.GetType().GetField("_threads", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(manager); }
         private static Task Prepare(ComputerUseSessionManager manager, string turn)
         { return (Task)manager.GetType().GetMethod("PrepareExecutionAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(manager, new object[] { null, "thread", turn, CancellationToken.None }); }
-        private static void Set(object value, string name, object field)
-        { value.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(value, field); }
     }
 }

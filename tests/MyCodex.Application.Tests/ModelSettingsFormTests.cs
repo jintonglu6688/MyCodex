@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Localization;
 using NUnit.Framework;
@@ -24,11 +25,11 @@ namespace MyCodex.Application.Tests
                 CreateModelOptions("openai/gpt-5.4", "high"), selectedModel, null,
                 "Follow Default", "Description", false, true, modelId => true))
             {
-                var combos = FindControls<ComboBox>(form).ToArray();
+                var combos = FormTestDriver.Descendants<ComboBox>(form).ToArray();
                 Assert.That(combos[0].Items.Count, Is.EqualTo(1));
                 Assert.That(combos[1].Items.Cast<object>().Select(item => item.ToString()),
                     Does.Not.Contain(UiLocalization.Text("Common.Default", "Default")));
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
                 Assert.That(form.SelectedModelId, Is.EqualTo("openai/gpt-5.4"));
                 Assert.That(form.SelectedReasoningEffort, Is.EqualTo("high"));
             }
@@ -63,12 +64,12 @@ namespace MyCodex.Application.Tests
                 true,
                 false))
             {
-                var comboBoxes = FindControls<ComboBox>(form).ToArray();
+                var comboBoxes = FormTestDriver.Descendants<ComboBox>(form).ToArray();
                 Assert.That(comboBoxes.Length, Is.EqualTo(2));
                 Assert.That(comboBoxes[1].Visible, Is.False);
                 Assert.That(comboBoxes[1].TabStop, Is.False);
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.SelectedModelId, Is.EqualTo("deepseek-v4-pro"));
                 Assert.That(form.SelectedReasoningEffort, Is.Null);
@@ -91,7 +92,7 @@ namespace MyCodex.Application.Tests
                 true,
                 modelId => true))
             {
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.SelectedModelId, Is.EqualTo("openai/gpt-5.4"));
                 Assert.That(form.SelectedReasoningEffort, Is.EqualTo("high"));
@@ -114,12 +115,12 @@ namespace MyCodex.Application.Tests
                 true,
                 modelId => false))
             {
-                var comboBoxes = FindControls<ComboBox>(form).ToArray();
+                var comboBoxes = FormTestDriver.Descendants<ComboBox>(form).ToArray();
                 Assert.That(comboBoxes.Length, Is.EqualTo(2));
                 Assert.That(comboBoxes[1].TabStop, Is.True);
                 Assert.That(comboBoxes[1].Enabled, Is.False);
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.SelectedModelId, Is.EqualTo("deepseek-v4-pro"));
                 Assert.That(form.SelectedReasoningEffort, Is.Null);
@@ -142,11 +143,11 @@ namespace MyCodex.Application.Tests
                 "Follow Default",
                 "Description"))
             {
-                var effortComboBox = FindControls<ComboBox>(form).ToArray()[1];
+                var effortComboBox = FormTestDriver.Descendants<ComboBox>(form).ToArray()[1];
                 Assert.That(effortComboBox.Enabled, Is.False);
                 Assert.That(effortComboBox.Items, Is.Empty);
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.SelectedModelId, Is.EqualTo("official-observed"));
                 Assert.That(form.SelectedReasoningEffort, Is.Null);
@@ -173,7 +174,7 @@ namespace MyCodex.Application.Tests
                 true,
                 modelId => true))
             {
-                var effortComboBox = FindControls<ComboBox>(form).ToArray()[1];
+                var effortComboBox = FormTestDriver.Descendants<ComboBox>(form).ToArray()[1];
 
                 Assert.That(effortComboBox.Items.Cast<object>().Select(item => item.ToString()).ToArray(),
                     Is.EqualTo(new[]
@@ -192,12 +193,12 @@ namespace MyCodex.Application.Tests
             using (var form = new ModelSettingsForm("Model", CreateModelOptions("known", "medium"),
                 "known", null, "Default", "Description", true, true))
             {
-                var combos = FindControls<ComboBox>(form).ToArray();
+                var combos = FormTestDriver.Descendants<ComboBox>(form).ToArray();
                 Assert.That(combos[0].AccessibleName, Is.Not.Empty);
                 Assert.That(combos[1].AccessibleName, Is.Not.Empty);
                 Assert.That(combos[0].TabIndex, Is.LessThan(combos[1].TabIndex));
                 Assert.That(combos[1].SelectedItem.ToString(), Is.EqualTo(UiLocalization.Text("Common.Default", "Default")));
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
                 Assert.That(form.SelectedReasoningEffort, Is.Null);
             }
         }
@@ -208,7 +209,7 @@ namespace MyCodex.Application.Tests
             using (var form = new ModelSettingsForm("Model", CreateModelOptions("known", "medium"),
                 "custom-model", "high", "Default", "Description", true, true, model => model == "known"))
             {
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
                 Assert.That(form.SelectedModelId, Is.EqualTo("custom-model"));
                 Assert.That(form.SelectedReasoningEffort, Is.EqualTo("high"));
             }
@@ -221,13 +222,13 @@ namespace MyCodex.Application.Tests
             using (var form = new ModelSettingsForm("Model", CreateModelOptions("qwen-3.8-max", "low"),
                 "qwen-3.8-max", "high", "Default", "Description", allowDefault, true))
             {
-                var combos = FindControls<ComboBox>(form).ToArray();
+                var combos = FormTestDriver.Descendants<ComboBox>(form).ToArray();
                 Assert.That(combos[1].AccessibleName, Is.Not.Empty);
                 Assert.That(combos[1].TabStop, Is.True);
                 Assert.That(combos[0].TabIndex, Is.LessThan(combos[1].TabIndex));
                 Assert.That(combos[1].Items.Cast<object>().Select(item => item.ToString()),
                     Does.Not.Contain(UiLocalization.Text("ReasoningEffort.High", "High")));
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
                 Assert.That(form.SelectedReasoningEffort, Is.EqualTo("low"));
             }
         }
@@ -251,38 +252,6 @@ namespace MyCodex.Application.Tests
             });
 
             return models;
-        }
-
-        private static IEnumerable<T> FindControls<T>(Control root) where T : Control
-        {
-            if (root == null)
-            {
-                yield break;
-            }
-
-            foreach (Control control in root.Controls)
-            {
-                var typed = control as T;
-                if (typed != null)
-                {
-                    yield return typed;
-                }
-
-                foreach (var nested in FindControls<T>(control))
-                {
-                    yield return nested;
-                }
-            }
-        }
-
-        private static void InvokeOk(ModelSettingsForm form)
-        {
-            var method = typeof(ModelSettingsForm).GetMethod(
-                "OkButton_Click",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-
-            Assert.That(method, Is.Not.Null);
-            method.Invoke(form, new object[] { form, EventArgs.Empty });
         }
     }
 }

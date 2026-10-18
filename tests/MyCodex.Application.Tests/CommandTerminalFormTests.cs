@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.WinForms.Forms;
@@ -33,11 +34,11 @@ namespace MyCodex.Application.Tests
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
 
-                var input = FindControl<TextBox>(form, "输入");
-                var send = FindControl<Button>(form, "发送");
-                var presets = FindControl<Button>(form, "常用");
-                var stop = FindControl<Button>(form, "停止");
-                var close = FindControl<Button>(form, "关闭");
+                var input = FormTestDriver.FindControl<TextBox>(form, "输入");
+                var send = FormTestDriver.FindControl<Button>(form, "发送");
+                var presets = FormTestDriver.FindControl<Button>(form, "常用");
+                var stop = FormTestDriver.FindControl<Button>(form, "停止");
+                var close = FormTestDriver.FindControl<Button>(form, "关闭");
 
                 Assert.That(input.TabIndex, Is.EqualTo(0));
                 Assert.That(send.TabIndex, Is.EqualTo(1));
@@ -65,8 +66,8 @@ namespace MyCodex.Application.Tests
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
 
-                var input = FindControl<TextBox>(form, "输入");
-                var send = FindControl<Button>(form, "发送");
+                var input = FormTestDriver.FindControl<TextBox>(form, "输入");
+                var send = FormTestDriver.FindControl<Button>(form, "发送");
 
                 Assert.That(input.Enabled, Is.True);
                 Assert.That(send.Enabled, Is.True);
@@ -89,7 +90,7 @@ namespace MyCodex.Application.Tests
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
 
-                var presetButton = FindControl<Button>(form, "常用");
+                var presetButton = FormTestDriver.FindControl<Button>(form, "常用");
                 presetButton.PerformClick();
 
                 Assert.That(requested, Is.True);
@@ -114,7 +115,7 @@ namespace MyCodex.Application.Tests
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
 
-                var insertButton = FindControl<Button>(form, "插入");
+                var insertButton = FormTestDriver.FindControl<Button>(form, "插入");
                 insertButton.PerformClick();
 
                 Assert.That(form.SelectedAction, Is.EqualTo(CommandPresetAction.Insert));
@@ -161,20 +162,6 @@ namespace MyCodex.Application.Tests
                 Assert.That(size.Rows, Is.GreaterThanOrEqualTo(1));
                 Assert.That(size.Cols, Is.GreaterThanOrEqualTo(1));
             }
-        }
-
-        private static T FindControl<T>(Control root, string accessibleName)
-            where T : Control
-        {
-            var match = root
-                .Controls
-                .Cast<Control>()
-                .SelectMany(Flatten)
-                .OfType<T>()
-                .FirstOrDefault(control => control.AccessibleName == accessibleName);
-
-            Assert.That(match, Is.Not.Null, "Control not found: " + accessibleName);
-            return match;
         }
 
         private static System.Collections.Generic.IEnumerable<Control> Flatten(Control control)

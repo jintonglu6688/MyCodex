@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.Codex;
@@ -29,20 +30,20 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm(kind))
             {
-                var sources = Get<ComboBox>(form, "_runtimeSourceComboBox");
+                var sources = FormTestDriver.Field<ComboBox>(form, "_runtimeSourceComboBox");
                 Assert.That(sources.Items.Count, Is.EqualTo(sourceCount));
                 Assert.That(sources.Enabled, Is.EqualTo(kind == "Windows"));
-                Assert.That(Get<ComboBox>(form, "_remoteProfileComboBox").Enabled, Is.False);
-                Assert.That(Get<Button>(form, "_addRemoteProfileButton").Enabled, Is.False);
-                Assert.That(Get<Button>(form, "_deleteRemoteProfileButton").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<ComboBox>(form, "_remoteProfileComboBox").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_addRemoteProfileButton").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_deleteRemoteProfileButton").Enabled, Is.False);
                 Assert.That(form.FormBorderStyle, Is.EqualTo(FormBorderStyle.Sizable));
                 Assert.That(form.MinimumSize.Width, Is.GreaterThanOrEqualTo(760));
-                Assert.That(Get<TextBox>(form, "_targetNameTextBox").AccessibleName, Is.Not.Empty);
-                Assert.That(Get<TextBox>(form, "_targetNameTextBox").TabIndex, Is.LessThan(sources.TabIndex));
-                Assert.That(Get<FlowLayoutPanel>(form, "_buttonPanel").Controls.Count, Is.EqualTo(3));
-                Assert.That(form.AcceptButton, Is.SameAs(Get<Button>(form, "_okButton")));
-                Assert.That(form.CancelButton, Is.SameAs(Get<Button>(form, "_cancelButton")));
-                Assert.That(Get<Button>(form, "_okButton").DialogResult, Is.EqualTo(DialogResult.None));
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_targetNameTextBox").AccessibleName, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_targetNameTextBox").TabIndex, Is.LessThan(sources.TabIndex));
+                Assert.That(FormTestDriver.Field<FlowLayoutPanel>(form, "_buttonPanel").Controls.Count, Is.EqualTo(3));
+                Assert.That(form.AcceptButton, Is.SameAs(FormTestDriver.Field<Button>(form, "_okButton")));
+                Assert.That(form.CancelButton, Is.SameAs(FormTestDriver.Field<Button>(form, "_cancelButton")));
+                Assert.That(FormTestDriver.Field<Button>(form, "_okButton").DialogResult, Is.EqualTo(DialogResult.None));
             }
         }
 
@@ -58,7 +59,7 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(false);
             }))
             {
-                Get<TextBox>(form, "_targetNameTextBox").Text = "Renamed Windows";
+                FormTestDriver.Field<TextBox>(form, "_targetNameTextBox").Text = "Renamed Windows";
                 await form.SaveTargetForTestsAsync();
 
                 Assert.That(saved.Name, Is.EqualTo("Renamed Windows"));
@@ -66,10 +67,10 @@ namespace MyCodex.Application.Tests
                 Assert.That(original.Name, Is.EqualTo("Windows"));
                 Assert.That(form.DialogResult, Is.EqualTo(DialogResult.None));
                 Assert.That(form.IsDisposed, Is.False);
-                Assert.That(Get<TextBox>(form, "_targetNameTextBox").Text, Is.EqualTo("Renamed Windows"));
-                Assert.That(Get<Button>(form, "_okButton").Enabled, Is.True);
-                Assert.That(Get<Button>(form, "_cancelButton").Enabled, Is.True);
-                Assert.That(Get<TextBox>(form, "_diagnosticsTextBox").Text, Is.EqualTo(UiLocalization.Text("TargetSettingsForm.Status.SaveNotCompleted", "The operation was not completed. Your draft is retained; retry or cancel.")));
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_targetNameTextBox").Text, Is.EqualTo("Renamed Windows"));
+                Assert.That(FormTestDriver.Field<Button>(form, "_okButton").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(form, "_cancelButton").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_diagnosticsTextBox").Text, Is.EqualTo(UiLocalization.Text("TargetSettingsForm.Status.SaveNotCompleted", "The operation was not completed. Your draft is retained; retry or cancel.")));
             }
         }
 
@@ -87,8 +88,8 @@ namespace MyCodex.Application.Tests
                 var save = form.SaveTargetForTestsAsync();
                 Assert.That(saveRequested, Is.True);
                 Assert.That(form.DialogResult, Is.EqualTo(DialogResult.None));
-                Assert.That(Get<Button>(form, "_okButton").Enabled, Is.False);
-                Assert.That(Get<Button>(form, "_cancelButton").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_okButton").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_cancelButton").Enabled, Is.False);
                 completion.SetResult(true);
                 await save;
                 Assert.That(form.DialogResult, Is.EqualTo(DialogResult.OK));
@@ -109,7 +110,7 @@ namespace MyCodex.Application.Tests
             using (form)
             {
                 await form.SaveTargetForTestsAsync();
-                Assert.That(Get<TextBox>(form, "_diagnosticsTextBox").Text, Is.EqualTo("Saved; reconnect failed. Retry."));
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_diagnosticsTextBox").Text, Is.EqualTo("Saved; reconnect failed. Retry."));
                 await form.SaveTargetForTestsAsync();
                 Assert.That(calls, Is.EqualTo(2));
                 Assert.That(form.IsDisposed, Is.False);
@@ -127,14 +128,14 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(false);
             }))
             {
-                Assert.That(Get<TextBox>(form, "_remoteHostTextBox").ReadOnly, Is.False);
-                Assert.That(Get<TextBox>(form, "_remoteHostTextBox").AccessibleName, Is.Not.Empty);
-                Assert.That(Get<TextBox>(form, "_remoteHostTextBox").TabStop, Is.True);
-                Assert.That(Get<TextBox>(form, "_remoteUserNameTextBox").ReadOnly, Is.True);
-                Get<TextBox>(form, "_remoteHostTextBox").Text = "other.example";
-                Get<TextBox>(form, "_remoteUserNameTextBox").Text = "other-user";
-                Get<TextBox>(form, "_remotePortTextBox").Text = "2222";
-                Get<TextBox>(form, "_remoteShellTextBox").Text = "/bin/sh";
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_remoteHostTextBox").ReadOnly, Is.False);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_remoteHostTextBox").AccessibleName, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_remoteHostTextBox").TabStop, Is.True);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_remoteUserNameTextBox").ReadOnly, Is.True);
+                FormTestDriver.Field<TextBox>(form, "_remoteHostTextBox").Text = "other.example";
+                FormTestDriver.Field<TextBox>(form, "_remoteUserNameTextBox").Text = "other-user";
+                FormTestDriver.Field<TextBox>(form, "_remotePortTextBox").Text = "2222";
+                FormTestDriver.Field<TextBox>(form, "_remoteShellTextBox").Text = "/bin/sh";
                 await form.SaveTargetForTestsAsync();
 
                 Assert.That(saved.RemoteSsh.HostName, Is.EqualTo("other.example"));
@@ -155,8 +156,8 @@ namespace MyCodex.Application.Tests
             TargetRuntimeSettings saved = null;
             using (var form = CreateForm("Ssh", save: draft => { saved = draft; return Task.FromResult(false); }))
             {
-                Get<TextBox>(form, "_remoteHostTextBox").Text = host;
-                var key = Get<TextBox>(form, "_remoteHostKeyTextBox");
+                FormTestDriver.Field<TextBox>(form, "_remoteHostTextBox").Text = host;
+                var key = FormTestDriver.Field<TextBox>(form, "_remoteHostKeyTextBox");
                 Assert.That(key.Text, Is.EqualTo(changed ? string.Empty : "SHA256:original"));
                 if (changed) key.Text = "SHA256:confirmed-new-host";
                 await form.SaveTargetForTestsAsync();
@@ -170,12 +171,12 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm("Ssh", isNew: true))
             {
-                var profiles = Get<List<RemoteUnixSshProfileConfigSnapshot>>(form, "_remoteProfiles");
+                var profiles = FormTestDriver.Field<List<RemoteUnixSshProfileConfigSnapshot>>(form, "_remoteProfiles");
                 Assert.That(profiles, Has.Count.EqualTo(1));
                 Assert.That(profiles[0].Ssh.ProtectedPassword, Is.Null);
                 Assert.That(profiles[0].Ssh.HostKeyFingerprint, Is.Null);
-                Assert.That(Get<TextBox>(form, "_remoteHostTextBox").ReadOnly, Is.False);
-                Assert.That(Get<TextBox>(form, "_remoteUserNameTextBox").ReadOnly, Is.False);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_remoteHostTextBox").ReadOnly, Is.False);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_remoteUserNameTextBox").ReadOnly, Is.False);
             }
         }
 
@@ -203,13 +204,13 @@ namespace MyCodex.Application.Tests
             });
             using (form)
             {
-                Get<TextBox>(form, "_remotePasswordTextBox").Text = "fixture-password";
+                FormTestDriver.Field<TextBox>(form, "_remotePasswordTextBox").Text = "fixture-password";
                 await form.SaveTargetForTestsAsync();
-                Assert.That(Get<TextBox>(form, "_remoteHostTextBox").ReadOnly, Is.False);
-                Assert.That(Get<TextBox>(form, "_remoteUserNameTextBox").ReadOnly, Is.True);
-                Assert.That(Get<TextBox>(form, "_remotePasswordTextBox").Text, Is.Empty);
-                Assert.That(Get<TextBox>(form, "_diagnosticsTextBox").Text, Is.EqualTo("Saved; further settings update failed. Retry."));
-                Get<TextBox>(form, "_remoteHostTextBox").Text = "corrected.example";
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_remoteHostTextBox").ReadOnly, Is.False);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_remoteUserNameTextBox").ReadOnly, Is.True);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_remotePasswordTextBox").Text, Is.Empty);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_diagnosticsTextBox").Text, Is.EqualTo("Saved; further settings update failed. Retry."));
+                FormTestDriver.Field<TextBox>(form, "_remoteHostTextBox").Text = "corrected.example";
                 await form.SaveTargetForTestsAsync();
                 Assert.That(drafts, Has.Count.EqualTo(2));
                 Assert.That(drafts[1].RemoteSsh.HostName, Is.EqualTo("corrected.example"));
@@ -237,12 +238,12 @@ namespace MyCodex.Application.Tests
             using (form)
             {
                 await form.RefreshTargetDistributionsForTestsAsync();
-                Get<ComboBox>(form, "_targetDistributionComboBox").SelectedItem = "Debian";
+                FormTestDriver.Field<ComboBox>(form, "_targetDistributionComboBox").SelectedItem = "Debian";
                 await form.SaveTargetForTestsAsync();
-                Assert.That(Get<ComboBox>(form, "_targetDistributionComboBox").Enabled, Is.False);
-                Assert.That(Get<Button>(form, "_refreshDistributionsButton").Enabled, Is.False);
-                Assert.That(Get<TextBox>(form, "_distributionTextBox").ReadOnly, Is.True);
-                Assert.That(Get<TextBox>(form, "_distributionTextBox").TabStop, Is.True);
+                Assert.That(FormTestDriver.Field<ComboBox>(form, "_targetDistributionComboBox").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_refreshDistributionsButton").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_distributionTextBox").ReadOnly, Is.True);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_distributionTextBox").TabStop, Is.True);
                 await form.SaveTargetForTestsAsync();
                 Assert.That(drafts[1].WslAppServer.DistributionName, Is.EqualTo("Debian"));
             }
@@ -258,15 +259,15 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult<IList<string>>(new[] { "Ubuntu", "Debian" });
             }))
             {
-                var distribution = Get<ComboBox>(form, "_targetDistributionComboBox");
+                var distribution = FormTestDriver.Field<ComboBox>(form, "_targetDistributionComboBox");
                 Assert.That(calls, Is.Zero);
                 await form.RefreshTargetDistributionsForTestsAsync();
                 Assert.That(calls, Is.EqualTo(1));
                 distribution.SelectedItem = "Debian";
                 Assert.That(calls, Is.EqualTo(1));
-                Assert.That(Get<TextBox>(form, "_distributionTextBox").Text, Is.EqualTo("Debian"));
-                Assert.That(Get<Button>(form, "_refreshDistributionsButton").Enabled, Is.True);
-                Assert.That(Get<Button>(form, "_refreshDistributionsButton").AccessibleName, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_distributionTextBox").Text, Is.EqualTo("Debian"));
+                Assert.That(FormTestDriver.Field<Button>(form, "_refreshDistributionsButton").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(form, "_refreshDistributionsButton").AccessibleName, Is.Not.Empty);
             }
         }
 
@@ -280,9 +281,9 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(false);
             }))
             {
-                Assert.That(Get<TextBox>(form, "_distributionTextBox").ReadOnly, Is.True);
-                Get<TextBox>(form, "_distributionTextBox").Text = "Debian";
-                Get<TextBox>(form, "_codexCommandTextBox").Text = "/opt/codex";
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_distributionTextBox").ReadOnly, Is.True);
+                FormTestDriver.Field<TextBox>(form, "_distributionTextBox").Text = "Debian";
+                FormTestDriver.Field<TextBox>(form, "_codexCommandTextBox").Text = "/opt/codex";
                 await form.SaveTargetForTestsAsync();
                 Assert.That(saved.WslAppServer.DistributionName, Is.EqualTo("Ubuntu"));
                 Assert.That(saved.WslAppServer.CodexCommand, Is.EqualTo("/opt/codex"));
@@ -310,7 +311,7 @@ namespace MyCodex.Application.Tests
             var client = new CountingSandboxClient();
             using (var form = CreateForm("Windows", sandbox: client))
             {
-                Get<ComboBox>(form, "_windowsShellComboBox").SelectedIndex = 1;
+                FormTestDriver.Field<ComboBox>(form, "_windowsShellComboBox").SelectedIndex = 1;
                 await form.DetectWindowsSandboxForTestsAsync();
                 Assert.That(client.Calls, Is.Zero);
                 Assert.That(form.WindowsSandboxDetectEnabledForTests, Is.False);
@@ -358,11 +359,6 @@ namespace MyCodex.Application.Tests
                     ShellCommand = "bash"
                 }
             };
-        }
-
-        private static T Get<T>(object instance, string name) where T : class
-        {
-            return (T)instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(instance);
         }
 
         private sealed class CountingSandboxClient : IAppServerWindowsSandboxClient

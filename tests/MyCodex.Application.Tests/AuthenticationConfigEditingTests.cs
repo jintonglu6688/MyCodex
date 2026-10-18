@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.AuthenticationCenter;
 using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Forms;
@@ -30,9 +31,9 @@ namespace MyCodex.Application.Tests
                 form.Size = form.MinimumSize;
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
-                var editor = Field<TextBox>(form, "_editor");
-                var save = Field<Button>(form, "_saveButton");
-                var cancel = Field<Button>(form, "_cancelButton");
+                var editor = FormTestDriver.Field<TextBox>(form, "_editor");
+                var save = FormTestDriver.Field<Button>(form, "_saveButton");
+                var cancel = FormTestDriver.Field<Button>(form, "_cancelButton");
                 Assert.That(editor.Focused, Is.True);
                 Assert.That(editor.AccessibleName, Is.Not.Empty);
                 Assert.That(editor.Multiline && editor.AcceptsReturn && !editor.AcceptsTab, Is.True);
@@ -44,8 +45,8 @@ namespace MyCodex.Application.Tests
                 Assert.That(form.ClientRectangle.Contains(form.PointToClient(save.PointToScreen(System.Drawing.Point.Empty))), Is.True);
                 await form.SaveAsync();
                 Assert.That(editor.Text, Is.EqualTo("bad=["));
-                Assert.That(Field<Label>(form, "_status").Text, Is.Not.Empty);
-                Assert.That(Field<Label>(form, "_status").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(form, "_status").Text, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<Label>(form, "_status").TabStop, Is.False);
                 Assert.That(save.Enabled, Is.True);
                 code = "operation_unknown";
                 await form.SaveAsync();
@@ -71,8 +72,8 @@ namespace MyCodex.Application.Tests
                 });
                 Assert.That(saved, Is.Null);
                 Assert.That(provider.Model, Is.EqualTo("old"));
-                Assert.That(Field<AuthenticationModelsControl>(form, "_models").Models, Is.Empty, "Editing TOML must not invent model mappings.");
-                Assert.That(Field<TextBox>(form, "_urlTextBox").Text, Is.EqualTo("https://example.test/v1"));
+                Assert.That(FormTestDriver.Field<AuthenticationModelsControl>(form, "_models").Models, Is.Empty, "Editing TOML must not invent model mappings.");
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_urlTextBox").Text, Is.EqualTo("https://example.test/v1"));
                 await form.SaveAsync();
                 Assert.That(saved.ConfigToml, Is.EqualTo("# custom\nmodel='new'"));
                 Assert.That(saved.Model, Is.EqualTo("new"));
@@ -158,7 +159,7 @@ namespace MyCodex.Application.Tests
                 form.ChooseConflictPolicy = keys => { asked = keys; return choice; };
                 await form.ApplyFullConfigDraftAsync(new AuthenticationProviderEdit { Id = "one", Name = "One", Kind = "responses", Model = "m" },
                     "approval_policy = \"never\"\n", "approval_policy = \"untrusted\"\n", null, CancellationToken.None);
-                Assert.That(Field<TextBox>(form, "_statusLabel").Text, Does.Contain("approval_policy"));
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_statusLabel").Text, Does.Contain("approval_policy"));
                 await form.SaveAsync();
                 Assert.That(asked, Is.EqualTo(new[] { "approval_policy" }));
                 Assert.That(saves[0].EditorBase, Is.EqualTo("approval_policy = \"never\"\n"));
@@ -168,7 +169,7 @@ namespace MyCodex.Application.Tests
                 {
                     Assert.That(saves.Count, Is.EqualTo(1));
                     Assert.That(form.DialogResult, Is.Not.EqualTo(DialogResult.OK));
-                    Assert.That(Field<TextBox>(form, "_statusLabel").Text, Is.Not.Empty);
+                    Assert.That(FormTestDriver.Field<TextBox>(form, "_statusLabel").Text, Is.Not.Empty);
                 }
                 else
                 {
@@ -188,7 +189,7 @@ namespace MyCodex.Application.Tests
                 form.Size = form.MinimumSize;
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
-                var keys = Field<ListBox>(form, "_keys");
+                var keys = FormTestDriver.Field<ListBox>(form, "_keys");
                 Assert.That(keys.Focused, Is.True);
                 Assert.That(keys.Items.Count, Is.EqualTo(2));
                 Assert.That(keys.AccessibleName, Is.Not.Empty);
@@ -210,14 +211,14 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new AuthenticationConfigEditForm("Configuration", "Hint", "model = 'm'", "sandbox_mode = \"read-only\"", (text, token) => Task.CompletedTask))
             {
-                var details = Field<TextBox>(form, "_details");
+                var details = FormTestDriver.Field<TextBox>(form, "_details");
                 Assert.That(details.ReadOnly && !details.TabStop, Is.True);
                 Assert.That(details.AccessibleName, Is.Not.Empty);
                 Assert.That(details.Text, Does.Contain("sandbox_mode"));
             }
             using (var form = new AuthenticationConfigEditForm("Configuration", "Hint", "model = 'm'", (text, token) => Task.CompletedTask))
             {
-                Assert.That(Field<TextBox>(form, "_details"), Is.Null);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_details"), Is.Null);
             }
         }
 
@@ -237,11 +238,6 @@ namespace MyCodex.Application.Tests
             var draft = await client.PreviewProviderConfigAsync(new AuthenticationProviderEdit { Id = "draft", Kind = "responses", ConfigToml = "# draft" }, "", CancellationToken.None);
             Assert.That(draft.Text, Is.Empty);
             Assert.That(calls.Count, Is.EqualTo(1));
-        }
-
-        private static T Field<T>(object owner, string name) where T : class
-        {
-            return owner.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(owner) as T;
         }
     }
 }

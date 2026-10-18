@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.AuthenticationCenter;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Controls;
@@ -83,7 +84,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(editor.SaveOutcomeUnknown, Is.True);
                 Assert.That(editor.SavedProvider, Is.Null);
                 Assert.That(editor.DialogResult, Is.Not.EqualTo(DialogResult.OK));
-                Assert.That(Field<Button>(editor, "_saveButton").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(editor, "_saveButton").Enabled, Is.False);
                 editor.SaveAsync().GetAwaiter().GetResult();
                 Assert.That(writes, Is.EqualTo(1));
             }
@@ -161,7 +162,7 @@ namespace MyCodex.Application.Tests
             {
                 var handle = form.Handle;
                 form.RefreshAsync().GetAwaiter().GetResult();
-                var accounts = Field<ListView>(form, "_accounts");
+                var accounts = FormTestDriver.Field<ListView>(form, "_accounts");
                 Assert.That(accounts.TabIndex, Is.Zero);
                 Assert.That(accounts.TabStop, Is.True);
                 Assert.That(accounts.AccessibleName, Is.Not.Empty);
@@ -169,8 +170,8 @@ namespace MyCodex.Application.Tests
                 Assert.That(accounts.Items.Count, Is.EqualTo(1));
                 accounts.Items[0].Selected = true;
                 Assert.That(deletes, Is.Zero);
-                Assert.That(Field<Button>(form, "_deleteButton").AccessibleName, Is.Not.Empty);
-                Assert.That(Field<Button>(form, "_refresh").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_deleteButton").AccessibleName, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<Button>(form, "_refresh").TabStop, Is.False);
                 Assert.That(form.MinimumSize.Width, Is.GreaterThan(0));
             }
         }
@@ -195,7 +196,7 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
-                var accounts = Field<ListView>(form, "_accounts");
+                var accounts = FormTestDriver.Field<ListView>(form, "_accounts");
                 accounts.Items[0].Selected = false;
                 accounts.Items[1].Selected = true;
                 accounts.Focus();
@@ -211,11 +212,6 @@ namespace MyCodex.Application.Tests
                 Assert.That(accounts.ContainsFocus, Is.True);
                 Assert.That(((AuthenticationAccount)accounts.SelectedItems[0].Tag).Id, Is.EqualTo("second"));
             }
-        }
-
-        private static T Field<T>(object owner, string name)
-        {
-            return (T)owner.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(owner);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Infrastructure.Codex;
@@ -39,13 +40,11 @@ namespace MyCodex.Application.Tests
                     sessions.Add(new ChatSession { Id = "child", ThreadId = "child", ParentThreadId = "root", IsSubAgent = true });
                     sessions.Add(new ChatSession { Id = "fork", ThreadId = "fork", ForkSourceThreadId = "root", IsFork = true });
 
-                    Invoke(form, "AppServerClientOnEventReceived", client,
-                        new AppServerEventArgs("thread_archived", "archived", threadId: "root"));
+                    FormTestDriver.Invoke(form, "AppServerClientOnEventReceived", client, new AppServerEventArgs("thread_archived", "archived", threadId: "root"));
                     Assert.That(sessions.Select(session => session.ThreadId), Is.EquivalentTo(new[] { "child", "fork" }));
                     Assert.That(store.Load().Sessions.Select(session => session.ThreadId), Is.EquivalentTo(new[] { "child", "fork" }));
 
-                    Invoke(form, "AppServerClientOnEventReceived", client,
-                        new AppServerEventArgs("thread_archived", "archived", threadId: "child"));
+                    FormTestDriver.Invoke(form, "AppServerClientOnEventReceived", client, new AppServerEventArgs("thread_archived", "archived", threadId: "child"));
                     Assert.That(sessions.Select(session => session.ThreadId), Is.EqualTo(new[] { "fork" }));
                 }
                 finally
@@ -53,18 +52,13 @@ namespace MyCodex.Application.Tests
                     // Do not run FormClosed: it also stops the user's authentication backend.
                     Microsoft.Win32.SystemEvents.UserPreferenceChanged -= (Microsoft.Win32.UserPreferenceChangedEventHandler)
                         Delegate.CreateDelegate(typeof(Microsoft.Win32.UserPreferenceChangedEventHandler), form, "OnSystemUserPreferenceChanged");
-                    Invoke(form, "DisposeThreadSyncTimersOnExit");
-                    Invoke(form, "DisposeLocalSyncTimersOnExit");
-                    Invoke(form, "DisposeRateLimitAutoResetTimerOnExit");
-                    Invoke(form, "DisposeRemoteHostService");
-                    Invoke(form, "DisposeTrayIconOnExit");
+                    FormTestDriver.Invoke(form, "DisposeThreadSyncTimersOnExit");
+                    FormTestDriver.Invoke(form, "DisposeLocalSyncTimersOnExit");
+                    FormTestDriver.Invoke(form, "DisposeRateLimitAutoResetTimerOnExit");
+                    FormTestDriver.Invoke(form, "DisposeRemoteHostService");
+                    FormTestDriver.Invoke(form, "DisposeTrayIconOnExit");
                 }
             }
-        }
-
-        private static object Invoke(object target, string method, params object[] args)
-        {
-            return target.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(target, args);
         }
 
         private sealed class Reader : IScreenReaderService

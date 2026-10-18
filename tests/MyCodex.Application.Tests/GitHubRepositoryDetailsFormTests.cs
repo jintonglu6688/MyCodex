@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Localization;
 using NUnit.Framework;
@@ -97,8 +98,8 @@ namespace MyCodex.Application.Tests
             using (var form = CreateForm(new FakeGitHubCliService(new GitHubRepositoryEntry { NameWithOwner = "owner/demo" }), GitHubRepositoryDetailsMode.PublicBrowse))
             {
                 SetSelectedListItem(form, "_branchesListView", new GitHubBranchEntry { Name = "feature", CommitSha = "abcdef123456" });
-                SetPrivateField(form, "_matchingLocalRemoteName", "origin");
-                SetPrivateField(form, "_currentLocalBranch", "main");
+                FormTestDriver.SetField(form, "_matchingLocalRemoteName", "origin");
+                FormTestDriver.SetField(form, "_currentLocalBranch", "main");
                 SetSelectedListItem(form, "_issuesListView", new GitHubIssueEntry { Number = 1, Title = "bug", State = "OPEN", Url = "https://github.com/owner/demo/issues/1" });
                 SetSelectedListItem(form, "_pullRequestsListView", new GitHubPullRequestEntry { Number = 2, Title = "pr", State = "OPEN", Url = "https://github.com/owner/demo/pull/2" });
 
@@ -134,8 +135,8 @@ namespace MyCodex.Application.Tests
                 GitHubRepositoryDetailsMode.Manage))
             {
                 SetSelectedListItem(form, "_branchesListView", new GitHubBranchEntry { Name = "feature", CommitSha = "abcdef123456" });
-                SetPrivateField(form, "_matchingLocalRemoteName", "origin");
-                SetPrivateField(form, "_currentLocalBranch", "main");
+                FormTestDriver.SetField(form, "_matchingLocalRemoteName", "origin");
+                FormTestDriver.SetField(form, "_currentLocalBranch", "main");
                 SetSelectedListItem(form, "_issuesListView", new GitHubIssueEntry { Number = 1, Title = "bug", State = "OPEN", Url = "https://github.com/owner/demo/issues/1" });
                 SetSelectedListItem(form, "_pullRequestsListView", new GitHubPullRequestEntry { Number = 2, Title = "pr", State = "OPEN", Url = "https://github.com/owner/demo/pull/2" });
 
@@ -188,8 +189,8 @@ namespace MyCodex.Application.Tests
             using (var form = CreateForm(service))
             {
                 form.CreateControl();
-                var tabs = GetPrivateField<TabControl>(form, "_tabs");
-                var branchesTab = GetPrivateField<TabPage>(form, "_branchesTabPage");
+                var tabs = FormTestDriver.Field<TabControl>(form, "_tabs");
+                var branchesTab = FormTestDriver.Field<TabPage>(form, "_branchesTabPage");
 
                 tabs.SelectedTab = branchesTab;
                 PumpEvents(20);
@@ -211,11 +212,11 @@ namespace MyCodex.Application.Tests
             using (var form = CreateForm(service))
             {
                 form.CreateControl();
-                var tabs = GetPrivateField<TabControl>(form, "_tabs");
-                var branchesTab = GetPrivateField<TabPage>(form, "_branchesTabPage");
+                var tabs = FormTestDriver.Field<TabControl>(form, "_tabs");
+                var branchesTab = FormTestDriver.Field<TabPage>(form, "_branchesTabPage");
 
                 tabs.SelectedTab = branchesTab;
-                InvokePrivateTask(form, "LoadCurrentTabAsync", true, false);
+                FormTestDriver.InvokeAndWait(form, "LoadCurrentTabAsync", true, false);
 
                 Assert.That(service.BranchesCallCount, Is.EqualTo(1));
             }
@@ -242,17 +243,6 @@ namespace MyCodex.Application.Tests
                 BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.That(method, Is.Not.Null);
             var task = method.Invoke(form, new object[] { CancellationToken.None }) as Task;
-            Assert.That(task, Is.Not.Null);
-            task.GetAwaiter().GetResult();
-        }
-
-        private static void InvokePrivateTask(GitHubRepositoryDetailsForm form, string methodName, params object[] parameters)
-        {
-            var method = typeof(GitHubRepositoryDetailsForm).GetMethod(
-                methodName,
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(method, Is.Not.Null);
-            var task = method.Invoke(form, parameters) as Task;
             Assert.That(task, Is.Not.Null);
             task.GetAwaiter().GetResult();
         }
@@ -304,7 +294,7 @@ namespace MyCodex.Application.Tests
                 System.Windows.Forms.Application.DoEvents();
             }
 
-            var listView = GetPrivateField<ListView>(form, fieldName);
+            var listView = FormTestDriver.Field<ListView>(form, fieldName);
             listView.CreateControl();
             listView.Items.Clear();
             var item = new ListViewItem("item") { Tag = tag };
@@ -318,26 +308,8 @@ namespace MyCodex.Application.Tests
 
         private static IReadOnlyList<string> GetContextMenuTexts(GitHubRepositoryDetailsForm form, string fieldName)
         {
-            var contextMenu = GetPrivateField<ContextMenu>(form, fieldName);
+            var contextMenu = FormTestDriver.Field<ContextMenu>(form, fieldName);
             return contextMenu.MenuItems.OfType<MenuItem>().Select(item => item.Text).ToList();
-        }
-
-        private static void SetPrivateField(GitHubRepositoryDetailsForm form, string fieldName, object value)
-        {
-            var field = typeof(GitHubRepositoryDetailsForm).GetField(
-                fieldName,
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(field, Is.Not.Null);
-            field.SetValue(form, value);
-        }
-
-        private static T GetPrivateField<T>(GitHubRepositoryDetailsForm form, string fieldName) where T : class
-        {
-            var field = typeof(GitHubRepositoryDetailsForm).GetField(
-                fieldName,
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(field, Is.Not.Null);
-            return field.GetValue(form) as T;
         }
 
         private sealed class FakeGitHubCliService : IGitHubCliService

@@ -13,6 +13,7 @@ using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
 using MyCodex.Application.Tests.Fakes;
 using MyCodex.Application.Tests.SourceGuards;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
@@ -2525,7 +2526,6 @@ namespace MyCodex.Application.Tests
 
                 return Task.FromResult(summary);
             }
-
 
             public override Task CompactThreadAsync(string threadId, string workspacePath, ApprovalMode? approvalMode, string modelId)
             {
@@ -5190,13 +5190,13 @@ namespace MyCodex.Application.Tests
             using (var composePanel = new Panel())
             {
                 var form = (MainForm)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(MainForm));
-                SetPrivateField(form, "_appConfigSnapshot", new AppConfigSnapshot { CodexRuntimeSource = runtimeSource });
-                SetPrivateField(form, "_pendingAttachments", new List<PendingAttachmentItem>());
-                SetPrivateField(form, "_pendingAttachmentListBox", listBox);
-                SetPrivateField(form, "_attachmentPanel", attachmentPanel);
-                SetPrivateField(form, "_composePanel", composePanel);
-                SetPrivateField(form, "_removeSelectedAttachmentMenuItem", new MenuItem());
-                SetPrivateField(form, "_clearAttachmentsMenuItem", new MenuItem());
+                FormTestDriver.SetField(form, "_appConfigSnapshot", new AppConfigSnapshot { CodexRuntimeSource = runtimeSource });
+                FormTestDriver.SetField(form, "_pendingAttachments", new List<PendingAttachmentItem>());
+                FormTestDriver.SetField(form, "_pendingAttachmentListBox", listBox);
+                FormTestDriver.SetField(form, "_attachmentPanel", attachmentPanel);
+                FormTestDriver.SetField(form, "_composePanel", composePanel);
+                FormTestDriver.SetField(form, "_removeSelectedAttachmentMenuItem", new MenuItem());
+                FormTestDriver.SetField(form, "_clearAttachmentsMenuItem", new MenuItem());
 
                 var skill = new AppServerSkillInfo
                 {
@@ -5491,15 +5491,6 @@ namespace MyCodex.Application.Tests
             return string.Equals(sender, "Error", StringComparison.OrdinalIgnoreCase)
                 ? ChatHistoryCategory.Error
                 : ChatHistoryCategory.System;
-        }
-
-        private static void SetPrivateField(object target, string fieldName, object value)
-        {
-            var field = target.GetType().GetField(
-                fieldName,
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            Assert.That(field, Is.Not.Null, fieldName);
-            field.SetValue(target, value);
         }
 
         private static object InvokePrivateMethod(object target, string methodName, params object[] args)

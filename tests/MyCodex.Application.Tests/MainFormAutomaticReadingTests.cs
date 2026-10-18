@@ -6,6 +6,7 @@ using System.Threading;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
@@ -40,9 +41,9 @@ namespace MyCodex.Application.Tests
                 {
                     var handle = main.Handle;
                     var original = store.Snapshot;
-                    var theme = (ComboBox)GetField(options, "_themeComboBox");
+                    var theme = (ComboBox)FormTestDriver.Field<object>(options, "_themeComboBox");
                     theme.SelectedIndex = 2;
-                    ((CheckBox)GetField(options, "_automaticChatReadingCheckBox")).Checked = true;
+                    ((CheckBox)FormTestDriver.Field<object>(options, "_automaticChatReadingCheckBox")).Checked = true;
                     options.ValidateSelection = () =>
                     {
                         typeof(OptionsForm).GetProperty("MainWindowHotKeyVirtualKey").SetValue(options, (int)Keys.F8);
@@ -50,16 +51,16 @@ namespace MyCodex.Application.Tests
                         return (bool)typeof(MainForm).GetMethod("TrySaveOptionsLocalSettings",
                             BindingFlags.Instance | BindingFlags.NonPublic).Invoke(main, args);
                     };
-                    Invoke(options, "OkButton_Click", options, EventArgs.Empty);
+                    FormTestDriver.Invoke(options, "OkButton_Click", options, EventArgs.Empty);
                     Assert.That(store.SaveAttempts, Is.EqualTo(1));
                     Assert.That(options.DialogResult, Is.EqualTo(DialogResult.None));
-                    Assert.That(GetField(main, "_appConfigSnapshot"), Is.SameAs(original));
+                    Assert.That(FormTestDriver.Field<object>(main, "_appConfigSnapshot"), Is.SameAs(original));
                     Assert.That(original.UiThemePreference, Is.EqualTo("auto"));
                     Assert.That(original.EnableAutomaticChatReading, Is.False);
                     Assert.That(original.MainWindowHotKeyVirtualKey, Is.EqualTo((int)Keys.M));
-                    Assert.That(((CheckBox)GetField(options, "_automaticChatReadingCheckBox")).Checked, Is.True);
+                    Assert.That(((CheckBox)FormTestDriver.Field<object>(options, "_automaticChatReadingCheckBox")).Checked, Is.True);
                     store.FailSave = false;
-                    Invoke(options, "OkButton_Click", options, EventArgs.Empty);
+                    FormTestDriver.Invoke(options, "OkButton_Click", options, EventArgs.Empty);
                     Assert.That(options.DialogResult, Is.EqualTo(DialogResult.OK));
                     Assert.That(store.SaveAttempts, Is.EqualTo(2), "The retry saves one complete snapshot, with no second write after closure.");
                     Assert.That(store.Snapshot.UiThemePreference, Is.EqualTo("dark"));
@@ -92,23 +93,23 @@ namespace MyCodex.Application.Tests
             {
                 try
                 {
-                    SetField(form, "_currentSession", new ChatSession { Id = "selected", ThreadId = "selected" });
+                    FormTestDriver.SetField(form, "_currentSession", new ChatSession { Id = "selected", ThreadId = "selected" });
                     var item = ChatHistoryItemFactory.Create("Codex", "new reply");
                     Assert.That(form.Visible, Is.False);
-                    Invoke(form, "TryAutoReadIncomingMessage", item, "other-thread");
+                    FormTestDriver.Invoke(form, "TryAutoReadIncomingMessage", item, "other-thread");
                     Assert.That(reader.Texts, Is.Empty);
-                    Invoke(form, "TryAutoReadIncomingMessage", item, "selected");
+                    FormTestDriver.Invoke(form, "TryAutoReadIncomingMessage", item, "selected");
                     Assert.That(reader.Texts, Has.Count.EqualTo(1));
-                    Invoke(form, "HandleApprovalRequestedNotification", new AppServerEventArgs(
+                    FormTestDriver.Invoke(form, "HandleApprovalRequestedNotification", new AppServerEventArgs(
                         "approval_requested", "Approval needed", threadId: "selected", requestId: "test-approval"));
                     Assert.That(reader.Texts, Has.Count.EqualTo(1), "Notifications must not add speech to reply reading.");
                     var stopCount = reader.StopCount;
-                    Invoke(form, "ToggleAutomaticChatReading");
+                    FormTestDriver.Invoke(form, "ToggleAutomaticChatReading");
                     Assert.That(config.Load().EnableAutomaticChatReading, Is.False);
                     Assert.That(reader.StopCount, Is.EqualTo(stopCount));
-                    Invoke(form, "TryAutoReadIncomingMessage", item, "selected");
+                    FormTestDriver.Invoke(form, "TryAutoReadIncomingMessage", item, "selected");
                     Assert.That(reader.Texts, Has.Count.EqualTo(1));
-                    Assert.That(Invoke(form, "SpeakManualTextWithScreenReader", "manual navigation"), Is.True);
+                    Assert.That(FormTestDriver.Invoke(form, "SpeakManualTextWithScreenReader", "manual navigation"), Is.True);
                     Assert.That(reader.Texts, Has.Count.EqualTo(2));
                 }
                 finally
@@ -139,14 +140,13 @@ namespace MyCodex.Application.Tests
                     clients.Add(client);
                     readers.Add(reader);
                     forms.Add(form);
-                    SetField(form, "_currentSession", new ChatSession { Id = "selected", ThreadId = "selected" });
+                    FormTestDriver.SetField(form, "_currentSession", new ChatSession { Id = "selected", ThreadId = "selected" });
                 }
 
                 for (var index = 0; index < forms.Count; index++)
                 {
                     Assert.That(forms[index].Visible, Is.False);
-                    Invoke(forms[index], "TryAutoReadIncomingMessage",
-                        ChatHistoryItemFactory.Create("Codex", "reply " + index), "selected");
+                    FormTestDriver.Invoke(forms[index], "TryAutoReadIncomingMessage", ChatHistoryItemFactory.Create("Codex", "reply " + index), "selected");
                     Assert.That(readers[index].Texts, Has.Count.EqualTo(1));
                     Assert.That(readers[index].Texts[0], Does.Contain("reply " + index));
                 }
@@ -162,31 +162,16 @@ namespace MyCodex.Application.Tests
             }
         }
 
-        private static object Invoke(object target, string method, params object[] args)
-        {
-            return target.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(target, args);
-        }
-
-        private static void SetField(object target, string field, object value)
-        {
-            target.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
-        }
-
-        private static object GetField(object target, string field)
-        {
-            return target.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
-        }
-
         private static void DisposeTestMainForm(MainForm form)
         {
             // FormClosed would also affect the real authentication backend; tests never start a runtime.
             Microsoft.Win32.SystemEvents.UserPreferenceChanged -= (Microsoft.Win32.UserPreferenceChangedEventHandler)
                 Delegate.CreateDelegate(typeof(Microsoft.Win32.UserPreferenceChangedEventHandler), form, "OnSystemUserPreferenceChanged");
-            Invoke(form, "DisposeThreadSyncTimersOnExit");
-            Invoke(form, "DisposeLocalSyncTimersOnExit");
-            Invoke(form, "DisposeRateLimitAutoResetTimerOnExit");
-            Invoke(form, "DisposeRemoteHostService");
-            Invoke(form, "DisposeTrayIconOnExit");
+            FormTestDriver.Invoke(form, "DisposeThreadSyncTimersOnExit");
+            FormTestDriver.Invoke(form, "DisposeLocalSyncTimersOnExit");
+            FormTestDriver.Invoke(form, "DisposeRateLimitAutoResetTimerOnExit");
+            FormTestDriver.Invoke(form, "DisposeRemoteHostService");
+            FormTestDriver.Invoke(form, "DisposeTrayIconOnExit");
         }
 
         private sealed class PreferenceStore : IAppConfigStore

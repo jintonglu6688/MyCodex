@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Localization;
 using NUnit.Framework;
@@ -24,11 +25,11 @@ namespace MyCodex.Application.Tests
             {
                 await form.RefreshAsync();
                 Assert.That(service.AllowCalls, Is.Zero);
-                Assert.That(Get<Button>(form, "_allow").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(form, "_allow").Enabled, Is.True);
                 await form.AllowAsync();
                 Assert.That(service.AllowCalls, Is.EqualTo(1));
-                Assert.That(Get<Button>(form, "_allow").Enabled, Is.False);
-                Assert.That(Get<Label>(form, "_status").Text, Does.Contain(UiLocalization.Text(
+                Assert.That(FormTestDriver.Field<Button>(form, "_allow").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(form, "_status").Text, Does.Contain(UiLocalization.Text(
                     "RemoteServiceManagementForm.Status.FirewallAllowed", "Windows Firewall allows the built-in Remote Service to receive connections from the private local subnet.")));
             }
         }
@@ -44,9 +45,9 @@ namespace MyCodex.Application.Tests
             {
                 await form.RefreshAsync();
                 await form.AllowAsync();
-                Assert.That(Get<Label>(form, "_status").Text, Is.EqualTo(UiLocalization.Text(
+                Assert.That(FormTestDriver.Field<Label>(form, "_status").Text, Is.EqualTo(UiLocalization.Text(
                     "RemoteServiceManagementForm.Status.FirewallCanceled", "Windows Firewall was not changed.")));
-                Assert.That(Get<Button>(form, "_allow").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(form, "_allow").Enabled, Is.True);
                 Assert.That(service.AllowCalls, Is.EqualTo(1));
             }
         }
@@ -60,8 +61,8 @@ namespace MyCodex.Application.Tests
                 await form.RefreshAsync();
                 service.FailRead = true;
                 await form.RefreshAsync();
-                Assert.That(Get<Label>(form, "_status").Text, Does.Contain("inspection failed"));
-                Assert.That(Get<Button>(form, "_allow").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(form, "_status").Text, Does.Contain("inspection failed"));
+                Assert.That(FormTestDriver.Field<Button>(form, "_allow").Enabled, Is.False);
                 await form.AllowAsync();
                 Assert.That(service.AllowCalls, Is.Zero);
             }
@@ -78,9 +79,9 @@ namespace MyCodex.Application.Tests
             {
                 await form.RefreshAsync();
                 await form.AllowAsync();
-                Assert.That(Get<Label>(form, "_status").Text, Does.Contain(UiLocalization.Text(
+                Assert.That(FormTestDriver.Field<Label>(form, "_status").Text, Does.Contain(UiLocalization.Text(
                     "RemoteServiceManagementForm.Message.FirewallAllowFailed", "Failed to allow local-network access through Windows Firewall.")));
-                Assert.That(Get<Button>(form, "_allow").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(form, "_allow").Enabled, Is.True);
             }
         }
 
@@ -97,12 +98,12 @@ namespace MyCodex.Application.Tests
                 typeof(Form).GetMethod("OnFormClosing", BindingFlags.Instance | BindingFlags.NonPublic)
                     .Invoke(form, new object[] { closing });
                 Assert.That(closing.Cancel, Is.True);
-                Assert.That(Get<Button>(form, "_allow").Enabled, Is.False);
-                Assert.That(Get<Button>(form, "_close").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_allow").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_close").Enabled, Is.False);
                 Assert.That(service.AllowCalls, Is.EqualTo(1));
                 service.Pending.SetResult(service.Result);
                 await applying;
-                Assert.That(Get<Button>(form, "_close").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(form, "_close").Enabled, Is.True);
             }
         }
 
@@ -119,21 +120,21 @@ namespace MyCodex.Application.Tests
                 form.Location = new Point(-2000, -2000);
                 Assert.That(form.FormBorderStyle, Is.EqualTo(FormBorderStyle.Sizable));
                 Assert.That(form.MinimumSize.Width, Is.GreaterThanOrEqualTo(480));
-                Assert.That(Get<Button>(form, "_refresh").TabStop, Is.False);
-                Assert.That(Get<Label>(form, "_status").TabStop, Is.False);
-                Assert.That(form.CancelButton, Is.SameAs(Get<Button>(form, "_close")));
+                Assert.That(FormTestDriver.Field<Button>(form, "_refresh").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(form, "_status").TabStop, Is.False);
+                Assert.That(form.CancelButton, Is.SameAs(FormTestDriver.Field<Button>(form, "_close")));
                 foreach (var field in new[] { "_allow", "_close" })
-                    Assert.That(Get<Button>(form, field).AccessibleName, Is.Not.Empty);
+                    Assert.That(FormTestDriver.Field<Button>(form, field).AccessibleName, Is.Not.Empty);
                 var focused = false;
                 var timeout = Stopwatch.StartNew();
                 closer.Tick += (s, e) =>
                 {
-                    if (Get<bool>(form, "_busy"))
+                    if (FormTestDriver.Field<bool>(form, "_busy"))
                     {
                         if (timeout.Elapsed > TimeSpan.FromSeconds(5)) form.Dispose();
                         return;
                     }
-                    focused = Get<Button>(form, focusField).Focused;
+                    focused = FormTestDriver.Field<Button>(form, focusField).Focused;
                     form.Close();
                 };
                 closer.Start();
@@ -142,11 +143,6 @@ namespace MyCodex.Application.Tests
                 Assert.That(focused, Is.True);
                 Assert.That(service.AllowCalls, Is.Zero);
             }
-        }
-
-        private static T Get<T>(object target, string name)
-        {
-            return (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
         }
 
         private static EmbeddedRelayFirewallStatus Status(EmbeddedRelayFirewallState state)

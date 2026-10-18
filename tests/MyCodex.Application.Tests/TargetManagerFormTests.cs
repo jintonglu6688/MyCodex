@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Infrastructure.Instances;
 using MyCodex.Infrastructure.Persistence;
@@ -46,10 +47,10 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new TargetManagerForm(_catalog, _channel, "MyCodex Test"))
             {
-                var targets = Get<ListView>(form, "_targets");
-                var edit = Get<Button>(form, "_edit");
-                var close = Get<Button>(form, "_close");
-                var refresh = Get<Button>(form, "_refresh");
+                var targets = FormTestDriver.Field<ListView>(form, "_targets");
+                var edit = FormTestDriver.Field<Button>(form, "_edit");
+                var close = FormTestDriver.Field<Button>(form, "_close");
+                var refresh = FormTestDriver.Field<Button>(form, "_refresh");
                 Assert.That(form.FormBorderStyle, Is.EqualTo(FormBorderStyle.Sizable));
                 Assert.That(form.MinimumSize.Width, Is.GreaterThanOrEqualTo(680));
                 Assert.That(form.MinimumSize.Height, Is.GreaterThanOrEqualTo(380));
@@ -60,7 +61,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(edit.Parent.Controls.OfType<Button>().ToArray(), Has.Length.EqualTo(6));
                 Assert.That(edit.Parent.TabIndex, Is.GreaterThan(targets.TabIndex));
                 Assert.That(edit.Parent.TabStop, Is.False);
-                Assert.That(Get<Label>(form, "_status").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(form, "_status").TabStop, Is.False);
                 Assert.That(refresh.TabStop, Is.False);
                 Assert.That(form.AcceptButton, Is.Null);
                 Assert.That(form.ActiveControl, Is.SameAs(targets));
@@ -68,7 +69,7 @@ namespace MyCodex.Application.Tests
                 var previousIndex = -1;
                 foreach (var name in new[] { "_refresh", "_addWsl", "_addSsh", "_edit", "_remove", "_close" })
                 {
-                    var button = Get<Button>(form, name);
+                    var button = FormTestDriver.Field<Button>(form, name);
                     Assert.That(button.AccessibleName, Is.Not.Empty, name);
                     Assert.That(button.TabIndex, Is.GreaterThan(previousIndex), name);
                     previousIndex = button.TabIndex;
@@ -88,7 +89,7 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(new TargetInstanceReply { Success = true });
             }))
             {
-                var targets = Get<ListView>(form, "_targets");
+                var targets = FormTestDriver.Field<ListView>(form, "_targets");
                 var handle = targets.Handle;
                 var row = new ListViewItem(linux.Name) { Tag = linux };
                 row.SubItems.Add("WSL");
@@ -97,8 +98,8 @@ namespace MyCodex.Application.Tests
                 row.Selected = true;
 
                 Assert.That(targets.SelectedItems.Count, Is.EqualTo(1));
-                Assert.That(Get<Button>(form, "_edit").Enabled, Is.True);
-                Assert.That(Get<bool>(form, "_busy"), Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_edit").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<bool>(form, "_busy"), Is.False);
                 typeof(Control).GetMethod("OnDoubleClick", BindingFlags.Instance | BindingFlags.NonPublic)
                     .Invoke(targets, new object[] { EventArgs.Empty });
                 var enterHandled = (bool)typeof(Form).GetMethod("ProcessDialogKey", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -108,7 +109,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(File.ReadAllBytes(Path.Combine(_root, "targets", "catalog.json")), Is.EqualTo(beforeCatalog));
 
                 row.Selected = false;
-                Assert.That(Get<Button>(form, "_edit").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_edit").Enabled, Is.False);
                 Assert.That(saves, Is.Zero);
             }
         }
@@ -122,7 +123,7 @@ namespace MyCodex.Application.Tests
                 form.ShowInTaskbar = false;
                 form.StartPosition = FormStartPosition.Manual;
                 form.Location = new Point(-2000, -2000);
-                var targets = Get<ListView>(form, "_targets");
+                var targets = FormTestDriver.Field<ListView>(form, "_targets");
                 var initiallyFocused = false;
                 var loadedFocused = false;
                 string selectedId = null;
@@ -130,7 +131,7 @@ namespace MyCodex.Application.Tests
                 form.Shown += (sender, args) => initiallyFocused = targets.Focused && targets.Enabled;
                 closer.Tick += (sender, args) =>
                 {
-                    if (Get<bool>(form, "_busy"))
+                    if (FormTestDriver.Field<bool>(form, "_busy"))
                     {
                         if (timeout.Elapsed > TimeSpan.FromSeconds(5)) form.Dispose();
                         return;
@@ -176,18 +177,18 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(new TargetInstanceReply { Success = true });
             }))
             {
-                var targets = Get<ListView>(form, "_targets");
+                var targets = FormTestDriver.Field<ListView>(form, "_targets");
                 var handle = targets.Handle;
                 var windowsRow = new ListViewItem("Windows") { Tag = _catalog.GetTarget("windows") };
                 var linuxRow = new ListViewItem("Linux") { Tag = linux };
                 targets.Items.AddRange(new[] { windowsRow, linuxRow });
                 windowsRow.Selected = true;
-                Assert.That(Get<Button>(form, "_remove").Enabled, Is.False);
-                Assert.That(Get<Label>(form, "_status").Text, Is.EqualTo(UiLocalization.Text("TargetManagerForm.Removal.Status.Windows", "The local Windows target cannot be removed.")));
+                Assert.That(FormTestDriver.Field<Button>(form, "_remove").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(form, "_status").Text, Is.EqualTo(UiLocalization.Text("TargetManagerForm.Removal.Status.Windows", "The local Windows target cannot be removed.")));
                 windowsRow.Selected = false;
                 linuxRow.Selected = true;
-                Assert.That(Get<Button>(form, "_remove").Enabled, Is.True);
-                Assert.That(Get<Label>(form, "_status").Text, Is.Empty);
+                Assert.That(FormTestDriver.Field<Button>(form, "_remove").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Label>(form, "_status").Text, Is.Empty);
                 Assert.That(calls, Is.Zero);
             }
         }
@@ -238,7 +239,7 @@ namespace MyCodex.Application.Tests
                 var elapsed = Stopwatch.StartNew();
                 changeSelection = () =>
                 {
-                    var targets = Get<ListView>(form, "_targets");
+                    var targets = FormTestDriver.Field<ListView>(form, "_targets");
                     foreach (ListViewItem item in targets.Items) item.Selected = false;
                     targets.Items.Cast<ListViewItem>().Single(item => ((TargetProfileSnapshot)item.Tag).Id == "windows").Selected = true;
                 };
@@ -254,20 +255,20 @@ namespace MyCodex.Application.Tests
                         button.PerformClick();
                         return;
                     }
-                    if (Get<bool>(form, "_busy")) return;
+                    if (FormTestDriver.Field<bool>(form, "_busy")) return;
                     if (!requested)
                     {
-                        var targets = Get<ListView>(form, "_targets");
+                        var targets = FormTestDriver.Field<ListView>(form, "_targets");
                         var row = targets.Items.Cast<ListViewItem>().Single(item => ((TargetProfileSnapshot)item.Tag).Id == target.Id);
                         foreach (ListViewItem item in targets.Items) item.Selected = false;
                         row.Selected = true;
                         requested = true;
-                        Get<Button>(form, "_remove").PerformClick();
+                        FormTestDriver.Field<Button>(form, "_remove").PerformClick();
                         return;
                     }
                     if (!answered) return;
-                    outcome = Get<Label>(form, "_status").Text;
-                    focused = Get<ListView>(form, "_targets").Focused;
+                    outcome = FormTestDriver.Field<Label>(form, "_status").Text;
+                    focused = FormTestDriver.Field<ListView>(form, "_targets").Focused;
                     form.Close();
                 };
                 driver.Start();
@@ -310,11 +311,6 @@ namespace MyCodex.Application.Tests
                 }
             };
             Assert.That(TargetManagerForm.StatusText(reply), Is.EqualTo(UiLocalization.Text(key, fallback)));
-        }
-
-        private static T Get<T>(object instance, string name)
-        {
-            return (T)instance.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(instance);
         }
     }
 }

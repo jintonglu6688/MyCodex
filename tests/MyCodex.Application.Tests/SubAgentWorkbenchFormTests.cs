@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Forms;
@@ -33,7 +34,7 @@ namespace MyCodex.Application.Tests
                 new[] { CreateSubAgent("a", "a", "A") }, operations))
             {
                 await ShowAndActivateSelectedSubAgentAsync(form);
-                var history = FindSingleControl<ChatHistoryListBox>(form);
+                var history = FormTestDriver.Single<ChatHistoryListBox>(form);
                 history.SelectSingleIndex(history.Items.Count - 1);
                 var selected = history.PrimaryChatHistoryItem;
                 var selectionChanges = 0;
@@ -59,7 +60,7 @@ namespace MyCodex.Application.Tests
                 new[] { CreateSubAgent("a", "a", "A") }, operations))
             {
                 await ShowAndActivateSelectedSubAgentAsync(form);
-                var history = FindSingleControl<ChatHistoryListBox>(form);
+                var history = FormTestDriver.Single<ChatHistoryListBox>(form);
                 history.SelectSingleIndex(history.Items.Count - 1);
                 var selected = history.PrimaryChatHistoryItem;
                 var selectionChanges = 0;
@@ -88,9 +89,9 @@ namespace MyCodex.Application.Tests
                 System.Windows.Forms.Application.DoEvents();
                 Assert.Multiple(() =>
                 {
-                    Assert.That(FindSingleControl<ListView>(form).Width, Is.GreaterThanOrEqualTo(260));
-                    Assert.That(FindSingleControl<ListView>(form).Columns[3].DisplayIndex, Is.EqualTo(1), "Show status beside the agent name.");
-                    Assert.That(FindSingleControl<ActivityVirtualBrowseControl>(form).Height, Is.GreaterThanOrEqualTo(90));
+                    Assert.That(FormTestDriver.Single<ListView>(form).Width, Is.GreaterThanOrEqualTo(260));
+                    Assert.That(FormTestDriver.Single<ListView>(form).Columns[3].DisplayIndex, Is.EqualTo(1), "Show status beside the agent name.");
+                    Assert.That(FormTestDriver.Single<ActivityVirtualBrowseControl>(form).Height, Is.GreaterThanOrEqualTo(90));
                 });
             }
         }
@@ -102,10 +103,10 @@ namespace MyCodex.Application.Tests
                 new[] { CreateSubAgent("a", "a", "A"), CreateSubAgent("b", "b", "B") }, CreateOperations(new List<string>())))
             {
                 await ShowAndActivateSelectedSubAgentAsync(form);
-                var workbench = FindSingleControl<ChatWorkbenchControl>(form);
+                var workbench = FormTestDriver.Single<ChatWorkbenchControl>(form);
                 workbench.SetInputText("draft A");
                 workbench.AddPendingAttachments(new[] { CreateFileAttachment() });
-                var list = FindSingleControl<ListView>(form);
+                var list = FormTestDriver.Single<ListView>(form);
                 list.Items[0].Selected = false;
                 list.Items[1].Selected = true;
                 await form.ActivateSelectedSubAgentAsync();
@@ -184,7 +185,7 @@ namespace MyCodex.Application.Tests
             {
                 await ShowAndActivateSelectedSubAgentAsync(form);
                 form.HandleAppServerEvent(new AppServerEventArgs("turn_started", "started", threadId: "thread-a", turnId: "turn-a"));
-                var list = FindSingleControl<ListView>(form);
+                var list = FormTestDriver.Single<ListView>(form);
                 list.Items[0].Selected = false;
                 list.Items[1].Selected = true;
                 await form.ActivateSelectedSubAgentAsync();
@@ -218,7 +219,7 @@ namespace MyCodex.Application.Tests
                 await ShowAndActivateSelectedSubAgentAsync(form);
                 fail = true;
                 await form.ActivateSelectedSubAgentAsync();
-                Assert.That(FindSingleControl<ChatHistoryListBox>(form).Items.Cast<ChatHistoryItem>()
+                Assert.That(FormTestDriver.Single<ChatHistoryListBox>(form).Items.Cast<ChatHistoryItem>()
                     .Any(item => item.FullText.Contains("retained history")), Is.True);
             }
         }
@@ -248,7 +249,7 @@ namespace MyCodex.Application.Tests
                 pending.SetResult(new AppServerThreadDetails { ThreadId = "thread" });
                 await activation;
                 Assert.That(reads, Is.EqualTo(2));
-                Assert.That(FindSingleControl<ChatHistoryListBox>(form).Items.Cast<ChatHistoryItem>()
+                Assert.That(FormTestDriver.Single<ChatHistoryListBox>(form).Items.Cast<ChatHistoryItem>()
                     .Any(item => item.FullText.Contains("fresh followup")), Is.True);
             }
         }
@@ -274,7 +275,7 @@ namespace MyCodex.Application.Tests
                     Assert.That(form.ActiveSession, Is.Null);
                     Assert.That(readThreadIds, Is.Empty);
 
-                    var listView = FindSingleControl<ListView>(form);
+                    var listView = FormTestDriver.Single<ListView>(form);
                     Assert.That(listView.AccessibleName, Is.EqualTo("Subagents"));
                     Assert.That(listView.Items, Has.Count.EqualTo(2));
                     Assert.That(listView.SelectedItems, Has.Count.EqualTo(1));
@@ -296,7 +297,7 @@ namespace MyCodex.Application.Tests
                     Assert.That(form.ActiveSession, Is.SameAs(secondSubAgent));
                     Assert.That(readThreadIds, Is.EqualTo(new[] { "child-thread-2" }));
 
-                    var historyListBox = FindSingleControl<ChatHistoryListBox>(form);
+                    var historyListBox = FormTestDriver.Single<ChatHistoryListBox>(form);
                     Assert.That(historyListBox.Items.OfType<ChatHistoryItem>().Any(item => item.FullText.Contains("history child-thread-2")), Is.True);
                     historyListBox.SelectSingleIndex(historyListBox.Items
                         .Cast<ChatHistoryItem>()
@@ -359,7 +360,7 @@ namespace MyCodex.Application.Tests
                 {
                     ShowAndActivateSelectedSubAgent(form);
 
-                    var activity = FindSingleControl<ActivityVirtualBrowseControl>(form);
+                    var activity = FormTestDriver.Single<ActivityVirtualBrowseControl>(form);
                     form.HandleAppServerEvent(new AppServerEventArgs("turn_started", "started", threadId: "child-thread-1", turnId: "turn-1"));
                     form.HandleAppServerEvent(new AppServerEventArgs("reasoning_completed", "**Removed task** Should disappear.", threadId: "child-thread-1", turnId: "turn-1", itemId: "reason-1"));
                     System.Windows.Forms.Application.DoEvents();
@@ -420,7 +421,7 @@ namespace MyCodex.Application.Tests
                 {
                     ShowAndActivateSelectedSubAgent(form);
 
-                    var activity = FindSingleControl<ActivityVirtualBrowseControl>(form);
+                    var activity = FormTestDriver.Single<ActivityVirtualBrowseControl>(form);
                     Assert.That(activity.AccessibleName, Is.EqualTo("Activity"));
                     Assert.That(activity.GetReadableItems(), Is.EqualTo(new[] { "No activity records currently." }));
 
@@ -458,14 +459,14 @@ namespace MyCodex.Application.Tests
                 {
                     await ShowAndActivateSelectedSubAgentAsync(form);
 
-                    var activity = FindSingleControl<ActivityVirtualBrowseControl>(form);
+                    var activity = FormTestDriver.Single<ActivityVirtualBrowseControl>(form);
                     form.HandleAppServerEvent(new AppServerEventArgs("turn_started", "started", threadId: "child-thread-1", turnId: "turn-1"));
                     form.HandleAppServerEvent(new AppServerEventArgs("reasoning_completed", "**First task** Checking desktop code.", threadId: "child-thread-1", turnId: "turn-1", itemId: "reason-1"));
                     System.Windows.Forms.Application.DoEvents();
 
                     Assert.That(activity.GetReadableItems().Any(item => item.Contains("First task: Checking desktop code.")), Is.True);
 
-                    var listView = FindSingleControl<ListView>(form);
+                    var listView = FormTestDriver.Single<ListView>(form);
                     listView.Items[1].Selected = true;
                     listView.Items[1].Focused = true;
                     await form.ActivateSelectedSubAgentAsync();
@@ -509,7 +510,7 @@ namespace MyCodex.Application.Tests
                 {
                     await ShowAndActivateSelectedSubAgentAsync(form);
 
-                    var workbench = FindSingleControl<ChatWorkbenchControl>(form);
+                    var workbench = FormTestDriver.Single<ChatWorkbenchControl>(form);
                     workbench.SetInputText("inspect ");
                     workbench.AddPendingAttachments(new[]
                     {
@@ -548,7 +549,7 @@ namespace MyCodex.Application.Tests
                 {
                     ShowAndActivateSelectedSubAgent(form);
 
-                    var listView = FindSingleControl<ListView>(form);
+                    var listView = FormTestDriver.Single<ListView>(form);
                     listView.Focus();
                     WaitForCondition(() => listView.Focused);
                     var firstItem = listView.Items[0];
@@ -581,12 +582,12 @@ namespace MyCodex.Application.Tests
                 {
                     ShowAndActivateSelectedSubAgent(form);
 
-                    var listView = FindSingleControl<ListView>(form);
+                    var listView = FormTestDriver.Single<ListView>(form);
                     listView.Focus();
                     WaitForCondition(() => listView.Focused);
 
-                    Assert.That(InvokeProcessCmdKey(form, Keys.Tab), Is.True);
-                    WaitForCondition(() => FindSingleControl<ChatHistoryListBox>(form).Focused);
+                    Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Tab), Is.True);
+                    WaitForCondition(() => FormTestDriver.Single<ChatHistoryListBox>(form).Focused);
                 }
             }
         }
@@ -607,12 +608,12 @@ namespace MyCodex.Application.Tests
                 {
                     ShowAndActivateSelectedSubAgent(form);
 
-                    var listView = FindSingleControl<ListView>(form);
+                    var listView = FormTestDriver.Single<ListView>(form);
                     listView.Focus();
                     WaitForCondition(() => listView.Focused);
 
-                    Assert.That(InvokeProcessCmdKey(form, Keys.Shift | Keys.Tab), Is.True);
-                    WaitForCondition(() => FindSingleControl<ActivityVirtualBrowseControl>(form).Focused);
+                    Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Shift | Keys.Tab), Is.True);
+                    WaitForCondition(() => FormTestDriver.Single<ActivityVirtualBrowseControl>(form).Focused);
                 }
             }
         }
@@ -633,13 +634,13 @@ namespace MyCodex.Application.Tests
                 {
                     ShowAndActivateSelectedSubAgent(form);
 
-                    var activity = FindSingleControl<ActivityVirtualBrowseControl>(form);
+                    var activity = FormTestDriver.Single<ActivityVirtualBrowseControl>(form);
                     activity.Focus();
                     WaitForCondition(() => activity.Focused);
 
-                    Assert.That(InvokeProcessCmdKey(form, Keys.Shift | Keys.Tab), Is.True);
-                    WaitForCondition(() => FindSingleControl<AttachmentComposerTextBox>(form).Focused);
-                    Assert.That(FindSingleControl<ListView>(form).Focused, Is.False);
+                    Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Shift | Keys.Tab), Is.True);
+                    WaitForCondition(() => FormTestDriver.Single<AttachmentComposerTextBox>(form).Focused);
+                    Assert.That(FormTestDriver.Single<ListView>(form).Focused, Is.False);
                 }
             }
         }
@@ -660,11 +661,11 @@ namespace MyCodex.Application.Tests
                 {
                     ShowAndActivateSelectedSubAgent(form);
 
-                    FindSingleControl<AttachmentComposerTextBox>(form).Focus();
-                    WaitForCondition(() => FindSingleControl<AttachmentComposerTextBox>(form).Focused);
+                    FormTestDriver.Single<AttachmentComposerTextBox>(form).Focus();
+                    WaitForCondition(() => FormTestDriver.Single<AttachmentComposerTextBox>(form).Focused);
 
                     Assert.That(InvokeProcessMnemonic(form, 'l'), Is.True);
-                    WaitForCondition(() => FindSingleControl<ActivityVirtualBrowseControl>(form).Focused);
+                    WaitForCondition(() => FormTestDriver.Single<ActivityVirtualBrowseControl>(form).Focused);
                     Assert.That(
                         GetLabels(form).Any(label => string.Equals(label.AccessibleName, "Activity", StringComparison.Ordinal) &&
                                                      label.Text.Contains("&L")),
@@ -695,7 +696,7 @@ namespace MyCodex.Application.Tests
                 {
                     ShowAndActivateSelectedSubAgent(form);
 
-                    var workbench = FindSingleControl<ChatWorkbenchControl>(form);
+                    var workbench = FormTestDriver.Single<ChatWorkbenchControl>(form);
 
                     Assert.That(workbench.HasAttachmentActions, Is.True);
                     Assert.That(FindButton(form, "Insert").Enabled, Is.True);
@@ -726,7 +727,7 @@ namespace MyCodex.Application.Tests
                     System.Windows.Forms.Application.DoEvents();
                     Assert.That(form.ActiveSession, Is.Null);
 
-                    var listView = FindSingleControl<ListView>(form);
+                    var listView = FormTestDriver.Single<ListView>(form);
                     Assert.That(listView.ContextMenu, Is.Not.Null);
                     Assert.That(listView.ContextMenu.MenuItems[0].Text, Is.EqualTo("Open(&O)"));
                     Assert.That(listView.ContextMenu.MenuItems[1].Text, Is.EqualTo("-"));
@@ -741,7 +742,7 @@ namespace MyCodex.Application.Tests
 
                     Assert.That(args.SuppressKeyPress, Is.True);
                     Assert.That(args.Handled, Is.True);
-                    WaitForCondition(() => FindSingleControl<ChatHistoryListBox>(form).Focused);
+                    WaitForCondition(() => FormTestDriver.Single<ChatHistoryListBox>(form).Focused);
 
                     pendingRead.SetResult(new AppServerThreadDetails
                     {
@@ -772,13 +773,13 @@ namespace MyCodex.Application.Tests
                     form.Show();
                     System.Windows.Forms.Application.DoEvents();
 
-                    var listView = FindSingleControl<ListView>(form);
+                    var listView = FormTestDriver.Single<ListView>(form);
                     listView.Items[1].Selected = true;
                     listView.Items[1].Focused = true;
                     System.Windows.Forms.Application.DoEvents();
 
                     listView.ContextMenu.MenuItems[0].PerformClick();
-                    WaitForCondition(() => FindSingleControl<ChatHistoryListBox>(form).Focused);
+                    WaitForCondition(() => FormTestDriver.Single<ChatHistoryListBox>(form).Focused);
 
                     pendingRead.SetResult(new AppServerThreadDetails
                     {
@@ -813,7 +814,7 @@ namespace MyCodex.Application.Tests
                 {
                     ShowAndActivateSelectedSubAgent(form);
 
-                    var listView = FindSingleControl<ListView>(form);
+                    var listView = FormTestDriver.Single<ListView>(form);
                     listView.Items[1].Selected = true;
                     listView.Items[1].Focused = true;
                     System.Windows.Forms.Application.DoEvents();
@@ -855,7 +856,7 @@ namespace MyCodex.Application.Tests
                 {
                     ShowAndActivateSelectedSubAgent(form);
 
-                    var listView = FindSingleControl<ListView>(form);
+                    var listView = FormTestDriver.Single<ListView>(form);
                     listView.Focus();
                     WaitForCondition(() => listView.Focused);
 
@@ -987,15 +988,6 @@ namespace MyCodex.Application.Tests
                 .Invoke(form, new object[] { listView, args });
         }
 
-        private static bool InvokeProcessCmdKey(SubAgentWorkbenchForm form, Keys keyData)
-        {
-            var message = new Message();
-            var parameters = new object[] { message, keyData };
-            return (bool)typeof(SubAgentWorkbenchForm)
-                .GetMethod("ProcessCmdKey", BindingFlags.Instance | BindingFlags.NonPublic)
-                .Invoke(form, parameters);
-        }
-
         private static bool InvokeProcessMnemonic(SubAgentWorkbenchForm form, char charCode)
         {
             return (bool)typeof(SubAgentWorkbenchForm)
@@ -1019,17 +1011,6 @@ namespace MyCodex.Application.Tests
                 .Cast<Control>()
                 .SelectMany(Flatten)
                 .OfType<Label>();
-        }
-
-        private static T FindSingleControl<T>(Control root)
-            where T : Control
-        {
-            return root
-                .Controls
-                .Cast<Control>()
-                .SelectMany(Flatten)
-                .OfType<T>()
-                .Single();
         }
 
         private static IEnumerable<Control> Flatten(Control control)

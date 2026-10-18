@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Forms;
@@ -47,8 +48,8 @@ namespace MyCodex.Application.Tests
                 FindButton(form, "Subagents").Focus();
                 WaitForCondition(() => FindButton(form, "Subagents").Focused);
 
-                Assert.That(InvokeProcessCmdKey(form, Keys.Tab), Is.True);
-                WaitForCondition(() => FindSingleControl<ChatHistoryListBox>(form).Focused);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Tab), Is.True);
+                WaitForCondition(() => FormTestDriver.Single<ChatHistoryListBox>(form).Focused);
             }
         }
 
@@ -62,8 +63,8 @@ namespace MyCodex.Application.Tests
                 FindButton(form, "File browser").Focus();
                 WaitForCondition(() => FindButton(form, "File browser").Focused);
 
-                Assert.That(InvokeProcessCmdKey(form, Keys.Shift | Keys.Tab), Is.True);
-                WaitForCondition(() => FindSingleControl<ActivityVirtualBrowseControl>(form).Focused);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Shift | Keys.Tab), Is.True);
+                WaitForCondition(() => FormTestDriver.Single<ActivityVirtualBrowseControl>(form).Focused);
             }
         }
 
@@ -74,11 +75,11 @@ namespace MyCodex.Application.Tests
             using (var form = CreateForm())
             {
                 Show(form);
-                FindSingleControl<ActivityVirtualBrowseControl>(form).Focus();
-                WaitForCondition(() => FindSingleControl<ActivityVirtualBrowseControl>(form).Focused);
+                FormTestDriver.Single<ActivityVirtualBrowseControl>(form).Focus();
+                WaitForCondition(() => FormTestDriver.Single<ActivityVirtualBrowseControl>(form).Focused);
 
-                Assert.That(InvokeProcessCmdKey(form, Keys.Shift | Keys.Tab), Is.True);
-                WaitForCondition(() => FindSingleControl<AttachmentComposerTextBox>(form).Focused);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Shift | Keys.Tab), Is.True);
+                WaitForCondition(() => FormTestDriver.Single<AttachmentComposerTextBox>(form).Focused);
             }
         }
 
@@ -92,8 +93,8 @@ namespace MyCodex.Application.Tests
                 FindButton(form, "File browser").Focus();
                 WaitForCondition(() => FindButton(form, "File browser").Focused);
 
-                Assert.That(InvokeProcessCmdKey(form, Keys.Alt | Keys.M), Is.True);
-                WaitForCondition(() => FindSingleControl<ChatHistoryListBox>(form).Focused);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Alt | Keys.M), Is.True);
+                WaitForCondition(() => FormTestDriver.Single<ChatHistoryListBox>(form).Focused);
             }
         }
 
@@ -107,8 +108,8 @@ namespace MyCodex.Application.Tests
                 FindButton(form, "File browser").Focus();
                 WaitForCondition(() => FindButton(form, "File browser").Focused);
 
-                Assert.That(InvokeProcessCmdKey(form, Keys.Alt | Keys.I), Is.True);
-                WaitForCondition(() => FindSingleControl<AttachmentComposerTextBox>(form).Focused);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Alt | Keys.I), Is.True);
+                WaitForCondition(() => FormTestDriver.Single<AttachmentComposerTextBox>(form).Focused);
             }
         }
 
@@ -122,8 +123,8 @@ namespace MyCodex.Application.Tests
                 FindButton(form, "File browser").Focus();
                 WaitForCondition(() => FindButton(form, "File browser").Focused);
 
-                Assert.That(InvokeProcessCmdKey(form, Keys.Alt | Keys.L), Is.True);
-                WaitForCondition(() => FindSingleControl<ActivityVirtualBrowseControl>(form).Focused);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Alt | Keys.L), Is.True);
+                WaitForCondition(() => FormTestDriver.Single<ActivityVirtualBrowseControl>(form).Focused);
             }
         }
 
@@ -133,7 +134,7 @@ namespace MyCodex.Application.Tests
             var speech = new List<string>();
             using (var form = CreateForm(manualBrowseContext: CreateManualBrowseContext(speech)))
             {
-                Assert.That(InvokeProcessCmdKey(form, Keys.Alt | Keys.Down), Is.True);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Alt | Keys.Down), Is.True);
                 Assert.That(speech.Last(), Does.Contain("virtual message"));
             }
         }
@@ -146,7 +147,7 @@ namespace MyCodex.Application.Tests
             context.HandleHotkey(Keys.Alt | Keys.Delete);
             using (var form = CreateForm(manualBrowseContext: context))
             {
-                Assert.That(InvokeProcessCmdKey(form, Keys.Alt | Keys.Enter), Is.True);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Alt | Keys.Enter), Is.True);
             }
         }
 
@@ -269,7 +270,7 @@ namespace MyCodex.Application.Tests
 
                     Assert.That(readCount, Is.EqualTo(2));
                     Assert.That(
-                        FindSingleControl<ChatHistoryListBox>(form).Items
+                        FormTestDriver.Single<ChatHistoryListBox>(form).Items
                             .OfType<ChatHistoryItem>()
                             .Select(item => item.MarkdownText),
                         Does.Contain("after completion"));
@@ -282,13 +283,13 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var chatWorkbench = FindSingleControl<ChatWorkbenchControl>(form);
+                var chatWorkbench = FormTestDriver.Single<ChatWorkbenchControl>(form);
                 var existingItem = CreateHistoryItem("codex", "existing reply", ChatHistoryCategory.Conversation);
                 existingItem.ThreadId = "thread-1";
                 existingItem.TurnId = "turn-1";
                 existingItem.TurnIndex = 1;
                 chatWorkbench.ReplaceHistoryItems(new[] { existingItem });
-                var historyListBox = FindSingleControl<ChatHistoryListBox>(form);
+                var historyListBox = FormTestDriver.Single<ChatHistoryListBox>(form);
                 historyListBox.SelectSingleIndex(0);
 
                 InvokeApplyHistoryLoadResult(
@@ -309,7 +310,7 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var chatWorkbench = FindSingleControl<ChatWorkbenchControl>(form);
+                var chatWorkbench = FormTestDriver.Single<ChatWorkbenchControl>(form);
                 var existingItem = CreateHistoryItem("codex", "existing reply", ChatHistoryCategory.Conversation);
                 chatWorkbench.ReplaceHistoryItems(new[] { existingItem });
                 var pendingUserItem = CreateHistoryItem("Me", "new question", ChatHistoryCategory.Conversation);
@@ -358,7 +359,7 @@ namespace MyCodex.Application.Tests
                 sendAsync: (session, request) => Task.FromResult(new ChatWorkbenchSendResult(true, true, "sent")),
                 playMessageSentSound: () => playCount++))
             {
-                var chatWorkbench = FindSingleControl<ChatWorkbenchControl>(form);
+                var chatWorkbench = FormTestDriver.Single<ChatWorkbenchControl>(form);
                 chatWorkbench.SetInputText("hello");
 
                 await chatWorkbench.SendCurrentInputAsync();
@@ -375,7 +376,7 @@ namespace MyCodex.Application.Tests
                 sendAsync: (session, request) => Task.FromResult(new ChatWorkbenchSendResult(false, false, "failed")),
                 playMessageSentSound: () => playCount++))
             {
-                var chatWorkbench = FindSingleControl<ChatWorkbenchControl>(form);
+                var chatWorkbench = FormTestDriver.Single<ChatWorkbenchControl>(form);
                 chatWorkbench.SetInputText("hello");
 
                 await chatWorkbench.SendCurrentInputAsync();
@@ -393,7 +394,7 @@ namespace MyCodex.Application.Tests
                 form.FormClosed += (sender, e) => wasClosed = true;
                 Show(form);
 
-                Assert.That(InvokeProcessCmdKey(form, Keys.Escape), Is.True);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Escape), Is.True);
                 Assert.That(wasClosed, Is.False);
                 Assert.That(form.IsDisposed, Is.False);
             }
@@ -409,7 +410,7 @@ namespace MyCodex.Application.Tests
                 form.FormClosed += (sender, e) => wasClosed = true;
                 Show(form);
 
-                Assert.That(InvokeProcessCmdKey(form, Keys.Control | Keys.W), Is.True);
+                Assert.That(FormTestDriver.ProcessCmdKey(form, Keys.Control | Keys.W), Is.True);
                 Assert.That(wasClosed, Is.True);
             }
             finally
@@ -433,9 +434,9 @@ namespace MyCodex.Application.Tests
             try
             {
                 Show(form);
-                var chatWorkbench = FindSingleControl<ChatWorkbenchControl>(form);
+                var chatWorkbench = FormTestDriver.Single<ChatWorkbenchControl>(form);
                 chatWorkbench.ReplaceHistoryItems(new[] { historyItem });
-                FindSingleControl<ChatHistoryListBox>(form).SelectSingleIndex(0);
+                FormTestDriver.Single<ChatHistoryListBox>(form).SelectSingleIndex(0);
 
                 form.Close();
 
@@ -476,7 +477,7 @@ namespace MyCodex.Application.Tests
                         SessionHistoryLoadStatusPriority.None));
 
                 Assert.That(
-                    FindSingleControl<ChatHistoryListBox>(form).PrimaryChatHistoryItem,
+                    FormTestDriver.Single<ChatHistoryListBox>(form).PrimaryChatHistoryItem,
                     Is.SameAs(reloadedItem));
             }
         }
@@ -602,15 +603,6 @@ namespace MyCodex.Application.Tests
                 .Single(button => string.Equals(button.AccessibleName, accessibleName, StringComparison.Ordinal));
         }
 
-        private static T FindSingleControl<T>(Control root)
-            where T : Control
-        {
-            return root.Controls.Cast<Control>()
-                .SelectMany(Flatten)
-                .OfType<T>()
-                .Single();
-        }
-
         private static System.Collections.Generic.IEnumerable<Control> Flatten(Control control)
         {
             yield return control;
@@ -621,15 +613,6 @@ namespace MyCodex.Application.Tests
                     yield return nested;
                 }
             }
-        }
-
-        private static bool InvokeProcessCmdKey(SessionWorkbenchForm form, Keys keyData)
-        {
-            var message = new Message();
-            var parameters = new object[] { message, keyData };
-            return (bool)typeof(SessionWorkbenchForm)
-                .GetMethod("ProcessCmdKey", BindingFlags.Instance | BindingFlags.NonPublic)
-                .Invoke(form, parameters);
         }
 
         private static void InvokeApplyHistoryLoadResult(SessionWorkbenchForm form, SessionHistoryLoadResult result)

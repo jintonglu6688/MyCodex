@@ -9,6 +9,7 @@ using System.Threading;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.GitHosting;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Localization;
@@ -27,7 +28,7 @@ namespace MyCodex.Application.Tests
             {
                 SetRepositoryEntries(form, null, Array.Empty<GitHubRepositoryEntry>());
 
-                InvokePrivate(form, "RefreshRepositoryContextMenu");
+                FormTestDriver.Invoke(form, "RefreshRepositoryContextMenu");
 
                 Assert.That(GetContextMenuItems(form), Is.Empty);
             }
@@ -40,7 +41,7 @@ namespace MyCodex.Application.Tests
             {
                 SetRepositoryEntries(form, "repo", new[] { new GitHubRepositoryEntry { HttpsUrl = "https://github.com/demo/example" } });
 
-                InvokePrivate(form, "RefreshRepositoryContextMenu");
+                FormTestDriver.Invoke(form, "RefreshRepositoryContextMenu");
 
                 Assert.That(
                     GetContextMenuItems(form),
@@ -60,7 +61,7 @@ namespace MyCodex.Application.Tests
             {
                 SetRepositoryEntries(form, "repo", new[] { new GitHubRepositoryEntry { NameWithOwner = "owner/example" } });
 
-                InvokePrivate(form, "RefreshRepositoryContextMenu");
+                FormTestDriver.Invoke(form, "RefreshRepositoryContextMenu");
 
                 Assert.That(
                     GetContextMenuItems(form),
@@ -99,7 +100,7 @@ namespace MyCodex.Application.Tests
                 {
                     SetRepositoryEntries(form, "repo", new[] { repository });
 
-                    InvokePrivate(form, "RefreshRepositoryContextMenu");
+                    FormTestDriver.Invoke(form, "RefreshRepositoryContextMenu");
 
                     Assert.That(
                         GetContextMenuItems(form),
@@ -141,7 +142,7 @@ namespace MyCodex.Application.Tests
                 };
                 SetRepositoryEntries(form, "repo", new[] { repository });
 
-                InvokePrivate(form, "RefreshRepositoryContextMenu");
+                FormTestDriver.Invoke(form, "RefreshRepositoryContextMenu");
 
                 Assert.That(
                     GetContextMenuItems(form),
@@ -165,8 +166,8 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var presetCombo = GetField<ComboBox>(form, "_storePresetComboBox");
-                var keywordTextBox = GetField<TextBox>(form, "_keywordTextBox");
+                var presetCombo = FormTestDriver.Field<ComboBox>(form, "_storePresetComboBox");
+                var keywordTextBox = FormTestDriver.Field<TextBox>(form, "_keywordTextBox");
                 keywordTextBox.Text = "ui";
                 var presetItem = presetCombo.Items
                     .Cast<object>()
@@ -178,7 +179,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(presetItem, Is.Not.Null);
                 presetCombo.SelectedItem = presetItem;
 
-                var request = InvokePrivate<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
+                var request = FormTestDriver.Invoke<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
                 Assert.That(request, Is.Not.Null);
                 Assert.That(request.Keyword, Does.Match(@"\bcreated:>="));
 
@@ -200,8 +201,8 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var presetCombo = GetField<ComboBox>(form, "_storePresetComboBox");
-                var keywordTextBox = GetField<TextBox>(form, "_keywordTextBox");
+                var presetCombo = FormTestDriver.Field<ComboBox>(form, "_storePresetComboBox");
+                var keywordTextBox = FormTestDriver.Field<TextBox>(form, "_keywordTextBox");
                 keywordTextBox.Text = "ui";
                 var presetItem = presetCombo.Items
                     .Cast<object>()
@@ -213,7 +214,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(presetItem, Is.Not.Null);
                 presetCombo.SelectedItem = presetItem;
 
-                var request = InvokePrivate<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
+                var request = FormTestDriver.Invoke<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
                 Assert.That(request, Is.Not.Null);
                 Assert.That(request.Keyword, Does.Match(@"\bpushed:>="));
                 Assert.That(request.Sort, Is.EqualTo("stars"));
@@ -238,8 +239,8 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var presetCombo = GetField<ComboBox>(form, "_storePresetComboBox");
-                var keywordTextBox = GetField<TextBox>(form, "_keywordTextBox");
+                var presetCombo = FormTestDriver.Field<ComboBox>(form, "_storePresetComboBox");
+                var keywordTextBox = FormTestDriver.Field<TextBox>(form, "_keywordTextBox");
                 keywordTextBox.Text = "ui";
                 var presetItem = presetCombo.Items
                     .Cast<object>()
@@ -251,7 +252,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(presetItem, Is.Not.Null);
                 presetCombo.SelectedItem = presetItem;
 
-                var request = InvokePrivate<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
+                var request = FormTestDriver.Invoke<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
                 Assert.That(request, Is.Not.Null);
                 Assert.That(request.Keyword, Does.Match(@"\bpushed:>="));
                 Assert.That(request.Sort, Is.EqualTo("stars"));
@@ -276,8 +277,8 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var presetCombo = GetField<ComboBox>(form, "_storePresetComboBox");
-                var keywordTextBox = GetField<TextBox>(form, "_keywordTextBox");
+                var presetCombo = FormTestDriver.Field<ComboBox>(form, "_storePresetComboBox");
+                var keywordTextBox = FormTestDriver.Field<TextBox>(form, "_keywordTextBox");
                 keywordTextBox.Text = "ui";
                 var presetItem = presetCombo.Items
                     .Cast<object>()
@@ -289,7 +290,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(presetItem, Is.Not.Null);
                 presetCombo.SelectedItem = presetItem;
 
-                var request = InvokePrivate<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
+                var request = FormTestDriver.Invoke<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
                 Assert.That(request, Is.Not.Null);
                 Assert.That(request.Keyword, Does.Match(@"\bpushed:>="));
                 Assert.That(request.Sort, Is.EqualTo("stars"));
@@ -314,8 +315,8 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var presetCombo = GetField<ComboBox>(form, "_storePresetComboBox");
-                var keywordTextBox = GetField<TextBox>(form, "_keywordTextBox");
+                var presetCombo = FormTestDriver.Field<ComboBox>(form, "_storePresetComboBox");
+                var keywordTextBox = FormTestDriver.Field<TextBox>(form, "_keywordTextBox");
                 keywordTextBox.Text = "ui";
                 var presetItem = presetCombo.Items
                     .Cast<object>()
@@ -327,7 +328,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(presetItem, Is.Not.Null);
                 presetCombo.SelectedItem = presetItem;
 
-                var request = InvokePrivate<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
+                var request = FormTestDriver.Invoke<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
                 Assert.That(request, Is.Not.Null);
                 Assert.That(request.Sort, Is.EqualTo("created"));
                 Assert.That(request.Order, Is.EqualTo("desc"));
@@ -352,8 +353,8 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var presetCombo = GetField<ComboBox>(form, "_storePresetComboBox");
-                var keywordTextBox = GetField<TextBox>(form, "_keywordTextBox");
+                var presetCombo = FormTestDriver.Field<ComboBox>(form, "_storePresetComboBox");
+                var keywordTextBox = FormTestDriver.Field<TextBox>(form, "_keywordTextBox");
                 keywordTextBox.Text = "ui";
                 var presetItem = presetCombo.Items
                     .Cast<object>()
@@ -365,7 +366,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(presetItem, Is.Not.Null);
                 presetCombo.SelectedItem = presetItem;
 
-                var request = InvokePrivate<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
+                var request = FormTestDriver.Invoke<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
                 Assert.That(request, Is.Not.Null);
                 Assert.That(request.Sort, Is.EqualTo("stars"));
                 Assert.That(request.Order, Is.EqualTo("desc"));
@@ -379,8 +380,8 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var presetCombo = GetField<ComboBox>(form, "_storePresetComboBox");
-                var keywordTextBox = GetField<TextBox>(form, "_keywordTextBox");
+                var presetCombo = FormTestDriver.Field<ComboBox>(form, "_storePresetComboBox");
+                var keywordTextBox = FormTestDriver.Field<TextBox>(form, "_keywordTextBox");
                 keywordTextBox.Text = "ui";
                 var presetItem = presetCombo.Items
                     .Cast<object>()
@@ -392,7 +393,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(presetItem, Is.Not.Null);
                 presetCombo.SelectedItem = presetItem;
 
-                var request = InvokePrivate<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
+                var request = FormTestDriver.Invoke<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
                 Assert.That(request, Is.Not.Null);
                 Assert.That(request.Sort, Is.EqualTo("forks"));
                 Assert.That(request.Order, Is.EqualTo("desc"));
@@ -406,8 +407,8 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var presetCombo = GetField<ComboBox>(form, "_storePresetComboBox");
-                var keywordTextBox = GetField<TextBox>(form, "_keywordTextBox");
+                var presetCombo = FormTestDriver.Field<ComboBox>(form, "_storePresetComboBox");
+                var keywordTextBox = FormTestDriver.Field<TextBox>(form, "_keywordTextBox");
                 keywordTextBox.Text = "ui";
                 var presetItem = presetCombo.Items
                     .Cast<object>()
@@ -419,7 +420,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(presetItem, Is.Not.Null);
                 presetCombo.SelectedItem = presetItem;
 
-                var request = InvokePrivate<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
+                var request = FormTestDriver.Invoke<GitHubRepositorySearchRequest>(form, "BuildRankingRequest");
                 Assert.That(request, Is.Not.Null);
                 Assert.That(request.Sort, Is.EqualTo("updated"));
                 Assert.That(request.Order, Is.EqualTo("desc"));
@@ -433,12 +434,12 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var presetCombo = GetField<ComboBox>(form, "_storePresetComboBox");
-                var keywordTextBox = GetField<TextBox>(form, "_keywordTextBox");
+                var presetCombo = FormTestDriver.Field<ComboBox>(form, "_storePresetComboBox");
+                var keywordTextBox = FormTestDriver.Field<TextBox>(form, "_keywordTextBox");
                 keywordTextBox.Text = "ui";
                 presetCombo.SelectedIndex = Math.Min(1, presetCombo.Items.Count - 1);
 
-                var request = InvokePrivate<GitHubRepositorySearchRequest>(form, "BuildSearchRequest");
+                var request = FormTestDriver.Invoke<GitHubRepositorySearchRequest>(form, "BuildSearchRequest");
                 Assert.That(request, Is.Not.Null);
                 Assert.That(request.Keyword, Is.EqualTo("ui"));
                 Assert.That(request.Keyword, Does.Not.Contain("pushed:>="));
@@ -451,16 +452,16 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var keywordTextBox = GetField<TextBox>(form, "_keywordTextBox");
-                var languageTextBox = GetField<TextBox>(form, "_languageTextBox");
-                var topicTextBox = GetField<TextBox>(form, "_topicTextBox");
-                var licenseTextBox = GetField<TextBox>(form, "_licenseTextBox");
-                var minStarsTextBox = GetField<TextBox>(form, "_minStarsTextBox");
-                var maxStarsTextBox = GetField<TextBox>(form, "_maxStarsTextBox");
-                var minForksTextBox = GetField<TextBox>(form, "_minForksTextBox");
-                var maxForksTextBox = GetField<TextBox>(form, "_maxForksTextBox");
-                var minOpenIssuesTextBox = GetField<TextBox>(form, "_minOpenIssuesTextBox");
-                var maxOpenIssuesTextBox = GetField<TextBox>(form, "_maxOpenIssuesTextBox");
+                var keywordTextBox = FormTestDriver.Field<TextBox>(form, "_keywordTextBox");
+                var languageTextBox = FormTestDriver.Field<TextBox>(form, "_languageTextBox");
+                var topicTextBox = FormTestDriver.Field<TextBox>(form, "_topicTextBox");
+                var licenseTextBox = FormTestDriver.Field<TextBox>(form, "_licenseTextBox");
+                var minStarsTextBox = FormTestDriver.Field<TextBox>(form, "_minStarsTextBox");
+                var maxStarsTextBox = FormTestDriver.Field<TextBox>(form, "_maxStarsTextBox");
+                var minForksTextBox = FormTestDriver.Field<TextBox>(form, "_minForksTextBox");
+                var maxForksTextBox = FormTestDriver.Field<TextBox>(form, "_maxForksTextBox");
+                var minOpenIssuesTextBox = FormTestDriver.Field<TextBox>(form, "_minOpenIssuesTextBox");
+                var maxOpenIssuesTextBox = FormTestDriver.Field<TextBox>(form, "_maxOpenIssuesTextBox");
 
                 keywordTextBox.Text = "lang";
                 languageTextBox.Text = "csharp";
@@ -473,7 +474,7 @@ namespace MyCodex.Application.Tests
                 minOpenIssuesTextBox.Text = "1";
                 maxOpenIssuesTextBox.Text = "9";
 
-                var request = InvokePrivate<GitHubRepositorySearchRequest>(form, "BuildSearchRequest");
+                var request = FormTestDriver.Invoke<GitHubRepositorySearchRequest>(form, "BuildSearchRequest");
                 Assert.That(request, Is.Not.Null);
                 Assert.That(request.License, Is.EqualTo("mit"));
                 Assert.That(request.MinStars, Is.EqualTo(100));
@@ -490,17 +491,17 @@ namespace MyCodex.Application.Tests
         {
             using (var form = CreateForm())
             {
-                var minStarsTextBox = GetField<TextBox>(form, "_minStarsTextBox");
-                var maxStarsTextBox = GetField<TextBox>(form, "_maxStarsTextBox");
-                var minForksTextBox = GetField<TextBox>(form, "_minForksTextBox");
-                var maxForksTextBox = GetField<TextBox>(form, "_maxForksTextBox");
+                var minStarsTextBox = FormTestDriver.Field<TextBox>(form, "_minStarsTextBox");
+                var maxStarsTextBox = FormTestDriver.Field<TextBox>(form, "_maxStarsTextBox");
+                var minForksTextBox = FormTestDriver.Field<TextBox>(form, "_minForksTextBox");
+                var maxForksTextBox = FormTestDriver.Field<TextBox>(form, "_maxForksTextBox");
 
                 minStarsTextBox.Text = "-1";
                 maxStarsTextBox.Text = "abc";
                 minForksTextBox.Text = " ";
                 maxForksTextBox.Text = "0";
 
-                var request = InvokePrivate<GitHubRepositorySearchRequest>(form, "BuildSearchRequest");
+                var request = FormTestDriver.Invoke<GitHubRepositorySearchRequest>(form, "BuildSearchRequest");
                 Assert.That(request, Is.Not.Null);
                 Assert.That(request.MinStars, Is.Null);
                 Assert.That(request.MaxStars, Is.Null);
@@ -526,10 +527,7 @@ namespace MyCodex.Application.Tests
                 Topics = "wpf winforms"
             };
 
-            var item = InvokePrivateStatic<ListViewItem>(
-                typeof(GitHubStoreForm),
-                "CreateRepositoryItem",
-                new object[] { repository });
+            var item = FormTestDriver.InvokeStatic<ListViewItem>(typeof(GitHubStoreForm), "CreateRepositoryItem", new object[] { repository });
 
             Assert.That(item, Is.Not.Null);
             Assert.That(item.SubItems.Count, Is.EqualTo(10));
@@ -558,7 +556,7 @@ namespace MyCodex.Application.Tests
                 throw new ArgumentNullException(nameof(form));
             }
 
-            var listView = GetField<ListView>(form, "_repositoriesListView");
+            var listView = FormTestDriver.Field<ListView>(form, "_repositoriesListView");
             var source = repositories == null || repositories.Count == 0
                 ? new List<GitHubRepositoryEntry>()
                 : repositories.ToList();
@@ -592,19 +590,12 @@ namespace MyCodex.Application.Tests
 
         private static IReadOnlyList<string> GetContextMenuItems(GitHubStoreForm form)
         {
-            var contextMenu = GetField<ContextMenu>(form, "_repositoryContextMenu");
+            var contextMenu = FormTestDriver.Field<ContextMenu>(form, "_repositoryContextMenu");
             return contextMenu
                 .MenuItems
                 .OfType<MenuItem>()
                 .Select(item => item.Text)
                 .ToList();
-        }
-
-        private static T GetField<T>(GitHubStoreForm form, string fieldName) where T : class
-        {
-            var field = typeof(GitHubStoreForm).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(field, Is.Not.Null, "Expected private field not found: " + fieldName);
-            return field.GetValue(form) as T;
         }
 
         private static FieldInfo GetFieldInfo(object instance, string fieldName)
@@ -613,33 +604,6 @@ namespace MyCodex.Application.Tests
             var field = targetType.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.That(field, Is.Not.Null, "Expected private field not found: " + fieldName);
             return field;
-        }
-
-        private static void InvokePrivate(GitHubStoreForm form, string methodName)
-        {
-            var method = typeof(GitHubStoreForm).GetMethod(
-                methodName,
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(method, Is.Not.Null, "Expected private method not found: " + methodName);
-            method.Invoke(form, null);
-        }
-
-        private static T InvokePrivate<T>(GitHubStoreForm form, string methodName)
-        {
-            var method = typeof(GitHubStoreForm).GetMethod(
-                methodName,
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(method, Is.Not.Null, "Expected private method not found: " + methodName);
-            return (T)method.Invoke(form, null);
-        }
-
-        private static T InvokePrivateStatic<T>(Type targetType, string methodName, object[] parameters)
-        {
-            var method = targetType.GetMethod(
-                methodName,
-                BindingFlags.Static | BindingFlags.NonPublic);
-            Assert.That(method, Is.Not.Null, "Expected private static method not found: " + methodName);
-            return (T)method.Invoke(null, parameters);
         }
     }
 }

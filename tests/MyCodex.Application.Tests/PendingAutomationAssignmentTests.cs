@@ -7,6 +7,7 @@ using System.Runtime.Serialization.Json;
 using System.Threading;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.Persistence;
@@ -73,10 +74,10 @@ namespace MyCodex.Application.Tests
             using (var form = new PendingAutomationAssignmentForm(_catalog))
             {
                 Show(form);
-                var tasks = Get<ListView>(form, "_tasks");
-                var target = Get<ComboBox>(form, "_target");
-                var directory = Get<TextBox>(form, "_workspace");
-                var save = Get<Button>(form, "_save");
+                var tasks = FormTestDriver.Field<ListView>(form, "_tasks");
+                var target = FormTestDriver.Field<ComboBox>(form, "_target");
+                var directory = FormTestDriver.Field<TextBox>(form, "_workspace");
+                var save = FormTestDriver.Field<Button>(form, "_save");
                 Assert.That(form.ActiveControl, Is.SameAs(tasks));
                 Assert.That(target.SelectedIndex, Is.EqualTo(-1));
                 Assert.That(save.Enabled, Is.False);
@@ -105,11 +106,11 @@ namespace MyCodex.Application.Tests
             using (var form = new PendingAutomationAssignmentForm(_catalog))
             {
                 Show(form);
-                SelectTask(Get<ListView>(form, "_tasks"), "coding");
-                Get<ComboBox>(form, "_target").SelectedIndex = TargetIndex(_linux.Id);
-                Get<TextBox>(form, "_workspace").Text = "/srv/ui-project";
-                Get<Button>(form, "_save").PerformClick();
-                Assert.That(Get<ListView>(form, "_tasks").Items.Count, Is.EqualTo(1));
+                SelectTask(FormTestDriver.Field<ListView>(form, "_tasks"), "coding");
+                FormTestDriver.Field<ComboBox>(form, "_target").SelectedIndex = TargetIndex(_linux.Id);
+                FormTestDriver.Field<TextBox>(form, "_workspace").Text = "/srv/ui-project";
+                FormTestDriver.Field<Button>(form, "_save").PerformClick();
+                Assert.That(FormTestDriver.Field<ListView>(form, "_tasks").Items.Count, Is.EqualTo(1));
                 var saved = new JsonAutomationStore(_catalog.GetPaths(_linux.Id)).Load().Definitions.Single();
                 Assert.That(saved.Enabled, Is.False);
                 Assert.That(saved.Context.RuntimeProfileId, Is.EqualTo(_linux.RuntimeScopeId));
@@ -228,17 +229,17 @@ namespace MyCodex.Application.Tests
             using (var form = new PendingAutomationAssignmentForm(interrupted))
             {
                 Show(form);
-                var tasks = Get<ListView>(form, "_tasks");
+                var tasks = FormTestDriver.Field<ListView>(form, "_tasks");
                 SelectTask(tasks, "coding");
-                var target = Get<ComboBox>(form, "_target");
+                var target = FormTestDriver.Field<ComboBox>(form, "_target");
                 Assert.That(target.SelectedIndex, Is.EqualTo(TargetIndex(_linux.Id)));
                 Assert.That(target.Enabled, Is.False);
-                Get<TextBox>(form, "_workspace").Text = "/srv/editable-retry";
-                Get<Button>(form, "_save").PerformClick();
+                FormTestDriver.Field<TextBox>(form, "_workspace").Text = "/srv/editable-retry";
+                FormTestDriver.Field<Button>(form, "_save").PerformClick();
                 Assert.That(target.SelectedIndex, Is.EqualTo(TargetIndex(_linux.Id)));
                 Assert.That(target.Enabled, Is.False);
-                Assert.That(Get<TextBox>(form, "_workspace").Text, Is.EqualTo("/srv/editable-retry"));
-                Assert.That(Get<Label>(form, "_status").Text, Does.Contain("Injected retry failure."));
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_workspace").Text, Is.EqualTo("/srv/editable-retry"));
+                Assert.That(FormTestDriver.Field<Label>(form, "_status").Text, Does.Contain("Injected retry failure."));
                 Assert.That(tasks.SelectedItems.Count, Is.EqualTo(1));
             }
         }
@@ -301,11 +302,6 @@ namespace MyCodex.Application.Tests
             foreach (ListViewItem row in tasks.Items)
                 row.Selected = ((PendingAutomationAssignment)row.Tag).Definition.Id == id;
             Assert.That(tasks.SelectedItems.Count, Is.EqualTo(1));
-        }
-
-        private static T Get<T>(object instance, string name)
-        {
-            return (T)instance.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(instance);
         }
     }
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
 
@@ -19,9 +20,9 @@ namespace MyCodex.Application.Tests
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
 
-                var infoTextBox = FindSingleControl<TextBox>(form);
-                var qrPictureBox = FindSingleControl<PictureBox>(form);
-                var closeButton = FindSingleControl<Button>(form);
+                var infoTextBox = FormTestDriver.Single<TextBox>(form);
+                var qrPictureBox = FormTestDriver.Single<PictureBox>(form);
+                var closeButton = FormTestDriver.Single<Button>(form);
 
                 Assert.That(infoTextBox.TabStop, Is.True);
                 Assert.That(infoTextBox.TabIndex, Is.EqualTo(0));
@@ -39,17 +40,6 @@ namespace MyCodex.Application.Tests
                 Assert.That(moved, Is.True);
                 Assert.That(qrPictureBox.Focused, Is.True);
             }
-        }
-
-        private static T FindSingleControl<T>(Control root)
-            where T : Control
-        {
-            return root
-                .Controls
-                .Cast<Control>()
-                .SelectMany(Flatten)
-                .OfType<T>()
-                .Single();
         }
 
         private static IEnumerable<Control> Flatten(Control control)

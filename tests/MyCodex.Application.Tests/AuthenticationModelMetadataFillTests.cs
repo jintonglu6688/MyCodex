@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.AuthenticationCenter;
 using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Forms;
@@ -44,14 +45,14 @@ namespace MyCodex.Application.Tests
             {
                 await form.FetchModelsAsync();
 
-                var models = Field<AuthenticationModelsControl>(form, "_models").Models.ToDictionary(model => model.Model);
+                var models = FormTestDriver.Field<AuthenticationModelsControl>(form, "_models").Models.ToDictionary(model => model.Model);
                 Assert.That(models["gpt-5.5"].ContextWindow, Is.EqualTo(128000), "A user's value is never replaced.");
                 Assert.That(models["gpt-5.5"].ReasoningLevels, Is.EqualTo(new[] { "none", "low", "medium", "high", "xhigh" }));
                 Assert.That(models["gpt-6-sol"].ContextWindow, Is.EqualTo(1050000));
                 Assert.That(models["gpt-6-sol"].ReasoningLevels, Is.EqualTo(new[] { "high" }));
                 Assert.That(models["unknown-model"].ContextWindow, Is.Null);
                 Assert.That(models["unknown-model"].ReasoningLevels, Is.Null);
-                Assert.That(Field<TextBox>(form, "_statusLabel").Text, Does.Contain("models.dev"));
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_statusLabel").Text, Does.Contain("models.dev"));
                 Assert.That(source.Loads, Is.EqualTo(1));
                 Assert.That(requests, Is.EqualTo(new[] { "gui/model/fetch" }), "Presets come from the injected service.");
             }
@@ -71,7 +72,7 @@ namespace MyCodex.Application.Tests
             var metadata = new AuthenticationModelMetadataService(source, token => Task.FromResult<IReadOnlyList<AuthenticationProviderPreset>>(new AuthenticationProviderPreset[0]));
             using (var form = new AuthenticationProviderEditForm(client, provider, modelMetadata: metadata))
             {
-                var control = Field<AuthenticationModelsControl>(form, "_models");
+                var control = FormTestDriver.Field<AuthenticationModelsControl>(form, "_models");
                 // The fakes complete synchronously, so the whole add handler finishes here.
                 control.AddModel(new AuthenticationCatalogModel { Model = "gpt-5.5", DisplayName = "GPT-5.5" });
 
@@ -80,7 +81,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(models["gpt-5.5"].ReasoningLevels, Is.EqualTo(new[] { "none", "low", "medium", "high", "xhigh" }));
                 Assert.That(models["gpt-6-sol"].ContextWindow, Is.Null, "Only the added model is completed.");
                 Assert.That(models["gpt-6-sol"].ReasoningLevels, Is.Null);
-                Assert.That(Field<TextBox>(form, "_statusLabel").Text, Does.Contain("models.dev"));
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_statusLabel").Text, Does.Contain("models.dev"));
             }
         }
 
@@ -92,7 +93,7 @@ namespace MyCodex.Application.Tests
             using (var form = new AuthenticationProviderEditForm(client, new AuthenticationProvider { Id = "a", Name = "A", Kind = "responses", BaseUrl = "https://codex.zxrjy.net:3500/", Model = "gpt-5.5", Version = "1" }))
             {
                 await form.FetchModelsAsync();
-                var model = Field<AuthenticationModelsControl>(form, "_models").Models.Single();
+                var model = FormTestDriver.Field<AuthenticationModelsControl>(form, "_models").Models.Single();
                 Assert.That(model.ContextWindow, Is.Null);
                 Assert.That(model.ReasoningLevels, Is.Null);
             }
@@ -101,11 +102,6 @@ namespace MyCodex.Application.Tests
         private static Dictionary<string, object> Model(string id)
         {
             return new Dictionary<string, object> { { "model", id }, { "displayName", id } };
-        }
-
-        private static T Field<T>(object owner, string name)
-        {
-            return (T)owner.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(owner);
         }
 
         private sealed class FakeCatalogSource : IModelMetadataCatalogSource

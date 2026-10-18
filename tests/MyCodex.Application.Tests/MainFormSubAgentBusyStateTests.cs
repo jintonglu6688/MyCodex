@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Infrastructure.Codex;
@@ -32,19 +33,19 @@ namespace MyCodex.Application.Tests
             {
                 client.Status = "active";
                 Activity(form, client, "started");
-                Assert.That(Invoke(form, "IsSessionWorking", Field(form, "_currentSession")), Is.True);
+                Assert.That(FormTestDriver.Invoke(form, "IsSessionWorking", FormTestDriver.Field<object>(form, "_currentSession")), Is.True);
 
                 client.Status = "idle";
                 Activity(form, client, "completed");
-                Assert.That(Invoke(form, "IsSessionWorking", Field(form, "_currentSession")), Is.False);
+                Assert.That(FormTestDriver.Invoke(form, "IsSessionWorking", FormTestDriver.Field<object>(form, "_currentSession")), Is.False);
 
                 // Recorded sequence: completed, then send_message (no new turn), then parent finishes.
                 client.Status = observedStatus;
                 Activity(form, client, "interacted");
                 Event(form, client, "turn_completed", "parent");
-                Assert.That(Invoke(form, "IsSessionWorking", Field(form, "_currentSession")), Is.False,
+                Assert.That(FormTestDriver.Invoke(form, "IsSessionWorking", FormTestDriver.Field<object>(form, "_currentSession")), Is.False,
                     "Sending a message to a completed agent must not leave its parent working.");
-                Assert.That(((Dictionary<string, string>)Field(form, "_subAgentStatuses"))["child"], Is.EqualTo("completed"));
+                Assert.That(((Dictionary<string, string>)FormTestDriver.Field<object>(form, "_subAgentStatuses"))["child"], Is.EqualTo("completed"));
                 Assert.That(form.Text, Does.Not.Contain(UiLocalization.Text("MainForm.WindowStatus.Working", "Working")));
             });
         }
@@ -59,11 +60,11 @@ namespace MyCodex.Application.Tests
                 client.Status = "active";
                 Activity(form, client, "interacted");
                 Event(form, client, "turn_completed", "parent");
-                Assert.That(Invoke(form, "IsSessionWorking", Field(form, "_currentSession")), Is.True);
+                Assert.That(FormTestDriver.Invoke(form, "IsSessionWorking", FormTestDriver.Field<object>(form, "_currentSession")), Is.True);
                 Assert.That(form.Text, Does.Contain(UiLocalization.Text("MainForm.WindowStatus.Working", "Working")));
                 client.Status = "idle";
                 Activity(form, client, "completed");
-                Assert.That(Invoke(form, "IsSessionWorking", Field(form, "_currentSession")), Is.False);
+                Assert.That(FormTestDriver.Invoke(form, "IsSessionWorking", FormTestDriver.Field<object>(form, "_currentSession")), Is.False);
             });
         }
 
@@ -79,10 +80,9 @@ namespace MyCodex.Application.Tests
                 client.Status = working ? "idle" : "active";
                 Activity(form, client, working ? "completed" : "started");
                 client.PendingRead = new TaskCompletionSource<AppServerThreadDetails>();
-                var read = (Task<AppServerThreadDetails>)Invoke(form, "ReadSubAgentThreadAsync", "child");
+                var read = (Task<AppServerThreadDetails>)FormTestDriver.Invoke(form, "ReadSubAgentThreadAsync", "child");
                 if (eventType == "thread_status_changed")
-                    Invoke(form, "AppServerClientOnEventReceived", client,
-                        new AppServerEventArgs(eventType, eventType, threadId: eventThread,
+                    FormTestDriver.Invoke(form, "AppServerClientOnEventReceived", client, new AppServerEventArgs(eventType, eventType, threadId: eventThread,
                             threadStatus: new AppServerThreadStatus { Type = working ? "active" : "idle" }));
                 else Event(form, client, eventType, eventThread);
                 client.PendingRead.SetResult(new AppServerThreadDetails
@@ -97,20 +97,18 @@ namespace MyCodex.Application.Tests
                 }
                 Assert.That(read.IsCompleted, Is.True);
                 read.GetAwaiter().GetResult();
-                Assert.That(Invoke(form, "IsSessionWorking", Field(form, "_currentSession")), Is.EqualTo(working));
+                Assert.That(FormTestDriver.Invoke(form, "IsSessionWorking", FormTestDriver.Field<object>(form, "_currentSession")), Is.EqualTo(working));
             });
         }
 
         private static void Event(MainForm form, Client client, string eventType, string threadId)
         {
-            Invoke(form, "AppServerClientOnEventReceived", client,
-                new AppServerEventArgs(eventType, eventType, threadId: threadId, turnId: "turn"));
+            FormTestDriver.Invoke(form, "AppServerClientOnEventReceived", client, new AppServerEventArgs(eventType, eventType, threadId: threadId, turnId: "turn"));
         }
 
         private static void Activity(MainForm form, Client client, string kind)
         {
-            Invoke(form, "AppServerClientOnEventReceived", client,
-                new AppServerEventArgs("subagent_activity", kind, threadId: "parent",
+            FormTestDriver.Invoke(form, "AppServerClientOnEventReceived", client, new AppServerEventArgs("subagent_activity", kind, threadId: "parent",
                     subAgentActivity: new AppServerSubAgentActivity { AgentThreadId = "child", Kind = kind }));
         }
 
@@ -127,7 +125,7 @@ namespace MyCodex.Application.Tests
                 {
                     var handle = form.Handle;
                     var parent = new ChatSession { Id = "parent", ThreadId = "parent" };
-                    var sessions = (List<ChatSession>)Field(form, "_sessions");
+                    var sessions = (List<ChatSession>)FormTestDriver.Field<object>(form, "_sessions");
                     sessions.Add(parent);
                     sessions.Add(new ChatSession { Id = "child", ThreadId = "child", ParentThreadId = "parent", IsSubAgent = true });
                     typeof(MainForm).GetField("_currentSession", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(form, parent);
@@ -138,23 +136,13 @@ namespace MyCodex.Application.Tests
                     // Do not run FormClosed: it also stops the user's authentication backend.
                     Microsoft.Win32.SystemEvents.UserPreferenceChanged -= (Microsoft.Win32.UserPreferenceChangedEventHandler)
                         Delegate.CreateDelegate(typeof(Microsoft.Win32.UserPreferenceChangedEventHandler), form, "OnSystemUserPreferenceChanged");
-                    Invoke(form, "DisposeThreadSyncTimersOnExit");
-                    Invoke(form, "DisposeLocalSyncTimersOnExit");
-                    Invoke(form, "DisposeRateLimitAutoResetTimerOnExit");
-                    Invoke(form, "DisposeRemoteHostService");
-                    Invoke(form, "DisposeTrayIconOnExit");
+                    FormTestDriver.Invoke(form, "DisposeThreadSyncTimersOnExit");
+                    FormTestDriver.Invoke(form, "DisposeLocalSyncTimersOnExit");
+                    FormTestDriver.Invoke(form, "DisposeRateLimitAutoResetTimerOnExit");
+                    FormTestDriver.Invoke(form, "DisposeRemoteHostService");
+                    FormTestDriver.Invoke(form, "DisposeTrayIconOnExit");
                 }
             }
-        }
-
-        private static object Field(object target, string name)
-        {
-            return typeof(MainForm).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
-        }
-
-        private static object Invoke(object target, string name, params object[] args)
-        {
-            return typeof(MainForm).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(target, args);
         }
 
         private sealed class Client : AppServerClient, IAppServerClient

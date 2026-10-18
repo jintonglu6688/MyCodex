@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.Diagnostics;
 using MyCodex.Infrastructure.Persistence;
 using MyCodex.WinForms.Forms;
@@ -24,7 +25,7 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture())
             {
-                Invoke(fixture.Form, "CompleteTargetStartup");
+                FormTestDriver.Invoke(fixture.Form, "CompleteTargetStartup");
                 Assert.That(fixture.State.Load().Sessions, Is.Empty);
                 var writeError = new IOException("Write denied. password=test-password https://test:test-secret@example.invalid ghp_testtoken");
                 fixture.State.SaveError = recoveryRequired
@@ -36,11 +37,11 @@ namespace MyCodex.Application.Tests
                 try
                 {
                     var path = SessionTraceLog.Configure(Path.Combine(fixture.Root, "logs"), DateTimeOffset.Now, 1);
-                    var preparation = (Task<bool>)Invoke(fixture.Form, "PrepareTargetExitAsync", "save-failure-test", false);
+                    var preparation = (Task<bool>)FormTestDriver.Invoke(fixture.Form, "PrepareTargetExitAsync", "save-failure-test", false);
                     PumpUntil(() => preparation.IsCompleted);
                     Assert.That(preparation.GetAwaiter().GetResult(), Is.False);
                     Assert.That(fixture.Form.Enabled, Is.True);
-                    Assert.That(Get<bool>(fixture.Form, "_isExitRequested"), Is.False);
+                    Assert.That(FormTestDriver.Field<bool>(fixture.Form, "_isExitRequested"), Is.False);
                     Trace.Flush();
                     string log;
                     using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
@@ -90,7 +91,7 @@ namespace MyCodex.Application.Tests
                 fixture.Form.Location = new Point(-2000, -2000);
                 fixture.Form.Show();
                 if (entry == "HiddenTray") fixture.Form.Hide();
-                if (startupComplete) Invoke(fixture.Form, "CompleteTargetStartup");
+                if (startupComplete) FormTestDriver.Invoke(fixture.Form, "CompleteTargetStartup");
                 fixture.State.FailSave = failSave;
                 var wasVisible = fixture.Form.Visible;
                 var ownerHandle = wasVisible ? fixture.Form.Handle : IntPtr.Zero;
@@ -125,8 +126,8 @@ namespace MyCodex.Application.Tests
                 };
                 responder.Start();
                 if (entry == "Window") fixture.Form.Close();
-                else if (entry == "Menu") Invoke(fixture.Form, "OnExitMenuItemClick", null, EventArgs.Empty);
-                else Invoke(fixture.Form, "ExitTrayMenuItem_Click", null, EventArgs.Empty);
+                else if (entry == "Menu") FormTestDriver.Invoke(fixture.Form, "OnExitMenuItemClick", null, EventArgs.Empty);
+                else FormTestDriver.Invoke(fixture.Form, "ExitTrayMenuItem_Click", null, EventArgs.Empty);
                 responder.Stop();
                 System.Windows.Forms.Application.DoEvents();
 
@@ -135,22 +136,22 @@ namespace MyCodex.Application.Tests
                 Assert.That(escapeTimedOut, Is.False, "Escape must dismiss the exit confirmation without a fallback click.");
                 Assert.That(fixture.Form.IsDisposed, Is.EqualTo(accept && !failSave),
                     "Confirmed={0}; ExitRequested={1}; Preparing={2}; CleanupComplete={3}; Enabled={4}; Saves={5}; Status={6}",
-                    accept, Get<bool>(fixture.Form, "_isExitRequested"),
+                    accept, FormTestDriver.Field<bool>(fixture.Form, "_isExitRequested"),
                     typeof(MainForm).GetProperty("IsTargetExitPreparing", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(fixture.Form),
-                    Get<bool>(fixture.Form, "_targetExitCleanupComplete"), fixture.Form.Enabled,
-                    fixture.State.SaveCalls, Get<ToolStripStatusLabel>(fixture.Form, "_statusLabel").Text);
+                    FormTestDriver.Field<bool>(fixture.Form, "_targetExitCleanupComplete"), fixture.Form.Enabled,
+                    fixture.State.SaveCalls, FormTestDriver.Field<ToolStripStatusLabel>(fixture.Form, "_statusLabel").Text);
                 Assert.That(fixture.Client.ConnectCalls + fixture.Client.RestartCalls, Is.Zero);
                 if (!accept || failSave) Assert.That(fixture.Form.Enabled, Is.True);
                 if (pressEscape)
                 {
                     Assert.That(fixture.Form.Visible, Is.EqualTo(wasVisible));
-                    Assert.That(Get<bool>(fixture.Form, "_isExitRequested"), Is.False);
+                    Assert.That(FormTestDriver.Field<bool>(fixture.Form, "_isExitRequested"), Is.False);
                     Assert.That(fixture.State.SaveCalls, Is.Zero);
                 }
                 if (failSave)
                 {
-                    Assert.That(Get<bool>(fixture.Form, "_isExitRequested"), Is.False);
-                    Assert.That(Get<ToolStripStatusLabel>(fixture.Form, "_statusLabel").Text,
+                    Assert.That(FormTestDriver.Field<bool>(fixture.Form, "_isExitRequested"), Is.False);
+                    Assert.That(FormTestDriver.Field<ToolStripStatusLabel>(fixture.Form, "_statusLabel").Text,
                         Is.EqualTo(UiLocalization.Text("MainForm.Exit.SaveFailed", "This target could not save its state. It remains running.")));
                 }
             }

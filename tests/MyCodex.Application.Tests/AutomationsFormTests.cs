@@ -11,6 +11,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
 using MyCodex.Application.Tests.SourceGuards;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.WinForms.Forms;
@@ -36,9 +37,9 @@ namespace MyCodex.Application.Tests
                     UiLocalization.Text("AutomationsForm.Tab.RunHistory", "Run results")
                 }));
                 Assert.That(string.IsNullOrEmpty(tabs.AccessibleName), Is.True);
-                Assert.That(FindControl<ListView>(form, "Pending"), Is.Null);
-                Assert.That(FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.Automations", "Automations")), Is.Not.Null);
-                Assert.That(FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results")), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<ListView>(form, "Pending"), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.Automations", "Automations")), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results")), Is.Not.Null);
             }
         }
 
@@ -126,9 +127,9 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
                 var tabs = FindControlByName<TabControl>(form, "automationsTabs");
-                var automationsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.Automations", "Automations"));
-                var runsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
-                var runNowButton = FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.RunNow", "Run now"));
+                var automationsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.Automations", "Automations"));
+                var runsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
+                var runNowButton = FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.RunNow", "Run now"));
 
                 tabs.SelectedTab = tabs.TabPages[0];
                 System.Windows.Forms.Application.DoEvents();
@@ -180,7 +181,7 @@ namespace MyCodex.Application.Tests
 
             using (var form = new AutomationsForm(store, null, @"E:\MyCodex-Automations"))
             {
-                var runsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
+                var runsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
                 Assert.That(runsListView.Items[0].SubItems[1].Text, Is.EqualTo(UiLocalization.Text("Automation.RunStatus.Running", "Running")));
 
                 store.Snapshot.Runs[0].Status = AutomationRunStatus.Completed;
@@ -237,7 +238,7 @@ namespace MyCodex.Application.Tests
                 form.ShowRunResults();
 
                 Assert.That(tabs.SelectedIndex, Is.EqualTo(1));
-                Assert.That(FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results")).Items.Count, Is.EqualTo(1));
+                Assert.That(FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results")).Items.Count, Is.EqualTo(1));
             }
         }
 
@@ -264,7 +265,7 @@ namespace MyCodex.Application.Tests
             using (var form = new AutomationsForm(store, null, @"E:\MyCodex-Automations"))
             {
                 form.Show();
-                var runsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
+                var runsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
                 Assert.That(runsListView.Items.Count, Is.EqualTo(0));
 
                 store.Snapshot.Runs.Add(new AutomationRunSnapshot
@@ -275,7 +276,7 @@ namespace MyCodex.Application.Tests
                     StartedAt = new DateTime(2026, 6, 6, 12, 0, 0)
                 });
 
-                var handled = InvokeProcessCmdKey(form, Keys.F5);
+                var handled = FormTestDriver.ProcessCmdKey(form, Keys.F5);
 
                 Assert.That(handled, Is.True);
                 Assert.That(runsListView.Items.Count, Is.EqualTo(1));
@@ -289,12 +290,12 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
                 var tabs = FindControlByName<TabControl>(form, "automationsTabs");
-                var newButton = FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.New", "New"));
-                var runNowButton = FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.RunNow", "Run now"));
-                var stopButton = FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.StopRun", "Stop run"));
-                var detailsButton = FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.Details", "Details"));
-                var openThreadButton = FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.OpenThread", "Open thread"));
-                var refreshButton = FindControl<Button>(form, UiLocalization.Text("Common.Accessible.Refresh", "Refresh"));
+                var newButton = FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.New", "New"));
+                var runNowButton = FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.RunNow", "Run now"));
+                var stopButton = FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.StopRun", "Stop run"));
+                var detailsButton = FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.Details", "Details"));
+                var openThreadButton = FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.OpenThread", "Open thread"));
+                var refreshButton = FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("Common.Accessible.Refresh", "Refresh"));
 
                 tabs.SelectedTab = tabs.TabPages[0];
                 System.Windows.Forms.Application.DoEvents();
@@ -312,8 +313,8 @@ namespace MyCodex.Application.Tests
                 Assert.That(stopButton.Visible, Is.True);
                 Assert.That(detailsButton.Visible, Is.True);
                 Assert.That(openThreadButton.Visible, Is.True);
-                Assert.That(FindControl<Button>(form, "Mark read"), Is.Null);
-                Assert.That(FindControl<Button>(form, "Archive result"), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, "Mark read"), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, "Archive result"), Is.Null);
             }
         }
 
@@ -322,8 +323,8 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new AutomationsForm(new InMemoryAutomationStore(), null, @"E:\MyCodex-Automations"))
             {
-                var automationsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.Automations", "Automations"));
-                var runsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
+                var automationsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.Automations", "Automations"));
+                var runsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
 
                 Assert.That(automationsListView.ContextMenu, Is.Not.Null);
                 Assert.That(FindMenuItem(automationsListView.ContextMenu.MenuItems, UiLocalization.Text("AutomationsForm.Menu.EditAutomation", "Edit(&E)...")), Is.Not.Null);
@@ -331,11 +332,11 @@ namespace MyCodex.Application.Tests
                 Assert.That(FindMenuItem(automationsListView.ContextMenu.MenuItems, UiLocalization.Text("AutomationsForm.Menu.DeleteAutomation", "Delete(&D)")), Is.Not.Null);
                 Assert.That(runsListView.ContextMenu, Is.Not.Null);
                 Assert.That(FindMenuItem(runsListView.ContextMenu.MenuItems, UiLocalization.Text("AutomationsForm.Menu.DeleteRun", "Delete result(&D)")), Is.Not.Null);
-                Assert.That(FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Menu.EditAutomation", "Edit(&E)...")), Is.Null);
-                Assert.That(FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Menu.DisableAutomation", "Disable(&B)")), Is.Null);
-                Assert.That(FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Menu.EnableAutomation", "Enable(&N)")), Is.Null);
-                Assert.That(FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Menu.DeleteAutomation", "Delete(&D)")), Is.Null);
-                Assert.That(FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Menu.DeleteRun", "Delete result(&D)")), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Menu.EditAutomation", "Edit(&E)...")), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Menu.DisableAutomation", "Disable(&B)")), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Menu.EnableAutomation", "Enable(&N)")), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Menu.DeleteAutomation", "Delete(&D)")), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Menu.DeleteRun", "Delete result(&D)")), Is.Null);
             }
         }
 
@@ -375,7 +376,7 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
                 var tabs = FindControlByName<TabControl>(form, "automationsTabs");
-                var automationsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.Automations", "Automations"));
+                var automationsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.Automations", "Automations"));
 
                 tabs.SelectedTab = tabs.TabPages[1];
                 System.Windows.Forms.Application.DoEvents();
@@ -442,7 +443,7 @@ namespace MyCodex.Application.Tests
                 form.ConfirmDeleteAutomation = definition => true;
                 form.Show();
                 var tabs = FindControlByName<TabControl>(form, "automationsTabs");
-                var automationsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.Automations", "Automations"));
+                var automationsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.Automations", "Automations"));
                 var deleteMenuItem = FindMenuItem(
                     automationsListView.ContextMenu.MenuItems,
                     UiLocalization.Text("AutomationsForm.Menu.DeleteAutomation", "Delete(&D)"));
@@ -504,7 +505,7 @@ namespace MyCodex.Application.Tests
                 form.ConfirmDeleteRun = run => true;
                 form.Show();
                 var tabs = FindControlByName<TabControl>(form, "automationsTabs");
-                var runsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
+                var runsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
                 var deleteMenuItem = FindMenuItem(
                     runsListView.ContextMenu.MenuItems,
                     UiLocalization.Text("AutomationsForm.Menu.DeleteRun", "Delete result(&D)"));
@@ -580,7 +581,7 @@ namespace MyCodex.Application.Tests
                 form.ConfirmDeleteRunOptions = run => new AutomationRunDeleteConfirmation(true, true);
                 form.Show();
                 var tabs = FindControlByName<TabControl>(form, "automationsTabs");
-                var runsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
+                var runsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
                 var deleteMenuItem = FindMenuItem(
                     runsListView.ContextMenu.MenuItems,
                     UiLocalization.Text("AutomationsForm.Menu.DeleteRun", "Delete result(&D)"));
@@ -646,8 +647,8 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
                 var tabs = FindControlByName<TabControl>(form, "automationsTabs");
-                var runsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
-                var stopButton = FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.StopRun", "Stop run"));
+                var runsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
+                var stopButton = FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.StopRun", "Stop run"));
 
                 tabs.SelectedTab = tabs.TabPages[1];
                 System.Windows.Forms.Application.DoEvents();
@@ -703,8 +704,8 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
                 var tabs = FindControlByName<TabControl>(form, "automationsTabs");
-                var runsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
-                var stopButton = FindControl<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.StopRun", "Stop run"));
+                var runsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
+                var stopButton = FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationsForm.Accessible.StopRun", "Stop run"));
 
                 tabs.SelectedTab = tabs.TabPages[1];
                 System.Windows.Forms.Application.DoEvents();
@@ -750,7 +751,7 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
                 var tabs = FindControlByName<TabControl>(form, "automationsTabs");
-                var runsListView = FindControl<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
+                var runsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results"));
 
                 tabs.SelectedTab = tabs.TabPages[1];
                 System.Windows.Forms.Application.DoEvents();
@@ -771,7 +772,7 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
 
-                var handled = InvokeProcessCmdKey(form, Keys.Escape);
+                var handled = FormTestDriver.ProcessCmdKey(form, Keys.Escape);
 
                 Assert.That(handled, Is.True);
                 Assert.That(form.IsDisposed, Is.True);
@@ -815,12 +816,8 @@ namespace MyCodex.Application.Tests
                     }
                 }, null, @"E:\MyCodex-Automations"))
                 {
-                    var automationsListView = FindControl<ListView>(
-                        form,
-                        UiLocalization.Text("AutomationsForm.Accessible.Automations", "自动化"));
-                    var runsListView = FindControl<ListView>(
-                        form,
-                        UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "运行结果"));
+                    var automationsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.Automations", "自动化"));
+                    var runsListView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "运行结果"));
 
                     Assert.That(automationsListView.Items[0].SubItems[1].Text, Is.EqualTo(UiLocalization.Text("Automation.Kind.Thread", "会话线程")));
                     Assert.That(runsListView.Items[0].SubItems[1].Text, Is.EqualTo(UiLocalization.Text("Automation.RunStatus.Failed", "失败")));
@@ -831,26 +828,6 @@ namespace MyCodex.Application.Tests
                 Thread.CurrentThread.CurrentCulture = originalCulture;
                 Thread.CurrentThread.CurrentUICulture = originalUiCulture;
             }
-        }
-
-        private static T FindControl<T>(Control root, string accessibleName) where T : Control
-        {
-            foreach (Control child in root.Controls)
-            {
-                var typed = child as T;
-                if (typed != null && child.AccessibleName == accessibleName)
-                {
-                    return typed;
-                }
-
-                var nested = FindControl<T>(child, accessibleName);
-                if (nested != null)
-                {
-                    return nested;
-                }
-            }
-
-            return null;
         }
 
         private static T FindControlByName<T>(Control root, string name) where T : Control
@@ -892,14 +869,6 @@ namespace MyCodex.Application.Tests
                 .GetMethod("RunListView_KeyDown", BindingFlags.Instance | BindingFlags.NonPublic)
                 .Invoke(form, new object[] { listView, new KeyEventArgs(keyCode) });
             System.Windows.Forms.Application.DoEvents();
-        }
-
-        private static bool InvokeProcessCmdKey(Form form, Keys keyData)
-        {
-            var message = new Message();
-            return (bool)typeof(Form)
-                .GetMethod("ProcessCmdKey", BindingFlags.Instance | BindingFlags.NonPublic)
-                .Invoke(form, new object[] { message, keyData });
         }
 
         private sealed class RecordingAutomationRunner : IAutomationRunner

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Controls;
 using NUnit.Framework;
@@ -39,11 +40,11 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
-                var toggle = Field<CheckBox>(form, "_sessionHistoryCheckBox");
+                var toggle = FormTestDriver.Field<CheckBox>(form, "_sessionHistoryCheckBox");
                 Assert.That(toggle.Visible, Is.EqualTo(offered));
                 Assert.That(toggle.AccessibleName, Is.Not.Empty);
                 Assert.That(toggle.Enabled, Is.EqualTo(offered));
-                Assert.That(Field<Button>(form, "_sessionHistoryRetryButton").Visible, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_sessionHistoryRetryButton").Visible, Is.False);
                 Assert.That(client.SessionHistoryReads, Is.EqualTo(offered ? 1 : 0));
             }
         }
@@ -73,9 +74,9 @@ namespace MyCodex.Application.Tests
                 };
                 form.Show();
                 await form.RefreshAsync();
-                var toggle = Field<CheckBox>(form, "_sessionHistoryCheckBox");
-                var retry = Field<Button>(form, "_sessionHistoryRetryButton");
-                var list = Field<ListView>(form, "_providersList");
+                var toggle = FormTestDriver.Field<CheckBox>(form, "_sessionHistoryCheckBox");
+                var retry = FormTestDriver.Field<Button>(form, "_sessionHistoryRetryButton");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 Assert.That(toggle.Checked, Is.False);
                 Assert.That(list.TabIndex, Is.LessThan(toggle.Parent.TabIndex));
                 Assert.That(toggle.Parent.TabIndex, Is.LessThan(((Control)form.CancelButton).Parent.TabIndex));
@@ -86,7 +87,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(toggle.Checked, Is.True);
                 Assert.That(toggle.Enabled, Is.True);
                 Assert.That(retry.Visible, Is.False);
-                Assert.That(Field<Label>(form, "_statusLabel").Text, Does.Contain("3"));
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Does.Contain("3"));
             }
         }
 
@@ -124,8 +125,8 @@ namespace MyCodex.Application.Tests
                 };
                 form.Show();
                 await form.RefreshAsync();
-                var toggle = Field<CheckBox>(form, "_sessionHistoryCheckBox");
-                var retry = Field<Button>(form, "_sessionHistoryRetryButton");
+                var toggle = FormTestDriver.Field<CheckBox>(form, "_sessionHistoryCheckBox");
+                var retry = FormTestDriver.Field<Button>(form, "_sessionHistoryRetryButton");
                 Assert.That(toggle.Checked, Is.True);
 
                 await form.ToggleSessionHistoryAsync();
@@ -158,9 +159,9 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
                 await form.RefreshAsync();
-                Assert.That(Field<ListView>(form, "_providersList").Items.Count, Is.EqualTo(1));
-                Assert.That(Field<CheckBox>(form, "_sessionHistoryCheckBox").Enabled, Is.False);
-                Assert.That(Field<Label>(form, "_statusLabel").Text, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<ListView>(form, "_providersList").Items.Count, Is.EqualTo(1));
+                Assert.That(FormTestDriver.Field<CheckBox>(form, "_sessionHistoryCheckBox").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Is.Not.Empty);
             }
         }
 
@@ -175,7 +176,7 @@ namespace MyCodex.Application.Tests
                 ((Control)form.CancelButton).GotFocus += (sender, args) => closeFocusCount++;
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 Assert.That(client.ReadCalls, Is.EqualTo(1));
                 Assert.That(list.Focused, Is.True);
                 Assert.That(closeFocusCount, Is.Zero);
@@ -199,7 +200,7 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 list.Focus();
                 var close = (Control)form.CancelButton;
                 var closeFocusCount = 0;
@@ -238,7 +239,7 @@ namespace MyCodex.Application.Tests
                 {
                     form.Show();
                     form.RefreshAsync().GetAwaiter().GetResult();
-                    var list = Field<ListView>(form, "_providersList");
+                    var list = FormTestDriver.Field<ListView>(form, "_providersList");
                     list.Items[0].Selected = list.Items[0].Focused = true;
                     list.Focus();
                     Assert.That(applies, Is.Zero);
@@ -254,7 +255,7 @@ namespace MyCodex.Application.Tests
                     Assert.That(applies, Is.EqualTo(1));
                     Assert.That(client.ReadForEditCalls, Is.Zero);
                     Assert.That(reader.SpeakCalls, Is.Zero);
-                    Assert.That(Field<Label>(form, "_statusLabel").Text, Does.StartWith(expectedStatus));
+                    Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Does.StartWith(expectedStatus));
                     Assert.That(list.SelectedItems[0].Tag, Is.SameAs(client.Providers[0]));
                     Assert.That(list.Focused, Is.True);
                 }
@@ -280,7 +281,7 @@ namespace MyCodex.Application.Tests
             {
                 var handle = form.Handle;
                 form.RefreshAsync().GetAwaiter().GetResult();
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 var listHandle = list.Handle;
                 list.Items[0].Selected = true;
                 var applying = form.ApplySelectedAsync();
@@ -314,12 +315,12 @@ namespace MyCodex.Application.Tests
             }))
             {
                 var handle = form.Handle;
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 var listHandle = list.Handle;
                 form.CompleteProviderSaveAsync(new AuthenticationSaveResult { Provider = saved, Reconnected = true }).GetAwaiter().GetResult();
                 Assert.That(applies, Is.Zero, "Saving must not enable a provider or ask to replace the global configuration.");
                 Assert.That(reader.SpeakCalls, Is.Zero);
-                Assert.That(Field<Label>(form, "_statusLabel").Text, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Is.Not.Empty);
                 Assert.That(list.SelectedItems[0].Tag,
                     Is.SameAs(listed ? saved : client.Providers[0]));
                 if (listed)
@@ -349,7 +350,7 @@ namespace MyCodex.Application.Tests
             {
                 var handle = form.Handle;
                 form.RefreshAsync().GetAwaiter().GetResult();
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 var listHandle = list.Handle;
                 list.Items[0].Selected = true;
                 typeof(Control).GetMethod("OnKeyDown", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(list, new object[] { new KeyEventArgs(Keys.Enter) });
@@ -375,9 +376,9 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
                 await form.RefreshAsync();
-                var button = Field<Button>(form, "_updateBackendButton");
+                var button = FormTestDriver.Field<Button>(form, "_updateBackendButton");
                 Assert.That(button.Visible && button.Enabled, Is.True,
-                    $"visible={button.Visible}, enabled={button.Enabled}, status={Field<Label>(form, "_statusLabel").Text}");
+                    $"visible={button.Visible}, enabled={button.Enabled}, status={FormTestDriver.Field<Label>(form, "_statusLabel").Text}");
                 Assert.That(button.AccessibleName, Is.Not.Empty);
                 Assert.That(button.TabStop, Is.True);
                 await form.UpdateBackendAsync();
@@ -398,7 +399,7 @@ namespace MyCodex.Application.Tests
             {
                 var handle = form.Handle;
                 form.RefreshAsync().GetAwaiter().GetResult();
-                var message = Field<Label>(form, "_statusLabel").Text;
+                var message = FormTestDriver.Field<Label>(form, "_statusLabel").Text;
                 Assert.That(message, Is.Not.Empty);
                 Assert.That(reader.SpeakCalls, Is.Zero);
                 if (running) Assert.That(message, Does.Contain("3"));
@@ -429,10 +430,10 @@ namespace MyCodex.Application.Tests
                         }
                     }
                 }
-                Assert.That(Field<Button>(center, "_refreshButton").TabStop, Is.False);
-                Assert.That(Field<TextBox>(editor, "_keyTextBox").UseSystemPasswordChar, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(center, "_refreshButton").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<TextBox>(editor, "_keyTextBox").UseSystemPasswordChar, Is.True);
                 Assert.That(Descendants(center).OfType<Button>().Any(button => button.DialogResult == DialogResult.Cancel), Is.True);
-                Assert.That(Field<TextBox>(editor, "_nameTextBox").TabIndex, Is.LessThan(Field<TextBox>(editor, "_keyTextBox").TabIndex));
+                Assert.That(FormTestDriver.Field<TextBox>(editor, "_nameTextBox").TabIndex, Is.LessThan(FormTestDriver.Field<TextBox>(editor, "_keyTextBox").TabIndex));
             }
         }
 
@@ -444,9 +445,9 @@ namespace MyCodex.Application.Tests
             using (var model = new AuthenticationModelEditForm(null, reader))
             {
                 login.StartLoginAsync().GetAwaiter().GetResult();
-                Assert.That(Field<TextBox>(login, "_status").Text, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<TextBox>(login, "_status").Text, Is.Not.Empty);
                 Assert.That(model.Save(), Is.False);
-                Assert.That(Field<Label>(model, "_status").Text, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<Label>(model, "_status").Text, Is.Not.Empty);
                 Assert.That(reader.SpeakCalls, Is.Zero);
             }
         }
@@ -461,11 +462,11 @@ namespace MyCodex.Application.Tests
             {
                 var handle = form.Handle;
                 form.RefreshAsync().GetAwaiter().GetResult();
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 var listHandle = list.Handle;
                 list.Items[0].Selected = true;
-                Assert.That(Field<MenuItem>(form, "_editMenuItem").Enabled, Is.True);
-                Assert.That(Field<MenuItem>(form, "_deleteMenuItem").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_editMenuItem").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_deleteMenuItem").Enabled, Is.False);
                 Assert.That(client.ReadCalls, Is.EqualTo(1));
                 Assert.That(client.SaveCalls, Is.Zero);
                 Assert.That(client.CopyCalls, Is.Zero);
@@ -494,10 +495,10 @@ namespace MyCodex.Application.Tests
             {
                 var handle = form.Handle;
                 form.RefreshAsync().GetAwaiter().GetResult();
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 var listHandle = list.Handle;
                 list.Items[0].Selected = true;
-                Assert.That(Field<MenuItem>(form, "_enableMenuItem").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_enableMenuItem").Enabled, Is.True);
                 form.ApplySelectedAsync().GetAwaiter().GetResult();
                 Assert.That(applies, Is.EqualTo(1));
             }
@@ -523,10 +524,10 @@ namespace MyCodex.Application.Tests
             {
                 var handle = form.Handle;
                 form.RefreshAsync().GetAwaiter().GetResult();
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 var listHandle = list.Handle;
                 list.Items[0].Selected = true;
-                Assert.That(Field<MenuItem>(form, "_enableMenuItem").Enabled, Is.EqualTo(expected));
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_enableMenuItem").Enabled, Is.EqualTo(expected));
             }
         }
 
@@ -543,14 +544,14 @@ namespace MyCodex.Application.Tests
             using (var form = new AuthenticationCenterForm(client))
             {
                 var handle = form.Handle;
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 var listHandle = list.Handle;
                 form.RefreshAsync().GetAwaiter().GetResult();
                 Assert.That(list.SelectedItems.Count, Is.EqualTo(1));
                 Assert.That(list.SelectedItems[0].Tag, Is.SameAs(account));
                 Assert.That(list.SelectedItems[0].SubItems[5].Text, Is.EqualTo("Test account"));
-                Assert.That(Field<MenuItem>(form, "_reauthenticateMenuItem").Enabled, Is.True);
-                Assert.That(Field<MenuItem>(form, "_enableMenuItem").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_reauthenticateMenuItem").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_enableMenuItem").Enabled, Is.False);
                 Assert.That(client.SaveCalls, Is.Zero);
             }
         }
@@ -568,9 +569,9 @@ namespace MyCodex.Application.Tests
             {
                 form.ShowInTaskbar = false;
                 form.Show();
-                var search = Field<TextBox>(form, "_searchTextBox");
-                var list = Field<ListBox>(form, "_providersList");
-                var next = Field<Button>(form, "_nextButton");
+                var search = FormTestDriver.Field<TextBox>(form, "_searchTextBox");
+                var list = FormTestDriver.Field<ListBox>(form, "_providersList");
+                var next = FormTestDriver.Field<Button>(form, "_nextButton");
                 Assert.That(list.Items.Count, Is.GreaterThanOrEqualTo(3));
                 search.Text = "custom";
                 Assert.That(list.Items.Count, Is.EqualTo(1));
@@ -582,8 +583,8 @@ namespace MyCodex.Application.Tests
             }
             using (var form = new AuthenticationProviderSelectionForm(presets))
             {
-                var search = Field<TextBox>(form, "_searchTextBox");
-                var next = Field<Button>(form, "_nextButton");
+                var search = FormTestDriver.Field<TextBox>(form, "_searchTextBox");
+                var next = FormTestDriver.Field<Button>(form, "_nextButton");
                 search.Text = "chatgpt";
                 Assert.That(next.Enabled, Is.True);
                 search.Text = "xai";
@@ -614,8 +615,8 @@ namespace MyCodex.Application.Tests
                 {
                     form.ShowInTaskbar = false;
                     form.Show();
-                    var list = Field<ListBox>(form, "_providersList");
-                    var search = Field<TextBox>(form, "_searchTextBox");
+                    var list = FormTestDriver.Field<ListBox>(form, "_providersList");
+                    var search = FormTestDriver.Field<TextBox>(form, "_searchTextBox");
                     Assert.That(list.Items.Cast<AuthenticationProviderPreset>().Select(p => p.Id),
                         Is.EqualTo(new[] { "chatgpt", "custom", "official_api", "cc-switch-2", "cc-switch-1", "cc-switch-999" }));
                     Assert.That(list.GetItemText(list.Items[0]), Is.EqualTo(chatGptName));
@@ -629,7 +630,7 @@ namespace MyCodex.Application.Tests
                         Assert.That(search.Focused, Is.True, "Filtering must not steal focus.");
                         Assert.That(form.SelectedTemplate, Is.Null);
                     }
-                    Field<Button>(form, "_nextButton").PerformClick();
+                    FormTestDriver.Field<Button>(form, "_nextButton").PerformClick();
                     Assert.That(form.SelectedTemplate, Is.SameAs(presets[0]));
                     Assert.That(form.SelectedTemplate.BaseUrl, Is.EqualTo("https://example.invalid/"));
                     Assert.That(form.SelectedTemplate.Model, Is.EqualTo("original-model"));
@@ -647,7 +648,7 @@ namespace MyCodex.Application.Tests
             using (var form = new AuthenticationCenterForm(client))
             {
                 form.RefreshAsync().GetAwaiter().GetResult();
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 list.Items[0].Selected = true;
                 Assert.That(list.ContextMenu, Is.Not.Null);
                 Assert.That(list.ContextMenu.MenuItems[0].Enabled, Is.False, "No apply callback is available.");
@@ -663,23 +664,23 @@ namespace MyCodex.Application.Tests
             var reader = new Reader();
             using (var editor = new AuthenticationProviderEditForm(client, null, reader, save: async (edit, token) => new AuthenticationSaveResult { Provider = await client.SaveAsync(edit, token), Reconnected = true }))
             {
-                Field<TextBox>(editor, "_nameTextBox").Text = "New provider";
-                Field<AuthenticationModelsControl>(editor, "_models").DefaultModel = "test-model";
-                Field<TextBox>(editor, "_keyTextBox").Text = "synthetic-private-key";
+                FormTestDriver.Field<TextBox>(editor, "_nameTextBox").Text = "New provider";
+                FormTestDriver.Field<AuthenticationModelsControl>(editor, "_models").DefaultModel = "test-model";
+                FormTestDriver.Field<TextBox>(editor, "_keyTextBox").Text = "synthetic-private-key";
                 editor.SaveAsync().GetAwaiter().GetResult();
                 Assert.That(editor.DialogResult, Is.EqualTo(DialogResult.OK));
                 Assert.That(client.LastEdit.ApiKey, Is.EqualTo("synthetic-private-key"));
                 Assert.That(client.LastEdit.ExpectedVersion, Is.Null);
-                Assert.That(Field<TextBox>(editor, "_keyTextBox").Text, Is.Empty);
-                Assert.That(Field<TextBox>(editor, "_statusLabel").Text, Does.Not.Contain("synthetic-private-key"));
+                Assert.That(FormTestDriver.Field<TextBox>(editor, "_keyTextBox").Text, Is.Empty);
+                Assert.That(FormTestDriver.Field<TextBox>(editor, "_statusLabel").Text, Does.Not.Contain("synthetic-private-key"));
                 Assert.That(reader.SpeakCalls, Is.Zero);
                 Assert.That(client.Current, Is.Null);
             }
             using (var reopened = new AuthenticationCenterForm(client, reader))
             {
                 reopened.RefreshAsync().GetAwaiter().GetResult();
-                Assert.That(Field<ListView>(reopened, "_providersList").Items.Count, Is.EqualTo(1));
-                Assert.That(Field<Label>(reopened, "_statusLabel").Text, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<ListView>(reopened, "_providersList").Items.Count, Is.EqualTo(1));
+                Assert.That(FormTestDriver.Field<Label>(reopened, "_statusLabel").Text, Is.Not.Empty);
                 Assert.That(reader.SpeakCalls, Is.Zero);
             }
         }
@@ -698,10 +699,10 @@ namespace MyCodex.Application.Tests
             }
             using (var editor = new AuthenticationProviderEditForm(client, provider, save: async (edit, token) => new AuthenticationSaveResult { Provider = await client.SaveAsync(edit, token), Reconnected = true }))
             {
-                Field<TextBox>(editor, "_keyTextBox").Text = "discarded-key";
-                Field<CheckBox>(editor, "_clearKeyCheckBox").Checked = true;
-                Assert.That(Field<TextBox>(editor, "_keyTextBox").Text, Is.Empty);
-                Assert.That(Field<TextBox>(editor, "_keyTextBox").Enabled, Is.False);
+                FormTestDriver.Field<TextBox>(editor, "_keyTextBox").Text = "discarded-key";
+                FormTestDriver.Field<CheckBox>(editor, "_clearKeyCheckBox").Checked = true;
+                Assert.That(FormTestDriver.Field<TextBox>(editor, "_keyTextBox").Text, Is.Empty);
+                Assert.That(FormTestDriver.Field<TextBox>(editor, "_keyTextBox").Enabled, Is.False);
                 editor.SaveAsync().GetAwaiter().GetResult();
                 Assert.That(client.LastEdit.ClearApiKey, Is.True);
                 Assert.That(client.LastEdit.ApiKey, Is.Null);
@@ -716,18 +717,18 @@ namespace MyCodex.Application.Tests
             using (var form = new AuthenticationCenterForm(client, reader))
             {
                 form.RefreshAsync().GetAwaiter().GetResult();
-                Assert.That(Field<Button>(form, "_addButton").Enabled, Is.False);
-                Assert.That(Field<Button>(form, "_refreshButton").Enabled, Is.True);
-                Assert.That(Field<Label>(form, "_statusLabel").Text, Is.Not.Empty);
-                Assert.That(Field<Label>(form, "_statusLabel").Text, Does.Not.Contain("sensitive-provider-payload"));
+                Assert.That(FormTestDriver.Field<Button>(form, "_addButton").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_refreshButton").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Does.Not.Contain("sensitive-provider-payload"));
                 Assert.That(reader.SpeakCalls, Is.Zero);
             }
             using (var editor = new AuthenticationProviderEditForm(client, Provider("a"), reader, save: async (edit, token) => new AuthenticationSaveResult { Provider = await client.SaveAsync(edit, token), Reconnected = true }))
             {
                 editor.SaveAsync().GetAwaiter().GetResult();
                 Assert.That(editor.DialogResult, Is.Not.EqualTo(DialogResult.OK));
-                Assert.That(Field<Button>(editor, "_saveButton").Enabled, Is.True);
-                Assert.That(Field<TextBox>(editor, "_statusLabel").Text, Does.Not.Contain("sensitive-provider-payload"));
+                Assert.That(FormTestDriver.Field<Button>(editor, "_saveButton").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<TextBox>(editor, "_statusLabel").Text, Does.Not.Contain("sensitive-provider-payload"));
                 Assert.That(reader.SpeakCalls, Is.Zero);
             }
         }
@@ -741,7 +742,7 @@ namespace MyCodex.Application.Tests
             {
                 var handle = form.Handle;
                 form.RefreshAsync().GetAwaiter().GetResult();
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 var listHandle = list.Handle;
                 list.Items[0].Selected = true;
                 form.CopySelectedAsync().GetAwaiter().GetResult();
@@ -776,20 +777,20 @@ namespace MyCodex.Application.Tests
             {
                 var handle = form.Handle;
                 form.RefreshAsync().GetAwaiter().GetResult();
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 var listHandle = list.Handle;
                 list.Items[0].Selected = true;
                 Assert.That(applies, Is.Zero);
                 form.ApplySelectedAsync().GetAwaiter().GetResult();
                 Assert.That(applies, Is.EqualTo(1));
-                Assert.That(Field<Button>(form, "_retryButton").Enabled, Is.True);
-                Assert.That(Field<MenuItem>(form, "_enableMenuItem").Enabled, Is.False);
-                Assert.That(Field<Label>(form, "_identityLabel").Text, Does.Contain("official@example.test"));
+                Assert.That(FormTestDriver.Field<Button>(form, "_retryButton").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_enableMenuItem").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(form, "_identityLabel").Text, Does.Contain("official@example.test"));
                 form.RetryConnectionAsync().GetAwaiter().GetResult();
                 Assert.That(reconnects, Is.EqualTo(1));
                 Assert.That(applies, Is.EqualTo(1));
-                Assert.That(Field<Button>(form, "_retryButton").Enabled, Is.False);
-                Assert.That(Field<MenuItem>(form, "_enableMenuItem").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(form, "_retryButton").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_enableMenuItem").Enabled, Is.True);
             }
         }
 
@@ -807,13 +808,13 @@ namespace MyCodex.Application.Tests
             {
                 var handle = form.Handle;
                 form.RefreshAsync().GetAwaiter().GetResult();
-                var list = Field<ListView>(form, "_providersList");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 var listHandle = list.Handle;
                 list.Items[0].Selected = true;
                 form.ApplySelectedAsync().GetAwaiter().GetResult();
-                Assert.That(Field<Button>(form, "_retryButton").Enabled, Is.False);
-                Assert.That(Field<Label>(form, "_statusLabel").Text, Is.Not.Empty);
-                Assert.That(Field<Label>(form, "_statusLabel").Text, Does.Not.Contain("runtime_busy"));
+                Assert.That(FormTestDriver.Field<Button>(form, "_retryButton").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Does.Not.Contain("runtime_busy"));
                 Assert.That(reader.SpeakCalls, Is.Zero);
                 Assert.That(client.SaveCalls, Is.Zero);
             }
@@ -833,12 +834,12 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
                 form.RefreshAsync().GetAwaiter().GetResult();
-                var start = Field<Button>(form, "_aggregationButton");
-                Assert.That(Field<FlowLayoutPanel>(form, "_aggregationRow").Visible, Is.EqualTo(offered));
-                Assert.That(Field<MenuItem>(form, "_aggregationMemberMenuItem").Visible, Is.EqualTo(offered));
+                var start = FormTestDriver.Field<Button>(form, "_aggregationButton");
+                Assert.That(FormTestDriver.Field<FlowLayoutPanel>(form, "_aggregationRow").Visible, Is.EqualTo(offered));
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_aggregationMemberMenuItem").Visible, Is.EqualTo(offered));
                 Assert.That(start.AccessibleName, Is.Not.Empty);
                 Assert.That(start.Enabled, Is.EqualTo(offered));
-                Assert.That(Field<Button>(form, "_aggregationCatalogButton").Visible, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_aggregationCatalogButton").Visible, Is.False);
             }
         }
 
@@ -873,10 +874,10 @@ namespace MyCodex.Application.Tests
                 };
                 form.Show();
                 await form.RefreshAsync();
-                var list = Field<ListView>(form, "_providersList");
-                var start = Field<Button>(form, "_aggregationButton");
-                var member = Field<Button>(form, "_aggregationMemberButton");
-                var row = Field<FlowLayoutPanel>(form, "_aggregationRow");
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
+                var start = FormTestDriver.Field<Button>(form, "_aggregationButton");
+                var member = FormTestDriver.Field<Button>(form, "_aggregationMemberButton");
+                var row = FormTestDriver.Field<FlowLayoutPanel>(form, "_aggregationRow");
                 Assert.That(list.TabIndex, Is.LessThan(row.TabIndex));
                 Assert.That(row.TabIndex, Is.LessThan(((Control)form.CancelButton).Parent.TabIndex));
                 var startText = start.Text;
@@ -888,8 +889,8 @@ namespace MyCodex.Application.Tests
                 Assert.That(start.Text, Is.Not.EqualTo(startText));
                 Assert.That(list.Items.Cast<ListViewItem>().Select(item => item.SubItems[6].Text),
                     Is.EqualTo(new[] { AggregationText("Aggregation.Role.Default", "Default"), AggregationText("Aggregation.Role.Member", "Added") }));
-                Assert.That(Field<Label>(form, "_aggregationLabel").Text, Does.Contain("1"));
-                Assert.That(Field<Label>(form, "_statusLabel").Text, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<Label>(form, "_aggregationLabel").Text, Does.Contain("1"));
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Is.Not.Empty);
 
                 // The default stays listed while aggregating; another member can leave.
                 list.Items[0].Selected = true;
@@ -904,7 +905,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(client.StackCalls, Is.EqualTo(new[] { "enter:a:b", "exit" }));
                 Assert.That(restarts, Is.EqualTo(2));
                 Assert.That(start.Text, Is.EqualTo(startText));
-                Assert.That(Field<Label>(form, "_aggregationLabel").Text, Does.Contain("2"));
+                Assert.That(FormTestDriver.Field<Label>(form, "_aggregationLabel").Text, Does.Contain("2"));
                 Assert.That(reader.SpeakCalls, Is.Zero);
             }
         }
@@ -944,8 +945,8 @@ namespace MyCodex.Application.Tests
             using (var form = new AuthenticationAggregationForm(state, names, "b") { ShowInTaskbar = false })
             {
                 form.Show();
-                var defaults = Field<ComboBox>(form, "_defaultComboBox");
-                var members = Field<CheckedListBox>(form, "_membersList");
+                var defaults = FormTestDriver.Field<ComboBox>(form, "_defaultComboBox");
+                var members = FormTestDriver.Field<CheckedListBox>(form, "_membersList");
                 Assert.That(defaults.AccessibleName, Is.Not.Empty);
                 Assert.That(members.AccessibleName, Is.Not.Empty);
                 Assert.That(defaults.TabIndex, Is.LessThan(members.TabIndex));
@@ -964,11 +965,6 @@ namespace MyCodex.Application.Tests
         private static string AggregationText(string key, string fallback)
         {
             return MyCodex.WinForms.Localization.UiLocalization.Text(key, fallback);
-        }
-
-        private static T Field<T>(object instance, string name) where T : class
-        {
-            return instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(instance) as T;
         }
 
         private static IEnumerable<Control> Descendants(Control parent)

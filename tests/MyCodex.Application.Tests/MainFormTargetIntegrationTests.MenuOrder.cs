@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Windows.Forms;
+using MyCodex.Application.Tests.TestSupport;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -15,28 +16,28 @@ namespace MyCodex.Application.Tests
                 var form = fixture.Form;
                 Assert.That(form.Menu.MenuItems.Cast<MenuItem>(), Is.EqualTo(new[]
                 {
-                    Get<MenuItem>(form, "_fileMenuItem"), Get<MenuItem>(form, "_settingsMenuItem"),
-                    Get<MenuItem>(form, "_gitMenuItem"), Get<MenuItem>(form, "_accountMenuItem"),
-                    Get<MenuItem>(form, "_helpMenuItem")
+                    FormTestDriver.Field<MenuItem>(form, "_fileMenuItem"), FormTestDriver.Field<MenuItem>(form, "_settingsMenuItem"),
+                    FormTestDriver.Field<MenuItem>(form, "_gitMenuItem"), FormTestDriver.Field<MenuItem>(form, "_accountMenuItem"),
+                    FormTestDriver.Field<MenuItem>(form, "_helpMenuItem")
                 }));
-                Assert.That(Get<MenuItem>(form, "_settingsMenuItem").MenuItems.Cast<MenuItem>(), Is.EqualTo(new[]
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_settingsMenuItem").MenuItems.Cast<MenuItem>(), Is.EqualTo(new[]
                 {
-                    Get<MenuItem>(form, "_defaultModelMenuItem"), Get<MenuItem>(form, "_defaultPermissionMenuItem"),
-                    Get<MenuItem>(form, "_optionsMenuItem"),
-                    Get<MenuItem>(form, withTargetContext ? "_targetsMenuItem" : "_appServerRuntimeSettingsMenuItem"),
-                    Get<MenuItem>(form, "_extensionsMenuItem"), Get<MenuItem>(form, "_remoteServiceMenuItem")
+                    FormTestDriver.Field<MenuItem>(form, "_defaultModelMenuItem"), FormTestDriver.Field<MenuItem>(form, "_defaultPermissionMenuItem"),
+                    FormTestDriver.Field<MenuItem>(form, "_optionsMenuItem"),
+                    FormTestDriver.Field<MenuItem>(form, withTargetContext ? "_targetsMenuItem" : "_appServerRuntimeSettingsMenuItem"),
+                    FormTestDriver.Field<MenuItem>(form, "_extensionsMenuItem"), FormTestDriver.Field<MenuItem>(form, "_remoteServiceMenuItem")
                 }));
-                Assert.That(Get<MenuItem>(form, "_extensionsMenuItem").MenuItems.Cast<MenuItem>(), Is.EqualTo(new[]
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_extensionsMenuItem").MenuItems.Cast<MenuItem>(), Is.EqualTo(new[]
                 {
-                    Get<MenuItem>(form, "_pluginManagementMenuItem"), Get<MenuItem>(form, "_skillsManagementMenuItem"),
-                    Get<MenuItem>(form, "_mcpManagementMenuItem")
+                    FormTestDriver.Field<MenuItem>(form, "_pluginManagementMenuItem"), FormTestDriver.Field<MenuItem>(form, "_skillsManagementMenuItem"),
+                    FormTestDriver.Field<MenuItem>(form, "_mcpManagementMenuItem")
                 }));
                 if (withTargetContext)
                 {
-                    var items = Get<MenuItem>(form, "_targetsMenuItem").MenuItems;
+                    var items = FormTestDriver.Field<MenuItem>(form, "_targetsMenuItem").MenuItems;
                     Assert.That(items.Count, Is.EqualTo(3));
                     Assert.That(items[1].Text, Is.EqualTo("-"));
-                    Assert.That(items[2], Is.SameAs(Get<MenuItem>(form, "_appServerRuntimeSettingsMenuItem")));
+                    Assert.That(items[2], Is.SameAs(FormTestDriver.Field<MenuItem>(form, "_appServerRuntimeSettingsMenuItem")));
                 }
             }
         }

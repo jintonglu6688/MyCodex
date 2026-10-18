@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Infrastructure.Persistence;
 using MyCodex.Infrastructure.Instances;
@@ -28,13 +29,13 @@ namespace MyCodex.Application.Tests
                 var previousUrl = Environment.GetEnvironmentVariable(AppConstants.UpdateManifestUrlEnvironmentVariable);
                 var files = new PendingModeSettingsFile();
                 files.Pending.SetResult(Tuple.Create(false, string.Empty));
-                Set(fixture.Form, "_modeSettingsStore", new JsonModeSettingsStore(fixture.Paths, files));
-                Get<AppStateSnapshot>(fixture.Form, "_appStateSnapshot").HasCompletedStartupModeOnboarding = true;
+                FormTestDriver.SetField(fixture.Form, "_modeSettingsStore", new JsonModeSettingsStore(fixture.Paths, files));
+                FormTestDriver.Field<AppStateSnapshot>(fixture.Form, "_appStateSnapshot").HasCompletedStartupModeOnboarding = true;
                 // Keep startup offline: mode storage is fake, connection throws in OfflineClient,
                 // and no local authentication backend or phone service may be started.
-                Get<AppConfigSnapshot>(fixture.Form, "_appConfigSnapshot").CodexRuntimeSource = CodexRuntimeSources.Wsl;
-                Invoke(fixture.Form, "DisposeRemoteHostService");
-                Set(fixture.Form, "_remoteHostServiceController", null);
+                FormTestDriver.Field<AppConfigSnapshot>(fixture.Form, "_appConfigSnapshot").CodexRuntimeSource = CodexRuntimeSources.Wsl;
+                FormTestDriver.Invoke(fixture.Form, "DisposeRemoteHostService");
+                FormTestDriver.SetField(fixture.Form, "_remoteHostServiceController", null);
                 Exception failure = null;
                 var promptSeen = false;
                 timer.Tick += (sender, args) =>
@@ -45,7 +46,7 @@ namespace MyCodex.Application.Tests
                     promptSeen = true;
                     try
                     {
-                        var owner = Get<TargetInstanceCoordinator>(fixture.Form, "_targetInstance").InstanceRecord;
+                        var owner = FormTestDriver.Field<TargetInstanceCoordinator>(fixture.Form, "_targetInstance").InstanceRecord;
                         var coordinator = new TargetExitAllCoordinator(owner,
                             () => TargetInstanceCoordinator.Discover(fixture.Channel, fixture.Root),
                             (instance, request) => throw new AssertionException("Inspection must not close a target."));
@@ -60,11 +61,11 @@ namespace MyCodex.Application.Tests
                     timer.Start();
                     typeof(MainForm).GetMethod("OnShown", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
                         .Invoke(fixture.Form, new object[] { fixture.Form, EventArgs.Empty });
-                    PumpUntil(() => Get<bool>(fixture.Form, "_targetStartupComplete") && !Get<bool>(fixture.Form, "_isUpdateCheckInProgress"));
+                    PumpUntil(() => FormTestDriver.Field<bool>(fixture.Form, "_targetStartupComplete") && !FormTestDriver.Field<bool>(fixture.Form, "_isUpdateCheckInProgress"));
                     Assert.That(promptSeen, Is.True);
                     Assert.That(failure, Is.Null, "The update must not reject its own target as still starting: " + failure);
                     Assert.That(fixture.Client.ConnectCalls, Is.EqualTo(1));
-                    Assert.That(Get<bool>(fixture.Form, "_isExitRequested"), Is.False);
+                    Assert.That(FormTestDriver.Field<bool>(fixture.Form, "_isExitRequested"), Is.False);
                 }
                 finally
                 {
@@ -83,12 +84,12 @@ namespace MyCodex.Application.Tests
                 TargetInstanceCoordinator owner = null;
                 try
                 {
-                    Set(fixture.Form, "_targetLauncher", new TargetWindowLauncher(fixture.Catalog, fixture.Channel, fixture.Root, args =>
+                    FormTestDriver.SetField(fixture.Form, "_targetLauncher", new TargetWindowLauncher(fixture.Catalog, fixture.Channel, fixture.Root, args =>
                     {
                         owner = TargetInstanceCoordinator.Acquire(fixture.Channel, target.Id, fixture.Root);
                         owner.UpdateStatus(new TargetInstanceStatus { Lifecycle = TargetInstanceLifecycle.Closing });
                     }));
-                    var opening = (Task)Invoke(fixture.Form, "OpenTargetWindowAsync", target.Id);
+                    var opening = (Task)FormTestDriver.Invoke(fixture.Form, "OpenTargetWindowAsync", target.Id);
                     PumpUntil(() => opening.IsCompleted);
                     opening.GetAwaiter().GetResult();
                     Assert.That(fixture.Form.IsDisposed, Is.False);
@@ -102,10 +103,10 @@ namespace MyCodex.Application.Tests
         {
             using (var fixture = new TargetFormFixture())
             {
-                Assert.That(Get<bool>(fixture.Form, "_targetStartupComplete"), Is.False);
+                Assert.That(FormTestDriver.Field<bool>(fixture.Form, "_targetStartupComplete"), Is.False);
                 Assert.That(PrepareStartupExit(fixture), Is.True);
-                Assert.That((bool)Invoke(fixture.Form, "CommitTargetExit", "startup-exit"), Is.True);
-                Assert.That(Get<bool>(fixture.Form, "_isExitRequested"), Is.True);
+                Assert.That((bool)FormTestDriver.Invoke(fixture.Form, "CommitTargetExit", "startup-exit"), Is.True);
+                Assert.That(FormTestDriver.Field<bool>(fixture.Form, "_isExitRequested"), Is.True);
                 Assert.That(fixture.State.SaveCalls, Is.EqualTo(1));
             }
         }
@@ -121,10 +122,10 @@ namespace MyCodex.Application.Tests
                         new InvalidOperationException("ssh: connect to host 192.168.50.3 port 22: Connection refused"))
                     : new PersistenceRecoveryRequiredException("app-state.json", null,
                         new InvalidOperationException("Invalid saved data"), null);
-                Invoke(fixture.Form, "MarkPersistenceRecoveryPending", error);
-                Invoke(fixture.Form, "CompleteTargetStartup");
-                Assert.That(Get<System.Windows.Forms.Timer>(fixture.Form, "_targetStatusTimer").Enabled, Is.False);
-                var status = (TargetInstanceStatus)Invoke(fixture.Form, "BuildTargetStatus", TargetInstanceLifecycle.Running);
+                FormTestDriver.Invoke(fixture.Form, "MarkPersistenceRecoveryPending", error);
+                FormTestDriver.Invoke(fixture.Form, "CompleteTargetStartup");
+                Assert.That(FormTestDriver.Field<System.Windows.Forms.Timer>(fixture.Form, "_targetStatusTimer").Enabled, Is.False);
+                var status = (TargetInstanceStatus)FormTestDriver.Invoke(fixture.Form, "BuildTargetStatus", TargetInstanceLifecycle.Running);
                 Assert.That(status.Lifecycle, Is.Not.EqualTo(TargetInstanceLifecycle.Running));
                 var activation = fixture.Form.HandleTargetInstanceRequestAsync(new TargetInstanceRequest
                 {
@@ -133,10 +134,10 @@ namespace MyCodex.Application.Tests
                 PumpUntil(() => activation.IsCompleted);
                 Assert.That(activation.GetAwaiter().GetResult().Success, Is.False);
                 Assert.That(PrepareStartupExit(fixture), Is.True);
-                Assert.That((bool)Invoke(fixture.Form, "CommitTargetExit", "startup-exit"), Is.True);
-                Assert.That(Get<bool>(fixture.Form, "_isExitRequested"), Is.True);
+                Assert.That((bool)FormTestDriver.Invoke(fixture.Form, "CommitTargetExit", "startup-exit"), Is.True);
+                Assert.That(FormTestDriver.Field<bool>(fixture.Form, "_isExitRequested"), Is.True);
                 Assert.That(fixture.State.SaveCalls, Is.Zero, "Unread state must never be overwritten on exit.");
-                Assert.That((bool)Invoke(fixture.Form, "TryPersistState"), Is.False);
+                Assert.That((bool)FormTestDriver.Invoke(fixture.Form, "TryPersistState"), Is.False);
             }
         }
 
@@ -148,21 +149,21 @@ namespace MyCodex.Application.Tests
             {
                 var pending = new TaskCompletionSource<AppServerAuthenticationState>();
                 fixture.Client.ReadAuthentication = () => pending.Task;
-                var original = Get<AppServerAuthenticationState>(fixture.Form, "_authenticationState");
-                var loading = (Task)Invoke(fixture.Form, "RefreshAuthenticationStateAsync", false, false);
+                var original = FormTestDriver.Field<AppServerAuthenticationState>(fixture.Form, "_authenticationState");
+                var loading = (Task)FormTestDriver.Invoke(fixture.Form, "RefreshAuthenticationStateAsync", false, false);
                 Assert.That(loading.IsCompleted, Is.False);
                 Assert.That(PrepareStartupExit(fixture), Is.True);
                 var received = new AppServerAuthenticationState { IsAuthenticated = true };
                 pending.SetResult(received);
                 System.Windows.Forms.Application.DoEvents();
-                Assert.That(Get<AppServerAuthenticationState>(fixture.Form, "_authenticationState"), Is.SameAs(original));
+                Assert.That(FormTestDriver.Field<AppServerAuthenticationState>(fixture.Form, "_authenticationState"), Is.SameAs(original));
                 Assert.That(loading.IsCompleted, Is.False, "Preparation pauses loading until commit or cancellation.");
 
-                if (commit) Assert.That((bool)Invoke(fixture.Form, "CommitTargetExit", "startup-exit"), Is.True);
-                else Invoke(fixture.Form, "CancelTargetExitPreparation", "startup-exit");
+                if (commit) Assert.That((bool)FormTestDriver.Invoke(fixture.Form, "CommitTargetExit", "startup-exit"), Is.True);
+                else FormTestDriver.Invoke(fixture.Form, "CancelTargetExitPreparation", "startup-exit");
                 PumpUntil(() => loading.IsCompleted);
                 loading.GetAwaiter().GetResult();
-                Assert.That(Get<AppServerAuthenticationState>(fixture.Form, "_authenticationState"), Is.SameAs(commit ? original : received));
+                Assert.That(FormTestDriver.Field<AppServerAuthenticationState>(fixture.Form, "_authenticationState"), Is.SameAs(commit ? original : received));
                 Assert.That(fixture.Form.Enabled, Is.EqualTo(!commit));
             }
         }
@@ -174,7 +175,7 @@ namespace MyCodex.Application.Tests
             {
                 var pending = new TaskCompletionSource<AppServerAuthenticationState>();
                 fixture.Client.ReadAuthentication = () => pending.Task;
-                var loading = (Task)Invoke(fixture.Form, "RefreshAuthenticationStateAsync", false, false);
+                var loading = (Task)FormTestDriver.Invoke(fixture.Form, "RefreshAuthenticationStateAsync", false, false);
                 fixture.State.FailSave = true;
                 Assert.That(PrepareStartupExit(fixture), Is.False);
                 Assert.That(fixture.State.SaveCalls, Is.EqualTo(1));
@@ -183,14 +184,14 @@ namespace MyCodex.Application.Tests
                 pending.SetResult(received);
                 PumpUntil(() => loading.IsCompleted);
                 loading.GetAwaiter().GetResult();
-                Assert.That(Get<AppServerAuthenticationState>(fixture.Form, "_authenticationState"), Is.SameAs(received));
-                Assert.That(Get<bool>(fixture.Form, "_isExitRequested"), Is.False);
+                Assert.That(FormTestDriver.Field<AppServerAuthenticationState>(fixture.Form, "_authenticationState"), Is.SameAs(received));
+                Assert.That(FormTestDriver.Field<bool>(fixture.Form, "_isExitRequested"), Is.False);
             }
         }
 
         private static bool PrepareStartupExit(TargetFormFixture fixture)
         {
-            var prepare = (Task<bool>)Invoke(fixture.Form, "PrepareTargetExitAsync", "startup-exit", false);
+            var prepare = (Task<bool>)FormTestDriver.Invoke(fixture.Form, "PrepareTargetExitAsync", "startup-exit", false);
             Assert.That(prepare.IsCompleted, Is.True, "Exit must not wait for the pending startup read.");
             return prepare.GetAwaiter().GetResult();
         }
@@ -201,19 +202,19 @@ namespace MyCodex.Application.Tests
             using (var fixture = new TargetFormFixture())
             {
                 var files = new PendingModeSettingsFile();
-                Set(fixture.Form, "_modeSettingsStore", new JsonModeSettingsStore(fixture.Paths, files));
-                var settings = Get<ModeSettingsSnapshot>(fixture.Form, "_activeModeSettings");
+                FormTestDriver.SetField(fixture.Form, "_modeSettingsStore", new JsonModeSettingsStore(fixture.Paths, files));
+                var settings = FormTestDriver.Field<ModeSettingsSnapshot>(fixture.Form, "_activeModeSettings");
                 typeof(MainForm).GetMethod("OnShown", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
                     .Invoke(fixture.Form, new object[] { fixture.Form, EventArgs.Empty });
                 Assert.That(files.ReadStarted, Is.True);
                 Assert.That(PrepareStartupExit(fixture), Is.True);
-                Assert.That((bool)Invoke(fixture.Form, "CommitTargetExit", "startup-exit"), Is.True);
+                Assert.That((bool)FormTestDriver.Invoke(fixture.Form, "CommitTargetExit", "startup-exit"), Is.True);
                 files.Pending.SetResult(Tuple.Create(false, string.Empty));
-                PumpUntil(() => Get<bool>(fixture.Form, "_targetStartupComplete"));
-                Assert.That(Get<ModeSettingsSnapshot>(fixture.Form, "_activeModeSettings"), Is.SameAs(settings));
+                PumpUntil(() => FormTestDriver.Field<bool>(fixture.Form, "_targetStartupComplete"));
+                Assert.That(FormTestDriver.Field<ModeSettingsSnapshot>(fixture.Form, "_activeModeSettings"), Is.SameAs(settings));
                 Assert.That(fixture.Client.ConnectCalls, Is.Zero);
-                Assert.That(Get<bool>(fixture.Form, "_hasAutomaticUpdateCheckRun"), Is.False);
-                Assert.That(Get<System.Windows.Forms.Timer>(fixture.Form, "_targetStatusTimer").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<bool>(fixture.Form, "_hasAutomaticUpdateCheckRun"), Is.False);
+                Assert.That(FormTestDriver.Field<System.Windows.Forms.Timer>(fixture.Form, "_targetStatusTimer").Enabled, Is.False);
                 Assert.That(fixture.State.SaveCalls, Is.EqualTo(1));
             }
         }
@@ -226,21 +227,21 @@ namespace MyCodex.Application.Tests
             {
                 var pending = new TaskCompletionSource<AppServerThreadDetails>();
                 var session = new ChatSession { Id = "session", ThreadId = "thread", SessionPath = "original" };
-                Set(fixture.Form, "_currentSession", session);
-                Get<List<ChatSession>>(fixture.Form, "_sessions").Add(session);
-                Set(fixture.Form, "_sessionHistoryLoadWorkflow", new SessionHistoryLoadWorkflow(
-                    Get<SessionHistoryStateStore>(fixture.Form, "_sessionHistoryStateStore"),
-                    Get<SessionHistoryDisplayBuilder>(fixture.Form, "_sessionHistoryDisplayBuilder"),
+                FormTestDriver.SetField(fixture.Form, "_currentSession", session);
+                FormTestDriver.Field<List<ChatSession>>(fixture.Form, "_sessions").Add(session);
+                FormTestDriver.SetField(fixture.Form, "_sessionHistoryLoadWorkflow", new SessionHistoryLoadWorkflow(
+                    FormTestDriver.Field<SessionHistoryStateStore>(fixture.Form, "_sessionHistoryStateStore"),
+                    FormTestDriver.Field<SessionHistoryDisplayBuilder>(fixture.Form, "_sessionHistoryDisplayBuilder"),
                     id => pending.Task, error => false, error => false));
-                var loading = (Task)Invoke(fixture.Form, "LoadSessionHistoryAsync", session, true);
+                var loading = (Task)FormTestDriver.Invoke(fixture.Form, "LoadSessionHistoryAsync", session, true);
                 Assert.That(loading.IsCompleted, Is.False);
                 Assert.That(PrepareStartupExit(fixture), Is.True);
                 pending.SetResult(new AppServerThreadDetails { SessionPath = "late-result" });
                 System.Windows.Forms.Application.DoEvents();
                 Assert.That(loading.IsCompleted, Is.False);
                 Assert.That(session.SessionPath, Is.EqualTo("original"));
-                if (commit) Assert.That((bool)Invoke(fixture.Form, "CommitTargetExit", "startup-exit"), Is.True);
-                else Invoke(fixture.Form, "CancelTargetExitPreparation", "startup-exit");
+                if (commit) Assert.That((bool)FormTestDriver.Invoke(fixture.Form, "CommitTargetExit", "startup-exit"), Is.True);
+                else FormTestDriver.Invoke(fixture.Form, "CancelTargetExitPreparation", "startup-exit");
                 PumpUntil(() => loading.IsCompleted);
                 loading.GetAwaiter().GetResult();
                 Assert.That(session.SessionPath, Is.EqualTo(commit ? "original" : "late-result"));
@@ -256,16 +257,16 @@ namespace MyCodex.Application.Tests
             {
                 var pending = new TaskCompletionSource<List<AppServerThreadSummary>>();
                 var session = new ChatSession { Id = "session", ThreadId = "thread", Title = "original", IsImported = true };
-                Get<List<ChatSession>>(fixture.Form, "_sessions").Add(session);
-                Set(fixture.Form, "_connectionStatus", typeof(MainForm).GetMethod("GetConnectionStatusConnectedText",
+                FormTestDriver.Field<List<ChatSession>>(fixture.Form, "_sessions").Add(session);
+                FormTestDriver.SetField(fixture.Form, "_connectionStatus", typeof(MainForm).GetMethod("GetConnectionStatusConnectedText",
                     BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null));
-                Set(fixture.Form, "_automaticThreadSyncWorkflow", new AutomaticThreadSyncWorkflow(
+                FormTestDriver.SetField(fixture.Form, "_automaticThreadSyncWorkflow", new AutomaticThreadSyncWorkflow(
                     () => Task.FromResult(new List<string>()), () => pending.Task));
-                var loading = (Task)Invoke(fixture.Form, "RunAutomaticThreadSyncAsync", false, false);
+                var loading = (Task)FormTestDriver.Invoke(fixture.Form, "RunAutomaticThreadSyncAsync", false, false);
                 Assert.That(loading.IsCompleted, Is.False);
                 Assert.That(PrepareStartupExit(fixture), Is.True);
-                if (commit) Assert.That((bool)Invoke(fixture.Form, "CommitTargetExit", "startup-exit"), Is.True);
-                else Invoke(fixture.Form, "CancelTargetExitPreparation", "startup-exit");
+                if (commit) Assert.That((bool)FormTestDriver.Invoke(fixture.Form, "CommitTargetExit", "startup-exit"), Is.True);
+                else FormTestDriver.Invoke(fixture.Form, "CancelTargetExitPreparation", "startup-exit");
                 pending.SetResult(new List<AppServerThreadSummary> { new AppServerThreadSummary { ThreadId = "thread", Title = "late-result" } });
                 PumpUntil(() => loading.IsCompleted);
                 loading.GetAwaiter().GetResult();
@@ -273,7 +274,7 @@ namespace MyCodex.Application.Tests
                 if (commit)
                 {
                     Assert.That(fixture.State.SaveCalls, Is.EqualTo(1));
-                    Assert.That(Get<System.Windows.Forms.Timer>(fixture.Form, "_automaticThreadSyncTimer").Enabled, Is.False);
+                    Assert.That(FormTestDriver.Field<System.Windows.Forms.Timer>(fixture.Form, "_automaticThreadSyncTimer").Enabled, Is.False);
                 }
             }
         }

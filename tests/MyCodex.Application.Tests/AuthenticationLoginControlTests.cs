@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.AuthenticationCenter;
 using MyCodex.WinForms.Controls;
 using NUnit.Framework;
@@ -27,8 +28,8 @@ namespace MyCodex.Application.Tests
                 form.Controls.Add(control);
                 form.Show();
                 control.StartLoginAsync().GetAwaiter().GetResult();
-                Field<System.Windows.Forms.Timer>(control, "_timer").Stop();
-                var button = Field<Button>(control, buttonName);
+                FormTestDriver.Field<System.Windows.Forms.Timer>(control, "_timer").Stop();
+                var button = FormTestDriver.Field<Button>(control, buttonName);
                 Assert.That(button.Focus(), Is.True);
                 backend.PendingPoll = new TaskCompletionSource<IDictionary<string, object>>();
                 var poll = control.PollLoginAsync();
@@ -61,16 +62,16 @@ namespace MyCodex.Application.Tests
                 control.PollLoginAsync().GetAwaiter().GetResult();
                 Assert.That(backend.Method, Is.EqualTo("browser"));
                 Assert.That(actions, Is.EqualTo(new[] { "open:" + Backend.BrowserUri }));
-                Assert.That(Field<TextBox>(control, "_code").TabStop, Is.False);
-                Assert.That(Field<Button>(control, "_device").AccessibleName, Is.Not.Empty);
-                Assert.That(Field<TextBox>(control, "_status").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_code").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(control, "_device").AccessibleName, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_status").TabStop, Is.False);
                 control.StartDeviceFallbackAsync().GetAwaiter().GetResult();
                 Assert.That(backend.Cancels, Is.EqualTo(1));
                 Assert.That(backend.Starts, Is.EqualTo(2));
                 Assert.That(backend.Method, Is.EqualTo("device"));
                 Assert.That(actions, Is.EqualTo(new[] { "open:" + Backend.BrowserUri,
                     "copy:TEST-CODE", "open:https://auth.openai.com/codex/device" }));
-                Assert.That(Field<TextBox>(control, "_code").TabStop, Is.True);
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_code").TabStop, Is.True);
             }
         }
 
@@ -118,7 +119,7 @@ namespace MyCodex.Application.Tests
                 control.PollLoginAsync().GetAwaiter().GetResult();
                 Assert.That(control.AccountId, Is.EqualTo("archived-id"));
                 Assert.That(control.IsLoginActive, Is.False);
-                Assert.That(Field<Button>(control, "_open").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(control, "_open").Enabled, Is.False);
             }
         }
 
@@ -131,7 +132,7 @@ namespace MyCodex.Application.Tests
                 control.StartLoginAsync().GetAwaiter().GetResult();
                 Assert.That(Guid.TryParse(backend.LoginId, out _), Is.True);
                 Assert.That(control.IsLoginActive, Is.True);
-                Assert.That(Field<TextBox>(control, "_status").Text, Does.Not.Contain("synthetic-sensitive-payload"));
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_status").Text, Does.Not.Contain("synthetic-sensitive-payload"));
                 control.CancelLoginAsync().GetAwaiter().GetResult();
                 Assert.That(backend.Cancels, Is.EqualTo(1));
                 Assert.That(backend.Status, Is.EqualTo("cancelled"));
@@ -157,8 +158,8 @@ namespace MyCodex.Application.Tests
             {
                 Assert.That(backend.Starts, Is.Zero);
                 foreach (var name in new[] { "_start", "_copy", "_open", "_cancel" })
-                    Assert.That(Field<Button>(control, name).AccessibleName, Is.Not.Empty);
-                Assert.That(Field<TextBox>(control, "_code").ReadOnly, Is.True);
+                    Assert.That(FormTestDriver.Field<Button>(control, name).AccessibleName, Is.Not.Empty);
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_code").ReadOnly, Is.True);
                 control.StartLoginAsync().GetAwaiter().GetResult();
                 control.PollLoginAsync().GetAwaiter().GetResult();
                 Assert.That(actions, Is.EqualTo(new[] { "copy:TEST-CODE", "open:https://auth.openai.com/codex/device" }));
@@ -166,8 +167,8 @@ namespace MyCodex.Application.Tests
                 control.PollLoginAsync().GetAwaiter().GetResult();
                 Assert.That(control.AccountId, Is.EqualTo("archived-id"));
                 Assert.That(control.IsLoginActive, Is.False);
-                Assert.That(Field<TextBox>(control, "_code").Text, Is.Empty);
-                Assert.That(Field<TextBox>(control, "_status").Text, Does.Contain("Test account"));
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_code").Text, Is.Empty);
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_status").Text, Does.Contain("Test account"));
             }
         }
 
@@ -182,11 +183,11 @@ namespace MyCodex.Application.Tests
                 control.StartLoginAsync().GetAwaiter().GetResult();
                 control.PollLoginAsync().GetAwaiter().GetResult();
                 Assert.That(opens, Is.EqualTo(1));
-                Assert.That(Field<Button>(control, "_open").Enabled, Is.True);
-                Assert.That(Field<Button>(control, "_copy").Enabled, Is.True);
-                Assert.That(Field<TextBox>(control, "_status").Text, Does.Not.Contain("secret-payload"));
+                Assert.That(FormTestDriver.Field<Button>(control, "_open").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(control, "_copy").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_status").Text, Does.Not.Contain("secret-payload"));
                 control.CancelLoginAsync().GetAwaiter().GetResult();
-                Assert.That(Field<TextBox>(control, "_code").Text, Is.Empty);
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_code").Text, Is.Empty);
             }
         }
 
@@ -203,7 +204,7 @@ namespace MyCodex.Application.Tests
                 control.StartLoginAsync().GetAwaiter().GetResult();
                 Assert.That(backend.Target, Is.EqualTo("existing-id"));
                 Assert.That(opens, Is.Zero);
-                Assert.That(Field<TextBox>(control, "_code").Text, Is.EqualTo("TEST-CODE"));
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_code").Text, Is.EqualTo("TEST-CODE"));
             }
         }
 
@@ -277,9 +278,9 @@ namespace MyCodex.Application.Tests
                 Assert.That(backend.Starts, Is.Zero);
                 Assert.That(actions, Is.Zero);
                 Assert.That(control.IsLoginActive, Is.True);
-                Assert.That(Field<TextBox>(control, "_code").Text, Is.EqualTo("TEST-CODE"));
-                Assert.That(Field<TextBox>(control, "_status").TabStop, Is.False);
-                Assert.That(Field<TextBox>(control, "_status").ReadOnly, Is.True);
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_code").Text, Is.EqualTo("TEST-CODE"));
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_status").TabStop, Is.False);
+                Assert.That(FormTestDriver.Field<TextBox>(control, "_status").ReadOnly, Is.True);
             }
         }
 
@@ -296,9 +297,9 @@ namespace MyCodex.Application.Tests
                 control.StartLoginAsync().GetAwaiter().GetResult();
                 backend.PendingPoll = new TaskCompletionSource<IDictionary<string, object>>();
                 var poll = control.PollLoginAsync();
-                Assert.That(Field<Button>(control, "_open").Enabled, Is.True);
-                Assert.That(Field<Button>(control, "_copy").Enabled, Is.True);
-                Field<Button>(control, "_open").PerformClick();
+                Assert.That(FormTestDriver.Field<Button>(control, "_open").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<Button>(control, "_copy").Enabled, Is.True);
+                FormTestDriver.Field<Button>(control, "_open").PerformClick();
                 Assert.That(opens, Is.EqualTo(2), "Manual browser opening remains usable during a pending poll.");
                 control.CancelLoginAsync().GetAwaiter().GetResult();
                 backend.PendingPoll.SetResult(backend.Login("completed"));
@@ -306,11 +307,6 @@ namespace MyCodex.Application.Tests
                 Assert.That(control.AccountId, Is.Null);
                 Assert.That(control.IsLoginActive, Is.False);
             }
-        }
-
-        private static T Field<T>(object value, string name) where T : class
-        {
-            return (T)value.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(value);
         }
 
         private static void Pump(Task task)

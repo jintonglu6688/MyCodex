@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
 
@@ -27,8 +28,8 @@ namespace MyCodex.Application.Tests
                     System.Windows.Forms.Application.DoEvents();
 
                     Assert.That(client.ToolCallCount, Is.EqualTo(0));
-                    Assert.That(FindControl<Button>(form, "Run Tool").AccessibleName, Is.EqualTo("Run Tool"));
-                    Assert.That(FindControl<TextBox>(form, "Arguments JSON").Multiline, Is.True);
+                    Assert.That(FormTestDriver.FindControl<Button>(form, "Run Tool").AccessibleName, Is.EqualTo("Run Tool"));
+                    Assert.That(FormTestDriver.FindControl<TextBox>(form, "Arguments JSON").Multiline, Is.True);
                 }
             });
         }
@@ -70,49 +71,6 @@ namespace MyCodex.Application.Tests
                 CultureInfo.CurrentCulture = originalCulture;
                 CultureInfo.CurrentUICulture = originalUiCulture;
             }
-        }
-
-        private static T FindControl<T>(Control root, string accessibleName)
-            where T : Control
-        {
-            foreach (Control child in root.Controls)
-            {
-                var typed = child as T;
-                if (typed != null && string.Equals(typed.AccessibleName, accessibleName, StringComparison.Ordinal))
-                {
-                    return typed;
-                }
-
-                var nested = FindControlOrDefault<T>(child, accessibleName);
-                if (nested != null)
-                {
-                    return nested;
-                }
-            }
-
-            Assert.Fail("Control not found: " + accessibleName);
-            return null;
-        }
-
-        private static T FindControlOrDefault<T>(Control root, string accessibleName)
-            where T : Control
-        {
-            foreach (Control child in root.Controls)
-            {
-                var typed = child as T;
-                if (typed != null && string.Equals(typed.AccessibleName, accessibleName, StringComparison.Ordinal))
-                {
-                    return typed;
-                }
-
-                var nested = FindControlOrDefault<T>(child, accessibleName);
-                if (nested != null)
-                {
-                    return nested;
-                }
-            }
-
-            return null;
         }
 
         private sealed class FakeMcpClient : IAppServerMcpClient

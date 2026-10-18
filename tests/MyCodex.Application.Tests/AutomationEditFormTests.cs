@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.WinForms.Forms;
@@ -38,10 +39,10 @@ namespace MyCodex.Application.Tests
             using (var form = new AutomationEditForm(context))
             {
                 Assert.That(form.Text, Is.EqualTo(UiLocalization.Text("AutomationEditForm.Title.New", "New automation")));
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily review";
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Review the current thread.";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily review";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Review the current thread.";
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.Request, Is.Not.Null);
                 Assert.That(form.Request.Kind, Is.EqualTo(AutomationKind.Thread));
@@ -67,12 +68,8 @@ namespace MyCodex.Application.Tests
                     WorkspacePath = @"E:\MyCodex"
                 }))
                 {
-                    var kindComboBox = FindControl<ComboBox>(
-                        form,
-                        UiLocalization.Text("AutomationEditForm.Accessible.Kind", "自动化类型"));
-                    var scheduleComboBox = FindControl<ComboBox>(
-                        form,
-                        UiLocalization.Text("AutomationEditForm.Accessible.ScheduleKind", "调度规则"));
+                    var kindComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Kind", "自动化类型"));
+                    var scheduleComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ScheduleKind", "调度规则"));
 
                     Assert.That(kindComboBox, Is.Not.Null);
                     Assert.That(scheduleComboBox, Is.Not.Null);
@@ -129,18 +126,16 @@ namespace MyCodex.Application.Tests
                     ApprovalMode = ApprovalMode.Auto
                 }))
                 {
-                    var kindComboBox = FindControl<ComboBox>(
-                        form,
-                        UiLocalization.Text("AutomationEditForm.Accessible.Kind", "Automation type"));
+                    var kindComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Kind", "Automation type"));
 
                     CollectionAssert.AreEqual(
                         new[] { UiLocalization.Text("Automation.Kind.Project", "项目自动化") },
                         kindComboBox.Items.Cast<object>().Select(item => item.ToString()).ToArray());
                     AssertKindComboHasNoBareEnumText(kindComboBox);
 
-                    FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Project review";
-                    FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Review project changes.";
-                    InvokeOk(form);
+                    FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Project review";
+                    FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Review project changes.";
+                    FormTestDriver.ClickOk(form);
 
                     Assert.That(form.Request.Kind, Is.EqualTo(AutomationKind.Project));
                     Assert.That(form.Request.Context.InteractionMode, Is.EqualTo(AppInteractionMode.Coding));
@@ -178,18 +173,16 @@ namespace MyCodex.Application.Tests
                     ApprovalMode = ApprovalMode.ReadOnly
                 }))
                 {
-                    var kindComboBox = FindControl<ComboBox>(
-                        form,
-                        UiLocalization.Text("AutomationEditForm.Accessible.Kind", "Automation type"));
+                    var kindComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Kind", "Automation type"));
 
                     CollectionAssert.AreEqual(
                         new[] { "Office 自动化" },
                         kindComboBox.Items.Cast<object>().Select(item => item.ToString()).ToArray());
                     AssertKindComboHasNoBareEnumText(kindComboBox);
 
-                    FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Office digest";
-                    FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize reports.";
-                    InvokeOk(form);
+                    FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Office digest";
+                    FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize reports.";
+                    FormTestDriver.ClickOk(form);
 
                     Assert.That(form.Request.Kind, Is.EqualTo(AutomationKind.Office));
                     Assert.That(form.Request.Context.InteractionMode, Is.EqualTo(AppInteractionMode.Office));
@@ -215,9 +208,7 @@ namespace MyCodex.Application.Tests
                 WorkspacePath = @"E:\MyCodex"
             }))
             {
-                var kindComboBox = FindControl<ComboBox>(
-                    form,
-                    UiLocalization.Text("AutomationEditForm.Accessible.Kind", "Automation type"));
+                var kindComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Kind", "Automation type"));
 
                 CollectionAssert.AreEqual(
                     new[] { AutomationDisplayText.Kind(AutomationKind.Standalone) },
@@ -243,12 +234,12 @@ namespace MyCodex.Application.Tests
                 ApprovalMode = ApprovalMode.ReadOnly
             }, null, models, modelId => true))
             {
-                var modelComboBox = FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model"));
-                var reasoningComboBox = FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort"));
-                var approvalComboBox = FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ApprovalMode", "Approval mode"));
+                var modelComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model"));
+                var reasoningComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort"));
+                var approvalComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ApprovalMode", "Approval mode"));
 
                 Assert.That(modelComboBox, Is.Not.Null);
-                Assert.That(FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model")), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model")), Is.Null);
                 Assert.That(GetSelectedComboItemProperty(modelComboBox, "ModelId"), Is.EqualTo("gpt-5.5"));
                 Assert.That(reasoningComboBox.SelectedItem.ToString(), Is.EqualTo(UiLocalization.Text("ReasoningEffort.High", "High")));
                 Assert.That(approvalComboBox.SelectedItem.ToString(), Is.EqualTo(UiLocalization.Text(
@@ -260,10 +251,10 @@ namespace MyCodex.Application.Tests
                 SelectComboText(approvalComboBox, UiLocalization.Text(
                     "ApprovalMode.FullAccessWithDescription",
                     "Full Access - can access files and run commands; approvals are reviewed automatically by a model."));
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily news";
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily news";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.Request.ModelId, Is.EqualTo("gpt-5.6"));
                 Assert.That(form.Request.ReasoningEffort, Is.EqualTo("medium"));
@@ -280,9 +271,7 @@ namespace MyCodex.Application.Tests
                 WorkspacePath = @"E:\MyCodex"
             }))
             {
-                var approvalComboBox = FindControl<ComboBox>(
-                    form,
-                    UiLocalization.Text("AutomationEditForm.Accessible.ApprovalMode", "Approval mode"));
+                var approvalComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ApprovalMode", "Approval mode"));
 
                 CollectionAssert.AreEqual(
                     new[]
@@ -321,16 +310,16 @@ namespace MyCodex.Application.Tests
                 ApprovalMode = ApprovalMode.Auto
             }, null, models, modelId => false))
             {
-                var modelComboBox = FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model"));
-                var reasoningComboBox = FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort"));
+                var modelComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model"));
+                var reasoningComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort"));
 
                 Assert.That(GetSelectedComboItemProperty(modelComboBox, "ModelId"), Is.EqualTo("deepseek-v4-pro"));
                 Assert.That(reasoningComboBox.Enabled, Is.False);
 
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily news";
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily news";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.Request.ModelId, Is.EqualTo("deepseek-v4-pro"));
                 Assert.That(form.Request.ReasoningEffort, Is.Null);
@@ -351,12 +340,12 @@ namespace MyCodex.Application.Tests
                 WorkspacePath = @"E:\MyCodex"
             }, null, models, null))
             {
-                var reasoningComboBox = FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort"));
+                var reasoningComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort"));
                 Assert.That(reasoningComboBox.Enabled, Is.False);
 
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily news";
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
-                InvokeOk(form);
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily news";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.Request.ModelId, Is.EqualTo("official-observed"));
                 Assert.That(form.Request.ReasoningEffort, Is.Null);
@@ -377,10 +366,10 @@ namespace MyCodex.Application.Tests
                 WorkspacePath = @"E:\MyCodex"
             }, null, models, modelId => true))
             {
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily news";
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily news";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.Request.ModelId, Is.EqualTo("official-observed"));
                 Assert.That(form.Request.ReasoningEffort, Is.EqualTo("medium"));
@@ -397,10 +386,10 @@ namespace MyCodex.Application.Tests
                 WorkspacePath = @"E:\MyCodex"
             }))
             {
-                Assert.That(FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model")), Is.Not.Null);
-                Assert.That(FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model")), Is.Null);
-                Assert.That(FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort")), Is.Not.Null);
-                Assert.That(FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ApprovalMode", "Approval mode")), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model")), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model")), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort")), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ApprovalMode", "Approval mode")), Is.Not.Null);
             }
         }
 
@@ -444,17 +433,17 @@ namespace MyCodex.Application.Tests
             }, modelId => true))
             {
                 Assert.That(form.Text, Is.EqualTo(UiLocalization.Text("AutomationEditForm.Title.Edit", "Edit automation")));
-                Assert.That(FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text, Is.EqualTo("Daily news"));
-                Assert.That(FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text, Is.EqualTo("Summarize news."));
-                Assert.That(GetSelectedComboItemProperty(FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model")), "ModelId"), Is.EqualTo("gpt-5.5"));
-                Assert.That(FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort")).SelectedItem.ToString(), Is.EqualTo(UiLocalization.Text("ReasoningEffort.High", "High")));
-                Assert.That(FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ApprovalMode", "Approval mode")).SelectedItem.ToString(), Is.EqualTo(UiLocalization.Text(
+                Assert.That(FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text, Is.EqualTo("Daily news"));
+                Assert.That(FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text, Is.EqualTo("Summarize news."));
+                Assert.That(GetSelectedComboItemProperty(FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model")), "ModelId"), Is.EqualTo("gpt-5.5"));
+                Assert.That(FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort")).SelectedItem.ToString(), Is.EqualTo(UiLocalization.Text("ReasoningEffort.High", "High")));
+                Assert.That(FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ApprovalMode", "Approval mode")).SelectedItem.ToString(), Is.EqualTo(UiLocalization.Text(
                     "ApprovalMode.FullAccessWithDescription",
                     "Full Access - can access files and run commands; approvals are reviewed automatically by a model.")));
-                Assert.That(FindControl<CheckBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.AutoArchive", "Allow no-findings runs to archive automatically")).Checked, Is.True);
-                Assert.That(FindControl<ListView>(form, UiLocalization.Text("AutomationEditForm.Accessible.InputItems", "Inserted plugins and skills")).Items, Has.Count.EqualTo(1));
-                Assert.That(FindControl<DateTimePicker>(form, UiLocalization.Text("AutomationEditForm.Accessible.Time", "Time")).Value.Hour, Is.EqualTo(8));
-                Assert.That(FindControl<DateTimePicker>(form, UiLocalization.Text("AutomationEditForm.Accessible.Time", "Time")).Value.Minute, Is.EqualTo(30));
+                Assert.That(FormTestDriver.FindControlOrDefault<CheckBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.AutoArchive", "Allow no-findings runs to archive automatically")).Checked, Is.True);
+                Assert.That(FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationEditForm.Accessible.InputItems", "Inserted plugins and skills")).Items, Has.Count.EqualTo(1));
+                Assert.That(FormTestDriver.FindControlOrDefault<DateTimePicker>(form, UiLocalization.Text("AutomationEditForm.Accessible.Time", "Time")).Value.Hour, Is.EqualTo(8));
+                Assert.That(FormTestDriver.FindControlOrDefault<DateTimePicker>(form, UiLocalization.Text("AutomationEditForm.Accessible.Time", "Time")).Value.Minute, Is.EqualTo(30));
             }
         }
 
@@ -485,22 +474,22 @@ namespace MyCodex.Application.Tests
                 WorkspacePath = @"E:\MyCodex"
             }, callbacks))
             {
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily news";
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily news";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
 
-                ClickButton(FindControl<Button>(form, UiLocalization.Text("AutomationEditForm.Accessible.InsertSkill", "Insert skill")));
-                ClickButton(FindControl<Button>(form, UiLocalization.Text("AutomationEditForm.Accessible.InsertPlugin", "Insert plugin")));
+                ClickButton(FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationEditForm.Accessible.InsertSkill", "Insert skill")));
+                ClickButton(FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationEditForm.Accessible.InsertPlugin", "Insert plugin")));
 
-                var listView = FindControl<ListView>(form, UiLocalization.Text("AutomationEditForm.Accessible.InputItems", "Inserted plugins and skills"));
+                var listView = FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationEditForm.Accessible.InputItems", "Inserted plugins and skills"));
                 Assert.That(listView.Items, Has.Count.EqualTo(2));
                 Assert.That(listView.Items[0].SubItems[0].Text, Is.EqualTo(AutomationDisplayText.InputItemKind(AutomationInputItemKind.Skill)));
                 Assert.That(listView.Items[1].SubItems[0].Text, Is.EqualTo(AutomationDisplayText.InputItemKind(AutomationInputItemKind.Plugin)));
 
                 Assert.That(listView.Handle, Is.Not.EqualTo(IntPtr.Zero));
                 listView.Items[0].Selected = true;
-                ClickButton(FindControl<Button>(form, UiLocalization.Text("AutomationEditForm.Accessible.RemoveInput", "Remove inserted item")));
+                ClickButton(FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationEditForm.Accessible.RemoveInput", "Remove inserted item")));
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.Request.InputItems, Has.Count.EqualTo(1));
                 Assert.That(form.Request.InputItems[0].Type, Is.EqualTo(AutomationInputItemKind.Plugin));
@@ -517,10 +506,10 @@ namespace MyCodex.Application.Tests
                 WorkspacePath = @"E:\MyCodex"
             }))
             {
-                Assert.That(FindControl<Button>(form, UiLocalization.Text("AutomationEditForm.Accessible.InsertPlugin", "Insert plugin")), Is.Not.Null);
-                Assert.That(FindControl<Button>(form, UiLocalization.Text("AutomationEditForm.Accessible.InsertSkill", "Insert skill")), Is.Not.Null);
-                Assert.That(FindControl<ListView>(form, UiLocalization.Text("AutomationEditForm.Accessible.InputItems", "Inserted plugins and skills")), Is.Not.Null);
-                Assert.That(FindControl<Button>(form, UiLocalization.Text("AutomationEditForm.Accessible.RemoveInput", "Remove inserted item")), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationEditForm.Accessible.InsertPlugin", "Insert plugin")), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationEditForm.Accessible.InsertSkill", "Insert skill")), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationEditForm.Accessible.InputItems", "Inserted plugins and skills")), Is.Not.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, UiLocalization.Text("AutomationEditForm.Accessible.RemoveInput", "Remove inserted item")), Is.Not.Null);
             }
         }
 
@@ -535,7 +524,7 @@ namespace MyCodex.Application.Tests
             {
                 form.Show();
 
-                var handled = InvokeProcessCmdKey(form, Keys.Escape);
+                var handled = FormTestDriver.ProcessCmdKey(form, Keys.Escape);
 
                 Assert.That(handled, Is.True);
                 Assert.That(form.IsDisposed, Is.True);
@@ -551,13 +540,13 @@ namespace MyCodex.Application.Tests
                 WorkspacePath = @"E:\MyCodex"
             }))
             {
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily news";
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Daily news";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
                 SelectScheduleKind(form, AutomationScheduleKind.Daily);
-                var timePicker = FindControl<DateTimePicker>(form, UiLocalization.Text("AutomationEditForm.Accessible.Time", "Time"));
+                var timePicker = FormTestDriver.FindControlOrDefault<DateTimePicker>(form, UiLocalization.Text("AutomationEditForm.Accessible.Time", "Time"));
                 timePicker.Value = new DateTime(2026, 6, 6, 8, 30, 0);
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.Request.Schedule.Kind, Is.EqualTo(AutomationScheduleKind.Daily));
                 Assert.That(form.Request.Schedule.TimeOfDayMinutes, Is.EqualTo(8 * 60 + 30));
@@ -575,14 +564,14 @@ namespace MyCodex.Application.Tests
                 WorkspacePath = @"E:\MyCodex"
             }))
             {
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Weekly review";
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Review changes.";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Weekly review";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Review changes.";
                 SelectScheduleKind(form, AutomationScheduleKind.Weekly);
                 SelectDayOfWeek(form, DayOfWeek.Monday);
-                var timePicker = FindControl<DateTimePicker>(form, UiLocalization.Text("AutomationEditForm.Accessible.Time", "Time"));
+                var timePicker = FormTestDriver.FindControlOrDefault<DateTimePicker>(form, UiLocalization.Text("AutomationEditForm.Accessible.Time", "Time"));
                 timePicker.Value = new DateTime(2026, 6, 6, 8, 0, 0);
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.Request.Schedule.Kind, Is.EqualTo(AutomationScheduleKind.Weekly));
                 Assert.That(form.Request.Schedule.DayOfWeek, Is.EqualTo(DayOfWeek.Monday));
@@ -600,10 +589,10 @@ namespace MyCodex.Application.Tests
                 WorkspacePath = @"E:\MyCodex"
             }))
             {
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Hourly news";
-                FindControl<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = "Hourly news";
+                FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = "Summarize news.";
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.Request.Schedule.Kind, Is.EqualTo(AutomationScheduleKind.EveryHours));
                 Assert.That(form.Request.Schedule.Interval, Is.EqualTo(1));
@@ -623,35 +612,15 @@ namespace MyCodex.Application.Tests
             {
                 SelectScheduleKind(form, AutomationScheduleKind.ManualOnly);
 
-                Assert.That(FindControl<NumericUpDown>(form, UiLocalization.Text("AutomationEditForm.Accessible.Interval", "Interval")).Enabled, Is.False);
-                Assert.That(FindControl<DateTimePicker>(form, UiLocalization.Text("AutomationEditForm.Accessible.Time", "Time")).Enabled, Is.False);
-                Assert.That(FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.DayOfWeek", "Day of week")).Enabled, Is.False);
+                Assert.That(FormTestDriver.FindControlOrDefault<NumericUpDown>(form, UiLocalization.Text("AutomationEditForm.Accessible.Interval", "Interval")).Enabled, Is.False);
+                Assert.That(FormTestDriver.FindControlOrDefault<DateTimePicker>(form, UiLocalization.Text("AutomationEditForm.Accessible.Time", "Time")).Enabled, Is.False);
+                Assert.That(FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.DayOfWeek", "Day of week")).Enabled, Is.False);
             }
-        }
-
-        private static T FindControl<T>(Control root, string accessibleName) where T : Control
-        {
-            foreach (Control child in root.Controls)
-            {
-                var typed = child as T;
-                if (typed != null && child.AccessibleName == accessibleName)
-                {
-                    return typed;
-                }
-
-                var nested = FindControl<T>(child, accessibleName);
-                if (nested != null)
-                {
-                    return nested;
-                }
-            }
-
-            return null;
         }
 
         private static void SelectScheduleKind(AutomationEditForm form, AutomationScheduleKind kind)
         {
-            var comboBox = FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ScheduleKind", "Schedule"));
+            var comboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ScheduleKind", "Schedule"));
             for (var i = 0; i < comboBox.Items.Count; i++)
             {
                 if (comboBox.Items[i].ToString() == AutomationDisplayText.ScheduleKind(kind))
@@ -666,7 +635,7 @@ namespace MyCodex.Application.Tests
 
         private static void SelectDayOfWeek(AutomationEditForm form, DayOfWeek dayOfWeek)
         {
-            var comboBox = FindControl<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.DayOfWeek", "Day of week"));
+            var comboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.DayOfWeek", "Day of week"));
             for (var i = 0; i < comboBox.Items.Count; i++)
             {
                 if (comboBox.Items[i].ToString() == AutomationDisplayText.DayOfWeek(dayOfWeek))
@@ -677,13 +646,6 @@ namespace MyCodex.Application.Tests
             }
 
             Assert.Fail("Day of week was not found: " + dayOfWeek);
-        }
-
-        private static void InvokeOk(AutomationEditForm form)
-        {
-            var method = typeof(AutomationEditForm).GetMethod("OkButton_Click", BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(method, Is.Not.Null);
-            method.Invoke(form, new object[] { null, EventArgs.Empty });
         }
 
         private static void AssertKindComboHasNoBareEnumText(ComboBox comboBox)
@@ -768,14 +730,6 @@ namespace MyCodex.Application.Tests
             var property = item.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
             Assert.That(property, Is.Not.Null, propertyName + " property should exist.");
             return property.GetValue(item, null) as string;
-        }
-
-        private static bool InvokeProcessCmdKey(Form form, Keys keyData)
-        {
-            var message = new Message();
-            return (bool)typeof(Form)
-                .GetMethod("ProcessCmdKey", BindingFlags.Instance | BindingFlags.NonPublic)
-                .Invoke(form, new object[] { message, keyData });
         }
     }
 }

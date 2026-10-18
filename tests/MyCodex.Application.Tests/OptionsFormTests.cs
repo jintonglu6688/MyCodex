@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
 using MyCodex.Application.Tests.SourceGuards;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Shared.Constants;
@@ -30,9 +31,9 @@ namespace MyCodex.Application.Tests
                 EnableAutomaticChatReading = true
             }, null))
             {
-                var shortcut = GetField<CheckBox>(form, "_mainWindowHotKeyEnabledCheckBox");
-                var key = GetField<TextBox>(form, "_mainWindowHotKeyTextBox");
-                var reading = GetField<CheckBox>(form, "_automaticChatReadingCheckBox");
+                var shortcut = FormTestDriver.Field<CheckBox>(form, "_mainWindowHotKeyEnabledCheckBox");
+                var key = FormTestDriver.Field<TextBox>(form, "_mainWindowHotKeyTextBox");
+                var reading = FormTestDriver.Field<CheckBox>(form, "_automaticChatReadingCheckBox");
                 Assert.That(shortcut.Checked, Is.False);
                 Assert.That(key.Enabled, Is.False);
                 Assert.That(reading.Checked, Is.True);
@@ -44,13 +45,13 @@ namespace MyCodex.Application.Tests
                 form.SetMainWindowHotKeyStateText("Registration failed; still using Alt+Shift+M");
                 form.SetTargetDisplayName("Ubuntu");
                 form.ValidateSelection = () => false;
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
                 Assert.That(form.DialogResult, Is.EqualTo(DialogResult.None));
                 Assert.That(form.MainWindowHotKeyEnabled, Is.True);
                 Assert.That(form.EnableAutomaticChatReading, Is.False);
                 Assert.That(key.Enabled, Is.True);
-                Assert.That(GetField<Label>(form, "_mainWindowHotKeyStateLabel").Text, Does.Contain("Alt+Shift+M"));
-                Assert.That(GetField<Label>(form, "_targetOptionsLabel").Text, Does.Contain("Ubuntu"));
+                Assert.That(FormTestDriver.Field<Label>(form, "_mainWindowHotKeyStateLabel").Text, Does.Contain("Alt+Shift+M"));
+                Assert.That(FormTestDriver.Field<Label>(form, "_targetOptionsLabel").Text, Does.Contain("Ubuntu"));
                 Assert.That(form.FormBorderStyle, Is.EqualTo(FormBorderStyle.Sizable));
                 Assert.That(form.MinimumSize.Width, Is.GreaterThan(0));
             }
@@ -61,7 +62,7 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new OptionsForm(new AppConfigSnapshot(), null))
             {
-                var tabControl = GetField<TabControl>(form, "_tabControl");
+                var tabControl = FormTestDriver.Field<TabControl>(form, "_tabControl");
 
                 Assert.That(tabControl.TabPages.Count, Is.EqualTo(6));
                 Assert.That(tabControl.TabPages[0].Text, Is.EqualTo(UiLocalization.Text("OptionsForm.Category.Appearance", "Appearance")));
@@ -83,7 +84,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(form.HasOfficialCodexSettings, Is.True);
                 Assert.That(form.OfficialCodexSettings, Is.Not.Null);
 
-                var description = GetField<TextBox>(form.OfficialCodexSettings, "_descriptionTextBox");
+                var description = FormTestDriver.Field<TextBox>(form.OfficialCodexSettings, "_descriptionTextBox");
                 Assert.That(description.ReadOnly, Is.True);
                 Assert.That(description.TabStop, Is.True);
                 Assert.That(description.Parent, Is.Not.Null);
@@ -105,7 +106,7 @@ namespace MyCodex.Application.Tests
                 }
             }, null))
             {
-                var list = GetField<ListView>(form, "_customPermissionsListView");
+                var list = FormTestDriver.Field<ListView>(form, "_customPermissionsListView");
 
                 Assert.That(list.AccessibleName, Is.EqualTo(UiLocalization.Text("OptionsForm.Accessible.CustomPermissions", "Custom permissions")));
                 Assert.That(list.Items.Count, Is.EqualTo(CustomApprovalPermissionCatalog.GetOrderedPermissions().Length));
@@ -124,7 +125,7 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new OptionsForm(new AppConfigSnapshot(), null))
             {
-                var list = GetField<ListView>(form, "_customPermissionsListView");
+                var list = FormTestDriver.Field<ListView>(form, "_customPermissionsListView");
                 var source = RepositorySource.ReadSourceFile("OptionsForm.cs");
 
                 Assert.That(list.CheckBoxes, Is.True);
@@ -141,11 +142,11 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new OptionsForm(new AppConfigSnapshot(), null))
             {
-                var list = GetField<ListView>(form, "_customPermissionsListView");
+                var list = FormTestDriver.Field<ListView>(form, "_customPermissionsListView");
                 list.Items[1].Checked = true;
                 list.Items[15].Checked = true;
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.CustomApprovalSettings.EnabledPermissions, Is.EqualTo(new[]
                 {
@@ -172,7 +173,7 @@ namespace MyCodex.Application.Tests
 
             using (var form = new OptionsForm(snapshot, null))
             {
-                var list = GetField<ListView>(form, "_customCommandPrefixesListView");
+                var list = FormTestDriver.Field<ListView>(form, "_customCommandPrefixesListView");
 
                 Assert.That(list.AccessibleName, Is.EqualTo(UiLocalization.Text("OptionsForm.Accessible.CustomCommandPrefixes", "Custom command prefixes")));
                 Assert.That(list.View, Is.EqualTo(View.Details));
@@ -198,10 +199,10 @@ namespace MyCodex.Application.Tests
 
             using (var form = new OptionsForm(snapshot, null))
             {
-                var list = GetField<ListView>(form, "_customCommandPrefixesListView");
+                var list = FormTestDriver.Field<ListView>(form, "_customCommandPrefixesListView");
                 list.Items.Add(new ListViewItem("dotnet test"));
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.CustomApprovalSettings.CommandPrefixes, Is.EqualTo(new[]
                 {
@@ -249,10 +250,10 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new OptionsForm(new AppConfigSnapshot(), null))
             {
-                var list = GetField<ListView>(form, "_customCommandPrefixesListView");
-                var add = GetField<Button>(form, "_addCustomCommandPrefixButton");
-                var edit = GetField<Button>(form, "_editCustomCommandPrefixButton");
-                var delete = GetField<Button>(form, "_deleteCustomCommandPrefixButton");
+                var list = FormTestDriver.Field<ListView>(form, "_customCommandPrefixesListView");
+                var add = FormTestDriver.Field<Button>(form, "_addCustomCommandPrefixButton");
+                var edit = FormTestDriver.Field<Button>(form, "_editCustomCommandPrefixButton");
+                var delete = FormTestDriver.Field<Button>(form, "_deleteCustomCommandPrefixButton");
 
                 Assert.That(list.MultiSelect, Is.False);
                 Assert.That(add.AccessibleName, Is.EqualTo(UiLocalization.Text("OptionsForm.Accessible.AddCustomCommandPrefix", "Add custom command prefix")));
@@ -287,23 +288,23 @@ namespace MyCodex.Application.Tests
 
             using (var form = new OptionsForm(snapshot, null))
             {
-                SelectChoice(GetField<ComboBox>(form, "_themeComboBox"), UiThemePreference.Dark);
-                SelectChoice(GetField<ComboBox>(form, "_languageComboBox"), UiLanguagePreference.EnUs);
-                SelectChoice(GetField<ComboBox>(form, "_messageDetailPreviewModeComboBox"), MessageDetailPreviewMode.Text);
-                SelectChoice(GetField<ComboBox>(form, "_sendMessageShortcutModeComboBox"), SendMessageShortcutMode.CtrlEnterNewLineEnterSend);
-                SelectChoice(GetField<ComboBox>(form, "_startupModeComboBox"), AppInteractionMode.Office.ToString());
-                GetField<TextBox>(form, "_officeRootPathTextBox").Text = "  C:\\Office  ";
-                GetField<CheckBox>(form, "_officeShowActivityPaneCheckBox").Checked = false;
-                var closeSessionWorkbenchOnEscapeCheckBox = GetField<CheckBox>(form, "_closeSessionWorkbenchOnEscapeCheckBox");
+                SelectChoice(FormTestDriver.Field<ComboBox>(form, "_themeComboBox"), UiThemePreference.Dark);
+                SelectChoice(FormTestDriver.Field<ComboBox>(form, "_languageComboBox"), UiLanguagePreference.EnUs);
+                SelectChoice(FormTestDriver.Field<ComboBox>(form, "_messageDetailPreviewModeComboBox"), MessageDetailPreviewMode.Text);
+                SelectChoice(FormTestDriver.Field<ComboBox>(form, "_sendMessageShortcutModeComboBox"), SendMessageShortcutMode.CtrlEnterNewLineEnterSend);
+                SelectChoice(FormTestDriver.Field<ComboBox>(form, "_startupModeComboBox"), AppInteractionMode.Office.ToString());
+                FormTestDriver.Field<TextBox>(form, "_officeRootPathTextBox").Text = "  C:\\Office  ";
+                FormTestDriver.Field<CheckBox>(form, "_officeShowActivityPaneCheckBox").Checked = false;
+                var closeSessionWorkbenchOnEscapeCheckBox = FormTestDriver.Field<CheckBox>(form, "_closeSessionWorkbenchOnEscapeCheckBox");
                 Assert.That(closeSessionWorkbenchOnEscapeCheckBox.AccessibleName, Is.EqualTo(UiLocalization.Text("OptionsForm.Accessible.CloseSessionWorkbenchOnEscape", "Allow Esc to close the main and independent windows")));
                 Assert.That(closeSessionWorkbenchOnEscapeCheckBox.Checked, Is.False);
                 closeSessionWorkbenchOnEscapeCheckBox.Checked = true;
-                var activeTurnFollowUpModeComboBox = GetField<ComboBox>(form, "_activeTurnFollowUpModeComboBox");
+                var activeTurnFollowUpModeComboBox = FormTestDriver.Field<ComboBox>(form, "_activeTurnFollowUpModeComboBox");
                 Assert.That(activeTurnFollowUpModeComboBox.AccessibleName, Is.EqualTo(UiLocalization.Text("OptionsForm.Accessible.ActiveTurnFollowUpMode", "Follow-up messages while working")));
                 Assert.That(GetSelectedChoice(activeTurnFollowUpModeComboBox), Is.EqualTo(ActiveTurnFollowUpMode.Steer));
                 Assert.That(activeTurnFollowUpModeComboBox.TabIndex, Is.EqualTo(4));
                 SelectChoice(activeTurnFollowUpModeComboBox, ActiveTurnFollowUpMode.Queue);
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.UiThemePreference, Is.EqualTo(UiThemePreference.Dark));
                 Assert.That(form.UiLanguagePreference, Is.EqualTo(UiLanguagePreference.EnUs));
@@ -341,7 +342,7 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new OptionsForm(new AppConfigSnapshot(), null))
             {
-                var officeRootPathTextBox = GetField<TextBox>(form, "_officeRootPathTextBox");
+                var officeRootPathTextBox = FormTestDriver.Field<TextBox>(form, "_officeRootPathTextBox");
                 var expectedPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 if (string.IsNullOrWhiteSpace(expectedPath))
                 {
@@ -365,11 +366,11 @@ namespace MyCodex.Application.Tests
 
             using (var form = new OptionsForm(new AppConfigSnapshot(), null, null, null, context))
             {
-                var runtime = GetField<Label>(form, "_officeRuntimeDisplayNameLabel");
-                var path = GetField<TextBox>(form, "_officeRootPathTextBox");
-                var browse = GetField<Button>(form, "_officeRootBrowseButton");
-                var restoreDefault = GetField<Button>(form, "_officeRootRestoreDefaultButton");
-                var activity = GetField<CheckBox>(form, "_officeShowActivityPaneCheckBox");
+                var runtime = FormTestDriver.Field<Label>(form, "_officeRuntimeDisplayNameLabel");
+                var path = FormTestDriver.Field<TextBox>(form, "_officeRootPathTextBox");
+                var browse = FormTestDriver.Field<Button>(form, "_officeRootBrowseButton");
+                var restoreDefault = FormTestDriver.Field<Button>(form, "_officeRootRestoreDefaultButton");
+                var activity = FormTestDriver.Field<CheckBox>(form, "_officeShowActivityPaneCheckBox");
 
                 Assert.That(runtime.Text, Is.EqualTo("Ubuntu 24.04"));
                 Assert.That(runtime.AccessibleName, Is.EqualTo(UiLocalization.Text("OptionsForm.Accessible.OfficeRuntimeValue", "Current runtime")));
@@ -410,7 +411,7 @@ namespace MyCodex.Application.Tests
             using (var form = new OptionsForm(new AppConfigSnapshot(), null, null, null, context))
             {
                 InvokePrivateEventHandler(form, "OfficeRootBrowseButton_Click");
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(browseOwner, Is.SameAs(form));
                 Assert.That(browseInitialPath, Is.EqualTo("/srv/office"));
@@ -430,10 +431,10 @@ namespace MyCodex.Application.Tests
 
             using (var form = new OptionsForm(new AppConfigSnapshot(), null, null, null, context))
             {
-                Assert.That(GetField<TextBox>(form, "_officeRootPathTextBox").Text,
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_officeRootPathTextBox").Text,
                     Is.EqualTo("/home/alice/MyCodex-office"));
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.OfficeRootPath, Is.Null);
             }
@@ -454,14 +455,14 @@ namespace MyCodex.Application.Tests
             {
                 InvokePrivateEventHandler(form, "OfficeRootRestoreDefaultButton_Click");
 
-                Assert.That(GetField<TextBox>(form, "_officeRootPathTextBox").Text,
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_officeRootPathTextBox").Text,
                     Is.EqualTo("~/MyCodex-office"));
-                Assert.That(GetField<Label>(form, "_officeRootStatusLabel").Text,
+                Assert.That(FormTestDriver.Field<Label>(form, "_officeRootStatusLabel").Text,
                     Is.EqualTo(UiLocalization.Text(
                         "OptionsForm.OfficeRootPath.DefaultUnavailable",
                         "The effective office directory is unavailable until the runtime home directory can be resolved.")));
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.OfficeRootPath, Is.Null);
             }
@@ -480,8 +481,8 @@ namespace MyCodex.Application.Tests
 
             using (var form = new OptionsForm(new AppConfigSnapshot(), null, null, null, context))
             {
-                var path = GetField<TextBox>(form, "_officeRootPathTextBox");
-                var status = GetField<Label>(form, "_officeRootStatusLabel");
+                var path = FormTestDriver.Field<TextBox>(form, "_officeRootPathTextBox");
+                var status = FormTestDriver.Field<Label>(form, "_officeRootStatusLabel");
                 Assert.That(status.Text, Is.Empty);
 
                 path.Text = "$HOME/other";
@@ -506,8 +507,8 @@ namespace MyCodex.Application.Tests
                     HostPlatform = AppServerHostPlatform.RemoteMac
                 }))
             {
-                var path = GetField<TextBox>(form, "_officeRootPathTextBox");
-                var status = GetField<Label>(form, "_officeRootStatusLabel");
+                var path = FormTestDriver.Field<TextBox>(form, "_officeRootPathTextBox");
+                var status = FormTestDriver.Field<Label>(form, "_officeRootStatusLabel");
                 var windowsDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
                 Assert.That(path.Text, Is.EqualTo("~/MyCodex-office"));
@@ -537,9 +538,9 @@ namespace MyCodex.Application.Tests
                     ConfiguredRootPath = "$HOME/work"
                 }))
             {
-                Assert.That(GetField<TextBox>(form, "_officeRootPathTextBox").Text,
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_officeRootPathTextBox").Text,
                     Is.EqualTo("$HOME/work"));
-                Assert.That(GetField<Label>(form, "_officeRootStatusLabel").Text,
+                Assert.That(FormTestDriver.Field<Label>(form, "_officeRootStatusLabel").Text,
                     Is.EqualTo(UiLocalization.Text(
                         "OptionsForm.OfficeRootPath.DefaultUnavailable",
                         "The effective office directory is unavailable until the runtime home directory can be resolved.")));
@@ -570,13 +571,13 @@ namespace MyCodex.Application.Tests
                     OfficeRootPath = "/srv/office"
                 }))
             {
-                Assert.That(GetField<ComboBox>(form, "_startupModeComboBox").Enabled, Is.False);
-                Assert.That(GetField<TextBox>(form, "_officeRootPathTextBox").Enabled, Is.False);
-                Assert.That(GetField<Button>(form, "_officeRootBrowseButton").Enabled, Is.False);
-                Assert.That(GetField<Button>(form, "_officeRootRestoreDefaultButton").Enabled, Is.False);
-                Assert.That(GetField<Label>(form, "_officeRootStatusLabel").Text, Is.EqualTo(unavailableText));
-                Assert.That(GetField<CheckBox>(form, "_officeShowActivityPaneCheckBox").Enabled, Is.True);
-                Assert.That(GetField<ComboBox>(form, "_themeComboBox").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<ComboBox>(form, "_startupModeComboBox").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_officeRootPathTextBox").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_officeRootBrowseButton").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Button>(form, "_officeRootRestoreDefaultButton").Enabled, Is.False);
+                Assert.That(FormTestDriver.Field<Label>(form, "_officeRootStatusLabel").Text, Is.EqualTo(unavailableText));
+                Assert.That(FormTestDriver.Field<CheckBox>(form, "_officeShowActivityPaneCheckBox").Enabled, Is.True);
+                Assert.That(FormTestDriver.Field<ComboBox>(form, "_themeComboBox").Enabled, Is.True);
             }
         }
 
@@ -652,7 +653,7 @@ namespace MyCodex.Application.Tests
                 MessageDetailPreviewMode = MessageDetailPreviewMode.Text
             }, null))
             {
-                var comboBox = GetField<ComboBox>(form, "_messageDetailPreviewModeComboBox");
+                var comboBox = FormTestDriver.Field<ComboBox>(form, "_messageDetailPreviewModeComboBox");
 
                 Assert.That(comboBox.AccessibleName, Is.EqualTo(UiLocalization.Text("OptionsForm.Accessible.MessageDetailPreviewMode", "Message detail preview mode")));
                 Assert.That(GetSelectedChoice(comboBox), Is.EqualTo(MessageDetailPreviewMode.Text));
@@ -667,7 +668,7 @@ namespace MyCodex.Application.Tests
             var config = new AppConfigSnapshot { SessionListDisplayOrder = order };
             using (var form = new OptionsForm(config, null))
             {
-                var comboBox = GetField<ComboBox>(form, "_sessionListDisplayOrderComboBox");
+                var comboBox = FormTestDriver.Field<ComboBox>(form, "_sessionListDisplayOrderComboBox");
                 Assert.That(comboBox.AccessibleName, Is.EqualTo(
                     UiLocalization.Text("OptionsForm.Accessible.SessionListDisplayOrder", "Session information order")));
                 Assert.That(comboBox.DropDownStyle, Is.EqualTo(ComboBoxStyle.DropDownList));
@@ -683,7 +684,7 @@ namespace MyCodex.Application.Tests
                 comboBox.SelectedIndex = (comboBox.SelectedIndex + 1) % comboBox.Items.Count;
                 var nextOrder = GetSelectedChoice(comboBox);
                 Assert.That(config.SessionListDisplayOrder, Is.EqualTo(order));
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
                 Assert.That(form.DialogResult, Is.EqualTo(DialogResult.OK));
                 Assert.That(form.SessionListDisplayOrder, Is.EqualTo(nextOrder));
             }
@@ -697,7 +698,7 @@ namespace MyCodex.Application.Tests
                 SendMessageShortcutMode = SendMessageShortcutMode.CtrlEnterNewLineEnterSend
             }, null))
             {
-                var comboBox = GetField<ComboBox>(form, "_sendMessageShortcutModeComboBox");
+                var comboBox = FormTestDriver.Field<ComboBox>(form, "_sendMessageShortcutModeComboBox");
 
                 Assert.That(comboBox.AccessibleName, Is.EqualTo(UiLocalization.Text("OptionsForm.Accessible.SendMessageShortcutMode", "Send message shortcut")));
                 Assert.That(GetSelectedChoice(comboBox), Is.EqualTo(SendMessageShortcutMode.CtrlEnterNewLineEnterSend));
@@ -712,7 +713,7 @@ namespace MyCodex.Application.Tests
                 ActiveTurnFollowUpMode = ActiveTurnFollowUpMode.Queue
             }, null))
             {
-                var comboBox = GetField<ComboBox>(form, "_activeTurnFollowUpModeComboBox");
+                var comboBox = FormTestDriver.Field<ComboBox>(form, "_activeTurnFollowUpModeComboBox");
 
                 Assert.That(comboBox.DropDownStyle, Is.EqualTo(ComboBoxStyle.DropDownList));
                 Assert.That(comboBox.AccessibleName, Is.EqualTo(
@@ -738,7 +739,7 @@ namespace MyCodex.Application.Tests
                 MainWindowHotKeyVirtualKey = (int)Keys.F9
             }, null))
             {
-                var textBox = GetField<TextBox>(form, "_mainWindowHotKeyTextBox");
+                var textBox = FormTestDriver.Field<TextBox>(form, "_mainWindowHotKeyTextBox");
 
                 Assert.That(textBox.ReadOnly, Is.True);
                 Assert.That(textBox.ShortcutsEnabled, Is.False);
@@ -764,9 +765,9 @@ namespace MyCodex.Application.Tests
                 TextFileExternalEditorArguments = "-g {file}:{line}:{column}"
             }, null))
             {
-                var comboBox = GetField<ComboBox>(form, "_textFileOpenModeComboBox");
-                var pathTextBox = GetField<TextBox>(form, "_textFileExternalEditorPathTextBox");
-                var argumentsTextBox = GetField<TextBox>(form, "_textFileExternalEditorArgumentsTextBox");
+                var comboBox = FormTestDriver.Field<ComboBox>(form, "_textFileOpenModeComboBox");
+                var pathTextBox = FormTestDriver.Field<TextBox>(form, "_textFileExternalEditorPathTextBox");
+                var argumentsTextBox = FormTestDriver.Field<TextBox>(form, "_textFileExternalEditorArgumentsTextBox");
 
                 Assert.That(comboBox.AccessibleName, Is.EqualTo(UiLocalization.Text("OptionsForm.Accessible.TextFileOpenMode", "Text file opener")));
                 Assert.That(GetSelectedChoice(comboBox), Is.EqualTo(TextFileOpenMode.VsCode));
@@ -782,11 +783,11 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new OptionsForm(new AppConfigSnapshot(), null))
             {
-                SelectChoice(GetField<ComboBox>(form, "_textFileOpenModeComboBox"), TextFileOpenMode.Custom);
-                GetField<TextBox>(form, "_textFileExternalEditorPathTextBox").Text = "  C:\\Tools\\editor.exe  ";
-                GetField<TextBox>(form, "_textFileExternalEditorArgumentsTextBox").Text = "  --open {file}  ";
+                SelectChoice(FormTestDriver.Field<ComboBox>(form, "_textFileOpenModeComboBox"), TextFileOpenMode.Custom);
+                FormTestDriver.Field<TextBox>(form, "_textFileExternalEditorPathTextBox").Text = "  C:\\Tools\\editor.exe  ";
+                FormTestDriver.Field<TextBox>(form, "_textFileExternalEditorArgumentsTextBox").Text = "  --open {file}  ";
 
-                InvokeOk(form);
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.TextFileOpenMode, Is.EqualTo(TextFileOpenMode.Custom));
                 Assert.That(form.TextFileExternalEditorPath, Is.EqualTo(@"C:\Tools\editor.exe"));
@@ -799,10 +800,10 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new OptionsForm(new AppConfigSnapshot(), null))
             {
-                var statusTextBox = GetField<TextBox>(form, "_officeCliStatusTextBox");
-                var refreshButton = GetField<Button>(form, "_officeCliRefreshButton");
-                var installButton = GetField<Button>(form, "_officeCliInstallButton");
-                var uninstallButton = GetField<Button>(form, "_officeCliUninstallButton");
+                var statusTextBox = FormTestDriver.Field<TextBox>(form, "_officeCliStatusTextBox");
+                var refreshButton = FormTestDriver.Field<Button>(form, "_officeCliRefreshButton");
+                var installButton = FormTestDriver.Field<Button>(form, "_officeCliInstallButton");
+                var uninstallButton = FormTestDriver.Field<Button>(form, "_officeCliUninstallButton");
 
                 Assert.That(statusTextBox.ReadOnly, Is.True);
                 Assert.That(form.OfficeCliEnvironmentChanged, Is.False);
@@ -852,7 +853,7 @@ namespace MyCodex.Application.Tests
                 true,
                 false))
             {
-                var checkBox = FindControl<CheckBox>(form, UiLocalization.Text(
+                var checkBox = FormTestDriver.FindControlOrDefault<CheckBox>(form, UiLocalization.Text(
                     "NotificationSettingsForm.Accessible.SubAgentTurnCompletedSound",
                     "Play sound when a subagent completes"));
 
@@ -871,7 +872,7 @@ namespace MyCodex.Application.Tests
                 false))
             {
                 Assert.That(FindText(form, "Send test system notification(&T)"), Is.False);
-                Assert.That(FindControl<Button>(form, "Send test system notification"), Is.Null);
+                Assert.That(FormTestDriver.FindControlOrDefault<Button>(form, "Send test system notification"), Is.Null);
             }
         }
 
@@ -880,7 +881,7 @@ namespace MyCodex.Application.Tests
         {
             using (var form = new OptionsForm(new AppConfigSnapshot(), null))
             {
-                var button = FindControl<Button>(form, "Send test system notification");
+                var button = FormTestDriver.FindControlOrDefault<Button>(form, "Send test system notification");
 
                 Assert.That(button, Is.Null);
                 Assert.That(FindText(form, "Send test system notification(&T)"), Is.False);
@@ -908,12 +909,12 @@ namespace MyCodex.Application.Tests
 
             using (var form = new ActivitySettingsForm(snapshot))
             {
-                GetField<CheckBox>(form, "_toolCheckBox").Checked = false;
-                GetField<CheckBox>(form, "_commandCheckBox").Checked = false;
-                GetField<CheckBox>(form, "_approvalCheckBox").Checked = false;
-                GetField<CheckBox>(form, "_protocolWarningCheckBox").Checked = false;
-                GetField<CheckBox>(form, "_clearOnNewTurnCheckBox").Checked = true;
-                InvokeOk(form);
+                FormTestDriver.Field<CheckBox>(form, "_toolCheckBox").Checked = false;
+                FormTestDriver.Field<CheckBox>(form, "_commandCheckBox").Checked = false;
+                FormTestDriver.Field<CheckBox>(form, "_approvalCheckBox").Checked = false;
+                FormTestDriver.Field<CheckBox>(form, "_protocolWarningCheckBox").Checked = false;
+                FormTestDriver.Field<CheckBox>(form, "_clearOnNewTurnCheckBox").Checked = true;
+                FormTestDriver.ClickOk(form);
 
                 Assert.That(form.ShowToolMessages, Is.False);
                 Assert.That(form.ShowCommandMessages, Is.False);
@@ -940,27 +941,6 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("_settingsMenuItem.MenuItems.Add(_notificationSettingsMenuItem);"));
             Assert.That(source, Does.Not.Contain("_settingsMenuItem.MenuItems.Add(_screenReaderSettingsMenuItem);"));
             Assert.That(source, Does.Not.Contain("_settingsMenuItem.MenuItems.Add(_officialCodexSettingsMenuItem);"));
-        }
-
-        private static T GetField<T>(OptionsForm form, string fieldName) where T : class
-        {
-            var field = typeof(OptionsForm).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(field, Is.Not.Null);
-            return (T)field.GetValue(form);
-        }
-
-        private static T GetField<T>(OfficialCodexSettingsForm form, string fieldName) where T : class
-        {
-            var field = typeof(OfficialCodexSettingsForm).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(field, Is.Not.Null);
-            return (T)field.GetValue(form);
-        }
-
-        private static T GetField<T>(ActivitySettingsForm form, string fieldName) where T : class
-        {
-            var field = typeof(ActivitySettingsForm).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(field, Is.Not.Null);
-            return (T)field.GetValue(form);
         }
 
         private static void SelectChoice(ComboBox comboBox, string value)
@@ -996,23 +976,9 @@ namespace MyCodex.Application.Tests
             return property.GetValue(item, null) as string;
         }
 
-        private static void InvokeOk(OptionsForm form)
-        {
-            var method = typeof(OptionsForm).GetMethod("OkButton_Click", BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(method, Is.Not.Null);
-            method.Invoke(form, new object[] { null, EventArgs.Empty });
-        }
-
         private static void InvokePrivateEventHandler(OptionsForm form, string methodName)
         {
             var method = typeof(OptionsForm).GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(method, Is.Not.Null);
-            method.Invoke(form, new object[] { null, EventArgs.Empty });
-        }
-
-        private static void InvokeOk(ActivitySettingsForm form)
-        {
-            var method = typeof(ActivitySettingsForm).GetMethod("OkButton_Click", BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.That(method, Is.Not.Null);
             method.Invoke(form, new object[] { null, EventArgs.Empty });
         }
@@ -1038,31 +1004,6 @@ namespace MyCodex.Application.Tests
             }
 
             return false;
-        }
-
-        private static T FindControl<T>(Control root, string accessibleName) where T : Control
-        {
-            if (root == null)
-            {
-                return null;
-            }
-
-            var typed = root as T;
-            if (typed != null && string.Equals(typed.AccessibleName, accessibleName, StringComparison.Ordinal))
-            {
-                return typed;
-            }
-
-            foreach (Control child in root.Controls)
-            {
-                var match = FindControl<T>(child, accessibleName);
-                if (match != null)
-                {
-                    return match;
-                }
-            }
-
-            return null;
         }
 
         private static bool InvokeAreCustomApprovalSettingsEqual(
