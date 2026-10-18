@@ -20,33 +20,12 @@ namespace MyCodex.Infrastructure.AppServer
                 UnixCommandInvokers.ForRemote(config, executor),
                 "mycodex-remote",
                 18000,
-                true,
-                UnixRuntimeRenameParentMode.ParameterExpansion);
+                true);
         }
 
         public Task<RuntimeFileSystemOperationResult> EnsureDirectoryAsync(string path)
         {
             return _inner.EnsureDirectoryAsync(path);
-        }
-
-        public Task<RuntimeFileSystemOperationResult> CreateDirectoryAsync(string parentPath, string name)
-        {
-            return _inner.CreateDirectoryAsync(parentPath, name);
-        }
-
-        public Task<RuntimeFileSystemOperationResult> CreateFileAsync(string parentPath, string name)
-        {
-            return _inner.CreateFileAsync(parentPath, name);
-        }
-
-        public Task<RuntimeFileSystemOperationResult> RenameAsync(string path, string newName)
-        {
-            return _inner.RenameAsync(path, newName);
-        }
-
-        public Task<RuntimeFileSystemOperationResult> DeleteAsync(string path, bool recursive)
-        {
-            return _inner.DeleteAsync(path, recursive);
         }
     }
 }

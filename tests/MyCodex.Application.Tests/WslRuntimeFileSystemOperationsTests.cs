@@ -11,24 +11,6 @@ namespace MyCodex.Application.Tests
     public sealed class WslRuntimeFileSystemOperationsTests
     {
         [Test]
-        public void CreateDirectoryAsync_PassesParentAndNameSeparately()
-        {
-            var executor = new FakeWslCommandExecutor
-            {
-                Result = new WslCommandExecutionResult { ExitCode = 0 }
-            };
-            var service = new WslRuntimeFileSystemOperations(new WslAppServerConfigSnapshot(), executor);
-
-            var result = service.CreateDirectoryAsync("/home/demo", "docs").GetAwaiter().GetResult();
-
-            Assert.That(result.Success, Is.True);
-            Assert.That(executor.OperationName, Is.EqualTo("mycodex-wsl-create-directory"));
-            Assert.That(executor.Script, Does.StartWith("set -eu\n"));
-            Assert.That(executor.Script, Does.Not.Contain("eval"));
-            Assert.That(executor.Arguments, Is.EquivalentTo(new[] { "/home/demo", "docs" }));
-        }
-
-        [Test]
         public void EnsureDirectoryAsync_UsesRecursiveIdempotentScriptAndPositionalPath()
         {
             var executor = new FakeWslCommandExecutor
@@ -44,42 +26,6 @@ namespace MyCodex.Application.Tests
             Assert.That(executor.Script, Does.Contain("mkdir -p -- \"$1\""));
             Assert.That(executor.Script, Does.Not.Contain("eval"));
             Assert.That(executor.Arguments, Is.EqualTo(new[] { "/home/demo/Office Docs" }));
-        }
-
-        [Test]
-        public void RenameAsync_PassesPathAndNameSeparately()
-        {
-            var executor = new FakeWslCommandExecutor
-            {
-                Result = new WslCommandExecutionResult { ExitCode = 0 }
-            };
-            var service = new WslRuntimeFileSystemOperations(new WslAppServerConfigSnapshot(), executor);
-
-            var result = service.RenameAsync("/home/demo/old.txt", "new.txt").GetAwaiter().GetResult();
-
-            Assert.That(result.Success, Is.True);
-            Assert.That(executor.OperationName, Is.EqualTo("mycodex-wsl-rename"));
-            Assert.That(executor.Script, Does.Not.Contain("eval"));
-            Assert.That(executor.Script, Does.Contain("[ ! -e \"$parent/$name\" ]"));
-            Assert.That(executor.Script, Does.Contain("parent=$(dirname -- \"$target\")"));
-            Assert.That(executor.Arguments, Is.EquivalentTo(new[] { "/home/demo/old.txt", "new.txt" }));
-        }
-
-        [Test]
-        public void DeleteAsync_PassesPathAndRecursiveFlagSeparately()
-        {
-            var executor = new FakeWslCommandExecutor
-            {
-                Result = new WslCommandExecutionResult { ExitCode = 0 }
-            };
-            var service = new WslRuntimeFileSystemOperations(new WslAppServerConfigSnapshot(), executor);
-
-            var result = service.DeleteAsync("/home/demo/docs", true).GetAwaiter().GetResult();
-
-            Assert.That(result.Success, Is.True);
-            Assert.That(executor.OperationName, Is.EqualTo("mycodex-wsl-delete"));
-            Assert.That(executor.Script, Does.Not.Contain("eval"));
-            Assert.That(executor.Arguments, Is.EquivalentTo(new[] { "/home/demo/docs", "recursive" }));
         }
 
         private sealed class FakeWslCommandExecutor : IWslCommandExecutor

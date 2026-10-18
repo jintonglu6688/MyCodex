@@ -61,9 +61,7 @@ namespace MyCodex.Application.Tests
 
             Assert.That(wsl, Does.Contain("new UnixRuntimeFileSystemOperations("));
             Assert.That(remote, Does.Contain("new UnixRuntimeFileSystemOperations("));
-            Assert.That(operations, Does.Contain("UnixRuntimeFileSystemScripts.CreateDirectory(_remoteShellPrefix)"));
-            Assert.That(operations, Does.Contain("RuntimeFileSystemPathRules.EnsureSafeDeleteTarget"));
-            Assert.That(operations, Does.Not.Contain("private const string CreateDirectoryScript"));
+            Assert.That(operations, Does.Contain("UnixRuntimeFileSystemScripts.EnsureDirectory(_remoteShellPrefix)"));
             Assert.That(wsl, Does.Not.Contain("UnixRuntimeFileSystemScripts"));
             Assert.That(remote, Does.Not.Contain("UnixRuntimeFileSystemScripts"));
         }

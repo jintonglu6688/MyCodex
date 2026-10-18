@@ -11,24 +11,6 @@ namespace MyCodex.Application.Tests
     public sealed class RemoteMacRuntimeFileSystemOperationsTests
     {
         [Test]
-        public void CreateFileAsync_PassesParentAndNameSeparately()
-        {
-            var executor = new FakeRemoteSshCommandExecutor
-            {
-                Result = new RemoteSshCommandExecutionResult { ExitCode = 0 }
-            };
-            var service = new RemoteMacRuntimeFileSystemOperations(new RemoteMacSshConfigSnapshot(), executor);
-
-            var result = service.CreateFileAsync("/Users/demo", "notes.md").GetAwaiter().GetResult();
-
-            Assert.That(result.Success, Is.True);
-            Assert.That(executor.OperationName, Is.EqualTo("mycodex-remote-create-file"));
-            Assert.That(executor.Script, Does.StartWith("emulate -L sh 2>/dev/null || true\nset -eu\n"));
-            Assert.That(executor.Script, Does.Not.Contain("eval"));
-            Assert.That(executor.Arguments, Is.EquivalentTo(new[] { "/Users/demo", "notes.md" }));
-        }
-
-        [Test]
         public void EnsureDirectoryAsync_UsesRecursiveIdempotentScriptAndPositionalPath()
         {
             var executor = new FakeRemoteSshCommandExecutor
@@ -44,42 +26,6 @@ namespace MyCodex.Application.Tests
             Assert.That(executor.Script, Does.Contain("mkdir -p -- \"$1\""));
             Assert.That(executor.Script, Does.Not.Contain("eval"));
             Assert.That(executor.Arguments, Is.EqualTo(new[] { "/Users/demo/Office Docs" }));
-        }
-
-        [Test]
-        public void RenameAsync_PassesPathAndNameSeparately()
-        {
-            var executor = new FakeRemoteSshCommandExecutor
-            {
-                Result = new RemoteSshCommandExecutionResult { ExitCode = 0 }
-            };
-            var service = new RemoteMacRuntimeFileSystemOperations(new RemoteMacSshConfigSnapshot(), executor);
-
-            var result = service.RenameAsync("/Users/demo/old.txt", "new.txt").GetAwaiter().GetResult();
-
-            Assert.That(result.Success, Is.True);
-            Assert.That(executor.OperationName, Is.EqualTo("mycodex-remote-rename"));
-            Assert.That(executor.Script, Does.Not.Contain("eval"));
-            Assert.That(executor.Script, Does.Contain("[ ! -e \"$parent/$name\" ]"));
-            Assert.That(executor.Script, Does.Contain("parent=${target%/*}"));
-            Assert.That(executor.Arguments, Is.EquivalentTo(new[] { "/Users/demo/old.txt", "new.txt" }));
-        }
-
-        [Test]
-        public void DeleteAsync_PassesPathAndRecursiveFlagSeparately()
-        {
-            var executor = new FakeRemoteSshCommandExecutor
-            {
-                Result = new RemoteSshCommandExecutionResult { ExitCode = 0 }
-            };
-            var service = new RemoteMacRuntimeFileSystemOperations(new RemoteMacSshConfigSnapshot(), executor);
-
-            var result = service.DeleteAsync("/Users/demo/docs", true).GetAwaiter().GetResult();
-
-            Assert.That(result.Success, Is.True);
-            Assert.That(executor.OperationName, Is.EqualTo("mycodex-remote-delete"));
-            Assert.That(executor.Script, Does.Not.Contain("eval"));
-            Assert.That(executor.Arguments, Is.EquivalentTo(new[] { "/Users/demo/docs", "recursive" }));
         }
 
         private sealed class FakeRemoteSshCommandExecutor : IRemoteSshCommandExecutor

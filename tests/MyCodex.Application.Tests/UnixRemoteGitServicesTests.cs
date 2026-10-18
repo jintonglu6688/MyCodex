@@ -95,11 +95,12 @@ namespace MyCodex.Application.Tests
             var recorder = new CommandRecorder { ExitCode = 0 };
             var service = CreateRuntimeFileSystemOperations(target, recorder);
 
-            var result = service.CreateFileAsync("/home/demo", "notes.md").GetAwaiter().GetResult();
+            var result = service.EnsureDirectoryAsync(" /home/demo/office ").GetAwaiter().GetResult();
 
             Assert.That(result.Success, Is.True);
             Assert.That(recorder.TimeoutMilliseconds, Is.EqualTo(expectedTimeout));
             Assert.That(recorder.Script, Does.StartWith(expectedScriptStart));
+            Assert.That(recorder.Arguments, Is.EqualTo(new[] { "/home/demo/office" }));
         }
 
         [TestCase("wsl")]
@@ -109,7 +110,7 @@ namespace MyCodex.Application.Tests
             var recorder = new CommandRecorder { ExitCode = 1, StandardError = "  Permission denied  " };
             var service = CreateRuntimeFileSystemOperations(target, recorder);
 
-            var result = service.CreateDirectoryAsync("/home/demo", "docs").GetAwaiter().GetResult();
+            var result = service.EnsureDirectoryAsync("/home/demo/docs").GetAwaiter().GetResult();
 
             Assert.That(result.Success, Is.False);
             Assert.That(result.Message, Is.EqualTo("Permission denied"));
