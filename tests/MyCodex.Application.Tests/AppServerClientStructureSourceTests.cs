@@ -233,7 +233,7 @@ namespace MyCodex.Application.Tests
             Assert.That(clientSource, Does.Not.Contain("private async Task<bool> TrySynchronizeCurrentAuthenticationSharedSkillsAsync("));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void WindowsStartup_UsesOnlyTheTargetEnvironmentAndOfficialCodexState()
         {
@@ -270,7 +270,7 @@ namespace MyCodex.Application.Tests
             Assert.That(windowsLaunchInfo, Does.Not.Contain("environmentVariables[\"HOME\"]"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void WslAndRemoteStartup_UseOnlyTheirTargetEnvironmentAndOfficialCodexState()
         {
@@ -282,7 +282,7 @@ namespace MyCodex.Application.Tests
             Assert.That(connectCore, Does.Contain("_runtimeManager.ResolveLaunchInfo(appConfig)"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AutomaticReconnect_OnlyRecoversTransportAndDoesNotRequestTargetReload()
         {
@@ -298,7 +298,7 @@ namespace MyCodex.Application.Tests
             Assert.That(connectionLost, Does.Not.Contain("ConnectCoreAsync"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerClient_BackgroundReaders_AreBoundToCapturedConnectionStreams()
         {
@@ -312,7 +312,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("_process.StandardError.ReadLineAsync()"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void AppServerClient_PersistentDiagnostics_DoNotLogRawProtocolOutput()
         {
@@ -324,7 +324,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("Raw message: {1}"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerClient_ConnectionReplacementAndLossClaim_UseTheSameLockOrder()
         {
@@ -339,7 +339,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("AppServerProcessLifecycle.CleanupResources("));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerClient_TransportWriteFailures_UseTheTransportSourceEpoch()
         {
@@ -402,7 +402,7 @@ namespace MyCodex.Application.Tests
             Assert.That(clientSource, Does.Not.Contain("private static Version ParseRuntimeVersion("));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void SkillAndPluginPathDiagnostics_AreEmittedAtRuntimeBoundaries()
         {
@@ -417,7 +417,7 @@ namespace MyCodex.Application.Tests
             Assert.That(appServerSource, Does.Contain("Skill/plugin diagnostic. Operation=plugin/list"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerClient_ResolvesSkillListPathsBeforeDiagnostics()
         {
@@ -428,7 +428,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("PathResolution="));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerClient_RefreshesSkillInventoryBeforeTurnStart()
         {

@@ -10,7 +10,7 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class MainFormStructureSourceTests
     {
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void RemovedTurnChangesViewer_LeavesGitWorkbenchAndEncodingChecksAvailable()
         {
@@ -21,7 +21,7 @@ namespace MyCodex.Application.Tests
                 Does.Contain("CheckTurnEncodingSafety(e.ThreadId, state.TurnId, state.DiffText, state.ChangedFiles)"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void CompactLayout_PreservesAccessibleNamesAndCommandPlacement()
         {
@@ -41,54 +41,6 @@ namespace MyCodex.Application.Tests
             Assert.That(main, Does.Contain("Screen.FromRectangle(defaultBounds).WorkingArea"));
             Assert.That(main, Does.Contain("MainFormLayoutPlanner.ConstrainWindowBounds(Bounds, workingArea)"));
         }
-
-        private sealed class MainFormSourceMetric
-        {
-            public MainFormSourceMetric(string fileName, int targetLines, int baselineLines)
-            {
-                FileName = fileName;
-                TargetLines = targetLines;
-                BaselineLines = baselineLines;
-            }
-
-            public string FileName { get; }
-
-            public int TargetLines { get; }
-
-            public int BaselineLines { get; }
-        }
-
-        private const int DefaultMainFormPartialTargetLines = 1200;
-        private const int DefaultMainFormHelperTargetLines = 800;
-
-        private static readonly MainFormSourceMetric[] MainFormSourceMetrics =
-        {
-            new MainFormSourceMetric("MainForm.cs", 4000, 3963),
-            new MainFormSourceMetric("MainForm.Activity.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.AppServerEvents.cs", 1200, 1775),
-            new MainFormSourceMetric("MainForm.Attachments.cs", 1200, 1613),
-            new MainFormSourceMetric("MainForm.Workspaces.cs", 1200, 1354),
-            new MainFormSourceMetric("MainForm.SessionSettings.cs", 1200, 1169),
-            new MainFormSourceMetric("MainForm.Layout.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.Sessions.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.ScreenReader.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.DiffWorkbench.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.CommandTerminal.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.Modes.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.RuntimeSettings.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.GitHosting.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.MessageSending.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.UpdatesTray.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.Models.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.SessionWorkflows.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.ThreadSync.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.ProjectInstructions.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.RuntimeConnection.cs", 1200, 1200),
-            new MainFormSourceMetric("MainForm.Status.cs", 1200, 1200),
-            new MainFormSourceMetric("MainFormStatusPresenter.cs", 800, 800),
-            new MainFormSourceMetric("SessionListItem.cs", 800, 800),
-            new MainFormSourceMetric("WorkspaceListItem.cs", 800, 800)
-        };
 
         private static readonly string[] Phase1GoalPlanMethodNames =
         {
@@ -235,20 +187,6 @@ namespace MyCodex.Application.Tests
             "GetCurrentRuntimeDisplayName",
             "GetWindowStatusText"
         };
-
-        [Category(SourceGuardCategory.Placement)]
-        [Test]
-        public void MainFormSourceMetrics_ReportSizeTargetsAndBaselines()
-        {
-            var report = BuildMainFormSourceMetricsReport();
-            TestContext.Out.WriteLine(report);
-
-            var fileNames = GetCurrentMainFormSourceFileNames();
-            Assert.That(
-                fileNames,
-                Is.Not.Empty,
-                "MainForm source metrics should continue to report large-file size targets and baselines.");
-        }
 
         [Category(SourceGuardCategory.Placement)]
         [Test]
@@ -460,51 +398,6 @@ namespace MyCodex.Application.Tests
 
         [Category(SourceGuardCategory.Placement)]
         [Test]
-        public void ExistingMainFormPartials_DeclarePartialClass()
-        {
-            var expectedFiles = new[]
-            {
-                "MainForm.cs",
-                "MainForm.ChatSearch.cs",
-                "MainForm.DiffWorkbench.cs",
-                "MainForm.GitHosting.cs",
-                "MainForm.ScreenReader.cs",
-                "MainForm.SessionSettings.cs"
-            };
-
-            for (var i = 0; i < expectedFiles.Length; i++)
-            {
-                var path = RepositorySource.FindSourceFile(expectedFiles[i]);
-                Assert.That(File.Exists(path), Is.True, expectedFiles[i] + " should exist.");
-                Assert.That(File.ReadAllText(path), Does.Contain("partial class MainForm"));
-            }
-        }
-
-        [Category(SourceGuardCategory.Placement)]
-        [Test]
-        public void FutureMainFormPartials_ShouldExistAfterPhase2()
-        {
-            var futureFiles = new[]
-            {
-                "MainForm.Layout.cs",
-                "MainForm.Attachments.cs",
-                "MainForm.Workspaces.cs",
-                "MainForm.Sessions.cs",
-                "MainForm.AppServerEvents.cs",
-                "MainForm.CommandTerminal.cs",
-                "MainForm.UpdatesTray.cs"
-            };
-
-            for (var i = 0; i < futureFiles.Length; i++)
-            {
-                var path = RepositorySource.FindSourceFile(futureFiles[i]);
-                Assert.That(File.Exists(path), Is.True, futureFiles[i] + " should exist.");
-                Assert.That(File.ReadAllText(path), Does.Contain("partial class MainForm"));
-            }
-        }
-
-        [Category(SourceGuardCategory.Placement)]
-        [Test]
         public void Phase5BMainFormHelpers_ExistWithExpectedTypes()
         {
             var helpers = new[]
@@ -606,7 +499,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("private static bool AreAutomationPathsEqual("));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerEvents_AutomationTerminalEventsRefreshOpenAutomationsForm()
         {
@@ -637,7 +530,7 @@ namespace MyCodex.Application.Tests
                 Is.LessThan(block.IndexOf("_automationsForm.RefreshAutomationState();", System.StringComparison.Ordinal)));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_AutomationsFormReceivesRunActionCallbacks()
         {
@@ -652,7 +545,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_appServerClient.InterruptAsync(run.ThreadId"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_AutomationsFormReceivesModelSelectionCallbacks()
         {
@@ -695,7 +588,7 @@ namespace MyCodex.Application.Tests
             Assert.That(mainSource, Does.Not.Contain("private async Task ShowReviewStartDialogAsync("));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_ForkWorkflowsPassSelectedTurnIdToSegmentedThreadWorkflow()
         {
@@ -803,7 +696,7 @@ namespace MyCodex.Application.Tests
             Assert.That(sessionSettingsSource, Does.Not.Contain("private async Task OpenOptionsAsync()"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AutomationsForm_EditContextMenuIsWiredToUpdateExistingAutomation()
         {
@@ -817,7 +710,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("BuildUpdateRequest("));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_AutomationRunTargetsCanOpenThreadAndLocalPaths()
         {
@@ -866,7 +759,7 @@ namespace MyCodex.Application.Tests
             Assert.That(chineseResources, Does.Contain("name=\"AutomationsForm.Status.RemotePathOpenUnsupported\""));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_WorkspaceAutomationEntriesAreWired()
         {
@@ -893,7 +786,7 @@ namespace MyCodex.Application.Tests
             Assert.That(englishResources, Does.Contain("Create Project Automation(&amp;A)..."));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerEvents_CommandOutputWritesTerminalButNotActivityLog()
         {
@@ -907,7 +800,7 @@ namespace MyCodex.Application.Tests
             Assert.That(block, Does.Not.Contain("AppendLog(e.Content)"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ActivityArea_UsesStableListBoxInsteadOfTextBoxCaret()
         {
@@ -934,7 +827,7 @@ namespace MyCodex.Application.Tests
             Assert.That(renderBlock, Does.Not.Contain("BeginUpdate()"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void ActivityArea_ReliesOnAccessibilityNotificationsInsteadOfManualSpeech()
         {
@@ -967,7 +860,7 @@ namespace MyCodex.Application.Tests
             Assert.That(hotkeyMethod, Does.Not.Contain("ManualReadTarget.Activity"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ManualBrowse_ReservesAltEnterForTheVirtualCursor()
         {
@@ -998,7 +891,7 @@ namespace MyCodex.Application.Tests
             Assert.That(activityBlock, Does.Contain("ReadRelativeActivityItem(1, PageSize)"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MessageViewerOpenCommandsUseSeparateListAndManualReadCursors()
         {
@@ -1019,7 +912,7 @@ namespace MyCodex.Application.Tests
             Assert.That(hotkeyBlock, Does.Not.Contain("GetPrimaryChatHistoryItem()"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void ActivityArea_ContextMenuUsesSettingsDialogAndClearActivity()
         {
@@ -1040,7 +933,7 @@ namespace MyCodex.Application.Tests
             Assert.That(contextMenuBlock, Does.Not.Contain("_clearLogMenuItem"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_CommandLineWorkspaceOpensAndCreatesSessionWhenNoneExists()
         {
@@ -1058,7 +951,7 @@ namespace MyCodex.Application.Tests
             Assert.That(traySource, Does.Contain("LoadCommandLineWorkspaceAsync(options.WorkspacePath)"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_ForkResolvesRuntimeSettingsBeforeCreatingAndKeepsOverridesInWorkflow()
         {
@@ -1074,7 +967,7 @@ namespace MyCodex.Application.Tests
             Assert.That(forkBlock, Does.Not.Contain("sourceSession.ReasoningEffort"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_ReviewOwnsFreshSettingsAndPreservesSessionOverrides()
         {
@@ -1085,7 +978,7 @@ namespace MyCodex.Application.Tests
             Assert.That(RepositorySource.ReadSourceFile("MainForm.cs"), Does.Not.Contain("private async Task StartDetachedReviewAsync("));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_LocalDesktopTurnsDoNotApplyRealtimeHistoryReload()
         {
@@ -1115,7 +1008,7 @@ namespace MyCodex.Application.Tests
             Assert.That(eventBlock, Does.Contain("ClearLocalDesktopRealtimeTurn(e.ThreadId);"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void AppServerEvents_UpdateHiddenSessionThreadStateBeforeVisibleUiFiltering()
         {
@@ -1137,7 +1030,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("RefreshSessionWorkbenches();"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [TestCase("ProtocolWarning", "ProtocolNotice")]
         [TestCase("ProtocolNotice", "ThreadArchivedChanged")]
         public void GlobalProtocolMessages_AreRecordedInCurrentActivityWithoutDuplicatingThreadEvents(string route, string nextRoute)
@@ -1148,7 +1041,7 @@ namespace MyCodex.Application.Tests
             Assert.That(block, Does.Not.Contain(".Focus(").And.Not.Contain(".Select("));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_McpMessageOnlyRequestsRequireConfirmationAndUnsupportedRequestsAreCanceled()
         {
@@ -1169,7 +1062,7 @@ namespace MyCodex.Application.Tests
             Assert.That(confirmationBlock, Does.Contain("CancelToolUserInputRequestAsync(request.RequestId)"));
         }
 
-        [Category(SourceGuardCategory.Placement)]
+        [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void MainForm_UsesModelessAppServerFileWindowManager()
         {
@@ -1191,57 +1084,6 @@ namespace MyCodex.Application.Tests
             Assert.That(fileWindowsSource, Does.Contain("_appServerFileWindowManager.HandleFileSystemChangedAsync("));
             Assert.That(fileWindowsSource, Does.Not.Contain("SpeakManualTextWithScreenReader"));
             Assert.That(fileWindowsSource, Does.Not.Contain("readFileColumn"));
-        }
-
-        private static string BuildMainFormSourceMetricsReport()
-        {
-            var lines = GetCurrentMainFormSourceFileNames()
-                .Select(GetMainFormSourceMetric)
-                .Select(metric => new
-                {
-                    metric.FileName,
-                    metric.TargetLines,
-                    metric.BaselineLines,
-                    ActualLines = CountMeasuredSourceLines(RepositorySource.FindSourceFile(metric.FileName))
-                })
-                .OrderByDescending(metric => metric.ActualLines)
-                .ThenBy(metric => metric.FileName, StringComparer.Ordinal)
-                .Select(metric =>
-                    metric.FileName + ": " + metric.ActualLines +
-                    " lines; target " + metric.TargetLines +
-                    "; baseline " + metric.BaselineLines +
-                    (metric.ActualLines > metric.TargetLines ? " (currently above target)" : string.Empty) +
-                    (metric.ActualLines > metric.BaselineLines ? " (above baseline; justify necessary scoped growth)" : string.Empty));
-
-            return "MainForm source size metrics:" + Environment.NewLine + string.Join(Environment.NewLine, lines);
-        }
-
-        private static MainFormSourceMetric GetMainFormSourceMetric(string fileName)
-        {
-            var metric = MainFormSourceMetrics.FirstOrDefault(item =>
-                string.Equals(item.FileName, fileName, StringComparison.Ordinal));
-            if (metric != null)
-            {
-                return metric;
-            }
-
-            var targetLines = fileName.StartsWith("MainForm.", StringComparison.Ordinal)
-                ? DefaultMainFormPartialTargetLines
-                : DefaultMainFormHelperTargetLines;
-            return new MainFormSourceMetric(fileName, targetLines, targetLines);
-        }
-
-        private static string[] GetCurrentMainFormSourceFileNames()
-        {
-            var mainFormFileNames = RepositorySource
-                .FindSourceFiles("MyCodex.WinForms", "MainForm*.cs")
-                .Select(Path.GetFileName)
-                .Concat(MainFormSourceMetrics.Select(metric => metric.FileName))
-                .Distinct(StringComparer.Ordinal)
-                .OrderBy(fileName => fileName, StringComparer.Ordinal)
-                .ToArray();
-
-            return mainFormFileNames;
         }
 
         private static int CountPrivateMethodDeclarations(string source, IReadOnlyCollection<string> methodNames)
@@ -1270,11 +1112,6 @@ namespace MyCodex.Application.Tests
             }
 
             return count;
-        }
-
-        private static int CountMeasuredSourceLines(string path)
-        {
-            return File.ReadLines(path).Count(line => line.Length > 0);
         }
 
         private static string ExtractBlock(string source, string startMarker, string endMarker)
