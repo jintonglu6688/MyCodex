@@ -25,7 +25,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ProductionComposition_DoesNotRecreateRetiredAuthenticationStores()
         {
-            var mainFormSource = File.ReadAllText(Path.Combine(Path.GetDirectoryName(RepositorySource.FindSourceFile("Program.cs")), "Forms", "MainForm.cs"));
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(mainFormSource, Does.Not.Contain("new JsonAuthenticationSourceSelectionStore"));
             Assert.That(mainFormSource, Does.Not.Contain("new JsonAuthenticationProfileStore"));

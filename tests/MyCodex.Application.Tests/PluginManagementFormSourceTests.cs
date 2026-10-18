@@ -362,9 +362,7 @@ namespace MyCodex.Application.Tests
         public void RemoteCatalog_RequiresExplicitMarketplaceRegistrationBeforePluginInstall()
         {
             var mainSource = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
-            var registrationSource = File.ReadAllText(Path.Combine(
-                Path.GetDirectoryName(RepositorySource.FindSourceFile("PluginManagementForm.cs")),
-                "PluginManagementForm.MarketplaceRegistration.cs"));
+            var registrationSource = RepositorySource.ReadSourceFile("PluginManagementForm.MarketplaceRegistration.cs");
             var registerBody = ExtractMethodBody(registrationSource, "RegisterSelectedMarketplaceAsync");
 
             Assert.That(mainSource, Does.Contain("_registerMarketplaceButton"));

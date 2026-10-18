@@ -565,7 +565,7 @@ namespace MyCodex.Application.Tests
             var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
             var messageSource = RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
 
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.MessageSending.cs")), Is.True);
+            Assert.That(RepositorySource.FindSourceFile("MainForm.MessageSending.cs"), Is.Not.Null);
             Assert.That(messageSource, Does.Contain("partial class MainForm"));
             Assert.That(messageSource, Does.Contain("private async Task SendCurrentInputAsync(string overrideText, bool includePendingAttachments)"));
             Assert.That(messageSource, Does.Contain("private async Task<ChatWorkbenchSendResult> SendSubAgentInputAsync("));
@@ -582,7 +582,7 @@ namespace MyCodex.Application.Tests
             var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
             var workflowSource = RepositorySource.ReadSourceFile("MainForm.SessionWorkflows.cs");
 
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.SessionWorkflows.cs")), Is.True);
+            Assert.That(RepositorySource.FindSourceFile("MainForm.SessionWorkflows.cs"), Is.Not.Null);
             Assert.That(workflowSource, Does.Contain("partial class MainForm"));
             Assert.That(workflowSource, Does.Contain("private async Task ShowReviewStartDialogAsync("));
             Assert.That(mainSource, Does.Not.Contain("private async Task ShowReviewStartDialogAsync("));
@@ -609,7 +609,7 @@ namespace MyCodex.Application.Tests
             var workflowSource = RepositorySource.ReadSourceFile("MainForm.SessionWorkflows.cs");
             var projectInstructionsSource = RepositorySource.ReadSourceFile("MainForm.ProjectInstructions.cs");
 
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.ProjectInstructions.cs")), Is.True);
+            Assert.That(RepositorySource.FindSourceFile("MainForm.ProjectInstructions.cs"), Is.Not.Null);
             Assert.That(projectInstructionsSource, Does.Contain("partial class MainForm"));
             Assert.That(projectInstructionsSource, Does.Contain("private async Task<string> GenerateProjectInstructionsContentAsync("));
             Assert.That(projectInstructionsSource, Does.Contain("private async Task CleanupProjectInstructionsHelperThreadAsync("));
@@ -631,7 +631,7 @@ namespace MyCodex.Application.Tests
             var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
             var syncSource = RepositorySource.ReadSourceFile("MainForm.ThreadSync.cs");
 
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.ThreadSync.cs")), Is.True);
+            Assert.That(RepositorySource.FindSourceFile("MainForm.ThreadSync.cs"), Is.Not.Null);
             Assert.That(syncSource, Does.Contain("partial class MainForm"));
             Assert.That(RepositorySource.ReadSourceFile("MainForm.SubAgents.cs"), Does.Contain("private async Task RunLocalCurrentSubAgentThreadSyncAsync()"));
             Assert.That(syncSource, Does.Contain("private async Task RunAutomaticThreadSyncAsync("));
@@ -649,7 +649,7 @@ namespace MyCodex.Application.Tests
             var modelSource = RepositorySource.ReadSourceFile("MainForm.Models.cs");
             var commandSource = RepositorySource.ReadSourceFile("MainForm.CommandTerminal.cs");
 
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.Models.cs")), Is.True);
+            Assert.That(RepositorySource.FindSourceFile("MainForm.Models.cs"), Is.Not.Null);
             Assert.That(modelSource, Does.Contain("partial class MainForm"));
             Assert.That(modelSource, Does.Contain("private async Task LoadAvailableModelsAsync("));
             Assert.That(modelSource, Does.Not.Contain("private void RebuildModelMenu()"));
