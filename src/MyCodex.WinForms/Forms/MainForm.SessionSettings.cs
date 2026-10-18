@@ -490,7 +490,10 @@ namespace MyCodex.WinForms.Forms
                 {
                     using (var cancellation = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(3)))
                     {
-                        _remoteHostServiceController.ShutdownAsync(cancellation.Token).GetAwaiter().GetResult();
+                        // Run off the UI thread so a continuation that captures the UI context cannot deadlock exit.
+                        var controller = _remoteHostServiceController;
+                        var token = cancellation.Token;
+                        Task.Run(() => controller.ShutdownAsync(token)).GetAwaiter().GetResult();
                     }
                 }
                 catch (Exception ex)

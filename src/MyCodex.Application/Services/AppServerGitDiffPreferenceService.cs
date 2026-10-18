@@ -100,8 +100,9 @@ namespace MyCodex.Application.Services
             {
                 throw;
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Trace.TraceWarning("[GitDiff] App Server diff failed; using local Git. ExceptionType={0}", ex.GetType().Name);
             }
 
             return await _fallback.ReadDiffAsync(workspacePath, entry, diffKind, cancellationToken).ConfigureAwait(false);

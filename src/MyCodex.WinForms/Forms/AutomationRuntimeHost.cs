@@ -172,8 +172,14 @@ namespace MyCodex.WinForms.Forms
                     {
                         throw;
                     }
-                    catch
+                    catch (AuthenticationCenterException ex) when (string.Equals(ex.Code, "runtime_busy", StringComparison.Ordinal))
                     {
+                        // NextRunAt is unchanged, so the next tick retries after the runtime transition.
+                        System.Diagnostics.Trace.TraceInformation("[Automation] Scheduled start deferred while the runtime is busy.");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Trace.TraceWarning("[Automation] Scheduled start failed. ExceptionType={0}", ex.GetType().Name);
                     }
                 }
             }

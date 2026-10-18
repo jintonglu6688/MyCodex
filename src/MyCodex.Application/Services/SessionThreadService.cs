@@ -88,8 +88,9 @@ namespace MyCodex.Application.Services
                 {
                     await _appServerClient.SetThreadNameAsync(session.ThreadId, session.Title);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    System.Diagnostics.Trace.TraceWarning("[SessionThread] Setting the recreated thread name failed. ExceptionType={0}", ex.GetType().Name);
                 }
             }
 

@@ -65,8 +65,10 @@ namespace MyCodex.Application.Services
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Resume repair is best effort and must not block resuming the session.
+                System.Diagnostics.Trace.TraceWarning("[SessionHistoryRepair] Resume repair failed. ExceptionType={0}", ex.GetType().Name);
             }
         }
 
