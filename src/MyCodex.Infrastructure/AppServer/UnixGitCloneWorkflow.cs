@@ -4,15 +4,6 @@ using MyCodex.Application.Services;
 
 namespace MyCodex.Infrastructure.AppServer
 {
-    internal sealed class UnixGitCloneCommandResult
-    {
-        public int ExitCode { get; set; }
-
-        public string StandardOutput { get; set; }
-
-        public string StandardError { get; set; }
-    }
-
     internal static class UnixGitCloneWorkflow
     {
         internal static void ValidateRequest(
@@ -36,7 +27,7 @@ namespace MyCodex.Infrastructure.AppServer
             GitCloneRequest request,
             string parentDirectory,
             string folderName,
-            UnixGitCloneCommandResult result,
+            UnixCommandResult result,
             IProgress<GitCloneProgress> progress)
         {
             if (result == null)

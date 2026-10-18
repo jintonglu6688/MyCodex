@@ -13,19 +13,33 @@ namespace MyCodex.Application.Tests
         {
             var wsl = RepositorySource.ReadSourceFile("WslGitCloneService.cs");
             var remote = RepositorySource.ReadSourceFile("RemoteMacGitCloneService.cs");
+            var service = RepositorySource.ReadSourceFile("UnixGitCloneService.cs");
             var workflow = RepositorySource.ReadSourceFile("UnixGitCloneWorkflow.cs");
 
-            Assert.That(wsl, Does.Contain("UnixGitCloneScript.CloneScript"));
-            Assert.That(remote, Does.Contain("UnixGitCloneScript.CloneScript"));
-            Assert.That(wsl, Does.Not.Contain("private const string CloneScript"));
-            Assert.That(remote, Does.Not.Contain("private const string CloneScript"));
+            Assert.That(wsl, Does.Contain("new UnixGitCloneService("));
+            Assert.That(remote, Does.Contain("new UnixGitCloneService("));
+            Assert.That(service, Does.Contain("UnixGitCloneScript.CloneScript"));
+            Assert.That(service, Does.Contain("UnixGitCloneWorkflow.ValidateRequest"));
+            Assert.That(service, Does.Contain("UnixGitCloneWorkflow.BuildResult"));
             Assert.That(workflow, Does.Contain("UnixGitCloneScript.NormalizeRequired"));
             Assert.That(workflow, Does.Contain("UnixGitCloneScript.ExtractCloneTargetPath"));
             Assert.That(workflow, Does.Contain("GitOutputSanitizer.RedactSensitiveText"));
-            Assert.That(wsl, Does.Contain("UnixGitCloneWorkflow"));
-            Assert.That(remote, Does.Contain("UnixGitCloneWorkflow"));
-            Assert.That(wsl, Does.Not.Contain("ExtractCloneTargetPath"));
-            Assert.That(remote, Does.Not.Contain("ExtractCloneTargetPath"));
+            Assert.That(wsl, Does.Not.Contain("CloneScript"));
+            Assert.That(remote, Does.Not.Contain("CloneScript"));
+        }
+
+        [Test]
+        public void SshKeyServices_UseSharedUnixSshKeyService()
+        {
+            var wsl = RepositorySource.ReadSourceFile("WslGitSshKeyService.cs");
+            var remote = RepositorySource.ReadSourceFile("RemoteMacGitSshKeyService.cs");
+
+            Assert.That(wsl, Does.Contain("new UnixGitSshKeyService("));
+            Assert.That(remote, Does.Contain("new UnixGitSshKeyService("));
+            Assert.That(wsl, Does.Not.Contain("ReadKeysScript"));
+            Assert.That(remote, Does.Not.Contain("ReadKeysScript"));
+            Assert.That(wsl, Does.Not.Contain("ParseKeys"));
+            Assert.That(remote, Does.Not.Contain("ParseKeys"));
         }
 
         [Test]
@@ -43,11 +57,15 @@ namespace MyCodex.Application.Tests
         {
             var wsl = RepositorySource.ReadSourceFile("WslRuntimeFileSystemOperations.cs");
             var remote = RepositorySource.ReadSourceFile("RemoteMacRuntimeFileSystemOperations.cs");
+            var operations = RepositorySource.ReadSourceFile("UnixRuntimeFileSystemOperations.cs");
 
-            Assert.That(wsl, Does.Contain("UnixRuntimeFileSystemScripts.CreateDirectory(false)"));
-            Assert.That(remote, Does.Contain("UnixRuntimeFileSystemScripts.CreateDirectory(true)"));
-            Assert.That(wsl, Does.Not.Contain("private const string CreateDirectoryScript"));
-            Assert.That(remote, Does.Not.Contain("private const string CreateDirectoryScript"));
+            Assert.That(wsl, Does.Contain("new UnixRuntimeFileSystemOperations("));
+            Assert.That(remote, Does.Contain("new UnixRuntimeFileSystemOperations("));
+            Assert.That(operations, Does.Contain("UnixRuntimeFileSystemScripts.CreateDirectory(_remoteShellPrefix)"));
+            Assert.That(operations, Does.Contain("RuntimeFileSystemPathRules.EnsureSafeDeleteTarget"));
+            Assert.That(operations, Does.Not.Contain("private const string CreateDirectoryScript"));
+            Assert.That(wsl, Does.Not.Contain("UnixRuntimeFileSystemScripts"));
+            Assert.That(remote, Does.Not.Contain("UnixRuntimeFileSystemScripts"));
         }
 
         [Test]
