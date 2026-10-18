@@ -33,7 +33,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (!hasEntries && LooksLikeMcpServerPayload(statusResult))
             {
-                var server = GetOrCreateMcpServerStatus(servers, GetFirstNonEmptyString(statusResult, "serverName", "name", "id"));
+                var server = GetOrCreateMcpServerStatus(servers, AppServerJsonValueReader.GetFirstNonEmptyString(statusResult, "serverName", "name", "id"));
                 ApplyMcpServerStatusPayload(server, statusResult, server.ServerName);
                 ApplyMcpServerConfigPayload(server, statusResult);
             }
@@ -99,7 +99,7 @@ namespace MyCodex.Infrastructure.AppServer
             bool includeStatusPayload,
             bool includeConfigPayload)
         {
-            var rawValue = GetValue(source, key);
+            var rawValue = AppServerJsonValueReader.GetValue(source, key);
             if (rawValue == null)
             {
                 return false;
@@ -133,7 +133,7 @@ namespace MyCodex.Infrastructure.AppServer
                 if (LooksLikeMcpServerPayload(dictionary))
                 {
                     yield return new KeyValuePair<string, IDictionary<string, object>>(
-                        GetFirstNonEmptyString(dictionary, "serverName", "name", "id"),
+                        AppServerJsonValueReader.GetFirstNonEmptyString(dictionary, "serverName", "name", "id"),
                         dictionary);
                     yield break;
                 }
@@ -167,7 +167,7 @@ namespace MyCodex.Infrastructure.AppServer
                 }
 
                 yield return new KeyValuePair<string, IDictionary<string, object>>(
-                    GetFirstNonEmptyString(child, "serverName", "name", "id"),
+                    AppServerJsonValueReader.GetFirstNonEmptyString(child, "serverName", "name", "id"),
                     child);
             }
         }
@@ -189,7 +189,7 @@ namespace MyCodex.Infrastructure.AppServer
                     payload.ContainsKey("required") ||
                     payload.ContainsKey("url") ||
                     payload.ContainsKey("authorizationUrl") ||
-                    !string.IsNullOrWhiteSpace(GetFirstNonEmptyString(payload, "serverName", "name", "id")));
+                    !string.IsNullOrWhiteSpace(AppServerJsonValueReader.GetFirstNonEmptyString(payload, "serverName", "name", "id")));
         }
 
         private static AppServerMcpServerStatus GetOrCreateMcpServerStatus(
@@ -228,7 +228,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(target.ServerName))
             {
-                target.ServerName = GetFirstNonEmptyString(payload, "serverName", "name", "id") ??
+                target.ServerName = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "serverName", "name", "id") ??
                                     fallbackServerName ??
                                     L("AppServerClient.Value.UnnamedServer", "Unnamed server");
             }
@@ -257,19 +257,19 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 target.ResourceCount = resourceCount.Value;
             }
-            ApplyMcpResourceSummaries(target.Resources, GetValue(payload, "resources"), false);
+            ApplyMcpResourceSummaries(target.Resources, AppServerJsonValueReader.GetValue(payload, "resources"), false);
 
             var resourceTemplateCount = GetCollectionCount(payload, "resourceTemplates");
             if (resourceTemplateCount.HasValue)
             {
                 target.ResourceTemplateCount = resourceTemplateCount.Value;
             }
-            ApplyMcpResourceSummaries(target.ResourceTemplates, GetValue(payload, "resourceTemplates"), true);
+            ApplyMcpResourceSummaries(target.ResourceTemplates, AppServerJsonValueReader.GetValue(payload, "resourceTemplates"), true);
 
-            var errorText = GetFirstNonEmptyString(payload, "error", "statusMessage", "message");
+            var errorText = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "error", "statusMessage", "message");
             if (string.IsNullOrWhiteSpace(errorText))
             {
-                errorText = GetFirstNonEmptyString(AppServerJsonValue.GetDictionary(payload, "status"), "message", "error");
+                errorText = AppServerJsonValueReader.GetFirstNonEmptyString(AppServerJsonValue.GetDictionary(payload, "status"), "message", "error");
             }
 
             if (!string.IsNullOrWhiteSpace(errorText))
@@ -288,12 +288,12 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(target.ServerName))
             {
-                target.ServerName = GetFirstNonEmptyString(payload, "serverName", "name", "id") ?? L("AppServerClient.Value.UnnamedServer", "Unnamed server");
+                target.ServerName = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "serverName", "name", "id") ?? L("AppServerClient.Value.UnnamedServer", "Unnamed server");
             }
 
             target.ConfigValues = CloneDictionary(payload);
 
-            var enabled = GetNullableBool(payload, "enabled");
+            var enabled = AppServerJsonValueReader.GetNullableBool(payload, "enabled");
             if (enabled.HasValue)
             {
                 target.Enabled = enabled.Value;
@@ -315,7 +315,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(sourceDetail))
             {
-                sourceDetail = GetFirstNonEmptyString(payload, "url", "baseUrl", "serverUrl", "endpoint");
+                sourceDetail = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "url", "baseUrl", "serverUrl", "endpoint");
                 if (!string.IsNullOrWhiteSpace(sourceDetail))
                 {
                     sourceSummary = L("AppServerClient.Mcp.SourceSummary.Http", "HTTP");
@@ -332,32 +332,32 @@ namespace MyCodex.Infrastructure.AppServer
                 target.SourceDetail = sourceDetail;
             }
 
-            var required = GetNullableBool(payload, "required");
+            var required = AppServerJsonValueReader.GetNullableBool(payload, "required");
             if (required.HasValue)
             {
                 target.IsRequired = required.Value;
             }
 
-            var oauthResource = GetFirstNonEmptyString(payload, "oauth_resource", "oauthResource");
+            var oauthResource = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "oauth_resource", "oauthResource");
             if (!string.IsNullOrWhiteSpace(oauthResource))
             {
                 target.OAuthResource = oauthResource;
                 target.SupportsOAuth = true;
             }
 
-            var enabledToolsText = BuildDelimitedString(GetValue(payload, "enabled_tools"));
+            var enabledToolsText = BuildDelimitedString(AppServerJsonValueReader.GetValue(payload, "enabled_tools"));
             if (!string.IsNullOrWhiteSpace(enabledToolsText))
             {
                 target.EnabledToolsText = enabledToolsText;
             }
 
-            var disabledToolsText = BuildDelimitedString(GetValue(payload, "disabled_tools"));
+            var disabledToolsText = BuildDelimitedString(AppServerJsonValueReader.GetValue(payload, "disabled_tools"));
             if (!string.IsNullOrWhiteSpace(disabledToolsText))
             {
                 target.DisabledToolsText = disabledToolsText;
             }
 
-            var environmentText = BuildEnvironmentSummary(GetValue(payload, "env_vars"));
+            var environmentText = BuildEnvironmentSummary(AppServerJsonValueReader.GetValue(payload, "env_vars"));
             if (!string.IsNullOrWhiteSpace(environmentText))
             {
                 target.EnvironmentText = environmentText;
@@ -366,11 +366,11 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static string ExtractMcpServerStatusText(IDictionary<string, object> payload)
         {
-            var rawStatus = GetValue(payload, "status");
+            var rawStatus = AppServerJsonValueReader.GetValue(payload, "status");
             var status = rawStatus as IDictionary<string, object>;
             if (status != null)
             {
-                return GetFirstNonEmptyString(status, "type", "status", "state");
+                return AppServerJsonValueReader.GetFirstNonEmptyString(status, "type", "status", "state");
             }
 
             var statusText = rawStatus == null ? null : Convert.ToString(rawStatus);
@@ -379,11 +379,11 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static string ExtractMcpServerAuthStatusText(IDictionary<string, object> payload)
         {
-            var rawAuthStatus = GetValue(payload, "authStatus");
+            var rawAuthStatus = AppServerJsonValueReader.GetValue(payload, "authStatus");
             var authStatus = rawAuthStatus as IDictionary<string, object>;
             if (authStatus != null)
             {
-                return GetFirstNonEmptyString(authStatus, "type", "status", "state");
+                return AppServerJsonValueReader.GetFirstNonEmptyString(authStatus, "type", "status", "state");
             }
 
             var authStatusText = rawAuthStatus == null ? null : Convert.ToString(rawAuthStatus);
@@ -535,11 +535,11 @@ namespace MyCodex.Infrastructure.AppServer
             string fallbackName,
             bool isTemplate)
         {
-            var uri = GetFirstNonEmptyString(payload, "uri", "uriTemplate", "template", "path");
-            var name = GetFirstNonEmptyString(payload, "name", "id");
-            var title = GetFirstNonEmptyString(payload, "title");
-            var description = GetFirstNonEmptyString(payload, "description");
-            var mimeType = GetFirstNonEmptyString(payload, "mimeType", "mime_type");
+            var uri = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "uri", "uriTemplate", "template", "path");
+            var name = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "name", "id");
+            var title = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "title");
+            var description = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "description");
+            var mimeType = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "mimeType", "mime_type");
 
             if (string.IsNullOrWhiteSpace(uri))
             {
@@ -571,7 +571,7 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             var arguments = new List<string>();
-            foreach (var argument in GetArray(payload, "args"))
+            foreach (var argument in AppServerJsonValueReader.GetArray(payload, "args"))
             {
                 var text = argument == null ? null : Convert.ToString(argument);
                 if (!string.IsNullOrWhiteSpace(text))
@@ -797,84 +797,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return value;
-        }
-
-        private static object GetValue(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source != null && source.TryGetValue(key, out value))
-            {
-                return value;
-            }
-
-            return null;
-        }
-
-        private static string GetFirstNonEmptyString(IDictionary<string, object> source, params string[] keys)
-        {
-            if (keys == null)
-            {
-                return null;
-            }
-
-            for (var i = 0; i < keys.Length; i++)
-            {
-                var value = AppServerJsonValue.GetString(source, keys[i]);
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    return value;
-                }
-            }
-
-            return null;
-        }
-
-        private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                yield break;
-            }
-
-            var array = value as object[];
-            if (array != null)
-            {
-                foreach (var item in array)
-                {
-                    yield return item;
-                }
-
-                yield break;
-            }
-
-            var enumerable = value as System.Collections.IEnumerable;
-            if (enumerable == null || value is string)
-            {
-                yield break;
-            }
-
-            foreach (var item in enumerable)
-            {
-                yield return item;
-            }
-        }
-
-        private static bool? GetNullableBool(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                return null;
-            }
-
-            bool result;
-            if (bool.TryParse(Convert.ToString(value), out result))
-            {
-                return result;
-            }
-
-            return null;
         }
 
         private static string L(string key, string fallback)

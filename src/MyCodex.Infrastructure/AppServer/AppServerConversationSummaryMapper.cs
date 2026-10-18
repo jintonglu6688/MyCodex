@@ -16,27 +16,27 @@ namespace MyCodex.Infrastructure.AppServer
                 return null;
             }
 
-            var gitInfo = GetDictionary(summary, "gitInfo");
+            var gitInfo = AppServerJsonValueReader.GetDictionary(summary, "gitInfo");
             return new AppServerConversationSummary
             {
-                ThreadId = GetString(summary, "conversationId"),
-                Path = MapServerPathToClient(mapServerPathToClient, GetString(summary, "path")),
-                Preview = GetString(summary, "preview"),
-                Timestamp = ParseDateTime(GetString(summary, "timestamp")),
-                UpdatedAt = ParseDateTime(GetString(summary, "updatedAt")),
-                ModelProviderId = GetString(summary, "modelProvider"),
+                ThreadId = AppServerJsonValueReader.GetString(summary, "conversationId"),
+                Path = MapServerPathToClient(mapServerPathToClient, AppServerJsonValueReader.GetString(summary, "path")),
+                Preview = AppServerJsonValueReader.GetString(summary, "preview"),
+                Timestamp = ParseDateTime(AppServerJsonValueReader.GetString(summary, "timestamp")),
+                UpdatedAt = ParseDateTime(AppServerJsonValueReader.GetString(summary, "updatedAt")),
+                ModelProviderId = AppServerJsonValueReader.GetString(summary, "modelProvider"),
                 WorkingDirectory = LocalSessionCatalog.NormalizeLocalThreadWorkingDirectory(
-                    MapServerPathToClient(mapServerPathToClient, GetString(summary, "cwd"))),
-                CliVersion = GetString(summary, "cliVersion"),
-                Source = GetSessionSourceText(GetValue(summary, "source")),
+                    MapServerPathToClient(mapServerPathToClient, AppServerJsonValueReader.GetString(summary, "cwd"))),
+                CliVersion = AppServerJsonValueReader.GetString(summary, "cliVersion"),
+                Source = GetSessionSourceText(AppServerJsonValueReader.GetValue(summary, "source")),
                 GitInfo = gitInfo.Count == 0
                     ? null
                     : new WorkspaceGitInfoSnapshot
                     {
                         IsGitRepository = true,
-                        Sha = GetString(gitInfo, "sha"),
-                        Branch = GetString(gitInfo, "branch"),
-                        OriginUrl = GetString(gitInfo, "origin_url")
+                        Sha = AppServerJsonValueReader.GetString(gitInfo, "sha"),
+                        Branch = AppServerJsonValueReader.GetString(gitInfo, "branch"),
+                        OriginUrl = AppServerJsonValueReader.GetString(gitInfo, "origin_url")
                     }
             };
         }
@@ -155,22 +155,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return "unknown";
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValue.GetDictionary(source, key);
-        }
-
-        private static object GetValue(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null && source.TryGetValue(key, out value) ? value : null;
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValue.GetString(source, key);
         }
     }
 }

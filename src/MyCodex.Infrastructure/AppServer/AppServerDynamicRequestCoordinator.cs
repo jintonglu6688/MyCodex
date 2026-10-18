@@ -58,9 +58,9 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (!TryHandleServerRequest(message, connectionEpoch))
             {
-                var method = GetString(message, "method");
+                var method = AppServerJsonValueReader.GetString(message, "method");
                 var rawRequestId = GetRawRequestId(message);
-                var parameters = GetDictionary(message, "params");
+                var parameters = AppServerJsonValueReader.GetDictionary(message, "params");
                 _sendErrorResponseAsync(
                     rawRequestId,
                     -32601,
@@ -78,10 +78,10 @@ namespace MyCodex.Infrastructure.AppServer
 
         private bool TryHandleServerRequest(IDictionary<string, object> message, long connectionEpoch)
         {
-            var method = GetString(message, "method");
+            var method = AppServerJsonValueReader.GetString(message, "method");
             var rawRequestId = GetRawRequestId(message);
             var requestId = NormalizeRequestId(rawRequestId);
-            var parameters = GetDictionary(message, "params");
+            var parameters = AppServerJsonValueReader.GetDictionary(message, "params");
 
             switch (method)
             {
@@ -651,16 +651,6 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 _pendingRequestRegistry.RemoveToolInput(requestId);
             }
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetDictionary(source, key);
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetString(source, key);
         }
 
         private static object GetRawRequestId(IDictionary<string, object> message)

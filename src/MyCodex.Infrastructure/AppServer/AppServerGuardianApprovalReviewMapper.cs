@@ -64,7 +64,7 @@ namespace MyCodex.Infrastructure.AppServer
                     {
                         ActionType = actionType,
                         Title = SharedLocalization.Text("AppServerGuardianApprovalReviewMapper.Action.RequestPermissions", "Permission request"),
-                        Details = JoinNonEmpty(AppServerJsonValue.GetString(action, "reason"), SerializeValue(GetValue(action, "permissions")))
+                        Details = JoinNonEmpty(AppServerJsonValue.GetString(action, "reason"), SerializeValue(AppServerJsonValueReader.GetValue(action, "permissions")))
                     };
                 default:
                     return new AppServerGuardianApprovalReviewActionSummary
@@ -100,12 +100,6 @@ namespace MyCodex.Infrastructure.AppServer
             result.ApprovalRequest = AppServerGuardianDeniedActionMapper.BuildRequest(
                 result, AppServerJsonValue.GetDictionary(parameters, "action"));
             return result;
-        }
-
-        private static object GetValue(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null && source.TryGetValue(key, out value) ? value : null;
         }
 
         private static long? GetNullableLong(IDictionary<string, object> source, string key)

@@ -17,7 +17,7 @@ namespace MyCodex.Infrastructure.AppServer
             snapshot.CurrentStreakDays = GetNullableLong(summary, "currentStreakDays");
             snapshot.LongestStreakDays = GetNullableLong(summary, "longestStreakDays");
 
-            foreach (var item in GetArray(result, "dailyUsageBuckets"))
+            foreach (var item in AppServerJsonValueReader.GetArray(result, "dailyUsageBuckets"))
             {
                 var bucket = item as IDictionary<string, object>;
                 if (bucket == null)
@@ -89,37 +89,6 @@ namespace MyCodex.Infrastructure.AppServer
             return long.TryParse(Convert.ToString(value, CultureInfo.InvariantCulture), NumberStyles.Integer, CultureInfo.InvariantCulture, out result)
                 ? (long?)result
                 : null;
-        }
-
-        private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                yield break;
-            }
-
-            var array = value as object[];
-            if (array != null)
-            {
-                foreach (var item in array)
-                {
-                    yield return item;
-                }
-
-                yield break;
-            }
-
-            var enumerable = value as System.Collections.IEnumerable;
-            if (enumerable == null || value is string)
-            {
-                yield break;
-            }
-
-            foreach (var item in enumerable)
-            {
-                yield return item;
-            }
         }
     }
 }

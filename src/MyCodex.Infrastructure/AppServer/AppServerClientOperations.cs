@@ -76,9 +76,9 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new AppServerLoginResult
             {
-                LoginType = GetString(result, "type"),
-                LoginId = GetString(result, "loginId"),
-                AuthUrl = GetString(result, "authUrl")
+                LoginType = AppServerJsonValueReader.GetString(result, "type"),
+                LoginId = AppServerJsonValueReader.GetString(result, "loginId"),
+                AuthUrl = AppServerJsonValueReader.GetString(result, "authUrl")
             };
         }
 
@@ -93,10 +93,10 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new AppServerLoginResult
             {
-                LoginType = GetString(result, "type"),
-                LoginId = GetString(result, "loginId"),
-                VerificationUrl = GetString(result, "verificationUrl"),
-                UserCode = GetString(result, "userCode")
+                LoginType = AppServerJsonValueReader.GetString(result, "type"),
+                LoginId = AppServerJsonValueReader.GetString(result, "loginId"),
+                VerificationUrl = AppServerJsonValueReader.GetString(result, "verificationUrl"),
+                UserCode = AppServerJsonValueReader.GetString(result, "userCode")
             };
         }
 
@@ -116,9 +116,9 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new AppServerLoginResult
             {
-                LoginType = GetString(result, "type"),
-                LoginId = GetString(result, "loginId"),
-                AuthUrl = GetString(result, "authUrl")
+                LoginType = AppServerJsonValueReader.GetString(result, "type"),
+                LoginId = AppServerJsonValueReader.GetString(result, "loginId"),
+                AuthUrl = AppServerJsonValueReader.GetString(result, "authUrl")
             };
         }
 
@@ -137,7 +137,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new AppServerLoginCancelResult
             {
-                Status = GetString(result, "status")
+                Status = AppServerJsonValueReader.GetString(result, "status")
             };
         }
 
@@ -194,7 +194,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new AppServerRateLimitResetConsumeResult
             {
-                Outcome = GetString(result, "outcome")
+                Outcome = AppServerJsonValueReader.GetString(result, "outcome")
             };
         }
 
@@ -352,8 +352,8 @@ namespace MyCodex.Infrastructure.AppServer
             var result = await SendRequestAsync("mcpServer/oauth/login", parameters).ConfigureAwait(false);
             return new AppServerMcpServerOauthLoginResult
             {
-                LoginId = GetFirstNonEmptyString(result, "loginId", "name") ?? serverName,
-                AuthUrl = GetFirstNonEmptyString(result, "authorizationUrl", "authUrl")
+                LoginId = AppServerJsonValueReader.GetFirstNonEmptyString(result, "loginId", "name") ?? serverName,
+                AuthUrl = AppServerJsonValueReader.GetFirstNonEmptyString(result, "authorizationUrl", "authUrl")
             };
         }
 
@@ -484,7 +484,7 @@ namespace MyCodex.Infrastructure.AppServer
                 { "enabled", enabled }
             }).ConfigureAwait(false);
 
-            var effectiveEnabled = GetNullableBool(result, "effectiveEnabled");
+            var effectiveEnabled = AppServerJsonValueReader.GetNullableBool(result, "effectiveEnabled");
             return effectiveEnabled ?? enabled;
         }
 
@@ -838,7 +838,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerPluginInstallResult
             {
-                AuthPolicy = GetString(result, "authPolicy"),
+                AuthPolicy = AppServerJsonValueReader.GetString(result, "authPolicy"),
                 AppsNeedingAuth = AppServerPluginSkillMapper.BuildPluginApps(result, "appsNeedingAuth")
             };
         }
@@ -960,7 +960,7 @@ namespace MyCodex.Infrastructure.AppServer
                 }
 
                 var result = await SendRequestAsync("model/list", parameters, cancellationToken).ConfigureAwait(false);
-                foreach (var item in GetArray(result, "data"))
+                foreach (var item in AppServerJsonValueReader.GetArray(result, "data"))
                 {
                     var model = item as IDictionary<string, object>;
                     if (model == null)
@@ -975,7 +975,7 @@ namespace MyCodex.Infrastructure.AppServer
                     }
                 }
 
-                cursor = GetString(result, "nextCursor");
+                cursor = AppServerJsonValueReader.GetString(result, "nextCursor");
             }
             while (!string.IsNullOrWhiteSpace(cursor));
 
@@ -1204,40 +1204,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return parameters;
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetString(source, key);
-        }
-
-        private static string GetFirstNonEmptyString(IDictionary<string, object> source, params string[] keys)
-        {
-            if (keys == null)
-            {
-                return null;
-            }
-
-            foreach (var key in keys)
-            {
-                var value = GetString(source, key);
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    return value;
-                }
-            }
-
-            return null;
-        }
-
-        private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetArray(source, key);
-        }
-
-        private static bool? GetNullableBool(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetNullableBool(source, key);
         }
 
         private static void AddOptionalString(IDictionary<string, object> target, string key, string value)

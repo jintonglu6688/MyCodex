@@ -11,9 +11,9 @@ namespace MyCodex.Infrastructure.AppServer
     {
         internal static AppServerEventArgs BuildEvent(IDictionary<string, object> parameters)
         {
-            var threadId = GetString(parameters, "threadId");
-            var turnId = GetString(parameters, "turnId");
-            var itemId = GetString(parameters, "itemId");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
+            var turnId = AppServerJsonValueReader.GetString(parameters, "turnId");
+            var itemId = AppServerJsonValueReader.GetString(parameters, "itemId");
             var changedFiles = new List<string>();
             var detailLines = new List<string>();
             var diffBuilder = new StringBuilder();
@@ -26,7 +26,7 @@ namespace MyCodex.Infrastructure.AppServer
                     continue;
                 }
 
-                var path = AppServerTurnPayloadMapper.NormalizeChangedFilePath(GetFirstNonEmptyString(change, "path", "filePath", "file", "name"));
+                var path = AppServerTurnPayloadMapper.NormalizeChangedFilePath(AppServerJsonValueReader.GetFirstNonEmptyString(change, "path", "filePath", "file", "name"));
                 var movePath = GetMovePath(change);
                 var kind = GetPatchChangeKind(change);
                 AppServerTurnPayloadMapper.AddUniqueChangedFile(changedFiles, path);
@@ -38,7 +38,7 @@ namespace MyCodex.Infrastructure.AppServer
                     detailLines.Add(detailLine);
                 }
 
-                var diff = GetString(change, "diff");
+                var diff = AppServerJsonValueReader.GetString(change, "diff");
                 if (!string.IsNullOrWhiteSpace(diff))
                 {
                     if (diffBuilder.Length > 0)
@@ -141,7 +141,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static string GetPatchChangeKind(IDictionary<string, object> change)
         {
-            var kindValue = GetValue(change, "kind");
+            var kindValue = AppServerJsonValueReader.GetValue(change, "kind");
             var text = kindValue as string;
             if (!string.IsNullOrWhiteSpace(text))
             {
@@ -151,10 +151,10 @@ namespace MyCodex.Infrastructure.AppServer
             var kindObject = kindValue as IDictionary<string, object>;
             if (kindObject == null || kindObject.Count == 0)
             {
-                return GetFirstNonEmptyString(change, "changeType", "type");
+                return AppServerJsonValueReader.GetFirstNonEmptyString(change, "changeType", "type");
             }
 
-            var kindType = GetFirstNonEmptyString(kindObject, "type", "changeType");
+            var kindType = AppServerJsonValueReader.GetFirstNonEmptyString(kindObject, "type", "changeType");
             if (!string.IsNullOrWhiteSpace(kindType))
             {
                 return kindType;
@@ -173,61 +173,26 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static string GetMovePath(IDictionary<string, object> change)
         {
-            var directMovePath = AppServerTurnPayloadMapper.NormalizeChangedFilePath(GetFirstNonEmptyString(change, "move_path", "movePath"));
+            var directMovePath = AppServerTurnPayloadMapper.NormalizeChangedFilePath(AppServerJsonValueReader.GetFirstNonEmptyString(change, "move_path", "movePath"));
             if (!string.IsNullOrWhiteSpace(directMovePath))
             {
                 return directMovePath;
             }
 
-            var kindObject = GetValue(change, "kind") as IDictionary<string, object>;
+            var kindObject = AppServerJsonValueReader.GetValue(change, "kind") as IDictionary<string, object>;
             if (kindObject == null || kindObject.Count == 0)
             {
                 return null;
             }
 
-            var kindMovePath = AppServerTurnPayloadMapper.NormalizeChangedFilePath(GetFirstNonEmptyString(kindObject, "move_path", "movePath"));
+            var kindMovePath = AppServerTurnPayloadMapper.NormalizeChangedFilePath(AppServerJsonValueReader.GetFirstNonEmptyString(kindObject, "move_path", "movePath"));
             if (!string.IsNullOrWhiteSpace(kindMovePath))
             {
                 return kindMovePath;
             }
 
-            var update = GetDictionary(kindObject, "update");
-            return AppServerTurnPayloadMapper.NormalizeChangedFilePath(GetFirstNonEmptyString(update, "move_path", "movePath"));
-        }
-
-        private static object GetValue(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null && source.TryGetValue(key, out value) ? value : null;
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValue.GetDictionary(source, key);
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValue.GetString(source, key);
-        }
-
-        private static string GetFirstNonEmptyString(IDictionary<string, object> source, params string[] keys)
-        {
-            if (keys == null)
-            {
-                return null;
-            }
-
-            for (var i = 0; i < keys.Length; i++)
-            {
-                var value = GetString(source, keys[i]);
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    return value;
-                }
-            }
-
-            return null;
+            var update = AppServerJsonValueReader.GetDictionary(kindObject, "update");
+            return AppServerTurnPayloadMapper.NormalizeChangedFilePath(AppServerJsonValueReader.GetFirstNonEmptyString(update, "move_path", "movePath"));
         }
 
         private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)

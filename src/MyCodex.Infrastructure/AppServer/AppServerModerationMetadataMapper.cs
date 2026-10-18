@@ -13,7 +13,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         internal static AppServerModerationMetadataEvent BuildEvent(IDictionary<string, object> parameters)
         {
-            var metadata = GetValue(parameters, "metadata");
+            var metadata = AppServerJsonValueReader.GetValue(parameters, "metadata");
             var summary = BuildSummary(metadata);
             return new AppServerModerationMetadataEvent
             {
@@ -123,12 +123,6 @@ namespace MyCodex.Infrastructure.AppServer
                    key.IndexOf("apiKey", StringComparison.OrdinalIgnoreCase) >= 0 ||
                    key.IndexOf("api_key", StringComparison.OrdinalIgnoreCase) >= 0 ||
                    key.IndexOf("authorization", StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-
-        private static object GetValue(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null && source.TryGetValue(key, out value) ? value : null;
         }
     }
 }

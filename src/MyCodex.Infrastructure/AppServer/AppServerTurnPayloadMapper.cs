@@ -9,7 +9,7 @@ namespace MyCodex.Infrastructure.AppServer
         internal static IReadOnlyList<AppServerTurnPlanStep> BuildTurnPlanSteps(IDictionary<string, object> parameters)
         {
             var steps = new List<AppServerTurnPlanStep>();
-            foreach (var planObject in GetArray(parameters, "plan"))
+            foreach (var planObject in AppServerJsonValueReader.GetArray(parameters, "plan"))
             {
                 var plan = planObject as IDictionary<string, object>;
                 if (plan == null)
@@ -17,7 +17,7 @@ namespace MyCodex.Infrastructure.AppServer
                     continue;
                 }
 
-                var stepText = GetFirstNonEmptyString(plan, "step", "title", "description", "text", "content");
+                var stepText = AppServerJsonValueReader.GetFirstNonEmptyString(plan, "step", "title", "description", "text", "content");
                 if (string.IsNullOrWhiteSpace(stepText))
                 {
                     continue;
@@ -35,14 +35,14 @@ namespace MyCodex.Infrastructure.AppServer
 
         internal static string ExtractPlanDeltaText(IDictionary<string, object> parameters)
         {
-            var deltaText = GetFirstNonEmptyString(parameters, "delta", "text", "content");
+            var deltaText = AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "delta", "text", "content");
             if (!string.IsNullOrWhiteSpace(deltaText))
             {
                 return deltaText;
             }
 
             var item = AppServerJsonValue.GetDictionary(parameters, "item");
-            return GetFirstNonEmptyString(item, "delta", "text", "content");
+            return AppServerJsonValueReader.GetFirstNonEmptyString(item, "delta", "text", "content");
         }
 
         internal static string ExtractDiffText(IDictionary<string, object> parameters)
@@ -53,7 +53,7 @@ namespace MyCodex.Infrastructure.AppServer
                 var diff = rawDiff as IDictionary<string, object>;
                 if (diff != null)
                 {
-                    var nestedDiffText = GetFirstNonEmptyString(diff, "text", "diff", "unifiedDiff", "outputDiff");
+                    var nestedDiffText = AppServerJsonValueReader.GetFirstNonEmptyString(diff, "text", "diff", "unifiedDiff", "outputDiff");
                     if (!string.IsNullOrWhiteSpace(nestedDiffText))
                     {
                         return nestedDiffText;
@@ -69,14 +69,14 @@ namespace MyCodex.Infrastructure.AppServer
                 }
             }
 
-            return GetFirstNonEmptyString(parameters, "unifiedDiff", "outputDiff", "aggregatedDiff");
+            return AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "unifiedDiff", "outputDiff", "aggregatedDiff");
         }
 
         internal static List<string> ExtractChangedFiles(IDictionary<string, object> parameters, string diffText)
         {
             var files = new List<string>();
-            AddChangedFilesFromArray(files, GetArray(parameters, "changedFiles"));
-            AddChangedFilesFromArray(files, GetArray(parameters, "files"));
+            AddChangedFilesFromArray(files, AppServerJsonValueReader.GetArray(parameters, "changedFiles"));
+            AddChangedFilesFromArray(files, AppServerJsonValueReader.GetArray(parameters, "files"));
 
             if (files.Count == 0 && !string.IsNullOrWhiteSpace(diffText))
             {
@@ -101,7 +101,7 @@ namespace MyCodex.Infrastructure.AppServer
                     var dictionary = item as IDictionary<string, object>;
                     if (dictionary != null)
                     {
-                        text = GetFirstNonEmptyString(dictionary, "filePath", "path", "file", "name");
+                        text = AppServerJsonValueReader.GetFirstNonEmptyString(dictionary, "filePath", "path", "file", "name");
                     }
                 }
 
@@ -182,56 +182,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return normalized;
-        }
-
-        private static string GetFirstNonEmptyString(IDictionary<string, object> source, params string[] keys)
-        {
-            if (keys == null)
-            {
-                return null;
-            }
-
-            for (var i = 0; i < keys.Length; i++)
-            {
-                var value = AppServerJsonValue.GetString(source, keys[i]);
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    return value;
-                }
-            }
-
-            return null;
-        }
-
-        private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                yield break;
-            }
-
-            var array = value as object[];
-            if (array != null)
-            {
-                foreach (var item in array)
-                {
-                    yield return item;
-                }
-
-                yield break;
-            }
-
-            var enumerable = value as System.Collections.IEnumerable;
-            if (enumerable == null || value is string)
-            {
-                yield break;
-            }
-
-            foreach (var item in enumerable)
-            {
-                yield return item;
-            }
         }
     }
 }

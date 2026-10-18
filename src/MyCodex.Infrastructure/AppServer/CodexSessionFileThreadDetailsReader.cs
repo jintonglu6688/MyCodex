@@ -79,13 +79,13 @@ namespace MyCodex.Infrastructure.AppServer
                 }
 
                 var root = TryDeserialize(line);
-                if (string.Equals(GetString(root, "type"), "event_msg", StringComparison.Ordinal))
+                if (string.Equals(AppServerJsonValueReader.GetString(root, "type"), "event_msg", StringComparison.Ordinal))
                 {
-                    var payload = GetDictionary(root, "payload");
-                    var eventType = GetString(payload, "type");
+                    var payload = AppServerJsonValueReader.GetDictionary(root, "payload");
+                    var eventType = AppServerJsonValueReader.GetString(payload, "type");
                     if (eventType == "task_started" || eventType == "turn_started")
                     {
-                        var turnId = GetString(payload, "turn_id");
+                        var turnId = AppServerJsonValueReader.GetString(payload, "turn_id");
                         if (!explicitTurn || !string.Equals(activeTurnId, turnId, StringComparison.Ordinal))
                         {
                             turnIndex++;
@@ -154,18 +154,18 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static SessionFileMessage TryReadMessage(IDictionary<string, object> root)
         {
-            if (!string.Equals(GetString(root, "type"), "response_item", StringComparison.Ordinal))
+            if (!string.Equals(AppServerJsonValueReader.GetString(root, "type"), "response_item", StringComparison.Ordinal))
             {
                 return null;
             }
 
-            var payload = GetDictionary(root, "payload");
-            if (!string.Equals(GetString(payload, "type"), "message", StringComparison.Ordinal))
+            var payload = AppServerJsonValueReader.GetDictionary(root, "payload");
+            if (!string.Equals(AppServerJsonValueReader.GetString(payload, "type"), "message", StringComparison.Ordinal))
             {
                 return null;
             }
 
-            var role = (GetString(payload, "role") ?? string.Empty).Trim().ToLowerInvariant();
+            var role = (AppServerJsonValueReader.GetString(payload, "role") ?? string.Empty).Trim().ToLowerInvariant();
             string sender;
             if (role == "user")
             {
@@ -204,7 +204,7 @@ namespace MyCodex.Infrastructure.AppServer
                     continue;
                 }
 
-                var type = GetString(item, "type");
+                var type = AppServerJsonValueReader.GetString(item, "type");
                 if (!string.Equals(type, "input_text", StringComparison.Ordinal) &&
                     !string.Equals(type, "output_text", StringComparison.Ordinal) &&
                     !string.Equals(type, "text", StringComparison.Ordinal))
@@ -212,7 +212,7 @@ namespace MyCodex.Infrastructure.AppServer
                     continue;
                 }
 
-                var text = GetString(item, "text");
+                var text = AppServerJsonValueReader.GetString(item, "text");
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     parts.Add(text.Trim());
@@ -222,15 +222,6 @@ namespace MyCodex.Infrastructure.AppServer
             return parts.Count == 0
                 ? null
                 : string.Join(Environment.NewLine, parts.ToArray());
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            object value;
-            var dictionary = source != null && source.TryGetValue(key, out value)
-                ? value as IDictionary<string, object>
-                : null;
-            return dictionary ?? new Dictionary<string, object>(StringComparer.Ordinal);
         }
 
         private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
@@ -251,14 +242,6 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 yield return item;
             }
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null && source.TryGetValue(key, out value) && value != null
-                ? Convert.ToString(value, System.Globalization.CultureInfo.CurrentCulture)
-                : null;
         }
 
         private sealed class SessionFileMessage

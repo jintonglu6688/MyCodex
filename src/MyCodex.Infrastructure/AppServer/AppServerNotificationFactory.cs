@@ -200,7 +200,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         internal static AppServerEventArgs CreateMcpServerStartupStatusUpdated(IDictionary<string, object> parameters)
         {
-            var serverName = GetFirstNonEmptyString(parameters, "serverName", "name", "id");
+            var serverName = AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "serverName", "name", "id");
             var status = ExtractStatusText(parameters);
             var message = ExtractRuntimeMessage(parameters);
             var failureReason = ExtractMcpStartupFailureReason(parameters);
@@ -239,8 +239,8 @@ namespace MyCodex.Infrastructure.AppServer
                             displayName,
                             statusText,
                             safeMessage),
-                    threadId: GetString(parameters, "threadId"),
-                    turnId: GetString(parameters, "turnId"),
+                    threadId: AppServerJsonValueReader.GetString(parameters, "threadId"),
+                    turnId: AppServerJsonValueReader.GetString(parameters, "turnId"),
                     details: "mcpServer/startupStatus/updated",
                     reason: failureReason,
                     mcpServerName: serverName,
@@ -255,8 +255,8 @@ namespace MyCodex.Infrastructure.AppServer
             return new AppServerEventArgs(
                 "mcp_startup_status_updated",
                 content,
-                threadId: GetString(parameters, "threadId"),
-                turnId: GetString(parameters, "turnId"),
+                threadId: AppServerJsonValueReader.GetString(parameters, "threadId"),
+                turnId: AppServerJsonValueReader.GetString(parameters, "turnId"),
                 details: "mcpServer/startupStatus/updated",
                 mcpServerName: serverName,
                 itemStatus: status);
@@ -310,8 +310,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         internal static AppServerEventArgs CreateDeprecationNotice(IDictionary<string, object> parameters)
         {
-            var summary = GetString(parameters, "summary");
-            var details = GetString(parameters, "details");
+            var summary = AppServerJsonValueReader.GetString(parameters, "summary");
+            var details = AppServerJsonValueReader.GetString(parameters, "details");
             var message = string.IsNullOrWhiteSpace(summary) ? ExtractRuntimeMessage(parameters) : summary;
             if (!string.IsNullOrWhiteSpace(summary) && !string.IsNullOrWhiteSpace(details) &&
                 !string.Equals(summary, details, StringComparison.Ordinal))
@@ -418,8 +418,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         internal static AppServerEventArgs CreateModelRerouted(IDictionary<string, object> parameters)
         {
-            var sourceModel = GetFirstNonEmptyString(parameters, "fromModel", "from", "requestedModel", "model");
-            var targetModel = GetFirstNonEmptyString(parameters, "toModel", "to", "actualModel", "routedModel");
+            var sourceModel = AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "fromModel", "from", "requestedModel", "model");
+            var targetModel = AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "toModel", "to", "actualModel", "routedModel");
             var reason = ExtractRuntimeMessage(parameters);
             string content;
 
@@ -449,8 +449,8 @@ namespace MyCodex.Infrastructure.AppServer
         internal static AppServerEventArgs CreateModelVerification(IDictionary<string, object> parameters)
         {
             var message = ExtractRuntimeMessage(parameters);
-            var status = GetFirstNonEmptyString(parameters, "status", "state", "result");
-            var model = GetFirstNonEmptyString(parameters, "model", "modelId", "provider");
+            var status = AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "status", "state", "result");
+            var model = AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "model", "modelId", "provider");
             var detail = !string.IsNullOrWhiteSpace(message)
                 ? message
                 : (!string.IsNullOrWhiteSpace(model) && !string.IsNullOrWhiteSpace(status)
@@ -521,8 +521,8 @@ namespace MyCodex.Infrastructure.AppServer
             return new AppServerEventArgs(
                 "protocol_warning",
                 content,
-                threadId: GetString(parameters, "threadId"),
-                turnId: GetString(parameters, "turnId"),
+                threadId: AppServerJsonValueReader.GetString(parameters, "threadId"),
+                turnId: AppServerJsonValueReader.GetString(parameters, "turnId"),
                 details: details);
         }
 
@@ -534,8 +534,8 @@ namespace MyCodex.Infrastructure.AppServer
             return new AppServerEventArgs(
                 "protocol_notice",
                 content,
-                threadId: GetString(parameters, "threadId"),
-                turnId: GetString(parameters, "turnId"),
+                threadId: AppServerJsonValueReader.GetString(parameters, "threadId"),
+                turnId: AppServerJsonValueReader.GetString(parameters, "turnId"),
                 details: details);
         }
 
@@ -602,7 +602,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static string ExtractRuntimeMessage(IDictionary<string, object> parameters)
         {
-            var message = GetFirstNonEmptyString(
+            var message = AppServerJsonValueReader.GetFirstNonEmptyString(
                 parameters,
                 "message",
                 "text",
@@ -617,48 +617,48 @@ namespace MyCodex.Infrastructure.AppServer
                 return message;
             }
 
-            var error = GetDictionary(parameters, "error");
-            message = GetFirstNonEmptyString(error, "message", "text", "description", "reason");
+            var error = AppServerJsonValueReader.GetDictionary(parameters, "error");
+            message = AppServerJsonValueReader.GetFirstNonEmptyString(error, "message", "text", "description", "reason");
             if (!string.IsNullOrWhiteSpace(message))
             {
                 return message;
             }
 
-            var warning = GetDictionary(parameters, "warning");
-            message = GetFirstNonEmptyString(warning, "message", "text", "description", "reason");
+            var warning = AppServerJsonValueReader.GetDictionary(parameters, "warning");
+            message = AppServerJsonValueReader.GetFirstNonEmptyString(warning, "message", "text", "description", "reason");
             if (!string.IsNullOrWhiteSpace(message))
             {
                 return message;
             }
 
-            var notice = GetDictionary(parameters, "notice");
-            message = GetFirstNonEmptyString(notice, "message", "text", "description", "reason");
+            var notice = AppServerJsonValueReader.GetDictionary(parameters, "notice");
+            message = AppServerJsonValueReader.GetFirstNonEmptyString(notice, "message", "text", "description", "reason");
             if (!string.IsNullOrWhiteSpace(message))
             {
                 return message;
             }
 
-            var status = GetDictionary(parameters, "status");
-            return GetFirstNonEmptyString(status, "message", "text", "description", "reason", "error");
+            var status = AppServerJsonValueReader.GetDictionary(parameters, "status");
+            return AppServerJsonValueReader.GetFirstNonEmptyString(status, "message", "text", "description", "reason", "error");
         }
 
         private static string ExtractStatusText(IDictionary<string, object> parameters)
         {
-            var status = GetDictionary(parameters, "status");
-            var statusText = GetFirstNonEmptyString(status, "type", "status", "state", "phase");
+            var status = AppServerJsonValueReader.GetDictionary(parameters, "status");
+            var statusText = AppServerJsonValueReader.GetFirstNonEmptyString(status, "type", "status", "state", "phase");
             if (!string.IsNullOrWhiteSpace(statusText))
             {
                 return statusText;
             }
 
-            return GetFirstNonEmptyString(parameters, "status", "state", "phase", "startupStatus");
+            return AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "status", "state", "phase", "startupStatus");
         }
 
         private static string ExtractMcpStartupFailureReason(IDictionary<string, object> parameters)
         {
-            var reason = GetFirstNonEmptyString(parameters, "failureReason");
+            var reason = AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "failureReason");
             return string.IsNullOrWhiteSpace(reason)
-                ? GetFirstNonEmptyString(GetDictionary(parameters, "status"), "failureReason", "reason")
+                ? AppServerJsonValueReader.GetFirstNonEmptyString(AppServerJsonValueReader.GetDictionary(parameters, "status"), "failureReason", "reason")
                 : reason;
         }
 
@@ -699,35 +699,6 @@ namespace MyCodex.Infrastructure.AppServer
                    text.IndexOf("invalid", StringComparison.OrdinalIgnoreCase) >= 0 ||
                    text.IndexOf("denied", StringComparison.OrdinalIgnoreCase) >= 0 ||
                    text.IndexOf("blocked", StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValue.GetDictionary(source, key);
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValue.GetString(source, key);
-        }
-
-        private static string GetFirstNonEmptyString(IDictionary<string, object> source, params string[] keys)
-        {
-            if (keys == null)
-            {
-                return null;
-            }
-
-            for (var i = 0; i < keys.Length; i++)
-            {
-                var value = GetString(source, keys[i]);
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    return value;
-                }
-            }
-
-            return null;
         }
 
         private static string L(string key, string fallback)

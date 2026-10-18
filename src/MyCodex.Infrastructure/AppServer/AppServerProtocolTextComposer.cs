@@ -14,7 +14,7 @@ namespace MyCodex.Infrastructure.AppServer
             changedFiles = new List<string>();
             var lines = new List<string>();
 
-            foreach (var changeObject in GetArray(item, "changes"))
+            foreach (var changeObject in AppServerJsonValueReader.GetArray(item, "changes"))
             {
                 var change = changeObject as IDictionary<string, object>;
                 if (change == null)
@@ -22,7 +22,7 @@ namespace MyCodex.Infrastructure.AppServer
                     continue;
                 }
 
-                var path = AppServerTurnPayloadMapper.NormalizeChangedFilePath(GetFirstNonEmptyString(change, "path", "filePath", "file", "name"));
+                var path = AppServerTurnPayloadMapper.NormalizeChangedFilePath(AppServerJsonValueReader.GetFirstNonEmptyString(change, "path", "filePath", "file", "name"));
                 var movePath = GetMovePath(change);
                 var kind = GetPatchChangeKind(change);
                 AppServerTurnPayloadMapper.AddUniqueChangedFile(changedFiles, path);
@@ -57,7 +57,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (changedFiles.Count == 0)
             {
-                AppServerTurnPayloadMapper.AddChangedFilesFromArray(changedFiles, GetArray(item, "changedFiles"));
+                AppServerTurnPayloadMapper.AddChangedFilesFromArray(changedFiles, AppServerJsonValueReader.GetArray(item, "changedFiles"));
             }
 
             if (changedFiles.Count == 0)
@@ -179,7 +179,7 @@ namespace MyCodex.Infrastructure.AppServer
             var kindObject = kindValue as IDictionary<string, object>;
             if (kindObject == null || kindObject.Count == 0)
             {
-                return GetFirstNonEmptyString(change, "changeType", "type");
+                return AppServerJsonValueReader.GetFirstNonEmptyString(change, "changeType", "type");
             }
 
             foreach (var pair in kindObject)
@@ -195,7 +195,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         internal static string GetMovePath(IDictionary<string, object> change)
         {
-            var directMovePath = AppServerTurnPayloadMapper.NormalizeChangedFilePath(GetFirstNonEmptyString(change, "move_path", "movePath"));
+            var directMovePath = AppServerTurnPayloadMapper.NormalizeChangedFilePath(AppServerJsonValueReader.GetFirstNonEmptyString(change, "move_path", "movePath"));
             if (!string.IsNullOrWhiteSpace(directMovePath))
             {
                 return directMovePath;
@@ -207,8 +207,8 @@ namespace MyCodex.Infrastructure.AppServer
                 return null;
             }
 
-            var update = GetDictionary(kindObject, "update");
-            return AppServerTurnPayloadMapper.NormalizeChangedFilePath(GetFirstNonEmptyString(update, "move_path", "movePath"));
+            var update = AppServerJsonValueReader.GetDictionary(kindObject, "update");
+            return AppServerTurnPayloadMapper.NormalizeChangedFilePath(AppServerJsonValueReader.GetFirstNonEmptyString(update, "move_path", "movePath"));
         }
 
         internal static string StripAnsiEscapeSequences(string text)
@@ -299,21 +299,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return BuildRecentTextPreview(text, 3, 220);
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetDictionary(source, key);
-        }
-
-        private static string GetFirstNonEmptyString(IDictionary<string, object> source, params string[] keys)
-        {
-            return AppServerJsonValueReader.GetFirstNonEmptyString(source, keys);
-        }
-
-        private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetArray(source, key);
         }
 
         private static string L(string key, string fallback)

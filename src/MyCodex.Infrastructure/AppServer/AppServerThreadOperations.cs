@@ -86,13 +86,13 @@ namespace MyCodex.Infrastructure.AppServer
                 }
 
                 var result = await SendRequestAsync("thread/loaded/list", parameters, cancellationToken).ConfigureAwait(false);
-                foreach (var item in GetArray(result, "data"))
+                foreach (var item in AppServerJsonValueReader.GetArray(result, "data"))
                 {
                     var threadId = item as string;
                     if (string.IsNullOrWhiteSpace(threadId))
                     {
                         var itemObject = item as IDictionary<string, object>;
-                        threadId = GetString(itemObject, "threadId") ?? GetString(itemObject, "id");
+                        threadId = AppServerJsonValueReader.GetString(itemObject, "threadId") ?? AppServerJsonValueReader.GetString(itemObject, "id");
                     }
 
                     if (!string.IsNullOrWhiteSpace(threadId))
@@ -101,7 +101,7 @@ namespace MyCodex.Infrastructure.AppServer
                     }
                 }
 
-                cursor = GetString(result, "nextCursor");
+                cursor = AppServerJsonValueReader.GetString(result, "nextCursor");
             }
             while (!string.IsNullOrWhiteSpace(cursor) && (!limit.HasValue || loadedThreadIds.Count < limit.Value));
 
@@ -136,7 +136,7 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             var result = await SendRequestAsync("getConversationSummary", parameters, cancellationToken).ConfigureAwait(false);
-            return AppServerConversationSummaryMapper.BuildSummary(GetDictionary(result, "summary"), _mapServerPathToClient);
+            return AppServerConversationSummaryMapper.BuildSummary(AppServerJsonValueReader.GetDictionary(result, "summary"), _mapServerPathToClient);
         }
 
         public async Task<AppServerThreadDetails> ReadThreadAsync(string threadId, CancellationToken cancellationToken)
@@ -168,13 +168,13 @@ namespace MyCodex.Infrastructure.AppServer
                     var parameters = BuildThreadListParameters(archived, null, cursor);
                     var result = await SendRequestAsync("thread/list", parameters).ConfigureAwait(false);
                     if (result == null || !result.ContainsKey("data") || result["data"] == null) return false;
-                    foreach (var entry in GetArray(result, "data"))
+                    foreach (var entry in AppServerJsonValueReader.GetArray(result, "data"))
                     {
                         var thread = entry as IDictionary<string, object>;
-                        if (thread == null || string.IsNullOrWhiteSpace(GetString(thread, "id"))) return false;
-                        if (string.Equals(GetString(thread, "id"), threadId, StringComparison.Ordinal)) return false;
+                        if (thread == null || string.IsNullOrWhiteSpace(AppServerJsonValueReader.GetString(thread, "id"))) return false;
+                        if (string.Equals(AppServerJsonValueReader.GetString(thread, "id"), threadId, StringComparison.Ordinal)) return false;
                     }
-                    cursor = GetString(result, "nextCursor");
+                    cursor = AppServerJsonValueReader.GetString(result, "nextCursor");
                     if (!string.IsNullOrWhiteSpace(cursor) && !cursors.Add(cursor)) return false;
                 }
                 while (!string.IsNullOrWhiteSpace(cursor));
@@ -288,7 +288,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             var result = await SendRequestAsync("thread/fork", parameters).ConfigureAwait(false);
 
-            var thread = GetDictionary(result, "thread");
+            var thread = AppServerJsonValueReader.GetDictionary(result, "thread");
             var summary = AppServerThreadMapper.BuildThreadSummary(thread, _mapServerPathToClient);
             if (summary == null || string.IsNullOrWhiteSpace(summary.ThreadId))
             {
@@ -557,7 +557,7 @@ namespace MyCodex.Infrastructure.AppServer
                     cursor);
 
                 var result = await SendRequestAsync("thread/list", parameters, cancellationToken).ConfigureAwait(false);
-                foreach (var item in GetArray(result, "data"))
+                foreach (var item in AppServerJsonValueReader.GetArray(result, "data"))
                 {
                     var thread = item as IDictionary<string, object>;
                     if (thread == null)
@@ -574,7 +574,7 @@ namespace MyCodex.Infrastructure.AppServer
                     LocalSessionCatalog.MergeThreadSummary(threads, mergedThreadMap, summary);
                 }
 
-                cursor = GetString(result, "nextCursor");
+                cursor = AppServerJsonValueReader.GetString(result, "nextCursor");
             }
             while (!string.IsNullOrWhiteSpace(cursor));
 
@@ -763,21 +763,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             target[key] = value;
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetDictionary(source, key);
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetString(source, key);
-        }
-
-        private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetArray(source, key);
         }
 
         private static string AbbreviateForLog(string text, int maxLength)

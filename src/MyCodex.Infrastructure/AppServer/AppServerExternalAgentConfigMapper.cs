@@ -56,7 +56,7 @@ namespace MyCodex.Infrastructure.AppServer
                 return true;
             }
 
-            var rawItemType = GetString(item.RawItem, "itemType");
+            var rawItemType = AppServerJsonValueReader.GetString(item.RawItem, "itemType");
             if (string.IsNullOrWhiteSpace(rawItemType))
             {
                 rawItemType = item.RawItemType;
@@ -67,13 +67,13 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static ExternalAgentConfigMigrationItem BuildMigrationItem(IDictionary<string, object> item)
         {
-            var rawType = GetString(item, "itemType");
+            var rawType = AppServerJsonValueReader.GetString(item, "itemType");
             return new ExternalAgentConfigMigrationItem
             {
                 ItemType = MapItemType(rawType),
                 RawItemType = rawType,
-                Description = GetString(item, "description"),
-                Cwd = GetString(item, "cwd"),
+                Description = AppServerJsonValueReader.GetString(item, "description"),
+                Cwd = AppServerJsonValueReader.GetString(item, "cwd"),
                 Details = BuildDetails(GetDictionary(item, "details")),
                 RawItem = new Dictionary<string, object>(item, StringComparer.Ordinal)
             };
@@ -134,7 +134,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new ExternalAgentConfigPluginMigration
             {
-                MarketplaceName = GetString(source, "marketplaceName"),
+                MarketplaceName = AppServerJsonValueReader.GetString(source, "marketplaceName"),
                 PluginNames = GetStringList(source, "pluginNames")
             };
         }
@@ -148,9 +148,9 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new ExternalAgentConfigSessionMigration
             {
-                Path = GetString(source, "path"),
-                Cwd = GetString(source, "cwd"),
-                Title = GetString(source, "title")
+                Path = AppServerJsonValueReader.GetString(source, "path"),
+                Cwd = AppServerJsonValueReader.GetString(source, "cwd"),
+                Title = AppServerJsonValueReader.GetString(source, "title")
             };
         }
 
@@ -161,7 +161,7 @@ namespace MyCodex.Infrastructure.AppServer
                 return null;
             }
 
-            var name = GetString(source, "name");
+            var name = AppServerJsonValueReader.GetString(source, "name");
             return string.IsNullOrWhiteSpace(name)
                 ? null
                 : new ExternalAgentConfigNamedMigration { Name = name.Trim() };
@@ -256,14 +256,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return result;
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null && source.TryGetValue(key, out value) && value != null
-                ? Convert.ToString(value)
-                : null;
         }
     }
 }

@@ -19,7 +19,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerFileSystemReadResult
             {
-                DataBase64 = GetString(result, "dataBase64") ?? string.Empty
+                DataBase64 = AppServerJsonValueReader.GetString(result, "dataBase64") ?? string.Empty
             };
         }
 
@@ -39,7 +39,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerFileSystemWatchResult
             {
-                Path = GetString(result, "path")
+                Path = AppServerJsonValueReader.GetString(result, "path")
             };
         }
 
@@ -47,7 +47,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerFileSystemChangedEvent
             {
-                WatchId = GetString(parameters, "watchId"),
+                WatchId = AppServerJsonValueReader.GetString(parameters, "watchId"),
                 ChangedPaths = GetArray(parameters, "changedPaths")
                     .Select(item => item == null ? null : Convert.ToString(item))
                     .Where(item => !string.IsNullOrWhiteSpace(item))
@@ -64,7 +64,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new AppServerFileSystemEntry
             {
-                FileName = GetString(source, "fileName"),
+                FileName = AppServerJsonValueReader.GetString(source, "fileName"),
                 IsDirectory = GetBool(source, "isDirectory"),
                 IsFile = GetBool(source, "isFile")
             };
@@ -80,14 +80,6 @@ namespace MyCodex.Infrastructure.AppServer
 
             var array = value as IEnumerable<object>;
             return array ?? Enumerable.Empty<object>();
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null && source.TryGetValue(key, out value) && value != null
-                ? Convert.ToString(value)
-                : null;
         }
 
         private static bool GetBool(IDictionary<string, object> source, string key)

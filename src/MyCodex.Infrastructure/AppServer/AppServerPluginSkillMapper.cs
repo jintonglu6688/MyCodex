@@ -13,7 +13,7 @@ namespace MyCodex.Infrastructure.AppServer
             Func<string, string, string, string> resolveCurrentPluginSkillPath)
         {
             var snapshots = new List<AppServerSkillsSnapshot>();
-            foreach (var item in GetArray(result, "data"))
+            foreach (var item in AppServerJsonValueReader.GetArray(result, "data"))
             {
                 var entry = item as IDictionary<string, object>;
                 if (entry == null)
@@ -23,7 +23,7 @@ namespace MyCodex.Infrastructure.AppServer
 
                 snapshots.Add(new AppServerSkillsSnapshot
                 {
-                    WorkspacePath = mapServerPathToClient(GetString(entry, "cwd")),
+                    WorkspacePath = mapServerPathToClient(AppServerJsonValueReader.GetString(entry, "cwd")),
                     Skills = BuildSkillInfos(entry, mapServerPathToClient, resolveCurrentPluginSkillPath),
                     Errors = BuildSkillErrors(entry, mapServerPathToClient)
                 });
@@ -37,7 +37,7 @@ namespace MyCodex.Infrastructure.AppServer
         internal static List<AppServerPluginSummary> BuildPluginSummaries(IDictionary<string, object> result)
         {
             var plugins = new List<AppServerPluginSummary>();
-            foreach (var item in GetArray(result, "marketplaces"))
+            foreach (var item in AppServerJsonValueReader.GetArray(result, "marketplaces"))
             {
                 var marketplace = item as IDictionary<string, object>;
                 if (marketplace == null)
@@ -45,11 +45,11 @@ namespace MyCodex.Infrastructure.AppServer
                     continue;
                 }
 
-                var marketplaceInterface = GetDictionary(marketplace, "interface");
-                var marketplaceId = GetString(marketplace, "name");
-                var marketplaceName = GetString(marketplaceInterface, "displayName") ?? marketplaceId;
-                var marketplacePath = GetString(marketplace, "path");
-                foreach (var pluginItem in GetArray(marketplace, "plugins"))
+                var marketplaceInterface = AppServerJsonValueReader.GetDictionary(marketplace, "interface");
+                var marketplaceId = AppServerJsonValueReader.GetString(marketplace, "name");
+                var marketplaceName = AppServerJsonValueReader.GetString(marketplaceInterface, "displayName") ?? marketplaceId;
+                var marketplacePath = AppServerJsonValueReader.GetString(marketplace, "path");
+                foreach (var pluginItem in AppServerJsonValueReader.GetArray(marketplace, "plugins"))
                 {
                     var plugin = pluginItem as IDictionary<string, object>;
                     var summary = BuildPluginSummary(plugin, marketplaceName, marketplaceId, marketplacePath);
@@ -81,7 +81,7 @@ namespace MyCodex.Infrastructure.AppServer
             IDictionary<string, object> result)
         {
             var errors = new List<AppServerMarketplaceLoadError>();
-            foreach (var item in GetArray(result, "marketplaceLoadErrors"))
+            foreach (var item in AppServerJsonValueReader.GetArray(result, "marketplaceLoadErrors"))
             {
                 var error = item as IDictionary<string, object>;
                 if (error == null)
@@ -91,8 +91,8 @@ namespace MyCodex.Infrastructure.AppServer
 
                 errors.Add(new AppServerMarketplaceLoadError
                 {
-                    MarketplaceName = GetString(error, "marketplacePath"),
-                    Message = GetString(error, "message")
+                    MarketplaceName = AppServerJsonValueReader.GetString(error, "marketplacePath"),
+                    Message = AppServerJsonValueReader.GetString(error, "message")
                 });
             }
 
@@ -104,11 +104,11 @@ namespace MyCodex.Infrastructure.AppServer
             Func<string, string> mapServerPathToClient,
             Func<string, string, string, string> resolveCurrentPluginSkillPath)
         {
-            var plugin = GetDictionary(result, "plugin");
-            var marketplaceId = GetString(plugin, "marketplaceName");
-            var marketplaceName = GetString(plugin, "marketplaceDisplayName") ?? marketplaceId;
-            var marketplacePath = GetString(plugin, "marketplacePath");
-            var summary = BuildPluginSummary(GetDictionary(plugin, "summary"), marketplaceName, marketplaceId, marketplacePath) ??
+            var plugin = AppServerJsonValueReader.GetDictionary(result, "plugin");
+            var marketplaceId = AppServerJsonValueReader.GetString(plugin, "marketplaceName");
+            var marketplaceName = AppServerJsonValueReader.GetString(plugin, "marketplaceDisplayName") ?? marketplaceId;
+            var marketplacePath = AppServerJsonValueReader.GetString(plugin, "marketplacePath");
+            var summary = BuildPluginSummary(AppServerJsonValueReader.GetDictionary(plugin, "summary"), marketplaceName, marketplaceId, marketplacePath) ??
                           new AppServerPluginSummary
                           {
                               MarketplaceName = marketplaceName,
@@ -121,7 +121,7 @@ namespace MyCodex.Infrastructure.AppServer
                 MarketplaceName = marketplaceName,
                 MarketplacePath = marketplacePath,
                 Summary = summary,
-                Description = GetString(plugin, "description"),
+                Description = AppServerJsonValueReader.GetString(plugin, "description"),
                 Skills = BuildPluginSkillInfos(plugin, mapServerPathToClient, resolveCurrentPluginSkillPath),
                 Apps = BuildPluginApps(plugin, "apps"),
                 McpServers = BuildStringList(plugin, "mcpServers")
@@ -131,7 +131,7 @@ namespace MyCodex.Infrastructure.AppServer
         internal static List<AppServerPluginAppInfo> BuildPluginApps(IDictionary<string, object> source, string key)
         {
             var result = new List<AppServerPluginAppInfo>();
-            foreach (var item in GetArray(source, key))
+            foreach (var item in AppServerJsonValueReader.GetArray(source, key))
             {
                 var app = item as IDictionary<string, object>;
                 if (app == null)
@@ -141,11 +141,11 @@ namespace MyCodex.Infrastructure.AppServer
 
                 result.Add(new AppServerPluginAppInfo
                 {
-                    Id = GetString(app, "id"),
-                    Name = GetString(app, "name"),
-                    Description = GetString(app, "description"),
-                    InstallUrl = GetString(app, "installUrl"),
-                    NeedsAuth = GetNullableBool(app, "needsAuth") ??
+                    Id = AppServerJsonValueReader.GetString(app, "id"),
+                    Name = AppServerJsonValueReader.GetString(app, "name"),
+                    Description = AppServerJsonValueReader.GetString(app, "description"),
+                    InstallUrl = AppServerJsonValueReader.GetString(app, "installUrl"),
+                    NeedsAuth = AppServerJsonValueReader.GetNullableBool(app, "needsAuth") ??
                                 string.Equals(key, "appsNeedingAuth", StringComparison.Ordinal)
                 });
             }
@@ -167,39 +167,39 @@ namespace MyCodex.Infrastructure.AppServer
                 return null;
             }
 
-            var pluginInterface = GetDictionary(plugin, "interface");
-            var source = GetDictionary(plugin, "source");
-            var name = GetString(plugin, "name");
-            var displayName = GetString(pluginInterface, "displayName");
+            var pluginInterface = AppServerJsonValueReader.GetDictionary(plugin, "interface");
+            var source = AppServerJsonValueReader.GetDictionary(plugin, "source");
+            var name = AppServerJsonValueReader.GetString(plugin, "name");
+            var displayName = AppServerJsonValueReader.GetString(pluginInterface, "displayName");
 
             return new AppServerPluginSummary
             {
                 MarketplaceName = marketplaceName,
                 MarketplaceId = marketplaceId,
                 MarketplacePath = marketplacePath,
-                PluginId = GetString(plugin, "id"),
-                RemotePluginId = GetString(plugin, "remotePluginId"),
+                PluginId = AppServerJsonValueReader.GetString(plugin, "id"),
+                RemotePluginId = AppServerJsonValueReader.GetString(plugin, "remotePluginId"),
                 Name = name,
                 DisplayName = string.IsNullOrWhiteSpace(displayName) ? name : displayName,
-                ShortDescription = GetString(pluginInterface, "shortDescription") ?? GetString(plugin, "shortDescription"),
-                LongDescription = GetString(pluginInterface, "longDescription"),
-                DeveloperName = GetString(pluginInterface, "developerName"),
-                Category = GetString(pluginInterface, "category"),
-                SourceType = GetString(source, "type"),
-                SourcePath = GetString(source, "path"),
-                Installed = GetNullableBool(plugin, "installed") ?? false,
-                Enabled = GetNullableBool(plugin, "enabled") ?? false,
-                Version = GetString(plugin, "version"),
-                LocalVersion = GetString(plugin, "localVersion"),
-                InstallPolicy = GetString(plugin, "installPolicy"),
-                InstallPolicySource = GetString(plugin, "installPolicySource"),
-                AuthPolicy = GetString(plugin, "authPolicy"),
-                WebsiteUrl = GetString(pluginInterface, "websiteUrl"),
-                PrivacyPolicyUrl = GetString(pluginInterface, "privacyPolicyUrl"),
-                TermsOfServiceUrl = GetString(pluginInterface, "termsOfServiceUrl"),
-                ComposerIconPath = GetString(pluginInterface, "composerIcon"),
-                LogoPath = GetString(pluginInterface, "logo"),
-                BrandColor = GetString(pluginInterface, "brandColor"),
+                ShortDescription = AppServerJsonValueReader.GetString(pluginInterface, "shortDescription") ?? AppServerJsonValueReader.GetString(plugin, "shortDescription"),
+                LongDescription = AppServerJsonValueReader.GetString(pluginInterface, "longDescription"),
+                DeveloperName = AppServerJsonValueReader.GetString(pluginInterface, "developerName"),
+                Category = AppServerJsonValueReader.GetString(pluginInterface, "category"),
+                SourceType = AppServerJsonValueReader.GetString(source, "type"),
+                SourcePath = AppServerJsonValueReader.GetString(source, "path"),
+                Installed = AppServerJsonValueReader.GetNullableBool(plugin, "installed") ?? false,
+                Enabled = AppServerJsonValueReader.GetNullableBool(plugin, "enabled") ?? false,
+                Version = AppServerJsonValueReader.GetString(plugin, "version"),
+                LocalVersion = AppServerJsonValueReader.GetString(plugin, "localVersion"),
+                InstallPolicy = AppServerJsonValueReader.GetString(plugin, "installPolicy"),
+                InstallPolicySource = AppServerJsonValueReader.GetString(plugin, "installPolicySource"),
+                AuthPolicy = AppServerJsonValueReader.GetString(plugin, "authPolicy"),
+                WebsiteUrl = AppServerJsonValueReader.GetString(pluginInterface, "websiteUrl"),
+                PrivacyPolicyUrl = AppServerJsonValueReader.GetString(pluginInterface, "privacyPolicyUrl"),
+                TermsOfServiceUrl = AppServerJsonValueReader.GetString(pluginInterface, "termsOfServiceUrl"),
+                ComposerIconPath = AppServerJsonValueReader.GetString(pluginInterface, "composerIcon"),
+                LogoPath = AppServerJsonValueReader.GetString(pluginInterface, "logo"),
+                BrandColor = AppServerJsonValueReader.GetString(pluginInterface, "brandColor"),
                 Capabilities = BuildStringList(pluginInterface, "capabilities"),
                 DefaultPrompts = BuildStringList(pluginInterface, "defaultPrompt")
             };
@@ -211,7 +211,7 @@ namespace MyCodex.Infrastructure.AppServer
             Func<string, string, string, string> resolveCurrentPluginSkillPath)
         {
             var result = new List<AppServerSkillInfo>();
-            foreach (var item in GetArray(entry, "skills"))
+            foreach (var item in AppServerJsonValueReader.GetArray(entry, "skills"))
             {
                 var skill = item as IDictionary<string, object>;
                 if (skill == null)
@@ -219,24 +219,24 @@ namespace MyCodex.Infrastructure.AppServer
                     continue;
                 }
 
-                var skillInterface = GetDictionary(skill, "interface");
-                var dependencies = GetDictionary(skill, "dependencies");
-                var name = GetString(skill, "name");
-                var displayName = GetString(skillInterface, "displayName");
-                var mappedPath = mapServerPathToClient(GetString(skill, "path"));
+                var skillInterface = AppServerJsonValueReader.GetDictionary(skill, "interface");
+                var dependencies = AppServerJsonValueReader.GetDictionary(skill, "dependencies");
+                var name = AppServerJsonValueReader.GetString(skill, "name");
+                var displayName = AppServerJsonValueReader.GetString(skillInterface, "displayName");
+                var mappedPath = mapServerPathToClient(AppServerJsonValueReader.GetString(skill, "path"));
                 var resolvedPath = resolveCurrentPluginSkillPath(mappedPath, "skills/list", name);
 
                 result.Add(new AppServerSkillInfo
                 {
                     Name = name,
                     DisplayName = string.IsNullOrWhiteSpace(displayName) ? name : displayName,
-                    ShortDescription = GetString(skillInterface, "shortDescription") ?? GetString(skill, "shortDescription"),
-                    Description = GetString(skill, "description"),
-                    Enabled = GetNullableBool(skill, "enabled") ?? false,
+                    ShortDescription = AppServerJsonValueReader.GetString(skillInterface, "shortDescription") ?? AppServerJsonValueReader.GetString(skill, "shortDescription"),
+                    Description = AppServerJsonValueReader.GetString(skill, "description"),
+                    Enabled = AppServerJsonValueReader.GetNullableBool(skill, "enabled") ?? false,
                     Path = resolvedPath,
-                    Scope = GetString(skill, "scope"),
-                    DefaultPrompt = GetString(skillInterface, "defaultPrompt"),
-                    BrandColor = GetString(skillInterface, "brandColor"),
+                    Scope = AppServerJsonValueReader.GetString(skill, "scope"),
+                    DefaultPrompt = AppServerJsonValueReader.GetString(skillInterface, "defaultPrompt"),
+                    BrandColor = AppServerJsonValueReader.GetString(skillInterface, "brandColor"),
                     ToolDependencies = BuildSkillToolDependencies(dependencies)
                 });
             }
@@ -253,7 +253,7 @@ namespace MyCodex.Infrastructure.AppServer
             Func<string, string, string, string> resolveCurrentPluginSkillPath)
         {
             var result = new List<AppServerPluginSkillInfo>();
-            foreach (var item in GetArray(source, "skills"))
+            foreach (var item in AppServerJsonValueReader.GetArray(source, "skills"))
             {
                 var skill = item as IDictionary<string, object>;
                 if (skill == null)
@@ -261,21 +261,21 @@ namespace MyCodex.Infrastructure.AppServer
                     continue;
                 }
 
-                var skillInterface = GetDictionary(skill, "interface");
-                var name = GetString(skill, "name");
-                var displayName = GetString(skillInterface, "displayName");
-                var mappedPath = mapServerPathToClient(GetString(skill, "path"));
+                var skillInterface = AppServerJsonValueReader.GetDictionary(skill, "interface");
+                var name = AppServerJsonValueReader.GetString(skill, "name");
+                var displayName = AppServerJsonValueReader.GetString(skillInterface, "displayName");
+                var mappedPath = mapServerPathToClient(AppServerJsonValueReader.GetString(skill, "path"));
                 var resolvedPath = resolveCurrentPluginSkillPath(mappedPath, "plugin/details", name);
 
                 result.Add(new AppServerPluginSkillInfo
                 {
                     Name = name,
                     DisplayName = string.IsNullOrWhiteSpace(displayName) ? name : displayName,
-                    ShortDescription = GetString(skillInterface, "shortDescription") ?? GetString(skill, "shortDescription"),
-                    Description = GetString(skill, "description"),
+                    ShortDescription = AppServerJsonValueReader.GetString(skillInterface, "shortDescription") ?? AppServerJsonValueReader.GetString(skill, "shortDescription"),
+                    Description = AppServerJsonValueReader.GetString(skill, "description"),
                     Path = resolvedPath,
-                    Enabled = GetNullableBool(skill, "enabled") ?? false,
-                    DefaultPrompt = GetString(skillInterface, "defaultPrompt")
+                    Enabled = AppServerJsonValueReader.GetNullableBool(skill, "enabled") ?? false,
+                    DefaultPrompt = AppServerJsonValueReader.GetString(skillInterface, "defaultPrompt")
                 });
             }
 
@@ -290,7 +290,7 @@ namespace MyCodex.Infrastructure.AppServer
             Func<string, string> mapServerPathToClient)
         {
             var result = new List<AppServerSkillError>();
-            foreach (var item in GetArray(entry, "errors"))
+            foreach (var item in AppServerJsonValueReader.GetArray(entry, "errors"))
             {
                 var error = item as IDictionary<string, object>;
                 if (error == null)
@@ -300,8 +300,8 @@ namespace MyCodex.Infrastructure.AppServer
 
                 result.Add(new AppServerSkillError
                 {
-                    Path = mapServerPathToClient(GetString(error, "path")),
-                    Message = GetString(error, "message")
+                    Path = mapServerPathToClient(AppServerJsonValueReader.GetString(error, "path")),
+                    Message = AppServerJsonValueReader.GetString(error, "message")
                 });
             }
 
@@ -314,7 +314,7 @@ namespace MyCodex.Infrastructure.AppServer
         private static List<AppServerSkillToolDependency> BuildSkillToolDependencies(IDictionary<string, object> dependencies)
         {
             var result = new List<AppServerSkillToolDependency>();
-            foreach (var item in GetArray(dependencies, "tools"))
+            foreach (var item in AppServerJsonValueReader.GetArray(dependencies, "tools"))
             {
                 var tool = item as IDictionary<string, object>;
                 if (tool == null)
@@ -324,12 +324,12 @@ namespace MyCodex.Infrastructure.AppServer
 
                 result.Add(new AppServerSkillToolDependency
                 {
-                    Type = GetString(tool, "type"),
-                    Value = GetString(tool, "value"),
-                    Description = GetString(tool, "description"),
-                    Command = GetString(tool, "command"),
-                    Transport = GetString(tool, "transport"),
-                    Url = GetString(tool, "url")
+                    Type = AppServerJsonValueReader.GetString(tool, "type"),
+                    Value = AppServerJsonValueReader.GetString(tool, "value"),
+                    Description = AppServerJsonValueReader.GetString(tool, "description"),
+                    Command = AppServerJsonValueReader.GetString(tool, "command"),
+                    Transport = AppServerJsonValueReader.GetString(tool, "transport"),
+                    Url = AppServerJsonValueReader.GetString(tool, "url")
                 });
             }
 
@@ -338,7 +338,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static List<string> BuildStringList(IDictionary<string, object> source, string key)
         {
-            return BuildStringList(GetArray(source, key));
+            return BuildStringList(AppServerJsonValueReader.GetArray(source, key));
         }
 
         private static List<string> BuildStringList(IEnumerable<object> items)
@@ -360,26 +360,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return result;
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetDictionary(source, key);
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetString(source, key);
-        }
-
-        private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetArray(source, key);
-        }
-
-        private static bool? GetNullableBool(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetNullableBool(source, key);
         }
     }
 }

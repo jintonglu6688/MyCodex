@@ -37,7 +37,7 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 var identity = new Dictionary<string, object> { { "threadId", threadId } };
                 var read = await SendAsync("thread/read", identity, cancellationToken).ConfigureAwait(false);
-                EnsureIdle(GetDictionary(read, "thread"));
+                EnsureIdle(AppServerJsonValueReader.GetDictionary(read, "thread"));
                 await SendAsync("thread/unsubscribe", identity, cancellationToken).ConfigureAwait(false);
             }
 
@@ -47,19 +47,19 @@ namespace MyCodex.Infrastructure.AppServer
             parameters.Remove("persistExtendedHistory");
             if (!detached) parameters["threadId"] = threadId;
             if (!detached && _excludeTurns) parameters["excludeTurns"] = true;
-            var config = GetDictionary(parameters, "config");
+            var config = AppServerJsonValueReader.GetDictionary(parameters, "config");
             parameters["config"] = config;
             if (!string.IsNullOrWhiteSpace(reasoningEffort)) config["model_reasoning_effort"] = reasoningEffort;
             var effectiveReviewModel = string.IsNullOrWhiteSpace(reviewModelId) ? modelId : reviewModelId;
             config["review_model"] = effectiveReviewModel;
 
             var resumed = await SendAsync(detached ? "thread/start" : "thread/resume", parameters, cancellationToken).ConfigureAwait(false);
-            var preparedId = GetString(GetDictionary(resumed, "thread"), "id");
+            var preparedId = AppServerJsonValueReader.GetString(AppServerJsonValueReader.GetDictionary(resumed, "thread"), "id");
             var result = new AppServerReviewStartResult
             {
                 ReviewThreadId = preparedId,
                 ConfiguredModelId = effectiveReviewModel,
-                ConfiguredReasoningEffort = GetString(resumed, "reasoningEffort"),
+                ConfiguredReasoningEffort = AppServerJsonValueReader.GetString(resumed, "reasoningEffort"),
                 WorkingDirectory = serverWorkspacePath,
                 CreatedThread = detached && !string.IsNullOrWhiteSpace(preparedId) &&
                     !string.Equals(preparedId, threadId, StringComparison.Ordinal)
@@ -68,14 +68,14 @@ namespace MyCodex.Infrastructure.AppServer
             };
             try
             {
-                EnsureIdle(GetDictionary(resumed, "thread"));
+                EnsureIdle(AppServerJsonValueReader.GetDictionary(resumed, "thread"));
                 if (string.IsNullOrWhiteSpace(preparedId) ||
                     (!detached && !string.Equals(preparedId, threadId, StringComparison.Ordinal)) ||
                     (detached && string.Equals(preparedId, threadId, StringComparison.Ordinal)) ||
-                    !SamePath(serverWorkspacePath, GetString(resumed, "cwd")) ||
-                    !string.Equals(modelId, GetString(resumed, "model"), StringComparison.Ordinal) ||
+                    !SamePath(serverWorkspacePath, AppServerJsonValueReader.GetString(resumed, "cwd")) ||
+                    !string.Equals(modelId, AppServerJsonValueReader.GetString(resumed, "model"), StringComparison.Ordinal) ||
                     (!string.IsNullOrWhiteSpace(reasoningEffort) &&
-                     !string.Equals(reasoningEffort, GetString(resumed, "reasoningEffort"), StringComparison.Ordinal)) ||
+                     !string.Equals(reasoningEffort, AppServerJsonValueReader.GetString(resumed, "reasoningEffort"), StringComparison.Ordinal)) ||
                     (approvalMode.HasValue && !PermissionsMatch(parameters, resumed)))
                 {
                     throw SettingsUnavailable();
@@ -86,9 +86,9 @@ namespace MyCodex.Infrastructure.AppServer
                     { "target", BuildTarget(target) },
                     { "delivery", "inline" }
                 }, cancellationToken).ConfigureAwait(false);
-                if (!string.Equals(GetString(response, "reviewThreadId"), preparedId, StringComparison.Ordinal))
+                if (!string.Equals(AppServerJsonValueReader.GetString(response, "reviewThreadId"), preparedId, StringComparison.Ordinal))
                     throw SettingsUnavailable();
-                result.TurnId = GetString(GetDictionary(response, "turn"), "id");
+                result.TurnId = AppServerJsonValueReader.GetString(AppServerJsonValueReader.GetDictionary(response, "turn"), "id");
                 return result;
             }
             catch (Exception ex) when (result.CreatedThread != null)
@@ -101,7 +101,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static void EnsureIdle(IDictionary<string, object> thread)
         {
-            var status = GetString(GetDictionary(thread, "status"), "type");
+            var status = AppServerJsonValueReader.GetString(AppServerJsonValueReader.GetDictionary(thread, "status"), "type");
             if (!string.Equals(status, "idle", StringComparison.Ordinal) &&
                 !string.Equals(status, "notLoaded", StringComparison.Ordinal))
             {
@@ -111,14 +111,14 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static bool PermissionsMatch(IDictionary<string, object> requested, IDictionary<string, object> actual)
         {
-            var sandbox = GetString(GetDictionary(actual, "sandbox"), "type");
-            var expected = GetString(requested, "sandbox");
+            var sandbox = AppServerJsonValueReader.GetString(AppServerJsonValueReader.GetDictionary(actual, "sandbox"), "type");
+            var expected = AppServerJsonValueReader.GetString(requested, "sandbox");
             var actualMode = sandbox == "readOnly" ? "read-only" :
                 sandbox == "workspaceWrite" ? "workspace-write" :
                 sandbox == "dangerFullAccess" ? "danger-full-access" : null;
             return string.Equals(expected, actualMode, StringComparison.Ordinal) &&
-                string.Equals(GetString(requested, "approvalsReviewer"), GetString(actual, "approvalsReviewer"), StringComparison.Ordinal) &&
-                string.Equals(GetString(requested, "approvalPolicy"), GetString(actual, "approvalPolicy"), StringComparison.Ordinal);
+                string.Equals(AppServerJsonValueReader.GetString(requested, "approvalsReviewer"), AppServerJsonValueReader.GetString(actual, "approvalsReviewer"), StringComparison.Ordinal) &&
+                string.Equals(AppServerJsonValueReader.GetString(requested, "approvalPolicy"), AppServerJsonValueReader.GetString(actual, "approvalPolicy"), StringComparison.Ordinal);
         }
 
         private static bool SamePath(string requested, string actual)
@@ -157,16 +157,6 @@ namespace MyCodex.Infrastructure.AppServer
                 default:
                     throw new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.UnsupportedReviewTarget", "Unsupported review target."));
             }
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetDictionary(source, key);
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetString(source, key);
         }
     }
 }

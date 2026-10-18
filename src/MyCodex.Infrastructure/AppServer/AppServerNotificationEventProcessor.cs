@@ -34,8 +34,8 @@ namespace MyCodex.Infrastructure.AppServer
 
             parameters = parameters ?? new Dictionary<string, object>();
             var action = AppServerNotificationDispatcher.Classify(method);
-            var threadId = GetString(parameters, "threadId");
-            var turnId = GetString(parameters, "turnId");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
+            var turnId = AppServerJsonValueReader.GetString(parameters, "turnId");
 
             switch (action)
             {
@@ -260,8 +260,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleThreadStarted(IDictionary<string, object> parameters)
         {
-            var thread = GetDictionary(parameters, "thread");
-            var threadId = GetString(thread, "id");
+            var thread = AppServerJsonValueReader.GetDictionary(parameters, "thread");
+            var threadId = AppServerJsonValueReader.GetString(thread, "id");
             if (string.IsNullOrWhiteSpace(threadId))
             {
                 return;
@@ -273,7 +273,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleThreadArchived(IDictionary<string, object> parameters)
         {
-            var threadId = GetString(parameters, "threadId");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
             if (string.IsNullOrWhiteSpace(threadId))
             {
                 return;
@@ -285,7 +285,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleThreadDeleted(IDictionary<string, object> parameters)
         {
-            var threadId = GetString(parameters, "threadId");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
             if (string.IsNullOrWhiteSpace(threadId))
             {
                 return;
@@ -297,7 +297,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleThreadClosed(IDictionary<string, object> parameters)
         {
-            var threadId = GetString(parameters, "threadId");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
             if (string.IsNullOrWhiteSpace(threadId))
             {
                 return;
@@ -309,7 +309,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleThreadUnarchived(IDictionary<string, object> parameters)
         {
-            var threadId = GetString(parameters, "threadId");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
             if (string.IsNullOrWhiteSpace(threadId))
             {
                 return;
@@ -320,20 +320,20 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleThreadCompacted(IDictionary<string, object> parameters)
         {
-            var threadId = GetString(parameters, "threadId");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
             if (string.IsNullOrWhiteSpace(threadId))
             {
                 return;
             }
 
-            _context.RaiseEvent(AppServerNotificationFactory.CreateThreadCompacted(threadId, GetString(parameters, "turnId")));
+            _context.RaiseEvent(AppServerNotificationFactory.CreateThreadCompacted(threadId, AppServerJsonValueReader.GetString(parameters, "turnId")));
         }
 
         private void HandleThreadStatusChanged(IDictionary<string, object> parameters)
         {
-            var threadId = GetString(parameters, "threadId");
-            var status = GetDictionary(parameters, "status");
-            var statusType = GetString(status, "type");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
+            var status = AppServerJsonValueReader.GetDictionary(parameters, "status");
+            var statusType = AppServerJsonValueReader.GetString(status, "type");
             if (!string.IsNullOrWhiteSpace(statusType))
             {
                 Trace.TraceInformation(
@@ -346,8 +346,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleThreadNameUpdated(IDictionary<string, object> parameters)
         {
-            var threadId = GetString(parameters, "threadId");
-            var threadName = GetString(parameters, "threadName");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
+            var threadName = AppServerJsonValueReader.GetString(parameters, "threadName");
             if (string.IsNullOrWhiteSpace(threadId) || string.IsNullOrWhiteSpace(threadName))
             {
                 return;
@@ -361,8 +361,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleThreadGoalUpdated(IDictionary<string, object> parameters)
         {
-            var threadId = GetString(parameters, "threadId");
-            var turnId = GetString(parameters, "turnId");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
+            var turnId = AppServerJsonValueReader.GetString(parameters, "turnId");
             var goal = AppServerProtocolMetadataMapper.BuildThreadGoalFromResult(parameters, threadId);
             if (goal == null)
             {
@@ -379,7 +379,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleThreadGoalCleared(IDictionary<string, object> parameters)
         {
-            var threadId = GetString(parameters, "threadId");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
             if (string.IsNullOrWhiteSpace(threadId))
             {
                 return;
@@ -393,9 +393,9 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleTurnStarted(IDictionary<string, object> parameters)
         {
-            var threadId = GetString(parameters, "threadId");
-            var turn = GetDictionary(parameters, "turn");
-            var turnId = GetString(turn, "id");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
+            var turn = AppServerJsonValueReader.GetDictionary(parameters, "turn");
+            var turnId = AppServerJsonValueReader.GetString(turn, "id");
 
             if (!string.IsNullOrWhiteSpace(threadId))
             {
@@ -414,9 +414,9 @@ namespace MyCodex.Infrastructure.AppServer
             _context.RaiseEvent(new AppServerEventArgs(
                 "turn_plan_updated",
                 L("AppServerClient.Turn.PlanUpdated", "Plan updated."),
-                threadId: GetString(parameters, "threadId"),
-                turnId: GetString(parameters, "turnId"),
-                explanation: GetString(parameters, "explanation"),
+                threadId: AppServerJsonValueReader.GetString(parameters, "threadId"),
+                turnId: AppServerJsonValueReader.GetString(parameters, "turnId"),
+                explanation: AppServerJsonValueReader.GetString(parameters, "explanation"),
                 planSteps: AppServerTurnPayloadMapper.BuildTurnPlanSteps(parameters)));
         }
 
@@ -432,17 +432,17 @@ namespace MyCodex.Infrastructure.AppServer
             _context.RaiseEvent(new AppServerEventArgs(
                 "turn_diff_updated",
                 L("AppServerClient.Turn.DiffUpdated", "Change summary updated."),
-                threadId: GetString(parameters, "threadId"),
-                turnId: GetString(parameters, "turnId"),
+                threadId: AppServerJsonValueReader.GetString(parameters, "threadId"),
+                turnId: AppServerJsonValueReader.GetString(parameters, "turnId"),
                 diffText: diffText,
                 changedFiles: changedFiles));
         }
 
         private void HandleItemStarted(string threadId, string turnId, IDictionary<string, object> parameters)
         {
-            var item = GetDictionary(parameters, "item");
-            var itemType = GetString(item, "type");
-            var itemId = GetString(item, "id");
+            var item = AppServerJsonValueReader.GetDictionary(parameters, "item");
+            var itemType = AppServerJsonValueReader.GetString(item, "type");
+            var itemId = AppServerJsonValueReader.GetString(item, "id");
             if (string.IsNullOrWhiteSpace(itemType))
             {
                 return;
@@ -468,9 +468,9 @@ namespace MyCodex.Infrastructure.AppServer
                         return;
                     }
 
-                    var serverName = GetString(item, "server");
-                    var toolName = GetString(item, "tool");
-                    var status = GetString(item, "status");
+                    var serverName = AppServerJsonValueReader.GetString(item, "server");
+                    var toolName = AppServerJsonValueReader.GetString(item, "tool");
+                    var status = AppServerJsonValueReader.GetString(item, "status");
 
                     lock (_syncRoot)
                     {
@@ -542,8 +542,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleAgentMessageOutputDelta(string threadId, string turnId, IDictionary<string, object> parameters)
         {
-            var itemId = GetString(parameters, "itemId");
-            var delta = GetString(parameters, "delta");
+            var itemId = AppServerJsonValueReader.GetString(parameters, "itemId");
+            var delta = AppServerJsonValueReader.GetString(parameters, "delta");
             if (string.IsNullOrWhiteSpace(itemId) || string.IsNullOrEmpty(delta))
             {
                 return;
@@ -564,7 +564,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandlePlanOutputDelta(string threadId, string turnId, IDictionary<string, object> parameters)
         {
-            var itemId = GetString(parameters, "itemId");
+            var itemId = AppServerJsonValueReader.GetString(parameters, "itemId");
             var deltaText = AppServerTurnPayloadMapper.ExtractPlanDeltaText(parameters);
             if (string.IsNullOrWhiteSpace(itemId) && string.IsNullOrWhiteSpace(deltaText))
             {
@@ -604,8 +604,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleCommandOutputDelta(string threadId, string turnId, IDictionary<string, object> parameters)
         {
-            var delta = GetString(parameters, "delta");
-            var itemId = GetString(parameters, "itemId");
+            var delta = AppServerJsonValueReader.GetString(parameters, "delta");
+            var itemId = AppServerJsonValueReader.GetString(parameters, "itemId");
             if (string.IsNullOrEmpty(delta))
             {
                 return;
@@ -655,8 +655,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleFileChangeOutputDelta(string threadId, string turnId, IDictionary<string, object> parameters)
         {
-            var delta = GetString(parameters, "delta");
-            var itemId = GetString(parameters, "itemId");
+            var delta = AppServerJsonValueReader.GetString(parameters, "delta");
+            var itemId = AppServerJsonValueReader.GetString(parameters, "itemId");
             if (string.IsNullOrEmpty(delta))
             {
                 return;
@@ -707,12 +707,12 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleStandaloneCommandOutputDelta(IDictionary<string, object> parameters)
         {
-            var processId = GetString(parameters, "processId");
-            var stream = GetString(parameters, "stream");
-            var decodedText = GetString(parameters, "delta");
+            var processId = AppServerJsonValueReader.GetString(parameters, "processId");
+            var stream = AppServerJsonValueReader.GetString(parameters, "stream");
+            var decodedText = AppServerJsonValueReader.GetString(parameters, "delta");
             if (string.IsNullOrEmpty(decodedText))
             {
-                decodedText = DecodeCommandExecDelta(GetString(parameters, "deltaBase64"));
+                decodedText = DecodeCommandExecDelta(AppServerJsonValueReader.GetString(parameters, "deltaBase64"));
             }
 
             if (string.IsNullOrEmpty(decodedText))
@@ -729,8 +729,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleCommandTerminalInteraction(IDictionary<string, object> parameters)
         {
-            var item = GetDictionary(parameters, "item");
-            var content = GetFirstNonEmptyString(
+            var item = AppServerJsonValueReader.GetDictionary(parameters, "item");
+            var content = AppServerJsonValueReader.GetFirstNonEmptyString(
                 parameters,
                 "message",
                 "text",
@@ -739,7 +739,7 @@ namespace MyCodex.Infrastructure.AppServer
                 "status");
             if (string.IsNullOrWhiteSpace(content))
             {
-                content = GetFirstNonEmptyString(item, "message", "text", "prompt", "reason", "status");
+                content = AppServerJsonValueReader.GetFirstNonEmptyString(item, "message", "text", "prompt", "reason", "status");
             }
 
             if (string.IsNullOrWhiteSpace(content))
@@ -750,19 +750,19 @@ namespace MyCodex.Infrastructure.AppServer
             _context.RaiseEvent(new AppServerEventArgs(
                 "command_terminal_interaction",
                 content,
-                threadId: GetString(parameters, "threadId"),
-                turnId: GetString(parameters, "turnId"),
-                itemId: GetFirstNonEmptyString(parameters, "itemId") ?? GetString(item, "id"),
-                commandText: GetFirstNonEmptyString(parameters, "commandText", "command") ?? GetFirstNonEmptyString(item, "commandText", "command"),
-                reason: GetFirstNonEmptyString(parameters, "reason") ?? GetString(item, "reason"),
-                details: GetFirstNonEmptyString(parameters, "details") ?? GetString(item, "details"),
-                processId: GetFirstNonEmptyString(parameters, "processId") ?? GetString(item, "processId")));
+                threadId: AppServerJsonValueReader.GetString(parameters, "threadId"),
+                turnId: AppServerJsonValueReader.GetString(parameters, "turnId"),
+                itemId: AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "itemId") ?? AppServerJsonValueReader.GetString(item, "id"),
+                commandText: AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "commandText", "command") ?? AppServerJsonValueReader.GetFirstNonEmptyString(item, "commandText", "command"),
+                reason: AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "reason") ?? AppServerJsonValueReader.GetString(item, "reason"),
+                details: AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "details") ?? AppServerJsonValueReader.GetString(item, "details"),
+                processId: AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "processId") ?? AppServerJsonValueReader.GetString(item, "processId")));
         }
 
         private bool HandleContextCompactionItemCompleted(IDictionary<string, object> parameters)
         {
-            var item = GetDictionary(parameters, "item");
-            if (!string.Equals(GetString(item, "type"), "contextCompaction", StringComparison.OrdinalIgnoreCase))
+            var item = AppServerJsonValueReader.GetDictionary(parameters, "item");
+            if (!string.Equals(AppServerJsonValueReader.GetString(item, "type"), "contextCompaction", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -770,16 +770,16 @@ namespace MyCodex.Infrastructure.AppServer
             _context.RaiseEvent(new AppServerEventArgs(
                 "context_compaction_completed",
                 "Session context compressed.",
-                GetString(parameters, "threadId"),
-                GetString(parameters, "turnId"),
-                GetString(item, "id")));
+                AppServerJsonValueReader.GetString(parameters, "threadId"),
+                AppServerJsonValueReader.GetString(parameters, "turnId"),
+                AppServerJsonValueReader.GetString(item, "id")));
             return true;
         }
 
         private void HandleMcpToolCallProgress(string threadId, string turnId, IDictionary<string, object> parameters)
         {
-            var itemId = GetString(parameters, "itemId");
-            var message = GetString(parameters, "message");
+            var itemId = AppServerJsonValueReader.GetString(parameters, "itemId");
+            var message = AppServerJsonValueReader.GetString(parameters, "message");
             PendingMcpToolCallItem pendingItem = null;
 
             if (!string.IsNullOrWhiteSpace(itemId))
@@ -803,9 +803,9 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleReasoningSummaryTextDelta(string threadId, string turnId, IDictionary<string, object> parameters)
         {
-            var itemId = GetString(parameters, "itemId");
-            var delta = GetString(parameters, "delta");
-            var summaryIndex = GetNullableInt(parameters, "summaryIndex") ?? 0;
+            var itemId = AppServerJsonValueReader.GetString(parameters, "itemId");
+            var delta = AppServerJsonValueReader.GetString(parameters, "delta");
+            var summaryIndex = AppServerJsonValueReader.GetNullableInt(parameters, "summaryIndex") ?? 0;
             if (string.IsNullOrWhiteSpace(itemId) || string.IsNullOrEmpty(delta))
             {
                 return;
@@ -834,8 +834,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleReasoningSummaryPartAdded(IDictionary<string, object> parameters)
         {
-            var itemId = GetString(parameters, "itemId");
-            var summaryIndex = GetNullableInt(parameters, "summaryIndex") ?? 0;
+            var itemId = AppServerJsonValueReader.GetString(parameters, "itemId");
+            var summaryIndex = AppServerJsonValueReader.GetNullableInt(parameters, "summaryIndex") ?? 0;
             if (string.IsNullOrWhiteSpace(itemId))
             {
                 return;
@@ -850,9 +850,9 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleReasoningTextDelta(string threadId, string turnId, IDictionary<string, object> parameters)
         {
-            var itemId = GetString(parameters, "itemId");
-            var delta = GetString(parameters, "delta");
-            var contentIndex = GetNullableInt(parameters, "contentIndex") ?? 0;
+            var itemId = AppServerJsonValueReader.GetString(parameters, "itemId");
+            var delta = AppServerJsonValueReader.GetString(parameters, "delta");
+            var contentIndex = AppServerJsonValueReader.GetNullableInt(parameters, "contentIndex") ?? 0;
             if (string.IsNullOrWhiteSpace(itemId) || string.IsNullOrEmpty(delta))
             {
                 return;
@@ -881,11 +881,11 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleItemCompleted(string threadId, string turnId, IDictionary<string, object> parameters)
         {
-            var item = GetDictionary(parameters, "item");
-            var itemType = GetString(item, "type");
-            threadId = string.IsNullOrWhiteSpace(threadId) ? GetString(parameters, "threadId") : threadId;
-            turnId = string.IsNullOrWhiteSpace(turnId) ? GetString(parameters, "turnId") : turnId;
-            var itemId = GetString(item, "id");
+            var item = AppServerJsonValueReader.GetDictionary(parameters, "item");
+            var itemType = AppServerJsonValueReader.GetString(item, "type");
+            threadId = string.IsNullOrWhiteSpace(threadId) ? AppServerJsonValueReader.GetString(parameters, "threadId") : threadId;
+            turnId = string.IsNullOrWhiteSpace(turnId) ? AppServerJsonValueReader.GetString(parameters, "turnId") : turnId;
+            var itemId = AppServerJsonValueReader.GetString(item, "id");
             var canonicalActivity = AppServerCanonicalActivityMapper.Map(
                 item,
                 true,
@@ -951,7 +951,7 @@ namespace MyCodex.Infrastructure.AppServer
             switch (itemType)
             {
                 case "agentMessage":
-                    var finalText = GetString(item, "text");
+                    var finalText = AppServerJsonValueReader.GetString(item, "text");
                     if (string.IsNullOrWhiteSpace(finalText))
                     {
                         lock (_syncRoot)
@@ -969,7 +969,7 @@ namespace MyCodex.Infrastructure.AppServer
                         _agentMessageBuffers.Remove(itemId);
                     }
 
-                    if (string.Equals(GetString(item, "delivery"), "async", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(AppServerJsonValueReader.GetString(item, "delivery"), "async", StringComparison.OrdinalIgnoreCase))
                     {
                         var questions = AppServerInteractionRequestMapper.BuildAsyncUserInputQuestions(item);
                         if (questions.Count > 0)
@@ -990,7 +990,7 @@ namespace MyCodex.Infrastructure.AppServer
                     }
                     break;
                 case "plan":
-                    var finalPlanText = GetString(item, "text");
+                    var finalPlanText = AppServerJsonValueReader.GetString(item, "text");
                     if (string.IsNullOrWhiteSpace(finalPlanText))
                     {
                         finalPlanText = bufferedPlanText;
@@ -1002,9 +1002,9 @@ namespace MyCodex.Infrastructure.AppServer
                     }
                     break;
                 case "commandExecution":
-                    var command = GetString(item, "command");
-                    var commandWorkingDirectory = _context.MapServerPathToClient(GetString(item, "cwd"));
-                    var aggregatedOutput = GetString(item, "aggregatedOutput");
+                    var command = AppServerJsonValueReader.GetString(item, "command");
+                    var commandWorkingDirectory = _context.MapServerPathToClient(AppServerJsonValueReader.GetString(item, "cwd"));
+                    var aggregatedOutput = AppServerJsonValueReader.GetString(item, "aggregatedOutput");
                     if (!string.IsNullOrWhiteSpace(bufferedCommandOutput))
                     {
                         _context.RaiseEvent(new AppServerEventArgs(
@@ -1029,8 +1029,8 @@ namespace MyCodex.Infrastructure.AppServer
                             workingDirectory: commandWorkingDirectory));
                     }
 
-                    var status = GetString(item, "status");
-                    var exitCode = GetNullableInt(item, "exitCode");
+                    var status = AppServerJsonValueReader.GetString(item, "status");
+                    var exitCode = AppServerJsonValueReader.GetNullableInt(item, "exitCode");
                     var summary = string.Format(
                         L("AppServerClient.Command.CompletedSummary.Template", "Command finished: {0}, status: {1}{2}"),
                         string.IsNullOrWhiteSpace(command) ? L("AppServerClient.Value.UnknownCommand", "(Unknown command)") : command,
@@ -1079,11 +1079,11 @@ namespace MyCodex.Infrastructure.AppServer
                         changedFiles: changedFiles));
                     break;
                 case "mcpToolCall":
-                    var serverName = GetString(item, "server") ?? (pendingMcpToolCall != null ? pendingMcpToolCall.ServerName : null);
-                    var toolName = GetString(item, "tool") ?? (pendingMcpToolCall != null ? pendingMcpToolCall.ToolName : null);
-                    var mcpStatus = GetString(item, "status") ?? (pendingMcpToolCall != null ? pendingMcpToolCall.Status : null);
-                    var error = GetDictionary(item, "error");
-                    var errorMessage = GetFirstNonEmptyString(error, "message", "text");
+                    var serverName = AppServerJsonValueReader.GetString(item, "server") ?? (pendingMcpToolCall != null ? pendingMcpToolCall.ServerName : null);
+                    var toolName = AppServerJsonValueReader.GetString(item, "tool") ?? (pendingMcpToolCall != null ? pendingMcpToolCall.ToolName : null);
+                    var mcpStatus = AppServerJsonValueReader.GetString(item, "status") ?? (pendingMcpToolCall != null ? pendingMcpToolCall.Status : null);
+                    var error = AppServerJsonValueReader.GetDictionary(item, "error");
+                    var errorMessage = AppServerJsonValueReader.GetFirstNonEmptyString(error, "message", "text");
                     var isCompleted = string.Equals(mcpStatus, "completed", StringComparison.OrdinalIgnoreCase);
                     var isFailed = string.Equals(mcpStatus, "failed", StringComparison.OrdinalIgnoreCase);
                     _context.RaiseEvent(new AppServerEventArgs(
@@ -1110,7 +1110,7 @@ namespace MyCodex.Infrastructure.AppServer
                         turnId: turnId,
                         itemId: itemId,
                         details: ExtractWebSearchDetails(item),
-                        itemStatus: GetString(item, "status")));
+                        itemStatus: AppServerJsonValueReader.GetString(item, "status")));
                     break;
             }
         }
@@ -1128,7 +1128,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static string ExtractWebSearchDetails(IDictionary<string, object> item)
         {
-            return GetFirstNonEmptyString(
+            return AppServerJsonValueReader.GetFirstNonEmptyString(
                 item,
                 "query",
                 "searchQuery",
@@ -1140,17 +1140,17 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleTurnCompleted(string threadId, string turnId, IDictionary<string, object> parameters)
         {
-            var turn = GetDictionary(parameters, "turn");
-            turnId = GetString(turn, "id");
+            var turn = AppServerJsonValueReader.GetDictionary(parameters, "turn");
+            turnId = AppServerJsonValueReader.GetString(turn, "id");
 
             _context.ForgetActiveTurnId(threadId);
 
-            var status = GetString(turn, "status");
+            var status = AppServerJsonValueReader.GetString(turn, "status");
             if (string.Equals(status, "failed", StringComparison.OrdinalIgnoreCase))
             {
-                var error = GetDictionary(turn, "error");
-                var errorMessage = GetString(error, "message");
-                var reason = GetString(error, "codexErrorInfo");
+                var error = AppServerJsonValueReader.GetDictionary(turn, "error");
+                var errorMessage = AppServerJsonValueReader.GetString(error, "message");
+                var reason = AppServerJsonValueReader.GetString(error, "codexErrorInfo");
                 HandleTurnFailed(threadId, turnId, errorMessage, reason);
                 return;
             }
@@ -1177,11 +1177,11 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleError(IDictionary<string, object> parameters)
         {
-            var error = GetDictionary(parameters, "error");
-            var errorMessage = GetString(error, "message");
-            var reason = GetString(error, "codexErrorInfo");
-            var threadId = GetString(parameters, "threadId");
-            var turnId = GetString(parameters, "turnId");
+            var error = AppServerJsonValueReader.GetDictionary(parameters, "error");
+            var errorMessage = AppServerJsonValueReader.GetString(error, "message");
+            var reason = AppServerJsonValueReader.GetString(error, "codexErrorInfo");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
+            var turnId = AppServerJsonValueReader.GetString(parameters, "turnId");
             var eventArgs = AppServerNotificationFactory.CreateError(threadId, turnId, errorMessage, reason);
             Trace.TraceWarning(
                 "App Server error event. ThreadId={0}; TurnId={1}; Message={2}",
@@ -1193,28 +1193,28 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleAccountUpdated(IDictionary<string, object> parameters)
         {
-            var authMode = GetString(parameters, "authMode");
-            var planType = GetString(parameters, "planType");
+            var authMode = AppServerJsonValueReader.GetString(parameters, "authMode");
+            var planType = AppServerJsonValueReader.GetString(parameters, "planType");
             _context.RaiseEvent(AppServerNotificationFactory.CreateAuthChanged(authMode, planType));
         }
 
         private void HandleAccountLoginCompleted(IDictionary<string, object> parameters)
         {
-            var success = GetNullableBool(parameters, "success").GetValueOrDefault();
+            var success = AppServerJsonValueReader.GetNullableBool(parameters, "success").GetValueOrDefault();
             _context.RaiseEvent(AppServerNotificationFactory.CreateAuthLoginCompleted(
                 success,
-                GetString(parameters, "error"),
-                GetString(parameters, "loginId")));
+                AppServerJsonValueReader.GetString(parameters, "error"),
+                AppServerJsonValueReader.GetString(parameters, "loginId")));
         }
 
         private void HandleMcpServerOauthLoginCompleted(IDictionary<string, object> parameters)
         {
-            var serverName = GetFirstNonEmptyString(parameters, "name", "serverName");
-            var success = GetNullableBool(parameters, "success");
+            var serverName = AppServerJsonValueReader.GetFirstNonEmptyString(parameters, "name", "serverName");
+            var success = AppServerJsonValueReader.GetNullableBool(parameters, "success");
             _context.RaiseEvent(AppServerNotificationFactory.CreateMcpOauthLoginCompleted(
                 serverName,
                 success,
-                GetString(parameters, "error")));
+                AppServerJsonValueReader.GetString(parameters, "error")));
         }
 
         private void HandleSkillsChanged()
@@ -1231,16 +1231,16 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleThreadTokenUsageUpdated(IDictionary<string, object> parameters)
         {
-            var threadId = GetString(parameters, "threadId");
-            var turnId = GetString(parameters, "turnId");
-            var tokenUsage = GetDictionary(parameters, "tokenUsage");
-            var total = GetDictionary(tokenUsage, "total");
-            var last = GetDictionary(tokenUsage, "last");
+            var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
+            var turnId = AppServerJsonValueReader.GetString(parameters, "turnId");
+            var tokenUsage = AppServerJsonValueReader.GetDictionary(parameters, "tokenUsage");
+            var total = AppServerJsonValueReader.GetDictionary(tokenUsage, "total");
+            var last = AppServerJsonValueReader.GetDictionary(tokenUsage, "last");
             var usage = new AppServerThreadTokenUsageSnapshot
             {
                 Total = BuildTokenUsageBreakdown(total),
                 Last = BuildTokenUsageBreakdown(last),
-                ModelContextWindow = GetNullableLong(tokenUsage, "modelContextWindow")
+                ModelContextWindow = AppServerJsonValueReader.GetNullableLong(tokenUsage, "modelContextWindow")
             };
 
             _context.RaiseEvent(AppServerNotificationFactory.CreateTokenUsage(
@@ -1253,17 +1253,17 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerTokenUsageBreakdown
             {
-                TotalTokens = GetNullableLong(source, "totalTokens").GetValueOrDefault(),
-                InputTokens = GetNullableLong(source, "inputTokens").GetValueOrDefault(),
-                CachedInputTokens = GetNullableLong(source, "cachedInputTokens").GetValueOrDefault(),
-                OutputTokens = GetNullableLong(source, "outputTokens").GetValueOrDefault(),
-                ReasoningOutputTokens = GetNullableLong(source, "reasoningOutputTokens").GetValueOrDefault()
+                TotalTokens = AppServerJsonValueReader.GetNullableLong(source, "totalTokens").GetValueOrDefault(),
+                InputTokens = AppServerJsonValueReader.GetNullableLong(source, "inputTokens").GetValueOrDefault(),
+                CachedInputTokens = AppServerJsonValueReader.GetNullableLong(source, "cachedInputTokens").GetValueOrDefault(),
+                OutputTokens = AppServerJsonValueReader.GetNullableLong(source, "outputTokens").GetValueOrDefault(),
+                ReasoningOutputTokens = AppServerJsonValueReader.GetNullableLong(source, "reasoningOutputTokens").GetValueOrDefault()
             };
         }
 
         private void HandleServerRequestResolved(IDictionary<string, object> parameters)
         {
-            _context.ClearResolvedInteractionRequest(GetString(parameters, "requestId"));
+            _context.ClearResolvedInteractionRequest(AppServerJsonValueReader.GetString(parameters, "requestId"));
         }
 
         private PendingReasoningItem GetOrCreatePendingReasoningItem(string itemId)
@@ -1346,7 +1346,7 @@ namespace MyCodex.Infrastructure.AppServer
         private static string JoinStringArray(IDictionary<string, object> source, string key)
         {
             var lines = new List<string>();
-            foreach (var item in GetArray(source, key))
+            foreach (var item in AppServerJsonValueReader.GetArray(source, key))
             {
                 var text = Convert.ToString(item);
                 if (!string.IsNullOrWhiteSpace(text))
@@ -1401,41 +1401,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return text.Substring(0, maxLength) + "...";
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetDictionary(source, key);
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetString(source, key);
-        }
-
-        private static string GetFirstNonEmptyString(IDictionary<string, object> source, params string[] keys)
-        {
-            return AppServerJsonValueReader.GetFirstNonEmptyString(source, keys);
-        }
-
-        private static int? GetNullableInt(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetNullableInt(source, key);
-        }
-
-        private static long? GetNullableLong(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetNullableLong(source, key);
-        }
-
-        private static bool? GetNullableBool(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetNullableBool(source, key);
-        }
-
-        private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetArray(source, key);
         }
 
         private static string L(string key, string fallback)

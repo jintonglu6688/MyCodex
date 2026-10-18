@@ -11,8 +11,8 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerFuzzyFileSearchSessionEvent
             {
-                SessionId = GetString(parameters, "sessionId"),
-                Query = GetString(parameters, "query"),
+                SessionId = AppServerJsonValueReader.GetString(parameters, "sessionId"),
+                Query = AppServerJsonValueReader.GetString(parameters, "query"),
                 Files = GetArray(parameters, "files")
                     .Select(item => BuildResult(item as IDictionary<string, object>))
                     .Where(item => item != null)
@@ -25,7 +25,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerFuzzyFileSearchSessionEvent
             {
-                SessionId = GetString(parameters, "sessionId"),
+                SessionId = AppServerJsonValueReader.GetString(parameters, "sessionId"),
                 IsCompleted = true
             };
         }
@@ -51,10 +51,10 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new AppServerFuzzyFileSearchResult
             {
-                FileName = GetString(source, "file_name"),
-                MatchType = GetString(source, "match_type"),
-                Path = GetString(source, "path"),
-                Root = GetString(source, "root"),
+                FileName = AppServerJsonValueReader.GetString(source, "file_name"),
+                MatchType = AppServerJsonValueReader.GetString(source, "match_type"),
+                Path = AppServerJsonValueReader.GetString(source, "path"),
+                Root = AppServerJsonValueReader.GetString(source, "root"),
                 Score = GetUInt32(source, "score"),
                 Indices = GetArray(source, "indices")
                     .Select(ToNullableUInt32)
@@ -74,14 +74,6 @@ namespace MyCodex.Infrastructure.AppServer
 
             var array = value as IEnumerable<object>;
             return array ?? Enumerable.Empty<object>();
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null && source.TryGetValue(key, out value) && value != null
-                ? Convert.ToString(value)
-                : null;
         }
 
         private static uint GetUInt32(IDictionary<string, object> source, string key)

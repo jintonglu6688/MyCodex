@@ -87,16 +87,16 @@ namespace MyCodex.Infrastructure.AppServer
                     var preparationWatch = System.Diagnostics.Stopwatch.StartNew();
                     if (isThread) binding = await manager.PrepareAsync(parameters, token, method == "thread/resume").ConfigureAwait(false);
                     else if (method == "turn/start")
-                        await manager.BeforeTurnAsync(GetString(parameters, "threadId"), GetString(parameters, "cwd"), token).ConfigureAwait(false);
+                        await manager.BeforeTurnAsync(AppServerJsonValueReader.GetString(parameters, "threadId"), AppServerJsonValueReader.GetString(parameters, "cwd"), token).ConfigureAwait(false);
                     else if (method == "turn/interrupt")
-                        manager.End(GetString(parameters, "threadId"), GetString(parameters, "turnId"));
+                        manager.End(AppServerJsonValueReader.GetString(parameters, "threadId"), AppServerJsonValueReader.GetString(parameters, "turnId"));
                     System.Diagnostics.Trace.TraceInformation("[SendTiming] Operation={0}; Phase=computer-use; ElapsedMs={1}",
                         method, preparationWatch.ElapsedMilliseconds);
                     EnsureComputerUseConnection(epoch, token);
                     var result = await SendRequestDirectAsync(method, parameters, token, timeoutMs, epoch).ConfigureAwait(false);
                     EnsureComputerUseConnection(epoch, token);
                     if (binding != null)
-                        await manager.BindAsync(binding, GetString(GetDictionary(result, "thread"), "id"), token).ConfigureAwait(false);
+                        await manager.BindAsync(binding, AppServerJsonValueReader.GetString(AppServerJsonValueReader.GetDictionary(result, "thread"), "id"), token).ConfigureAwait(false);
                     return result;
                 }
                 catch { manager.Abandon(binding); throw; }
@@ -108,8 +108,8 @@ namespace MyCodex.Infrastructure.AppServer
             ComputerUseSessionManager manager;
             lock (_syncRoot) manager = _computerUse;
             if (manager == null) return;
-            var thread = GetString(parameters, "threadId");
-            var turn = GetString(GetDictionary(parameters, "turn"), "id") ?? GetString(parameters, "turnId");
+            var thread = AppServerJsonValueReader.GetString(parameters, "threadId");
+            var turn = AppServerJsonValueReader.GetString(AppServerJsonValueReader.GetDictionary(parameters, "turn"), "id") ?? AppServerJsonValueReader.GetString(parameters, "turnId");
             if (string.IsNullOrWhiteSpace(thread)) return;
             if (method == "turn/started" && !string.IsNullOrWhiteSpace(turn)) manager.Begin(thread, turn);
             else if (method == "turn/completed" && !string.IsNullOrWhiteSpace(turn)) manager.End(thread, turn);

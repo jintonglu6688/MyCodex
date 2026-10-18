@@ -19,8 +19,8 @@ namespace MyCodex.Infrastructure.AppServer
                 GetLaunchInfoEnvironmentValue(launchInfo, "MYCODEX_CODEX_SOURCE") ??
                 (appConfig == null ? null : appConfig.CodexRuntimeSource));
             var runtimeVersion = ResolveRuntimeVersion(runtimeSource, launchInfo, initializeResult);
-            var userAgent = GetString(initializeResult, "userAgent");
-            var platformOs = GetString(initializeResult, "platformOs");
+            var userAgent = AppServerJsonValueReader.GetString(initializeResult, "userAgent");
+            var platformOs = AppServerJsonValueReader.GetString(initializeResult, "platformOs");
             var isLegacyRuntime = IsKnownRuntimeOlderThan(runtimeVersion, 0, 128, 0);
             var supportsModernProtocol = !isLegacyRuntime;
 
@@ -68,15 +68,15 @@ namespace MyCodex.Infrastructure.AppServer
                 return null;
             }
 
-            var goal = GetDictionary(result, "goal");
-            if (goal.Count == 0 && (!string.IsNullOrWhiteSpace(GetString(result, "objective")) ||
-                                    !string.IsNullOrWhiteSpace(GetString(result, "status"))))
+            var goal = AppServerJsonValueReader.GetDictionary(result, "goal");
+            if (goal.Count == 0 && (!string.IsNullOrWhiteSpace(AppServerJsonValueReader.GetString(result, "objective")) ||
+                                    !string.IsNullOrWhiteSpace(AppServerJsonValueReader.GetString(result, "status"))))
             {
                 goal = result;
             }
 
-            var objective = GetString(goal, "objective");
-            var status = GetString(goal, "status");
+            var objective = AppServerJsonValueReader.GetString(goal, "objective");
+            var status = AppServerJsonValueReader.GetString(goal, "status");
             if (string.IsNullOrWhiteSpace(objective) && string.IsNullOrWhiteSpace(status))
             {
                 return null;
@@ -84,14 +84,14 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new AppServerThreadGoal
             {
-                ThreadId = GetString(goal, "threadId") ?? fallbackThreadId,
+                ThreadId = AppServerJsonValueReader.GetString(goal, "threadId") ?? fallbackThreadId,
                 Objective = objective,
                 Status = status,
-                TokenBudget = GetNullableLong(goal, "tokenBudget"),
-                TokensUsed = GetNullableLong(goal, "tokensUsed") ?? 0,
-                TimeUsedSeconds = GetNullableLong(goal, "timeUsedSeconds") ?? 0,
-                CreatedAt = GetNullableLong(goal, "createdAt") ?? 0,
-                UpdatedAt = GetNullableLong(goal, "updatedAt") ?? 0
+                TokenBudget = AppServerJsonValueReader.GetNullableLong(goal, "tokenBudget"),
+                TokensUsed = AppServerJsonValueReader.GetNullableLong(goal, "tokensUsed") ?? 0,
+                TimeUsedSeconds = AppServerJsonValueReader.GetNullableLong(goal, "timeUsedSeconds") ?? 0,
+                CreatedAt = AppServerJsonValueReader.GetNullableLong(goal, "createdAt") ?? 0,
+                UpdatedAt = AppServerJsonValueReader.GetNullableLong(goal, "updatedAt") ?? 0
             };
         }
 
@@ -168,7 +168,7 @@ namespace MyCodex.Infrastructure.AppServer
                 return explicitVersion.Trim();
             }
 
-            return ExtractRuntimeVersion(GetString(initializeResult, "userAgent"));
+            return ExtractRuntimeVersion(AppServerJsonValueReader.GetString(initializeResult, "userAgent"));
         }
 
         private static string GetLaunchInfoEnvironmentValue(AppServerLaunchInfo launchInfo, string name)
@@ -203,21 +203,6 @@ namespace MyCodex.Infrastructure.AppServer
         {
             var version = ParseRuntimeVersion(versionText);
             return version != null && version.CompareTo(new Version(major, minor, build)) >= 0;
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetDictionary(source, key);
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetString(source, key);
-        }
-
-        private static long? GetNullableLong(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetNullableLong(source, key);
         }
     }
 }

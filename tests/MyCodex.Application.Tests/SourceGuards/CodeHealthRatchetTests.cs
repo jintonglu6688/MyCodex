@@ -40,7 +40,7 @@ namespace MyCodex.Application.Tests.SourceGuards
             new DuplicateHelper("CreateLabel", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?Label\s+CreateLabel\s*\(", null, 15),
             new DuplicateHelper("CreateTextBox", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?\w*TextBox\s+CreateTextBox\s*\(", null, 16),
             new DuplicateHelper("CreateComboBox", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?ComboBox\s+CreateComboBox\s*\(", null, 7),
-            new DuplicateHelper("Infrastructure JSON GetString", @"^\s+private\s+static\s+string\s+GetString\s*\(", "MyCodex.Infrastructure", 26),
+            new DuplicateHelper("Infrastructure JSON GetString", @"^\s+private\s+static\s+string\s+GetString\s*\(", "MyCodex.Infrastructure", 7),
             new DuplicateHelper("TrimToNull", @"^\s+(?:private|internal)\s+static\s+string\s+TrimToNull\s*\(", null, 7),
             new DuplicateHelper("FirstNonEmpty", @"^\s+(?:private|internal)\s+static\s+string\s+FirstNonEmpty\s*\(", null, 11),
             new DuplicateHelper("Localization alias L", @"^\s+(?:private|internal)\s+static\s+string\s+L\s*\(", null, 19)

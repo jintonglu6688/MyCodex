@@ -246,8 +246,8 @@ namespace MyCodex.Infrastructure.AppServer
                 AppServerRuntimeStartupCoordinator.DeleteSensitiveTempFiles(launchInfo);
             }
 
-            var platformText = GetString(initializeResult, "platformOs") ?? L("AppServerClient.Value.Unknown", "Unknown");
-            var userAgentText = GetString(initializeResult, "userAgent") ?? L("AppServerClient.Value.Unknown", "Unknown");
+            var platformText = AppServerJsonValueReader.GetString(initializeResult, "platformOs") ?? L("AppServerClient.Value.Unknown", "Unknown");
+            var userAgentText = AppServerJsonValueReader.GetString(initializeResult, "userAgent") ?? L("AppServerClient.Value.Unknown", "Unknown");
             ProtocolCapabilities = AppServerProtocolMetadataMapper.BuildProtocolCapabilities(appConfig, launchInfo, initializeResult);
             lock (_processStartGate)
             {
@@ -340,8 +340,8 @@ namespace MyCodex.Infrastructure.AppServer
                 toolContext);
             var result = await SendRequestAsync("thread/start", parameters).ConfigureAwait(false);
 
-            var thread = GetDictionary(result, "thread");
-            var threadId = GetString(thread, "id");
+            var thread = AppServerJsonValueReader.GetDictionary(result, "thread");
+            var threadId = AppServerJsonValueReader.GetString(thread, "id");
             if (string.IsNullOrWhiteSpace(threadId))
             {
                 throw new InvalidOperationException(L("AppServerClient.Error.ThreadIdMissing", "App Server did not return a thread ID."));
@@ -418,8 +418,8 @@ namespace MyCodex.Infrastructure.AppServer
 
             var result = await SendRequestAsync("turn/start", parameters, LongRunningRequestTimeoutMs).ConfigureAwait(false);
 
-            var turn = GetDictionary(result, "turn");
-            var turnId = GetString(turn, "id");
+            var turn = AppServerJsonValueReader.GetDictionary(result, "turn");
+            var turnId = AppServerJsonValueReader.GetString(turn, "id");
             if (!string.IsNullOrWhiteSpace(turnId))
             {
                 lock (_syncRoot)
@@ -835,9 +835,9 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new AppServerCommandExecResult
             {
-                ExitCode = GetNullableInt(result, "exitCode") ?? -1,
-                StdOut = GetString(result, "stdout") ?? string.Empty,
-                StdErr = GetString(result, "stderr") ?? string.Empty
+                ExitCode = AppServerJsonValueReader.GetNullableInt(result, "exitCode") ?? -1,
+                StdOut = AppServerJsonValueReader.GetString(result, "stdout") ?? string.Empty,
+                StdErr = AppServerJsonValueReader.GetString(result, "stderr") ?? string.Empty
             };
         }
 
@@ -1588,11 +1588,11 @@ namespace MyCodex.Infrastructure.AppServer
             try
             {
                 var result = await SendRequestAsync("turn/steer", parameters, LongRunningRequestTimeoutMs).ConfigureAwait(false);
-                var turnId = GetString(result, "turnId");
+                var turnId = AppServerJsonValueReader.GetString(result, "turnId");
                 if (string.IsNullOrWhiteSpace(turnId))
                 {
-                    var turn = GetDictionary(result, "turn");
-                    turnId = GetString(turn, "id");
+                    var turn = AppServerJsonValueReader.GetDictionary(result, "turn");
+                    turnId = AppServerJsonValueReader.GetString(turn, "id");
                 }
 
                 if (!string.IsNullOrWhiteSpace(turnId))
@@ -1659,7 +1659,7 @@ namespace MyCodex.Infrastructure.AppServer
                     if (epoch != GetConnectionEpoch()) throw new OperationCanceledException();
                     if (string.Equals(method, "review/start", StringComparison.Ordinal))
                     {
-                        var reviewThreadId = GetString((IDictionary<string, object>)parameters, "threadId");
+                        var reviewThreadId = AppServerJsonValueReader.GetString((IDictionary<string, object>)parameters, "threadId");
                         // thread/closed clears host state during review preparation. Restore
                         // it before review/start can emit an approval or an internal tool call.
                         if (approvalMode.HasValue) _threadApprovalModes[reviewThreadId] = approvalMode.Value;
@@ -2043,7 +2043,7 @@ namespace MyCodex.Infrastructure.AppServer
                 Trace.TraceInformation(AppServerHistoryLoadTrace.BuildLargeMessageText(
                     Convert.ToString(AppServerIncomingMessageRouter.Classify(message), CultureInfo.InvariantCulture),
                     message != null && message.ContainsKey("id") ? Convert.ToString(message["id"], CultureInfo.InvariantCulture) : null,
-                    GetString(message, "method"),
+                    AppServerJsonValueReader.GetString(message, "method"),
                     json.Length,
                     parseMs,
                     watch.ElapsedMilliseconds - parseMs));
@@ -2063,9 +2063,9 @@ namespace MyCodex.Infrastructure.AppServer
                     _dynamicRequestCoordinator.HandleServerRequest(message, connectionEpoch);
                     break;
                 case AppServerIncomingMessageKind.Notification:
-                    if (string.Equals(GetString(message, "method"), "account/login/completed", StringComparison.Ordinal))
+                    if (string.Equals(AppServerJsonValueReader.GetString(message, "method"), "account/login/completed", StringComparison.Ordinal))
                     {
-                        ObserveAuthenticationLoginCompletion(GetString(GetDictionary(message, "params"), "loginId"));
+                        ObserveAuthenticationLoginCompletion(AppServerJsonValueReader.GetString(AppServerJsonValueReader.GetDictionary(message, "params"), "loginId"));
                     }
                     HandleNotification(message);
                     break;
@@ -2132,8 +2132,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         private void HandleNotification(IDictionary<string, object> message)
         {
-            var method = GetString(message, "method");
-            var parameters = GetDictionary(message, "params");
+            var method = AppServerJsonValueReader.GetString(message, "method");
+            var parameters = AppServerJsonValueReader.GetDictionary(message, "params");
             AppServerEventDiagnostics.TraceNotification(method, parameters);
             HandleComputerUseNotification(method, parameters);
             _notificationEventProcessor.HandleNotification(method, parameters);
@@ -2198,8 +2198,8 @@ namespace MyCodex.Infrastructure.AppServer
 
             var result = await SendRequestAsync("thread/resume", parameters).ConfigureAwait(false);
 
-            var thread = GetDictionary(result, "thread");
-            var resumedThreadId = GetString(thread, "id");
+            var thread = AppServerJsonValueReader.GetDictionary(result, "thread");
+            var resumedThreadId = AppServerJsonValueReader.GetString(thread, "id");
             if (string.IsNullOrWhiteSpace(resumedThreadId))
             {
                 throw new InvalidOperationException(L("AppServerClient.Error.ResumeThreadIdMissing", "Failed to restore thread: thread ID was not returned."));
@@ -2899,21 +2899,6 @@ namespace MyCodex.Infrastructure.AppServer
                    message.IndexOf("expected turn", StringComparison.OrdinalIgnoreCase) >= 0 ||
                    message.IndexOf("active turn changed", StringComparison.OrdinalIgnoreCase) >= 0 ||
                    message.IndexOf("precondition", StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetDictionary(source, key);
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetString(source, key);
-        }
-
-        private static int? GetNullableInt(IDictionary<string, object> source, string key)
-        {
-            return AppServerJsonValueReader.GetNullableInt(source, key);
         }
 
         private static object GetRawRequestId(IDictionary<string, object> message)

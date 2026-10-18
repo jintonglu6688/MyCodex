@@ -9,7 +9,7 @@ namespace MyCodex.Infrastructure.AppServer
     {
         public static AppServerConfigRequirementsSnapshot BuildRequirements(IDictionary<string, object> result)
         {
-            var requirements = GetDictionary(result, "requirements");
+            var requirements = AppServerJsonValueReader.GetDictionary(result, "requirements");
             if (requirements.Count == 0)
             {
                 return new AppServerConfigRequirementsSnapshot
@@ -29,15 +29,15 @@ namespace MyCodex.Infrastructure.AppServer
                 AllowedSandboxModes = BuildStringList(requirements, "allowedSandboxModes"),
                 AllowedWebSearchModes = BuildStringList(requirements, "allowedWebSearchModes"),
                 FeatureRequirements = BuildBoolDictionary(requirements, "featureRequirements"),
-                EnforceResidency = GetString(requirements, "enforceResidency"),
+                EnforceResidency = AppServerJsonValueReader.GetString(requirements, "enforceResidency"),
                 NewThreadModelDefaults = BuildNewThreadModelDefaults(requirements)
             };
         }
 
         private static AppServerNewThreadModelDefaults BuildNewThreadModelDefaults(IDictionary<string, object> requirements)
         {
-            var models = GetDictionary(requirements, "models");
-            var newThread = GetDictionary(models, "newThread");
+            var models = AppServerJsonValueReader.GetDictionary(requirements, "models");
+            var newThread = AppServerJsonValueReader.GetDictionary(models, "newThread");
             if (newThread.Count == 0)
             {
                 return null;
@@ -45,9 +45,9 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new AppServerNewThreadModelDefaults
             {
-                ModelId = GetString(newThread, "model"),
-                ModelReasoningEffort = GetString(newThread, "modelReasoningEffort"),
-                ServiceTier = GetString(newThread, "serviceTier")
+                ModelId = AppServerJsonValueReader.GetString(newThread, "model"),
+                ModelReasoningEffort = AppServerJsonValueReader.GetString(newThread, "modelReasoningEffort"),
+                ServiceTier = AppServerJsonValueReader.GetString(newThread, "serviceTier")
             };
         }
 
@@ -84,16 +84,6 @@ namespace MyCodex.Infrastructure.AppServer
             return result;
         }
 
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null &&
-                source.TryGetValue(key, out value) &&
-                value is IDictionary<string, object>
-                    ? (IDictionary<string, object>)value
-                    : new Dictionary<string, object>(StringComparer.Ordinal);
-        }
-
         private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
         {
             object value;
@@ -123,7 +113,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static IDictionary<string, bool> BuildBoolDictionary(IDictionary<string, object> source, string key)
         {
-            var dictionary = GetDictionary(source, key);
+            var dictionary = AppServerJsonValueReader.GetDictionary(source, key);
             var result = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
             foreach (var pair in dictionary)
             {
@@ -144,14 +134,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return result;
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null && source.TryGetValue(key, out value) && value != null
-                ? Convert.ToString(value)
-                : null;
         }
 
         private static void AddUnique(List<string> target, string value)

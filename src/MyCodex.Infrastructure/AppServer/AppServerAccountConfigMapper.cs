@@ -20,7 +20,7 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 HasAccount = HasAccount(accountState),
                 IsAuthenticated = !string.IsNullOrWhiteSpace(normalizedAuthMode) || !string.IsNullOrWhiteSpace(accountType),
-                RequiresOpenAiAuth = GetNullableBool(accountState, "requiresOpenaiAuth").GetValueOrDefault(),
+                RequiresOpenAiAuth = AppServerJsonValueReader.GetNullableBool(accountState, "requiresOpenaiAuth").GetValueOrDefault(),
                 AuthMode = normalizedAuthMode,
                 AccountType = accountType,
                 Email = email,
@@ -30,7 +30,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static bool HasAccount(IDictionary<string, object> accountState)
         {
-            return GetValue(accountState, "account") != null;
+            return AppServerJsonValueReader.GetValue(accountState, "account") != null;
         }
 
         private static string NormalizeAuthMode(string accountType)
@@ -67,11 +67,11 @@ namespace MyCodex.Infrastructure.AppServer
         {
             var snapshot = new AppServerRateLimitsSnapshot();
             var resetCredits = AppServerJsonValue.GetDictionary(result, "rateLimitResetCredits");
-            snapshot.RateLimitResetCreditsAvailableCount = GetNullableInt(resetCredits, "availableCount");
-            if (GetValue(resetCredits, "credits") != null)
+            snapshot.RateLimitResetCreditsAvailableCount = AppServerJsonValueReader.GetNullableInt(resetCredits, "availableCount");
+            if (AppServerJsonValueReader.GetValue(resetCredits, "credits") != null)
             {
                 snapshot.ResetCredits = new List<AppServerRateLimitResetCredit>();
-                foreach (var creditObject in GetArray(resetCredits, "credits"))
+                foreach (var creditObject in AppServerJsonValueReader.GetArray(resetCredits, "credits"))
                 {
                     var credit = creditObject as IDictionary<string, object>;
                     if (credit != null)
@@ -115,19 +115,19 @@ namespace MyCodex.Infrastructure.AppServer
             snapshot.ModelProviderId = AppServerJsonValue.GetString(config, "model_provider");
             snapshot.AuthCredentialsStore = AppServerJsonValue.GetString(config, "cli_auth_credentials_store");
             snapshot.ModelReasoningEffort = AppServerJsonValue.GetString(config, "model_reasoning_effort");
-            snapshot.ApprovalPolicy = DescribeApprovalPolicyValue(GetValue(config, "approval_policy"));
+            snapshot.ApprovalPolicy = DescribeApprovalPolicyValue(AppServerJsonValueReader.GetValue(config, "approval_policy"));
             snapshot.SandboxMode = AppServerJsonValue.GetString(config, "sandbox_mode");
-            snapshot.ModelContextWindow = GetNullableLong(config, "model_context_window");
-            snapshot.ModelAutoCompactTokenLimit = GetNullableLong(config, "model_auto_compact_token_limit");
+            snapshot.ModelContextWindow = AppServerJsonValueReader.GetNullableLong(config, "model_context_window");
+            snapshot.ModelAutoCompactTokenLimit = AppServerJsonValueReader.GetNullableLong(config, "model_auto_compact_token_limit");
             snapshot.ModelReasoningSummary = AppServerJsonValue.GetString(config, "model_reasoning_summary");
             snapshot.ModelVerbosity = AppServerJsonValue.GetString(config, "model_verbosity");
             snapshot.ServiceTier = AppServerJsonValue.GetString(config, "service_tier");
             snapshot.WebSearchMode = AppServerJsonValue.GetString(config, "web_search");
-            snapshot.ToolOutputTokenLimit = GetNullableLong(config, "tool_output_token_limit");
-            snapshot.ProjectDocMaxBytes = GetNullableLong(config, "project_doc_max_bytes");
+            snapshot.ToolOutputTokenLimit = AppServerJsonValueReader.GetNullableLong(config, "tool_output_token_limit");
+            snapshot.ProjectDocMaxBytes = AppServerJsonValueReader.GetNullableLong(config, "project_doc_max_bytes");
 
             var tools = AppServerJsonValue.GetDictionary(config, "tools");
-            snapshot.ViewImageToolEnabled = GetNullableBool(tools, "view_image");
+            snapshot.ViewImageToolEnabled = AppServerJsonValueReader.GetNullableBool(tools, "view_image");
             var webSearchTool = AppServerJsonValue.GetDictionary(tools, "web_search");
             snapshot.WebSearchContextSize = AppServerJsonValue.GetString(webSearchTool, "context_size");
 
@@ -150,7 +150,7 @@ namespace MyCodex.Infrastructure.AppServer
                 };
             }
 
-            foreach (var layerObject in GetArray(result, "layers"))
+            foreach (var layerObject in AppServerJsonValueReader.GetArray(result, "layers"))
             {
                 var layer = layerObject as IDictionary<string, object>;
                 if (layer == null)
@@ -190,12 +190,12 @@ namespace MyCodex.Infrastructure.AppServer
                 ModelId = modelId,
                 DisplayName = displayName,
                 Description = AppServerJsonValue.GetString(source, "description"),
-                IsDefault = GetNullableBool(source, "isDefault").GetValueOrDefault(),
+                IsDefault = AppServerJsonValueReader.GetNullableBool(source, "isDefault").GetValueOrDefault(),
                 DefaultReasoningEffort = AppServerJsonValue.GetString(source, "defaultReasoningEffort"),
                 DefaultServiceTier = AppServerJsonValue.GetString(source, "defaultServiceTier")
             };
 
-            foreach (var effortObject in GetArray(source, "supportedReasoningEfforts"))
+            foreach (var effortObject in AppServerJsonValueReader.GetArray(source, "supportedReasoningEfforts"))
             {
                 var effort = effortObject as IDictionary<string, object>;
                 if (effort == null)
@@ -216,10 +216,10 @@ namespace MyCodex.Infrastructure.AppServer
                 });
             }
 
-            AddServiceTiers(option.ServiceTiers, GetArray(source, "serviceTiers"));
+            AddServiceTiers(option.ServiceTiers, AppServerJsonValueReader.GetArray(source, "serviceTiers"));
             if (option.ServiceTiers.Count == 0)
             {
-                AddServiceTiers(option.ServiceTiers, GetArray(source, "additionalSpeedTiers"));
+                AddServiceTiers(option.ServiceTiers, AppServerJsonValueReader.GetArray(source, "additionalSpeedTiers"));
             }
 
             return option;
@@ -227,8 +227,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static AppServerRateLimitResetCredit BuildRateLimitResetCredit(IDictionary<string, object> source)
         {
-            var grantedAt = GetNullableLong(source, "grantedAt");
-            var expiresAt = GetNullableLong(source, "expiresAt");
+            var grantedAt = AppServerJsonValueReader.GetNullableLong(source, "grantedAt");
+            var expiresAt = AppServerJsonValueReader.GetNullableLong(source, "expiresAt");
             return new AppServerRateLimitResetCredit
             {
                 Id = AppServerJsonValue.GetString(source, "id"),
@@ -301,11 +301,11 @@ namespace MyCodex.Infrastructure.AppServer
                 return null;
             }
 
-            var resetsAt = GetNullableLong(source, "resetsAt");
+            var resetsAt = AppServerJsonValueReader.GetNullableLong(source, "resetsAt");
             return new AppServerRateLimitWindowInfo
             {
-                UsedPercent = GetNullableDecimal(source, "usedPercent").GetValueOrDefault(),
-                WindowDurationMinutes = GetNullableInt(source, "windowDurationMins"),
+                UsedPercent = AppServerJsonValueReader.GetNullableDecimal(source, "usedPercent").GetValueOrDefault(),
+                WindowDurationMinutes = AppServerJsonValueReader.GetNullableInt(source, "windowDurationMins"),
                 ResetsAtLocalTime = resetsAt.HasValue
                     ? (DateTime?)DateTimeOffset.FromUnixTimeSeconds(resetsAt.Value).LocalDateTime
                     : null
@@ -321,8 +321,8 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new AppServerCreditsInfo
             {
-                HasCredits = GetNullableBool(source, "hasCredits").GetValueOrDefault(),
-                Unlimited = GetNullableBool(source, "unlimited").GetValueOrDefault(),
+                HasCredits = AppServerJsonValueReader.GetNullableBool(source, "hasCredits").GetValueOrDefault(),
+                Unlimited = AppServerJsonValueReader.GetNullableBool(source, "unlimited").GetValueOrDefault(),
                 Balance = AppServerJsonValue.GetString(source, "balance")
             };
         }
@@ -383,116 +383,6 @@ namespace MyCodex.Infrastructure.AppServer
         private static string GetConfigLayerSourceType(IDictionary<string, object> source)
         {
             return AppServerJsonValue.GetString(source, "type") ?? string.Empty;
-        }
-
-        private static object GetValue(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source != null && source.TryGetValue(key, out value))
-            {
-                return value;
-            }
-
-            return null;
-        }
-
-        private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                yield break;
-            }
-
-            var array = value as object[];
-            if (array != null)
-            {
-                foreach (var item in array)
-                {
-                    yield return item;
-                }
-
-                yield break;
-            }
-
-            var enumerable = value as System.Collections.IEnumerable;
-            if (enumerable == null || value is string)
-            {
-                yield break;
-            }
-
-            foreach (var item in enumerable)
-            {
-                yield return item;
-            }
-        }
-
-        private static bool? GetNullableBool(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                return null;
-            }
-
-            bool result;
-            if (bool.TryParse(Convert.ToString(value), out result))
-            {
-                return result;
-            }
-
-            return null;
-        }
-
-        private static int? GetNullableInt(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                return null;
-            }
-
-            int result;
-            if (int.TryParse(Convert.ToString(value), out result))
-            {
-                return result;
-            }
-
-            return null;
-        }
-
-        private static long? GetNullableLong(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                return null;
-            }
-
-            long result;
-            if (long.TryParse(Convert.ToString(value), out result))
-            {
-                return result;
-            }
-
-            return null;
-        }
-
-        private static decimal? GetNullableDecimal(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                return null;
-            }
-
-            decimal result;
-            if (decimal.TryParse(Convert.ToString(value), out result))
-            {
-                return result;
-            }
-
-            return null;
         }
 
         private static string GetFirstNonEmpty(params string[] values)

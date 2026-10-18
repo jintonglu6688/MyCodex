@@ -8,7 +8,7 @@ namespace MyCodex.Infrastructure.AppServer
     {
         internal static AppServerWindowsSandboxReadiness BuildReadiness(IDictionary<string, object> result)
         {
-            var rawStatus = GetString(result, "status");
+            var rawStatus = AppServerJsonValueReader.GetString(result, "status");
             return new AppServerWindowsSandboxReadiness
             {
                 RawStatus = rawStatus,
@@ -26,13 +26,13 @@ namespace MyCodex.Infrastructure.AppServer
 
         internal static AppServerWindowsSandboxSetupCompletedEvent BuildSetupCompleted(IDictionary<string, object> parameters)
         {
-            var rawMode = GetString(parameters, "mode");
+            var rawMode = AppServerJsonValueReader.GetString(parameters, "mode");
             return new AppServerWindowsSandboxSetupCompletedEvent
             {
                 RawMode = rawMode,
                 Mode = MapSetupMode(rawMode),
                 Success = GetBool(parameters, "success"),
-                Error = GetString(parameters, "error")
+                Error = AppServerJsonValueReader.GetString(parameters, "error")
             };
         }
 
@@ -61,14 +61,6 @@ namespace MyCodex.Infrastructure.AppServer
             return string.Equals(rawMode, "elevated", StringComparison.Ordinal)
                 ? AppServerWindowsSandboxSetupMode.Elevated
                 : AppServerWindowsSandboxSetupMode.Unelevated;
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null && source.TryGetValue(key, out value) && value != null
-                ? Convert.ToString(value)
-                : null;
         }
 
         private static bool GetBool(IDictionary<string, object> source, string key)

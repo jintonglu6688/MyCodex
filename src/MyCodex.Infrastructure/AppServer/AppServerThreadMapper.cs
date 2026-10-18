@@ -14,18 +14,18 @@ namespace MyCodex.Infrastructure.AppServer
             IDictionary<string, object> thread,
             Func<string, string> mapServerPathToClient)
         {
-            var source = GetDictionary(thread, "source");
-            var subAgent = GetDictionary(source, "subAgent");
+            var source = AppServerJsonValueReader.GetDictionary(thread, "source");
+            var subAgent = AppServerJsonValueReader.GetDictionary(source, "subAgent");
             if (subAgent.Count == 0)
             {
-                subAgent = GetDictionary(source, "subagent");
+                subAgent = AppServerJsonValueReader.GetDictionary(source, "subagent");
             }
-            var threadSpawn = GetDictionary(subAgent, "thread_spawn");
-            var legacyParentThreadId = GetString(threadSpawn, "parent_thread_id");
-            var parentThreadId = FirstNonBlank(GetString(thread, "parentThreadId"), legacyParentThreadId);
+            var threadSpawn = AppServerJsonValueReader.GetDictionary(subAgent, "thread_spawn");
+            var legacyParentThreadId = AppServerJsonValueReader.GetString(threadSpawn, "parent_thread_id");
+            var parentThreadId = FirstNonBlank(AppServerJsonValueReader.GetString(thread, "parentThreadId"), legacyParentThreadId);
             var parentConflict = !string.IsNullOrWhiteSpace(legacyParentThreadId) &&
                 !string.Equals(parentThreadId, legacyParentThreadId, StringComparison.Ordinal);
-            var threadSource = GetString(thread, "thread_source");
+            var threadSource = AppServerJsonValueReader.GetString(thread, "thread_source");
             if (string.IsNullOrWhiteSpace(threadSource) && !string.IsNullOrWhiteSpace(parentThreadId))
             {
                 threadSource = "subagent";
@@ -33,25 +33,25 @@ namespace MyCodex.Infrastructure.AppServer
 
             return new AppServerThreadSummary
             {
-                ThreadId = GetString(thread, "id"),
-                Title = GetString(thread, "name"),
-                Preview = GetString(thread, "preview"),
-                ModelProviderId = GetString(thread, "modelProvider"),
+                ThreadId = AppServerJsonValueReader.GetString(thread, "id"),
+                Title = AppServerJsonValueReader.GetString(thread, "name"),
+                Preview = AppServerJsonValueReader.GetString(thread, "preview"),
+                ModelProviderId = AppServerJsonValueReader.GetString(thread, "modelProvider"),
                 WorkingDirectory = LocalSessionCatalog.NormalizeLocalThreadWorkingDirectory(
-                    MapServerPathToClient(mapServerPathToClient, GetString(thread, "cwd"))),
+                    MapServerPathToClient(mapServerPathToClient, AppServerJsonValueReader.GetString(thread, "cwd"))),
                 Source = ResolveSessionSourceText(thread, threadSource),
                 ThreadSource = threadSource,
                 ParentThreadId = parentThreadId,
                 SubAgentSourceKind = threadSpawn.Count > 0 ? "thread_spawn" :
-                    FirstNonBlank(GetValue(source, "subAgent") as string, GetValue(source, "subagent") as string),
+                    FirstNonBlank(AppServerJsonValueReader.GetValue(source, "subAgent") as string, AppServerJsonValueReader.GetValue(source, "subagent") as string),
                 ParentThreadIdConflict = parentConflict,
-                ThreadStatus = AppServerAgentActivityMapper.MapThreadStatus(GetDictionary(thread, "status")),
-                SubagentDepth = GetNullableInt(threadSpawn, "depth"),
-                AgentNickname = FirstNonBlank(GetString(thread, "agentNickname"), GetString(thread, "agent_nickname"), GetString(threadSpawn, "agent_nickname")),
-                AgentRole = FirstNonBlank(GetString(thread, "agentRole"), GetString(thread, "agent_role"), GetString(threadSpawn, "agent_role")),
-                CreatedAt = FromUnixTime(GetNullableLong(thread, "createdAt")),
-                UpdatedAt = FromUnixTime(GetNullableLong(thread, "updatedAt")),
-                SessionPath = MapServerPathToClient(mapServerPathToClient, GetString(thread, "path"))
+                ThreadStatus = AppServerAgentActivityMapper.MapThreadStatus(AppServerJsonValueReader.GetDictionary(thread, "status")),
+                SubagentDepth = AppServerJsonValueReader.GetNullableInt(threadSpawn, "depth"),
+                AgentNickname = FirstNonBlank(AppServerJsonValueReader.GetString(thread, "agentNickname"), AppServerJsonValueReader.GetString(thread, "agent_nickname"), AppServerJsonValueReader.GetString(threadSpawn, "agent_nickname")),
+                AgentRole = FirstNonBlank(AppServerJsonValueReader.GetString(thread, "agentRole"), AppServerJsonValueReader.GetString(thread, "agent_role"), AppServerJsonValueReader.GetString(threadSpawn, "agent_role")),
+                CreatedAt = FromUnixTime(AppServerJsonValueReader.GetNullableLong(thread, "createdAt")),
+                UpdatedAt = FromUnixTime(AppServerJsonValueReader.GetNullableLong(thread, "updatedAt")),
+                SessionPath = MapServerPathToClient(mapServerPathToClient, AppServerJsonValueReader.GetString(thread, "path"))
             };
         }
 
@@ -82,7 +82,7 @@ namespace MyCodex.Infrastructure.AppServer
             };
 
             var turnIndex = 0;
-            foreach (var turnObject in GetArray(thread, "turns"))
+            foreach (var turnObject in AppServerJsonValueReader.GetArray(thread, "turns"))
             {
                 var turn = turnObject as IDictionary<string, object>;
                 if (turn == null)
@@ -91,13 +91,13 @@ namespace MyCodex.Infrastructure.AppServer
                 }
 
                 turnIndex++;
-                var turnId = GetString(turn, "id");
+                var turnId = AppServerJsonValueReader.GetString(turn, "id");
                 if (!string.IsNullOrWhiteSpace(turnId))
                 {
-                    details.TurnStatuses[turnId] = GetString(turn, "status");
+                    details.TurnStatuses[turnId] = AppServerJsonValueReader.GetString(turn, "status");
                 }
                 var turnItemIndex = 0;
-                foreach (var itemObject in GetArray(turn, "items"))
+                foreach (var itemObject in AppServerJsonValueReader.GetArray(turn, "items"))
                 {
                     turnItemIndex++;
                     var item = itemObject as IDictionary<string, object>;
@@ -122,7 +122,7 @@ namespace MyCodex.Infrastructure.AppServer
             int turnIndex,
             int turnItemIndex)
         {
-            var itemType = GetString(item, "type");
+            var itemType = AppServerJsonValueReader.GetString(item, "type");
             if (string.IsNullOrWhiteSpace(itemType))
             {
                 return;
@@ -145,28 +145,28 @@ namespace MyCodex.Infrastructure.AppServer
                     }
                     break;
                 case "agentMessage":
-                    var agentText = GetString(item, "text");
+                    var agentText = AppServerJsonValueReader.GetString(item, "text");
                     if (AssistantMessageUtility.HasDisplayableContent(agentText))
                     {
                         details.Messages.Add(CreateMessage(threadId, turnId, turnIndex, turnItemIndex, item, "Codex", agentText));
                     }
                     break;
                 case "plan":
-                    var planText = GetString(item, "text");
+                    var planText = AppServerJsonValueReader.GetString(item, "text");
                     if (!string.IsNullOrWhiteSpace(planText))
                     {
                         details.Messages.Add(CreateMessage(threadId, turnId, turnIndex, turnItemIndex, item, "Codex", BuildPlanMessageText(planText)));
                     }
                     break;
                 case "enteredReviewMode":
-                    var enteredReviewText = GetString(item, "review");
+                    var enteredReviewText = AppServerJsonValueReader.GetString(item, "review");
                     if (!string.IsNullOrWhiteSpace(enteredReviewText))
                     {
                         details.Messages.Add(CreateMessage(threadId, turnId, turnIndex, turnItemIndex, item, "System", L("AppServerClient.Review.Entered.Prefix", "Entered review mode: ") + enteredReviewText));
                     }
                     break;
                 case "exitedReviewMode":
-                    var exitedReviewText = GetString(item, "review");
+                    var exitedReviewText = AppServerJsonValueReader.GetString(item, "review");
                     if (!string.IsNullOrWhiteSpace(exitedReviewText))
                     {
                         details.Messages.Add(CreateMessage(threadId, turnId, turnIndex, turnItemIndex, item, "System", L("AppServerClient.Review.Exited.Prefix", "Exited review mode: ") + exitedReviewText));
@@ -190,7 +190,7 @@ namespace MyCodex.Infrastructure.AppServer
                 TurnId = turnId,
                 TurnIndex = turnIndex,
                 TurnItemIndex = turnItemIndex,
-                SourceItemId = GetString(item, "id"),
+                SourceItemId = AppServerJsonValueReader.GetString(item, "id"),
                 Sender = sender,
                 Content = content
             };
@@ -202,7 +202,7 @@ namespace MyCodex.Infrastructure.AppServer
             var imageNames = new List<string>();
             var fileNames = new List<string>();
 
-            foreach (var contentObject in GetArray(item, "content"))
+            foreach (var contentObject in AppServerJsonValueReader.GetArray(item, "content"))
             {
                 var content = contentObject as IDictionary<string, object>;
                 if (content == null)
@@ -210,10 +210,10 @@ namespace MyCodex.Infrastructure.AppServer
                     continue;
                 }
 
-                var contentType = GetString(content, "type");
+                var contentType = AppServerJsonValueReader.GetString(content, "type");
                 if (string.Equals(contentType, "text", StringComparison.OrdinalIgnoreCase))
                 {
-                    var text = GetString(content, "text");
+                    var text = AppServerJsonValueReader.GetString(content, "text");
                     if (!string.IsNullOrWhiteSpace(text))
                     {
                         parts.Add(text);
@@ -221,7 +221,7 @@ namespace MyCodex.Infrastructure.AppServer
                 }
                 else if (string.Equals(contentType, "localImage", StringComparison.OrdinalIgnoreCase))
                 {
-                    var path = GetString(content, "path");
+                    var path = AppServerJsonValueReader.GetString(content, "path");
                     if (!string.IsNullOrWhiteSpace(path))
                     {
                         imageNames.Add(Path.GetFileName(path));
@@ -229,7 +229,7 @@ namespace MyCodex.Infrastructure.AppServer
                 }
                 else if (string.Equals(contentType, "image", StringComparison.OrdinalIgnoreCase))
                 {
-                    var url = GetString(content, "url");
+                    var url = AppServerJsonValueReader.GetString(content, "url");
                     if (!string.IsNullOrWhiteSpace(url))
                     {
                         imageNames.Add(ExtractImageDisplayName(url));
@@ -237,8 +237,8 @@ namespace MyCodex.Infrastructure.AppServer
                 }
                 else if (string.Equals(contentType, "mention", StringComparison.OrdinalIgnoreCase))
                 {
-                    var path = GetString(content, "path");
-                    var name = GetString(content, "name");
+                    var path = AppServerJsonValueReader.GetString(content, "path");
+                    var name = AppServerJsonValueReader.GetString(content, "name");
                     if (IsLikelyFileMention(path))
                     {
                         fileNames.Add(ExtractMentionDisplayName(name, path));
@@ -374,98 +374,8 @@ namespace MyCodex.Infrastructure.AppServer
         private static string ResolveSessionSourceText(IDictionary<string, object> thread, string threadSource)
         {
             return string.IsNullOrWhiteSpace(threadSource)
-                ? GetSessionSourceText(GetValue(thread, "source"))
+                ? GetSessionSourceText(AppServerJsonValueReader.GetValue(thread, "source"))
                 : threadSource;
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source != null && source.TryGetValue(key, out value))
-            {
-                var dictionary = value as IDictionary<string, object>;
-                if (dictionary != null)
-                {
-                    return dictionary;
-                }
-            }
-
-            return new Dictionary<string, object>(StringComparer.Ordinal);
-        }
-
-        private static object GetValue(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null && source.TryGetValue(key, out value)
-                ? value
-                : null;
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            object value;
-            return source != null && source.TryGetValue(key, out value) && value != null
-                ? Convert.ToString(value, CultureInfo.CurrentCulture)
-                : null;
-        }
-
-        private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                yield break;
-            }
-
-            var array = value as object[];
-            if (array != null)
-            {
-                foreach (var item in array)
-                {
-                    yield return item;
-                }
-
-                yield break;
-            }
-
-            var enumerable = value as System.Collections.IEnumerable;
-            if (enumerable == null || value is string)
-            {
-                yield break;
-            }
-
-            foreach (var item in enumerable)
-            {
-                yield return item;
-            }
-        }
-
-        private static long? GetNullableLong(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                return null;
-            }
-
-            long result;
-            return long.TryParse(Convert.ToString(value, CultureInfo.CurrentCulture), out result)
-                ? (long?)result
-                : null;
-        }
-
-        private static int? GetNullableInt(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                return null;
-            }
-
-            int result;
-            return int.TryParse(Convert.ToString(value, CultureInfo.CurrentCulture), out result)
-                ? (int?)result
-                : null;
         }
 
         private static string MapServerPathToClient(Func<string, string> mapper, string path)

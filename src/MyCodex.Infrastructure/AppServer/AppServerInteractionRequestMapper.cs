@@ -76,7 +76,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             var result = new List<AppServerToolUserInputQuestion>();
             var index = 0;
-            foreach (var questionObject in GetArray(item, "questions"))
+            foreach (var questionObject in AppServerJsonValueReader.GetArray(item, "questions"))
             {
                 var question = questionObject as IDictionary<string, object>;
                 var title = AppServerJsonValue.GetString(question, "title");
@@ -92,7 +92,7 @@ namespace MyCodex.Infrastructure.AppServer
                     Question = title.Trim()
                 };
 
-                foreach (var optionObject in GetArray(question, "options"))
+                foreach (var optionObject in AppServerJsonValueReader.GetArray(question, "options"))
                 {
                     var label = Convert.ToString(optionObject, CultureInfo.InvariantCulture);
                     if (!string.IsNullOrWhiteSpace(label))
@@ -383,7 +383,7 @@ namespace MyCodex.Infrastructure.AppServer
         private static string BuildFileChangeApprovalDetails(IDictionary<string, object> parameters)
         {
             var lines = new List<string>();
-            AddFileChangeApprovalLines(lines, GetArray(parameters, "changes"));
+            AddFileChangeApprovalLines(lines, AppServerJsonValueReader.GetArray(parameters, "changes"));
             if (lines.Count == 0)
             {
                 var line = BuildFileChangeApprovalLine(parameters);
@@ -434,7 +434,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static string BuildFileChangeApprovalLine(IDictionary<string, object> change)
         {
-            var path = AppServerTurnPayloadMapper.NormalizeChangedFilePath(GetFirstNonEmptyString(
+            var path = AppServerTurnPayloadMapper.NormalizeChangedFilePath(AppServerJsonValueReader.GetFirstNonEmptyString(
                 change,
                 "path",
                 "filePath",
@@ -446,14 +446,14 @@ namespace MyCodex.Infrastructure.AppServer
                 "file",
                 "name",
                 "uri"));
-            var movePath = AppServerTurnPayloadMapper.NormalizeChangedFilePath(GetFirstNonEmptyString(
+            var movePath = AppServerTurnPayloadMapper.NormalizeChangedFilePath(AppServerJsonValueReader.GetFirstNonEmptyString(
                 change,
                 "move_path",
                 "movePath",
                 "toPath",
                 "newPath",
                 "destinationPath"));
-            var kind = NormalizeFileChangeKind(GetFirstNonEmptyString(
+            var kind = NormalizeFileChangeKind(AppServerJsonValueReader.GetFirstNonEmptyString(
                 change,
                 "kind",
                 "operation",
@@ -516,7 +516,7 @@ namespace MyCodex.Infrastructure.AppServer
         private static List<AppServerToolUserInputQuestion> BuildToolUserInputQuestions(IDictionary<string, object> parameters)
         {
             var result = new List<AppServerToolUserInputQuestion>();
-            foreach (var questionObject in GetArray(parameters, "questions"))
+            foreach (var questionObject in AppServerJsonValueReader.GetArray(parameters, "questions"))
             {
                 var question = questionObject as IDictionary<string, object>;
                 if (question == null)
@@ -535,12 +535,12 @@ namespace MyCodex.Infrastructure.AppServer
                     Id = id,
                     Header = AppServerJsonValue.GetString(question, "header"),
                     Question = AppServerJsonValue.GetString(question, "question"),
-                    Description = GetFirstNonEmptyString(question, "description", "summary", "details"),
-                    IsOther = GetNullableBool(question, "isOther").GetValueOrDefault(),
-                    IsSecret = GetNullableBool(question, "isSecret").GetValueOrDefault()
+                    Description = AppServerJsonValueReader.GetFirstNonEmptyString(question, "description", "summary", "details"),
+                    IsOther = AppServerJsonValueReader.GetNullableBool(question, "isOther").GetValueOrDefault(),
+                    IsSecret = AppServerJsonValueReader.GetNullableBool(question, "isSecret").GetValueOrDefault()
                 };
 
-                foreach (var optionObject in GetArray(question, "options"))
+                foreach (var optionObject in AppServerJsonValueReader.GetArray(question, "options"))
                 {
                     var option = optionObject as IDictionary<string, object>;
                     if (option == null)
@@ -595,7 +595,7 @@ namespace MyCodex.Infrastructure.AppServer
                     continue;
                 }
 
-                var title = GetFirstNonEmptyString(propertySchema, "title") ?? pair.Key;
+                var title = AppServerJsonValueReader.GetFirstNonEmptyString(propertySchema, "title") ?? pair.Key;
                 var description = BuildMcpElicitationQuestionDescription(propertySchema, required.Contains(pair.Key));
                 var question = new AppServerToolUserInputQuestion
                 {
@@ -671,7 +671,7 @@ namespace MyCodex.Infrastructure.AppServer
         private static List<AppServerToolUserInputOption> GetMcpElicitationOptions(IDictionary<string, object> schema)
         {
             var result = new List<AppServerToolUserInputOption>();
-            var oneOfValues = GetArray(schema, "oneOf").Concat(GetArray(schema, "anyOf"));
+            var oneOfValues = AppServerJsonValueReader.GetArray(schema, "oneOf").Concat(AppServerJsonValueReader.GetArray(schema, "anyOf"));
             foreach (var item in oneOfValues)
             {
                 var itemSchema = item as IDictionary<string, object>;
@@ -688,7 +688,7 @@ namespace MyCodex.Infrastructure.AppServer
 
                 result.Add(new AppServerToolUserInputOption
                 {
-                    Label = GetFirstNonEmptyString(itemSchema, "title") ?? value,
+                    Label = AppServerJsonValueReader.GetFirstNonEmptyString(itemSchema, "title") ?? value,
                     Value = value,
                     Description = AppServerJsonValue.GetString(itemSchema, "description")
                 });
@@ -841,25 +841,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
         }
 
-        private static string GetFirstNonEmptyString(IDictionary<string, object> values, params string[] names)
-        {
-            if (values == null || names == null)
-            {
-                return null;
-            }
-
-            for (var i = 0; i < names.Length; i++)
-            {
-                var value = AppServerJsonValue.GetString(values, names[i]);
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    return value;
-                }
-            }
-
-            return null;
-        }
-
         private static string BuildToolUserInputMessage(IReadOnlyList<AppServerToolUserInputQuestion> questions)
         {
             if (questions == null || questions.Count == 0)
@@ -945,7 +926,7 @@ namespace MyCodex.Infrastructure.AppServer
                 }
             }
 
-            if (network.Count > 0 && GetNullableBool(network, "enabled").GetValueOrDefault())
+            if (network.Count > 0 && AppServerJsonValueReader.GetNullableBool(network, "enabled").GetValueOrDefault())
             {
                 builder.Append(L("AppServerClient.Permissions.NetworkAllowed", "Network: allowed"));
             }
@@ -969,54 +950,6 @@ namespace MyCodex.Infrastructure.AppServer
                 {
                     return array;
                 }
-            }
-
-            return null;
-        }
-
-        private static IEnumerable<object> GetArray(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                yield break;
-            }
-
-            var array = value as object[];
-            if (array != null)
-            {
-                foreach (var item in array)
-                {
-                    yield return item;
-                }
-
-                yield break;
-            }
-
-            var enumerable = value as System.Collections.IEnumerable;
-            if (enumerable == null || value is string)
-            {
-                yield break;
-            }
-
-            foreach (var item in enumerable)
-            {
-                yield return item;
-            }
-        }
-
-        private static bool? GetNullableBool(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                return null;
-            }
-
-            bool result;
-            if (bool.TryParse(Convert.ToString(value), out result))
-            {
-                return result;
             }
 
             return null;

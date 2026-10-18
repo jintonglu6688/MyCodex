@@ -291,7 +291,7 @@ namespace MyCodex.Infrastructure.AppServer
                         "subagent"),
                     "thread_spawn");
                 var parentThreadId = AppServerJsonValue.GetString(threadSpawn, "parent_thread_id");
-                var subagentDepth = GetNullableInt(threadSpawn, "depth");
+                var subagentDepth = AppServerJsonValueReader.GetNullableInt(threadSpawn, "depth");
                 if (string.IsNullOrWhiteSpace(threadSource) && !string.IsNullOrWhiteSpace(parentThreadId))
                 {
                     threadSource = "subagent";
@@ -385,7 +385,7 @@ namespace MyCodex.Infrastructure.AppServer
                         "subagent"),
                     "thread_spawn");
                 var parentThreadId = AppServerJsonValue.GetString(threadSpawn, "parent_thread_id");
-                var subagentDepth = GetNullableInt(threadSpawn, "depth");
+                var subagentDepth = AppServerJsonValueReader.GetNullableInt(threadSpawn, "depth");
                 if (string.IsNullOrWhiteSpace(threadSource) && !string.IsNullOrWhiteSpace(parentThreadId))
                 {
                     threadSource = "subagent";
@@ -539,20 +539,6 @@ namespace MyCodex.Infrastructure.AppServer
             return value is IDictionary<string, object>
                 ? null
                 : Convert.ToString(value, CultureInfo.CurrentCulture);
-        }
-
-        private static int? GetNullableInt(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                return null;
-            }
-
-            int result;
-            return int.TryParse(Convert.ToString(value, CultureInfo.CurrentCulture), out result)
-                ? (int?)result
-                : null;
         }
 
         private static string NormalizeDriveRelativeWindowsPath(string path)
