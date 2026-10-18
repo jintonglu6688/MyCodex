@@ -16,8 +16,8 @@ namespace MyCodex.Application.Tests.SourceGuards
     [Category(SourceGuardCategory.Placement)]
     public sealed class CodeHealthRatchetTests
     {
-        private const int MainFormPartialNonEmptyLinesCeiling = 23435;
-        private const int MainFormCoreFileNonEmptyLinesCeiling = 2996;
+        private const int MainFormPartialNonEmptyLinesCeiling = 22761;
+        private const int MainFormCoreFileNonEmptyLinesCeiling = 2960;
         private const int MainFormFieldCeiling = 364;
         private const int MethodsOver150LinesCeiling = 13;
         private const int FilesOver1200LinesCeiling = 23;
@@ -26,6 +26,7 @@ namespace MyCodex.Application.Tests.SourceGuards
         private const int LargeFileLineLimit = 1200;
 
         private static readonly Regex MainFormPartialFileName = new Regex(@"^MainForm(\..+)?\.cs$", RegexOptions.CultureInvariant);
+        private static readonly Regex UsingDirective = new Regex(@"^using\s+[\w\.=\s]+;\s*$", RegexOptions.CultureInvariant);
         private static readonly Regex FieldDeclaration = new Regex(
             @"^        (?:private|internal|protected)\s+(?:static\s+)?(?:readonly\s+)?[\w<>\[\],\.\? ]+?\s+_\w+\s*(?:=|;)",
             RegexOptions.CultureInvariant);
@@ -106,9 +107,10 @@ namespace MyCodex.Application.Tests.SourceGuards
             Assert.That(partials, Is.Not.Empty);
         }
 
+        /// <summary>Counts non-empty lines other than using directives, so moving a type to another namespace is not growth.</summary>
         private static int CountNonEmptyLines(string path)
         {
-            return File.ReadLines(path).Count(line => line.Trim().Length > 0);
+            return File.ReadLines(path).Count(line => line.Trim().Length > 0 && !UsingDirective.IsMatch(line));
         }
 
         private static int CountFields(string path)
