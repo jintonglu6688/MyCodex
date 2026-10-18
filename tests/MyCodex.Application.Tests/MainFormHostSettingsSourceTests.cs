@@ -1,4 +1,5 @@
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -9,7 +10,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void HostSettingsComposition_UsesExistingRuntimeDefaultsAndSafeScopeData()
         {
-            var source = ReadFormSource("MainForm.HostSettings.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.HostSettings.cs");
 
             Assert.That(source, Does.Contain("GetRemoteAvailableModelsAsync"));
             Assert.That(source, Does.Contain("SaveRemoteOfficialModelDefaultsAsync"));
@@ -27,9 +28,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void PermissionLabels_AreSharedByOptionsAndRemoteSettings()
         {
-            var labels = ReadFormSource("CustomApprovalPermissionDisplayText.cs");
-            var options = ReadFormSource("OptionsForm.cs");
-            var host = ReadFormSource("MainForm.HostSettings.cs");
+            var labels = RepositorySource.ReadSourceFile("CustomApprovalPermissionDisplayText.cs");
+            var options = RepositorySource.ReadSourceFile("OptionsForm.cs");
+            var host = RepositorySource.ReadSourceFile("MainForm.HostSettings.cs");
 
             Assert.That(labels, Does.Contain("CustomApprovalPermission.GitInspect"));
             Assert.That(options, Does.Contain("CustomApprovalPermissionDisplayText.Get(permission)"));
@@ -39,28 +40,14 @@ namespace MyCodex.Application.Tests
         [Test]
         public void HostSettingsMutation_RefreshesWithoutReloadingSessionHistory()
         {
-            var host = ReadFormSource("MainForm.HostSettings.cs");
-            var mutations = ReadFormSource("MainForm.RemoteHostMutations.cs");
+            var host = RepositorySource.ReadSourceFile("MainForm.HostSettings.cs");
+            var mutations = RepositorySource.ReadSourceFile("MainForm.RemoteHostMutations.cs");
 
             Assert.That(mutations, Does.Contain("RefreshAfterRemoteHostSettingsUpdateAsync"));
             Assert.That(host, Does.Contain("RefreshGlobalServerConfigAsync(false)"));
             Assert.That(host, Does.Contain("LoadAvailableModelsAsync(false)"));
             Assert.That(host, Does.Not.Contain("LoadPersistedState"));
             Assert.That(host, Does.Not.Contain("LoadSessionHistory"));
-        }
-
-        private static string ReadFormSource(string fileName)
-        {
-            return File.ReadAllText(Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                fileName)));
         }
     }
 }

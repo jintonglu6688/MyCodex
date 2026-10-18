@@ -1,4 +1,5 @@
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -9,17 +10,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void HostSettingsBehavior_LivesInFocusedPartial()
         {
-            var directory = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.Application",
-                "CodingRemote"));
-            var main = File.ReadAllText(Path.Combine(directory, "RemoteCommandDispatcher.cs"));
-            var focusedPath = Path.Combine(directory, "RemoteCommandDispatcher.HostSettings.cs");
+            var main = RepositorySource.ReadSourceFile("RemoteCommandDispatcher.cs");
+            var focusedPath = RepositorySource.GetPath("src", "MyCodex.Application", "CodingRemote", "RemoteCommandDispatcher.HostSettings.cs");
 
             Assert.That(File.Exists(focusedPath), Is.True, "Focused host settings dispatcher partial should exist.");
             Assert.That(main, Does.Contain("public sealed partial class RemoteCommandDispatcher"));

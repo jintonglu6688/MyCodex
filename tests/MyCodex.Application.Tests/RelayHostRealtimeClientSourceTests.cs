@@ -5,6 +5,7 @@ using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading;
 using MyCodex.Application.RemoteRelay;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Infrastructure.RemoteRelay;
 using NUnit.Framework;
 
@@ -16,7 +17,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WebSocketSends_UsePerChannelSecureSendGate()
         {
-            var source = ReadSource("src", "MyCodex.Infrastructure", "RemoteRelay", "RelayHostRealtimeClient.cs");
+            var source = RepositorySource.ReadSourceFile("RelayHostRealtimeClient.cs");
 
             Assert.That(source, Does.Contain("new SecureRelayChannel("));
             Assert.That(source, Does.Not.Contain("RelayEnvelope request"));
@@ -137,23 +138,6 @@ namespace MyCodex.Application.Tests
             var method = typeof(RelayHostRealtimeClient).GetMethod("BuildWebSocketUri", BindingFlags.Static | BindingFlags.NonPublic);
             Assert.That(method, Is.Not.Null);
             return (Uri)method.Invoke(null, new object[] { config, "host_a", "device_a", "session_a" });
-        }
-
-        private static string ReadSource(params string[] parts)
-        {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null)
-            {
-                var candidate = Path.Combine(directory.FullName, Path.Combine(parts));
-                if (File.Exists(candidate))
-                {
-                    return File.ReadAllText(candidate);
-                }
-
-                directory = directory.Parent;
-            }
-
-            throw new FileNotFoundException("Could not locate source file.", Path.Combine(parts));
         }
     }
 }

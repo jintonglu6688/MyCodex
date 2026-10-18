@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Theming;
@@ -262,14 +263,13 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ThemeSource_CustomColorsStayInFactoriesAndMainSplittersUseWindowBackground()
         {
-            var root = Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", ".."));
-            var source = File.ReadAllText(Path.Combine(root, "src", "MyCodex.WinForms", "Theming", "UiTheme.cs"));
+            var source = RepositorySource.ReadSourceFile("UiTheme.cs");
             var outsideFactories = Regex.Replace(source,
                 @"        private static UiThemePalette Create(Light|Dark|HighContrast)Palette\(\).*?\r?\n        }",
                 string.Empty, RegexOptions.Singleline);
             Assert.That(outsideFactories, Does.Not.Contain("Color.FromArgb"));
 
-            var layout = File.ReadAllText(Path.Combine(root, "src", "MyCodex.WinForms", "Forms", "MainForm.Layout.cs"));
+            var layout = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
             foreach (var name in new[] { "_mainSplitContainer", "_contentSplitContainer" })
             {
                 Assert.That(layout, Does.Match(name + @" = new SplitContainer\s*{[^}]*BackColor = UiTheme.WindowBackColor,"));

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MyCodex.Application.CodingRemote;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.RemoteRelay;
@@ -19,19 +20,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void DefaultConstructor_UsesTheSameAppServerFacadeForPluginAndSkillObservations()
         {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null && !Directory.Exists(Path.Combine(directory.FullName, "src")))
-            {
-                directory = directory.Parent;
-            }
-
-            Assert.That(directory, Is.Not.Null);
-            var source = File.ReadAllText(Path.Combine(
-                directory.FullName,
-                "src",
-                "MyCodex.Infrastructure",
-                "RemoteRelay",
-                "AppServerCodingRemoteAttachmentCatalogOperator.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerCodingRemoteAttachmentCatalogOperator.cs");
 
             Assert.That(source, Does.Contain(": this(appStateStore, appServerClient, AppInteractionMode.Coding)"));
         }

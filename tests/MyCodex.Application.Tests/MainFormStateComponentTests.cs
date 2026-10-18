@@ -12,6 +12,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
 using MyCodex.Application.Tests.Fakes;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
@@ -2526,7 +2527,6 @@ namespace MyCodex.Application.Tests
             }
 
 
-
             public override Task CompactThreadAsync(string threadId, string workspacePath, ApprovalMode? approvalMode, string modelId)
             {
                 throw new NotSupportedException();
@@ -2638,7 +2638,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainFormSource_OfficeInstructionsUseCapabilityFirstToolGuidance()
         {
-            var mainFormSource = File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, @"..\..\..\..\src\MyCodex.WinForms\Forms\MainForm.cs"));
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
             var instructions = MyCodex.Application.Capabilities.OfficeDeveloperInstructionComposer.Compose();
 
             Assert.That(mainFormSource, Does.Contain("OfficeDeveloperInstructionComposer.Compose"));

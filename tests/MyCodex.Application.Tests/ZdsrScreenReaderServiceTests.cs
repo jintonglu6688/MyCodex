@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.Tts;
@@ -126,7 +127,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WinFormsProject_AlwaysCopiesZdsrApiDllAndDoesNotPackageIni()
         {
-            var project = File.ReadAllText(GetRepositoryPath("src", "MyCodex.WinForms", "MyCodex.WinForms.csproj"), Encoding.UTF8);
+            var project = File.ReadAllText(RepositorySource.GetPath("src", "MyCodex.WinForms", "MyCodex.WinForms.csproj"), Encoding.UTF8);
 
             Assert.That(project, Does.Contain("tts\\ZDSRAPI\\ZDSRAPI_x64.dll"));
             Assert.That(project, Does.Contain("<CopyToOutputDirectory>Always</CopyToOutputDirectory>"));
@@ -137,7 +138,7 @@ namespace MyCodex.Application.Tests
         public void SharedBuildScript_RemovesObsoleteZdsrApiIniAndTextFiles()
         {
             var sharedBuild = File.ReadAllText(
-                GetRepositoryPath("tools", "build", "Build-MyCodex.ps1"),
+                RepositorySource.GetPath("tools", "build", "Build-MyCodex.ps1"),
                 Encoding.UTF8);
 
             Assert.That(sharedBuild, Does.Contain("Remove-LegacyOutputFiles"));
@@ -220,24 +221,6 @@ namespace MyCodex.Application.Tests
             public string Text { get; }
 
             public bool Interrupt { get; }
-        }
-
-        private static string GetRepositoryPath(params string[] parts)
-        {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null && !File.Exists(Path.Combine(directory.FullName, "MyCodex.sln")))
-            {
-                directory = directory.Parent;
-            }
-
-            Assert.That(directory, Is.Not.Null, "Repository root could not be located.");
-            var path = directory.FullName;
-            for (var i = 0; i < parts.Length; i++)
-            {
-                path = Path.Combine(path, parts[i]);
-            }
-
-            return path;
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.InternalTools;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
@@ -23,16 +24,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeModeSource_DoesNotBuildInternalToolContext()
         {
-            var source = File.ReadAllText(Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                "MainForm.InternalTools.cs")));
+            var source = RepositorySource.ReadSourceFile("MainForm.InternalTools.cs");
 
             Assert.That(source, Does.Contain("session.Mode == AppInteractionMode.Office"));
             Assert.That(source, Does.Contain("return null;"));

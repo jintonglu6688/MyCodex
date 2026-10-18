@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Shared.Constants;
 using NUnit.Framework;
 
@@ -273,13 +274,13 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_RunsBuiltInMarketplaceBootstrapAtStartupAndTargetReloadButNotReconnect()
         {
-            var runtimeConnection = File.ReadAllText(GetSourcePath("MainForm.RuntimeConnection.cs"));
-            var runtimeSettings = File.ReadAllText(GetSourcePath("MainForm.RuntimeSettings.cs"));
-            var bootstrap = File.ReadAllText(GetSourcePath("MainForm.PluginMarketplaceBootstrap.cs"));
-            var initialize = ExtractMethod(runtimeConnection, "private async Task InitializeAppAsync()");
-            var reconnect = ExtractMethod(runtimeConnection, "private async Task<bool> TryRecoverAppServerConnectionAsync(");
-            var ensureAction = ExtractMethod(runtimeConnection, "private async Task<bool> EnsureAppServerAvailableForActionAsync(");
-            var restart = ExtractMethod(runtimeSettings, "private async Task RestartAppServerForRuntimeSettingsAsync(");
+            var runtimeConnection = RepositorySource.ReadSourceFile("MainForm.RuntimeConnection.cs");
+            var runtimeSettings = RepositorySource.ReadSourceFile("MainForm.RuntimeSettings.cs");
+            var bootstrap = RepositorySource.ReadSourceFile("MainForm.PluginMarketplaceBootstrap.cs");
+            var initialize = RepositorySource.ExtractMethod(runtimeConnection, "private async Task InitializeAppAsync()");
+            var reconnect = RepositorySource.ExtractMethod(runtimeConnection, "private async Task<bool> TryRecoverAppServerConnectionAsync(");
+            var ensureAction = RepositorySource.ExtractMethod(runtimeConnection, "private async Task<bool> EnsureAppServerAvailableForActionAsync(");
+            var restart = RepositorySource.ExtractMethod(runtimeSettings, "private async Task RestartAppServerForRuntimeSettingsAsync(");
 
             Assert.That(initialize, Does.Contain("await EnsureMyCodexOfficialMarketplaceRegisteredAsync();"));
             Assert.That(restart, Does.Contain("await EnsureMyCodexOfficialMarketplaceRegisteredAsync();"));
@@ -290,45 +291,6 @@ namespace MyCodex.Application.Tests
             Assert.That(bootstrap, Does.Contain("catch (Exception)"));
             Assert.That(bootstrap, Does.Not.Contain("MessageBox.Show"));
             Assert.That(bootstrap, Does.Not.Contain("ex.Message"));
-        }
-
-        private static string GetSourcePath(string fileName)
-        {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null && !File.Exists(Path.Combine(directory.FullName, "MyCodex.sln")))
-            {
-                directory = directory.Parent;
-            }
-
-            Assert.That(directory, Is.Not.Null, "Repository root not found.");
-            return Path.Combine(directory.FullName, "src", "MyCodex.WinForms", "Forms", fileName);
-        }
-
-        private static string ExtractMethod(string source, string signature)
-        {
-            var start = source.IndexOf(signature, StringComparison.Ordinal);
-            Assert.That(start, Is.GreaterThanOrEqualTo(0), "Method not found: " + signature);
-            var brace = source.IndexOf('{', start);
-            Assert.That(brace, Is.GreaterThanOrEqualTo(0), "Method body not found: " + signature);
-            var depth = 0;
-            for (var index = brace; index < source.Length; index++)
-            {
-                if (source[index] == '{')
-                {
-                    depth++;
-                }
-                else if (source[index] == '}')
-                {
-                    depth--;
-                    if (depth == 0)
-                    {
-                        return source.Substring(start, index - start + 1);
-                    }
-                }
-            }
-
-            Assert.Fail("Method body is incomplete: " + signature);
-            return string.Empty;
         }
 
         private static AppServerProtocolCapabilities CreateCapabilities(string runtimeSource, bool supportsRegistration)

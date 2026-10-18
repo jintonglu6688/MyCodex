@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Domain.Entities;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
@@ -63,10 +64,7 @@ namespace MyCodex.Application.Tests
         [TestCase("Strings.zh-CN.resx")]
         public void MigrationActions_HaveUniqueMnemonics(string resourceFile)
         {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null && !File.Exists(Path.Combine(directory.FullName, "MyCodex.sln"))) directory = directory.Parent;
-            Assert.That(directory, Is.Not.Null);
-            var resources = XDocument.Load(Path.Combine(directory.FullName, "src", "MyCodex.WinForms", "Resources", resourceFile));
+            var resources = XDocument.Load(RepositorySource.GetPath("src", "MyCodex.WinForms", "Resources", resourceFile));
             var values = resources.Root.Elements("data").Where(e => ((string)e.Attribute("name")).StartsWith("TargetMigrationForm.Button.", StringComparison.Ordinal))
                 .Select(e => e.Element("value").Value).ToArray();
             Assert.That(values.Length, Is.EqualTo(3));

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.RemoteRelay;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Domain.Entities;
 using MyCodex.Infrastructure.RemoteRelay;
 using MyCodex.WinForms.Forms;
@@ -22,27 +23,17 @@ namespace MyCodex.Application.Tests
     [Apartment(ApartmentState.STA)]
     public sealed class RemoteServiceManagementFormTests
     {
-        private static string GetWinFormsPath(params string[] parts)
-        {
-            var path = System.IO.Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "src", "MyCodex.WinForms");
-            foreach (var part in parts)
-            {
-                path = System.IO.Path.Combine(path, part);
-            }
-
-            return System.IO.Path.GetFullPath(path);
-        }
-
         [Test]
         public void Source_CancelsLifetimeWorkBeforeClose()
         {
-            var source = System.IO.File.ReadAllText(GetWinFormsPath("Forms", "RemoteServiceManagementForm.cs"));
+            var source = RepositorySource.ReadSourceFile("RemoteServiceManagementForm.cs");
 
             Assert.That(source, Does.Contain("CancellationTokenSource _lifetimeCancellation"));
             Assert.That(source, Does.Contain("_lifetimeCancellation.Cancel();"));
             Assert.That(source, Does.Not.Contain("StartAsync(_snapshot, CancellationToken.None)"));
             Assert.That(source, Does.Not.Contain("CreatePairingInviteAsync(config, _snapshot.HostId, 600, CancellationToken.None)"));
         }
+
         [Test]
         public void Constructor_FocusableControlsHaveAccessibleNames()
         {

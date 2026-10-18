@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -17,7 +18,7 @@ namespace MyCodex.Application.Tests
         [TestCase("AppServerNotificationDispatcher.cs", "internal static class AppServerNotificationDispatcher")]
         public void AppServerClientHelpers_ExistWithExpectedTypes(string fileName, string expectedTypeDeclaration)
         {
-            var path = GetAppServerPath(fileName);
+            var path = RepositorySource.FindSourceFile(fileName);
             Assert.That(File.Exists(path), Is.True, fileName + " should exist.");
             Assert.That(File.ReadAllText(path), Does.Contain(expectedTypeDeclaration));
         }
@@ -34,7 +35,7 @@ namespace MyCodex.Application.Tests
             string fileName,
             string expectedTypeDeclaration)
         {
-            var path = GetAppServerPath(fileName);
+            var path = RepositorySource.FindSourceFile(fileName);
             Assert.That(File.Exists(path), Is.True, fileName + " should exist.");
             Assert.That(File.ReadAllText(path), Does.Contain(expectedTypeDeclaration));
         }
@@ -42,8 +43,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_RemainsFacadeContract()
         {
-            var source = File.ReadAllText(GetAppServerPath("AppServerClient.cs")) +
-                File.ReadAllText(GetAppServerPath("AppServerClient.AuthenticationTransition.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerClient.cs") +
+                RepositorySource.ReadSourceFile("AppServerClient.AuthenticationTransition.cs");
             Assert.That(source, Does.Contain("public partial class AppServerClient : IAppServerClient, IAppServerLocalThreadCatalogClient, IAppServerSubAgentClient, IDisposable"));
             Assert.That(source, Does.Contain("public event EventHandler<AppServerEventArgs> EventReceived"));
             Assert.That(source, Does.Contain("public Task ConnectAsync()"));
@@ -55,8 +56,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_RemainsFacadeAfterSecondSlimdown()
         {
-            var source = File.ReadAllText(GetAppServerPath("AppServerClient.cs")) +
-                File.ReadAllText(GetAppServerPath("AppServerClient.AuthenticationTransition.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerClient.cs") +
+                RepositorySource.ReadSourceFile("AppServerClient.AuthenticationTransition.cs");
 
             Assert.That(source, Does.Contain("public partial class AppServerClient : IAppServerClient, IAppServerLocalThreadCatalogClient, IAppServerSubAgentClient, IDisposable"));
             Assert.That(source, Does.Contain("private readonly AppServerProtocolTransport _protocolTransport"));
@@ -74,9 +75,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_DelegatesRequestOperationFamilies()
         {
-            var clientSource = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var operationsSource = File.ReadAllText(GetAppServerPath("AppServerClientOperations.cs"));
-            var threadOperationsSource = File.ReadAllText(GetAppServerPath("AppServerThreadOperations.cs"));
+            var clientSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var operationsSource = RepositorySource.ReadSourceFile("AppServerClientOperations.cs");
+            var threadOperationsSource = RepositorySource.ReadSourceFile("AppServerThreadOperations.cs");
 
             Assert.That(clientSource, Does.Contain("private readonly AppServerClientOperations _operations"));
             Assert.That(clientSource, Does.Contain("private readonly AppServerThreadOperations _threadOperations"));
@@ -94,11 +95,11 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerPluginSkillMapping_HasSingleInfrastructureMapperOwner()
         {
-            var clientSource = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var operationsSource = File.ReadAllText(GetAppServerPath("AppServerClientOperations.cs"));
-            var mapperSource = File.ReadAllText(GetAppServerPath("AppServerPluginSkillMapper.cs"));
+            var clientSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var operationsSource = RepositorySource.ReadSourceFile("AppServerClientOperations.cs");
+            var mapperSource = RepositorySource.ReadSourceFile("AppServerPluginSkillMapper.cs");
 
-            Assert.That(File.Exists(GetAppServerPath("AppServerPluginSkillMapper.cs")), Is.True);
+            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.Infrastructure", "AppServer", "AppServerPluginSkillMapper.cs")), Is.True);
             Assert.That(mapperSource, Does.Contain("internal static class AppServerPluginSkillMapper"));
             Assert.That(mapperSource, Does.Contain("BuildSkillsSnapshots("));
             Assert.That(mapperSource, Does.Contain("BuildPluginSummaries("));
@@ -122,8 +123,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_DelegatesDynamicRequestCoordination()
         {
-            var clientSource = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var coordinatorSource = File.ReadAllText(GetAppServerPath("AppServerDynamicRequestCoordinator.cs"));
+            var clientSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var coordinatorSource = RepositorySource.ReadSourceFile("AppServerDynamicRequestCoordinator.cs");
 
             Assert.That(clientSource, Does.Contain("private readonly AppServerDynamicRequestCoordinator _dynamicRequestCoordinator"));
             Assert.That(coordinatorSource, Does.Contain("public void HandleServerRequest("));
@@ -141,8 +142,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_DelegatesTransportRoutingAndLifecycleResponsibilities()
         {
-            var source = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var startupCoordinatorSource = File.ReadAllText(GetAppServerPath("AppServerRuntimeStartupCoordinator.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var startupCoordinatorSource = RepositorySource.ReadSourceFile("AppServerRuntimeStartupCoordinator.cs");
 
             Assert.That(source, Does.Contain("_protocolTransport"));
             Assert.That(source, Does.Contain("AppServerIncomingMessageRouter.Classify"));
@@ -156,8 +157,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_DoesNotOwnJsonRpcPendingRequestDictionary()
         {
-            var clientSource = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var transportSource = File.ReadAllText(GetAppServerPath("AppServerProtocolTransport.cs"));
+            var clientSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var transportSource = RepositorySource.ReadSourceFile("AppServerProtocolTransport.cs");
 
             Assert.That(clientSource, Does.Not.Contain("Dictionary<string, TaskCompletionSource<IDictionary<string, object>>>"));
             Assert.That(clientSource, Does.Not.Contain("_pendingRequests"));
@@ -175,9 +176,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_DelegatesDiagnosticsWithoutAuthenticationMaterialization()
         {
-            var source = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var operationsSource = File.ReadAllText(GetAppServerPath("AppServerClientOperations.cs"));
-            var startupCoordinatorSource = File.ReadAllText(GetAppServerPath("AppServerRuntimeStartupCoordinator.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var operationsSource = RepositorySource.ReadSourceFile("AppServerClientOperations.cs");
+            var startupCoordinatorSource = RepositorySource.ReadSourceFile("AppServerRuntimeStartupCoordinator.cs");
 
             Assert.That(source, Does.Contain("AppServerEventDiagnostics."));
             Assert.That(source, Does.Contain("AppServerEventDiagnostics.TraceNotification("));
@@ -196,8 +197,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_DoesNotMaterializeRuntimeConfig()
         {
-            var source = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var startupCoordinatorSource = File.ReadAllText(GetAppServerPath("AppServerRuntimeStartupCoordinator.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var startupCoordinatorSource = RepositorySource.ReadSourceFile("AppServerRuntimeStartupCoordinator.cs");
             Assert.That(source, Does.Not.Contain("AppServerRuntimeConfigMaterializer"));
             Assert.That(startupCoordinatorSource, Does.Not.Contain("Materialization"));
             Assert.That(startupCoordinatorSource, Does.Not.Contain("Provider"));
@@ -206,8 +207,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_DelegatesRuntimeStartupCoordination()
         {
-            var clientSource = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var coordinatorSource = File.ReadAllText(GetAppServerPath("AppServerRuntimeStartupCoordinator.cs"));
+            var clientSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var coordinatorSource = RepositorySource.ReadSourceFile("AppServerRuntimeStartupCoordinator.cs");
 
             Assert.That(clientSource, Does.Contain("private readonly AppServerRuntimeStartupCoordinator _runtimeStartupCoordinator"));
             Assert.That(coordinatorSource, Does.Contain("internal sealed class AppServerRuntimeStartupCoordinator"));
@@ -229,17 +230,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WindowsStartup_UsesOnlyTheTargetEnvironmentAndOfficialCodexState()
         {
-            var source = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var runtimeManagerSource = File.ReadAllText(Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.Infrastructure",
-                "Codex",
-                "CodexRuntimeManager.cs")));
+            var source = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var runtimeManagerSource = RepositorySource.ReadSourceFile("CodexRuntimeManager.cs");
             var connectCoreStart = source.IndexOf("private async Task ConnectCoreAsync()", StringComparison.Ordinal);
             var restartStart = source.IndexOf("public async Task RestartAsync()", StringComparison.Ordinal);
             var createThreadStart = source.IndexOf("public async Task<string> CreateThreadAsync", StringComparison.Ordinal);
@@ -281,17 +273,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WslAndRemoteStartup_UseOnlyTheirTargetEnvironmentAndOfficialCodexState()
         {
-            var clientSource = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var runtimeManagerSource = File.ReadAllText(Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.Infrastructure",
-                "Codex",
-                "CodexRuntimeManager.cs")));
+            var clientSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var runtimeManagerSource = RepositorySource.ReadSourceFile("CodexRuntimeManager.cs");
             var connectCoreStart = clientSource.IndexOf("private async Task ConnectCoreAsync()", StringComparison.Ordinal);
             var restartStart = clientSource.IndexOf("public async Task RestartAsync()", connectCoreStart, StringComparison.Ordinal);
             var connectCore = clientSource.Substring(connectCoreStart, restartStart - connectCoreStart);
@@ -308,7 +291,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AutomaticReconnect_OnlyRecoversTransportAndDoesNotRequestTargetReload()
         {
-            var clientSource = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
+            var clientSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
             var connectionLostStart = clientSource.IndexOf("private void HandleAppServerConnectionLost(", StringComparison.Ordinal);
             var timeoutFactoryStart = clientSource.IndexOf("private static TimeoutException CreateRequestTimeoutException", StringComparison.Ordinal);
 
@@ -324,7 +307,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_BackgroundReaders_AreBoundToCapturedConnectionStreams()
         {
-            var source = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerClient.cs");
 
             Assert.That(source, Does.Contain("standardOutput = process.StandardOutput;"));
             Assert.That(source, Does.Contain("standardError = process.StandardError;"));
@@ -337,7 +320,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_PersistentDiagnostics_DoNotLogRawProtocolOutput()
         {
-            var source = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerClient.cs");
 
             Assert.That(source, Does.Contain("App Server stderr received. Characters={0}"));
             Assert.That(source, Does.Contain("Failed to parse App Server message. ErrorType={0}; Characters={1}"));
@@ -348,7 +331,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_ConnectionReplacementAndLossClaim_UseTheSameLockOrder()
         {
-            var source = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerClient.cs");
 
             Assert.That(source, Does.Contain("private void HandleAppServerConnectionLost("));
             Assert.That(source, Does.Contain("long expectedConnectionEpoch,"));
@@ -362,8 +345,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_TransportWriteFailures_UseTheTransportSourceEpoch()
         {
-            var clientSource = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var transportSource = File.ReadAllText(GetAppServerPath("AppServerProtocolTransport.cs"));
+            var clientSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var transportSource = RepositorySource.ReadSourceFile("AppServerProtocolTransport.cs");
 
             Assert.That(clientSource, Does.Contain("HandleAppServerConnectionLost(disconnectMessage, ex.ConnectionEpoch, null);"));
             Assert.That(transportSource, Does.Contain("public long ConnectionEpoch { get; }"));
@@ -373,8 +356,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_DelegatesNotificationClassification()
         {
-            var clientSource = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var processorSource = File.ReadAllText(GetAppServerPath("AppServerNotificationEventProcessor.cs"));
+            var clientSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var processorSource = RepositorySource.ReadSourceFile("AppServerNotificationEventProcessor.cs");
 
             Assert.That(processorSource, Does.Contain("AppServerNotificationDispatcher."));
             Assert.That(processorSource, Does.Contain("AppServerNotificationDispatcher.Classify("));
@@ -385,9 +368,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_DelegatesNotificationEventProcessing()
         {
-            var clientSource = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var processorSource = File.ReadAllText(GetAppServerPath("AppServerNotificationEventProcessor.cs"));
-            var contextSource = File.ReadAllText(GetAppServerPath("AppServerNotificationEventContext.cs"));
+            var clientSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var processorSource = RepositorySource.ReadSourceFile("AppServerNotificationEventProcessor.cs");
+            var contextSource = RepositorySource.ReadSourceFile("AppServerNotificationEventContext.cs");
 
             Assert.That(clientSource, Does.Contain("private readonly AppServerNotificationEventProcessor _notificationEventProcessor"));
             Assert.That(clientSource, Does.Contain("_notificationEventProcessor.HandleNotification("));
@@ -404,9 +387,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_DelegatesProtocolTextAndMetadataHelpers()
         {
-            var clientSource = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var textSource = File.ReadAllText(GetAppServerPath("AppServerProtocolTextComposer.cs"));
-            var metadataSource = File.ReadAllText(GetAppServerPath("AppServerProtocolMetadataMapper.cs"));
+            var clientSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var textSource = RepositorySource.ReadSourceFile("AppServerProtocolTextComposer.cs");
+            var metadataSource = RepositorySource.ReadSourceFile("AppServerProtocolMetadataMapper.cs");
 
             Assert.That(textSource, Does.Contain("internal static class AppServerProtocolTextComposer"));
             Assert.That(textSource, Does.Contain("internal static string BuildFileChangeSummaryText("));
@@ -421,8 +404,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SkillAndPluginPathDiagnostics_AreEmittedAtRuntimeBoundaries()
         {
-            var appServerSource = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
-            var operationsSource = File.ReadAllText(GetAppServerPath("AppServerClientOperations.cs"));
+            var appServerSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
+            var operationsSource = RepositorySource.ReadSourceFile("AppServerClientOperations.cs");
             Assert.That(appServerSource, Does.Contain("TraceSkillPluginInputPathDiagnostic(\"mention\""));
             Assert.That(appServerSource, Does.Contain("TraceSkillPluginInputPathDiagnostic(\"skill\""));
             Assert.That(operationsSource, Does.Contain("_traceSkillsListDiagnostics(workspacePaths, forceReload, snapshots)"));
@@ -437,7 +420,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_ResolvesSkillListPathsBeforeDiagnostics()
         {
-            var source = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerClient.cs");
 
             Assert.That(source, Does.Contain("ResolveCurrentPluginSkillPath"));
             Assert.That(source, Does.Contain("Skill/plugin diagnostic. Operation=skill-path/resolve"));
@@ -447,39 +430,11 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_RefreshesSkillInventoryBeforeTurnStart()
         {
-            var source = File.ReadAllText(GetAppServerPath("AppServerClient.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerClient.cs");
 
             Assert.That(source, Does.Contain("RefreshSkillInventoryBeforeTurnStartAsync"));
             Assert.That(source, Does.Contain("await RefreshSkillInventoryBeforeTurnStartAsync(workspacePath).ConfigureAwait(false);"));
             Assert.That(source, Does.Contain("Skill/plugin diagnostic. Operation=skill-inventory/refresh"));
-        }
-
-        private static string GetAppServerPath(string fileName)
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.Infrastructure",
-                "AppServer",
-                fileName));
-        }
-
-        private static string GetPersistencePath(string fileName)
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.Infrastructure",
-                "Persistence",
-                fileName));
         }
     }
 }

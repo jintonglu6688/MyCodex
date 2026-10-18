@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
 
@@ -150,7 +151,7 @@ namespace MyCodex.Application.Tests
         [Apartment(ApartmentState.STA)]
         public void UserCenterForm_OffersAccessibleManualQuotaResetControls()
         {
-            var source = File.ReadAllText(FindSourcePath("src", "MyCodex.WinForms", "Forms", "UserCenterForm.cs"));
+            var source = RepositorySource.ReadSourceFile("UserCenterForm.cs");
 
             Assert.That(source, Does.Contain("TokenCountFormatter.Format(value)"));
             using (var form = new UserCenterForm(
@@ -445,24 +446,6 @@ namespace MyCodex.Application.Tests
             return (List<string>)method.Invoke(
                 null,
                 new object[] { state, snapshot, usage, new DateTime(2026, 6, 5, 17, 0, 0) });
-        }
-
-        private static string FindSourcePath(params string[] parts)
-        {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null)
-            {
-                var candidate = Path.Combine(directory.FullName, Path.Combine(parts));
-                if (File.Exists(candidate))
-                {
-                    return candidate;
-                }
-
-                directory = directory.Parent;
-            }
-
-            Assert.Fail("Source path was not found.");
-            return null;
         }
     }
 }

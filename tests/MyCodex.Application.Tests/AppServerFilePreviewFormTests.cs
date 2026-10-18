@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Localization;
 using NUnit.Framework;
@@ -302,7 +303,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void EscapeClose_IsHandledByPreviewFormWithoutCancelButton()
         {
-            var source = File.ReadAllText(GetSourcePath("AppServerFilePreviewForm.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerFilePreviewForm.cs");
 
             Assert.That(source, Does.Contain("keyData == Keys.Escape"));
             Assert.That(source, Does.Not.Contain("CancelButton = _closeButton;"));
@@ -487,18 +488,6 @@ namespace MyCodex.Application.Tests
                 Assert.That(dialog.LineNumberAccessibleNameForTests, Is.EqualTo(UiLocalization.Text("AppServerFilePreviewForm.Accessible.LineNumber", "Line number")));
                 Assert.That(dialog.InitialFocusAccessibleNameForTests, Is.EqualTo(UiLocalization.Text("AppServerFilePreviewForm.Accessible.LineNumber", "Line number")));
             }
-        }
-
-        private static string GetSourcePath(string fileName)
-        {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null && !Directory.Exists(Path.Combine(directory.FullName, "src")))
-            {
-                directory = directory.Parent;
-            }
-
-            Assert.That(directory, Is.Not.Null);
-            return Path.Combine(directory.FullName, "src", "MyCodex.WinForms", "Forms", fileName);
         }
 
         private static bool InvokeProcessCmdKey(AppServerFilePreviewForm form, Keys keyData)

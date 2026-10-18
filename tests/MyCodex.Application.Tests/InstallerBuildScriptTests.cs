@@ -1,4 +1,5 @@
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Infrastructure.Updates;
 using NUnit.Framework;
 
@@ -10,7 +11,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void BuildInstaller_UsesLatestInstalledBundledRuntimeBeforeOfficialLatestFallback()
         {
-            var source = ReadInstallerBuildScript();
+            var source = RepositorySource.ReadFile("tools", "installer", "build-installer.ps1");
 
             Assert.That(source, Does.Contain("function Get-LatestInstalledBundledCodexVersion"));
             Assert.That(source, Does.Contain("function Resolve-BundledCodexPackageVersion"));
@@ -25,7 +26,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void BuildInstaller_CleansPackageRuntimeBeforeCompilingInstaller()
         {
-            var source = ReadInstallerBuildScript();
+            var source = RepositorySource.ReadFile("tools", "installer", "build-installer.ps1");
             var codexCleanupIndex = source.LastIndexOf("Remove-NonPinnedBundledCodexRuntimes", System.StringComparison.Ordinal);
             var compileIndex = source.IndexOf("Compiling installer with Inno Setup", System.StringComparison.Ordinal);
 
@@ -36,7 +37,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void BuildInstaller_RemovesRetiredBundledNodeRuntimeBeforeCompilingInstaller()
         {
-            var source = ReadInstallerBuildScript();
+            var source = RepositorySource.ReadFile("tools", "installer", "build-installer.ps1");
             var cleanupIndex = source.LastIndexOf("Remove-RetiredBundledNodeRuntime -PackageSourceDir $sourceDirFull", System.StringComparison.Ordinal);
             var compileIndex = source.IndexOf("Compiling installer with Inno Setup", System.StringComparison.Ordinal);
 
@@ -48,7 +49,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void BuildInstaller_ValidatesBundledCodexRuntimeBeforeCompilingInstaller()
         {
-            var source = ReadInstallerBuildScript();
+            var source = RepositorySource.ReadFile("tools", "installer", "build-installer.ps1");
             var compileIndex = source.IndexOf("Compiling installer with Inno Setup", System.StringComparison.Ordinal);
 
             Assert.That(source, Does.Contain("function Test-BundledCodexRuntimeExists"));
@@ -59,7 +60,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void BuildInstaller_BundlesRemoteServiceButNotProviderRuntime()
         {
-            var source = ReadInstallerBuildScript();
+            var source = RepositorySource.ReadFile("tools", "installer", "build-installer.ps1");
 
             Assert.That(source, Does.Not.Contain("mimo2codex"));
             Assert.That(source, Does.Contain("function Copy-BundledRelay"));
@@ -70,7 +71,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void Installer_DeletesPreviouslyInstalledRuntimeDirectoryBeforeCopyingPackageFiles()
         {
-            var source = ReadInstallerScript();
+            var source = RepositorySource.ReadFile("tools", "installer", "MyCodex.iss");
 
             Assert.That(source, Does.Contain("[InstallDelete]"));
             Assert.That(source, Does.Contain(@"Type: filesandordirs; Name: ""{app}\runtime\*"""));
@@ -81,7 +82,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void Installer_RequiresNormalResourceUserExitBeforeAuthenticationAndRuntimeReplacement()
         {
-            var source = ReadInstallerScript();
+            var source = RepositorySource.ReadFile("tools", "installer", "MyCodex.iss");
 
             Assert.That(source, Does.Match(@"(?im)^CloseApplications=no\s*$"));
             Assert.That(source, Does.Not.Contain("CloseApplicationsFilter="));
@@ -100,7 +101,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OnlineUpdate_LaunchesStandaloneInstallerWithoutClientExitPrecondition()
         {
-            var source = ReadMainFormUpdatesSource();
+            var source = RepositorySource.ReadSourceFile("MainForm.UpdatesTray.cs") +
+                RepositorySource.ReadSourceFile("MainForm.SharedUpdates.cs");
 
             Assert.That(source, Does.Contain("await InstallDownloadedUpdateAsync(download.InstallerPath)"));
             Assert.That(source, Does.Contain("Process.Start(AppUpdateService.CreateInstallerStartInfo("));
@@ -132,47 +134,6 @@ namespace MyCodex.Application.Tests
                 Assert.Throws<System.InvalidOperationException>(() => AppUpdateService.CreateInstallerStartInfo(installer, directory));
             }
             finally { Directory.Delete(directory, true); }
-        }
-
-        private static string ReadInstallerBuildScript()
-        {
-            return File.ReadAllText(Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "tools",
-                "installer",
-                "build-installer.ps1")));
-        }
-
-        private static string ReadInstallerScript()
-        {
-            return File.ReadAllText(Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "tools",
-                "installer",
-                "MyCodex.iss")));
-        }
-
-        private static string ReadMainFormUpdatesSource()
-        {
-            var directory = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms"));
-            return File.ReadAllText(Path.Combine(directory, "MainForm.UpdatesTray.cs")) +
-                File.ReadAllText(Path.Combine(directory, "MainForm.SharedUpdates.cs"));
         }
     }
 }

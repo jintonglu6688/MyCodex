@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Theming;
 using NUnit.Framework;
@@ -71,14 +72,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void FontFactories_UseCentralSizesThroughoutWinFormsSource()
         {
-            var root = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (root != null && !File.Exists(Path.Combine(root.FullName, "MyCodex.sln")))
-            {
-                root = root.Parent;
-            }
-            Assert.That(root, Is.Not.Null);
-            var sources = Directory.GetFiles(Path.Combine(root.FullName, "src", "MyCodex.WinForms"), "*.cs", SearchOption.AllDirectories)
-                .Where(path => !path.Split(Path.DirectorySeparatorChar).Any(part => part == "bin" || part == "obj"));
+            var sources = RepositorySource.FindSourceFiles("MyCodex.WinForms", "*.cs");
             foreach (var path in sources)
             {
                 Assert.That(Regex.IsMatch(File.ReadAllText(path), @"Create(?:Ui|Code)Font\(\s*\d"), Is.False, path);

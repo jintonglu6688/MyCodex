@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.WinForms.Skills;
 using NUnit.Framework;
 
@@ -58,9 +59,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SkillList_DoesNotSynchronizeOrRepairPrivateSkillMirrors()
         {
-            var source = File.ReadAllText(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", "..", "src", "MyCodex.Infrastructure", "AppServer", "AppServerClientOperations.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerClientOperations.cs");
 
             Assert.That(source, Does.Not.Contain("_trySynchronizeCurrentAuthenticationSharedSkillsAsync"));
             Assert.That(source, Does.Not.Contain("_tryRepairLocalPluginMarketManifests"));

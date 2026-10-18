@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Shared.Constants;
@@ -16,9 +17,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void FileMenu_DoesNotExposeRedundantModeSwitchEntry()
         {
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var layoutSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Layout.cs");
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var layoutSource = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
 
             Assert.That(mainFormSource, Does.Not.Contain("_switchInteractionModeMenuItem"));
             Assert.That(layoutSource, Does.Not.Contain("_switchInteractionModeMenuItem"));
@@ -29,9 +30,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void FileMenu_DoesNotExposeLegacyOfficeDocumentTaskEntry()
         {
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var layoutSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Layout.cs");
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var layoutSource = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
 
             Assert.That(mainFormSource, Does.Not.Contain("_officeDocumentsMenuItem"));
             Assert.That(layoutSource, Does.Not.Contain("_officeDocumentsMenuItem.Click += OnOfficeDocumentsMenuItemClick"));
@@ -45,7 +46,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void PersistState_WritesCurrentModeAndPerModeSelections()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(source, Does.Contain("CurrentInteractionMode = _currentInteractionMode"));
             Assert.That(source, Does.Contain("CurrentCodingWorkspaceId = _currentCodingWorkspaceId"));
@@ -57,14 +58,14 @@ namespace MyCodex.Application.Tests
         [Test]
         public void PersistenceRecoveryPending_BlocksModeOnboardingAndAutomaticSaves()
         {
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var automationSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Automation.cs");
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var recoverySource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.PersistenceRecovery.cs");
-            var attachmentsSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Attachments.cs");
-            var runtimeConnectionSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.RuntimeConnection.cs");
-            var sessionSettingsSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.SessionSettings.cs");
-            var appServerEventsSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.AppServerEvents.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var automationSource = RepositorySource.ReadSourceFile("MainForm.Automation.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var recoverySource = RepositorySource.ReadSourceFile("MainForm.PersistenceRecovery.cs");
+            var attachmentsSource = RepositorySource.ReadSourceFile("MainForm.Attachments.cs");
+            var runtimeConnectionSource = RepositorySource.ReadSourceFile("MainForm.RuntimeConnection.cs");
+            var sessionSettingsSource = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var appServerEventsSource = RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs");
 
             Assert.That(mainFormSource, Does.Contain("if (_isPersistenceRecoveryPending)"));
             Assert.That(mainFormSource, Does.Contain("ShowPersistenceRecoveryRequiredAndExit();"));
@@ -90,9 +91,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OptionsApplyPath_PersistsOfficeModeSettings()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OptionsSettings.cs");
-            var configSource = ReadSource("src", "MyCodex.Domain", "Entities", "AppConfigSnapshot.cs");
-            var modeSettingsSource = ReadSource("src", "MyCodex.Domain", "Entities", "ModeSettingsSnapshot.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.OptionsSettings.cs");
+            var configSource = RepositorySource.ReadSourceFile("AppConfigSnapshot.cs");
+            var modeSettingsSource = RepositorySource.ReadSourceFile("ModeSettingsSnapshot.cs");
 
             Assert.That(source, Does.Contain("SaveModeSettingsForCurrentRuntimeAsync"));
             Assert.That(source, Does.Contain("await RefreshActiveOfficeRuntimeRootAsync();"));
@@ -108,9 +109,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OptionsSave_WritesOnlyTheActiveRuntimeModeSettingsFile()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OptionsSettings.cs");
-            var officeRuntimeSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OfficeRuntime.cs");
-            var storeSource = ReadSource("src", "MyCodex.Infrastructure", "Persistence", "JsonModeSettingsStore.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.OptionsSettings.cs");
+            var officeRuntimeSource = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
+            var storeSource = RepositorySource.ReadSourceFile("JsonModeSettingsStore.cs");
 
             Assert.That(source, Does.Contain("SaveModeSettingsForCurrentRuntimeAsync(new ModeSettingsSnapshot"));
             Assert.That(officeRuntimeSource, Does.Contain("_modeSettingsStore.SaveForCurrentRuntimeAsync("));
@@ -122,16 +123,12 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeDirectoryOptions_UseActiveRuntimeContextAndExistingRuntimeBrowser()
         {
-            var optionsSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OptionsSettings.cs");
-            var officeRuntimeSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OfficeRuntime.cs");
-            var openOptions = ExtractMethod(optionsSource, "private async Task OpenOptionsAsync()");
-            var applyOptions = ExtractMethod(optionsSource, "private bool ApplyOptionsFormLocalSettings(");
-            var createContext = ExtractMethod(
-                officeRuntimeSource,
-                "private OfficeDirectoryOptionsContext CreateOfficeDirectoryOptionsContext(");
-            var browse = ExtractMethod(
-                officeRuntimeSource,
-                "private string BrowseActiveOfficeRuntimeDirectory(");
+            var optionsSource = RepositorySource.ReadSourceFile("MainForm.OptionsSettings.cs");
+            var officeRuntimeSource = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
+            var openOptions = RepositorySource.ExtractMethod(optionsSource, "private async Task OpenOptionsAsync()");
+            var applyOptions = RepositorySource.ExtractMethod(optionsSource, "private bool ApplyOptionsFormLocalSettings(");
+            var createContext = RepositorySource.ExtractMethod(officeRuntimeSource, "private OfficeDirectoryOptionsContext CreateOfficeDirectoryOptionsContext(");
+            var browse = RepositorySource.ExtractMethod(officeRuntimeSource, "private string BrowseActiveOfficeRuntimeDirectory(");
 
             Assert.That(openOptions, Does.Contain("var officeTarget = GetActiveOfficeRuntimeTarget();"));
             Assert.That(openOptions, Does.Contain("CreateOfficeDirectoryOptionsContext("));
@@ -178,8 +175,8 @@ namespace MyCodex.Application.Tests
             Assert.That(state.CurrentWorkspaceId, Is.EqualTo(newDefault.Id));
             Assert.That(state.CurrentSessionId, Is.EqualTo("session-1"));
 
-            var optionsSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OptionsSettings.cs");
-            var officeRuntimeSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OfficeRuntime.cs");
+            var optionsSource = RepositorySource.ReadSourceFile("MainForm.OptionsSettings.cs");
+            var officeRuntimeSource = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
             Assert.That(optionsSource, Does.Not.Contain("Directory.Move"));
             Assert.That(optionsSource, Does.Not.Contain("Directory.Delete"));
             Assert.That(optionsSource, Does.Contain("ResolveAndEnsureOfficeRootAsync"));
@@ -191,9 +188,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SettingsMenu_KeepsAppServerRuntimeSelectionAvailableInBothModes()
         {
-            var sessionSettingsSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.SessionSettings.cs");
-            var plannerSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainFormAuthenticationStatePlanner.cs");
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
+            var sessionSettingsSource = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var plannerSource = RepositorySource.ReadSourceFile("MainFormAuthenticationStatePlanner.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(sessionSettingsSource, Does.Contain("_settingsMenuItem.MenuItems.Add(_appServerRuntimeSettingsMenuItem)"));
             Assert.That(sessionSettingsSource, Does.Contain("MainFormAuthenticationStatePlanner.BuildSettingsMenuState("));
@@ -201,7 +198,7 @@ namespace MyCodex.Application.Tests
             Assert.That(sessionSettingsSource, Does.Contain("_appServerRuntimeSettingsMenuItem.Visible = state.AppServerRuntimeSettingsVisible"));
             Assert.That(plannerSource, Does.Contain("AppServerRuntimeSettingsEnabled = true"));
             Assert.That(plannerSource, Does.Contain("AppServerRuntimeSettingsVisible = true"));
-            var handler = ExtractMethod(sessionSettingsSource, "private async void AppServerRuntimeSettingsMenuItem_Click");
+            var handler = RepositorySource.ExtractMethod(sessionSettingsSource, "private async void AppServerRuntimeSettingsMenuItem_Click");
             Assert.That(handler, Does.Contain("await OpenAppServerRuntimeSettingsAsync()"));
             Assert.That(handler, Does.Not.Contain("AppInteractionMode.Office"));
             Assert.That(handler, Does.Not.Contain("return;"));
@@ -211,9 +208,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeMode_UsesConfiguredRuntimeForAppServerAndState()
         {
-            var programSource = ReadSource("src", "MyCodex.WinForms", "Program.cs");
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
+            var programSource = RepositorySource.ReadSourceFile("Program.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
             var obsoleteModeContextType = "AppServerRuntime" + "ModeContext";
             var obsoleteStoreType = "ModeAware" + "AppConfigStore";
             var obsoleteOfficeOverrideProperty = "UseOfficeLocal" + "AppServerRuntime";
@@ -245,8 +242,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void PersistedState_LoadsCodingAndOfficeContextsForActiveRuntime()
         {
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var officeRuntimeSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OfficeRuntime.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var officeRuntimeSource = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
 
             Assert.That(mainFormSource, Does.Contain("var activeOfficeTarget = GetActiveOfficeRuntimeTarget();"));
             Assert.That(mainFormSource, Does.Contain("var activeOfficeState = _officeRuntimeStateService.MigrateLegacyState("));
@@ -262,7 +259,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SendPath_IncludesOfficeDeveloperInstructions()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(source, Does.Contain("BuildOfficeDeveloperInstructions"));
             Assert.That(source, Does.Contain("OfficeDeveloperInstructionComposer.Compose"));
@@ -274,7 +271,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void InternalToolContext_SkipsOfficeSessions()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.InternalTools.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.InternalTools.cs");
 
             Assert.That(source, Does.Contain("session.Mode == AppInteractionMode.Office"));
             Assert.That(source, Does.Contain("return null;"));
@@ -285,8 +282,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SendPath_UsesEffectiveModelForOfficeCollaborationMode()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs") +
-                ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.MessageSending.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.cs") +
+                RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
 
             Assert.That(source, Does.Contain("BuildCollaborationModeForSend(targetSession, targetWorkspace, modelId, reasoningEffort)"));
             Assert.That(source, Does.Contain("client.SendSubAgentMessageAsync(session.ThreadId, request.InputItems"));
@@ -295,8 +292,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainSend_RemainsBoundToCapturedSessionAcrossTabSelectionChanges()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.MessageSending.cs");
-            var send = ExtractMethod(source, "private async Task SendCurrentInputAsync(string overrideText, bool includePendingAttachments)");
+            var source = RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
+            var send = RepositorySource.ExtractMethod(source, "private async Task SendCurrentInputAsync(string overrideText, bool includePendingAttachments)");
             var abortStart = source.IndexOf("private bool AbortSendIfContextChanged", StringComparison.Ordinal);
             Assert.That(abortStart, Is.GreaterThanOrEqualTo(0));
             var abort = source.Substring(abortStart);
@@ -319,8 +316,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainSend_ShowsAndClearsAcceptedInputBeforeCreatingMissingThread()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.MessageSending.cs");
-            var send = ExtractMethod(source, "private async Task SendCurrentInputAsync(string overrideText, bool includePendingAttachments)");
+            var source = RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
+            var send = RepositorySource.ExtractMethod(source, "private async Task SendCurrentInputAsync(string overrideText, bool includePendingAttachments)");
             var showIndex = send.IndexOf("AddSendTargetHistoryItem(targetSession, ChatHistoryItemFactory.GetUserSenderText(), previewText);", StringComparison.Ordinal);
             var clearIndex = send.IndexOf("ClearSendTargetInputBeforeDispatch(targetSession, rawText, attachmentsSnapshot);", StringComparison.Ordinal);
             var recreateIndex = send.IndexOf("_sessionThreadService.RecreateThreadAsync(", StringComparison.Ordinal);
@@ -333,24 +330,23 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainSend_DefersMetadataUntilSendAcknowledgement()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.MessageSending.cs");
-            var send = ExtractMethod(source, "private async Task SendCurrentInputAsync(string overrideText, bool includePendingAttachments)");
+            var source = RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
+            var send = RepositorySource.ExtractMethod(source, "private async Task SendCurrentInputAsync(string overrideText, bool includePendingAttachments)");
             Assert.That(send, Does.Not.Contain("TryUpdateThreadWorkspaceMetadataAsync"));
             var sendIndex = send.IndexOf("await _sessionThreadService.SendUserMessageAsync(", StringComparison.Ordinal);
             var completionIndex = send.IndexOf("ApplySessionSendCompletionPlanAsync(completionPlan, targetSession)", StringComparison.Ordinal);
             Assert.That(sendIndex, Is.GreaterThanOrEqualTo(0));
             Assert.That(completionIndex, Is.GreaterThan(sendIndex));
-            var completion = ExtractMethod(ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs"),
-                "private Task ApplySessionSendCompletionPlanAsync");
+            var completion = RepositorySource.ExtractMethod(RepositorySource.ReadSourceFile("MainForm.cs"), "private Task ApplySessionSendCompletionPlanAsync");
             Assert.That(completion, Does.Contain("if (acknowledged) ScheduleSendMetadataUpdate(session)"));
         }
 
         [Test]
         public void CollaborationMode_UsesCapturedSessionModeAndCachedOfficeRoot()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var collaboration = ExtractMethod(source, "private AppServerCollaborationMode BuildCollaborationModeForSend");
-            var officeDetection = ExtractMethod(source, "private static bool IsOfficeSessionOrWorkspace");
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
+            var collaboration = RepositorySource.ExtractMethod(source, "private AppServerCollaborationMode BuildCollaborationModeForSend");
+            var officeDetection = RepositorySource.ExtractMethod(source, "private static bool IsOfficeSessionOrWorkspace");
 
             Assert.That(collaboration, Does.Contain("IsOfficeSessionOrWorkspace(session, workspace)"));
             Assert.That(collaboration, Does.Contain("ResolveOfficeRootPathForSession(session, workspace)"));
@@ -366,8 +362,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void DetachedSessionWorkbench_SeparatesRuntimeProfileFromOfficeDraftScope()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.SessionWorkbenches.cs");
-            var open = ExtractMethod(source, "private void OpenSessionWorkbench");
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionWorkbenches.cs");
+            var open = RepositorySource.ExtractMethod(source, "private void OpenSessionWorkbench");
 
             Assert.That(open, Does.Contain("SessionRuntimeIdentityResolver.ResolveRuntimeProfileId("));
             Assert.That(open, Does.Contain("GetComposeDraftScopeKey(session)"));
@@ -381,8 +377,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeTabActivation_DoesNotClearBackgroundThreadState()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var activation = ExtractMethod(source, "private void ActivateSelectedModeTab");
+            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var activation = RepositorySource.ExtractMethod(source, "private void ActivateSelectedModeTab");
 
             Assert.That(activation, Does.Not.Contain("_busyThreadIds"));
             Assert.That(activation, Does.Not.Contain("ClearAllThreadBusy"));
@@ -393,13 +389,13 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeTabActivation_RestoresIndependentMessageHistoryAndViewport()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var sessionsSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Sessions.cs");
-            var activation = ExtractMethod(source, "private void ActivateSelectedModeTab");
-            var capture = ExtractMethod(source, "private void CaptureCurrentModeHistoryViewState");
-            var restore = ExtractMethod(source, "private bool RestoreCurrentModeHistoryViewState");
-            var matches = ExtractMethod(source, "private bool MatchesCurrentModeHistoryViewState");
-            var openSelectedSession = ExtractMethod(sessionsSource, "private async Task OpenSelectedSessionFromListAsync");
+            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var sessionsSource = RepositorySource.ReadSourceFile("MainForm.Sessions.cs");
+            var activation = RepositorySource.ExtractMethod(source, "private void ActivateSelectedModeTab");
+            var capture = RepositorySource.ExtractMethod(source, "private void CaptureCurrentModeHistoryViewState");
+            var restore = RepositorySource.ExtractMethod(source, "private bool RestoreCurrentModeHistoryViewState");
+            var matches = RepositorySource.ExtractMethod(source, "private bool MatchesCurrentModeHistoryViewState");
+            var openSelectedSession = RepositorySource.ExtractMethod(sessionsSource, "private async Task OpenSelectedSessionFromListAsync");
 
             Assert.That(activation, Does.Contain("CaptureCurrentModeHistoryViewState();"));
             Assert.That(
@@ -420,14 +416,14 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeTabActivation_UsesOnlyCachedInMemoryWorkspaceProjectionTransitively()
         {
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var workspacesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var activation = ExtractMethod(modesSource, "private void ActivateSelectedModeTab");
-            var projectionRefresh = ExtractMethod(modesSource, "private void RefreshModeProjectionFromCache");
-            var restore = ExtractMethod(modesSource, "private void RestoreSelectionForCurrentMode");
-            var workspaceRefresh = ExtractMethod(workspacesSource, "private void RefreshWorkspaceView");
-            var cachedAvailability = ExtractMethod(workspacesSource, "private bool IsWorkspaceAvailableFromCache");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var workspacesSource = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var activation = RepositorySource.ExtractMethod(modesSource, "private void ActivateSelectedModeTab");
+            var projectionRefresh = RepositorySource.ExtractMethod(modesSource, "private void RefreshModeProjectionFromCache");
+            var restore = RepositorySource.ExtractMethod(modesSource, "private void RestoreSelectionForCurrentMode");
+            var workspaceRefresh = RepositorySource.ExtractMethod(workspacesSource, "private void RefreshWorkspaceView");
+            var cachedAvailability = RepositorySource.ExtractMethod(workspacesSource, "private bool IsWorkspaceAvailableFromCache");
 
             Assert.That(activation, Does.Contain("RefreshModeProjectionFromCache();"));
             Assert.That(activation, Does.Not.Contain("ApplyMainFormRefreshPreset"));
@@ -449,9 +445,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void InitialWorkspaceRefresh_CannotCreateAWindowsOfficeDefaultForUnixRuntime()
         {
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var workspacesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
-            var workspaceRefresh = ExtractMethod(workspacesSource, "private void RefreshWorkspaceView");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var workspacesSource = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
+            var workspaceRefresh = RepositorySource.ExtractMethod(workspacesSource, "private void RefreshWorkspaceView");
 
             Assert.That(mainFormSource, Does.Contain("RefreshWorkspaceView();"));
             Assert.That(workspaceRefresh, Does.Not.Contain("EnsureDefaultOfficeWorkspace"));
@@ -463,10 +459,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeRootProbeError_GuardsWorkspaceActionsWithoutPruningState()
         {
-            var workspacesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
-            var officeRuntimeSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OfficeRuntime.cs");
-            var availability = ExtractMethod(workspacesSource, "private bool IsWorkspaceAvailable(WorkspaceInfo workspace)");
-            var refresh = ExtractMethod(officeRuntimeSource, "private async Task RefreshActiveOfficeRuntimeRootAsync()");
+            var workspacesSource = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
+            var officeRuntimeSource = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
+            var availability = RepositorySource.ExtractMethod(workspacesSource, "private bool IsWorkspaceAvailable(WorkspaceInfo workspace)");
+            var refresh = RepositorySource.ExtractMethod(officeRuntimeSource, "private async Task RefreshActiveOfficeRuntimeRootAsync()");
 
             Assert.That(availability, Does.Contain("OfficeWorkspaceAvailabilityPlanner.IsUnavailable("));
             Assert.That(availability, Does.Contain("_officeRuntimeRootError"));
@@ -478,10 +474,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeWorkspaceRoutes_UseRuntimeFileSystemWithoutCategoryDiscovery()
         {
-            var workspacesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var open = ExtractMethod(workspacesSource, "private void OpenOfficeWorkspaceDirectory");
-            var compatibility = ExtractMethod(workspacesSource, "private bool IsWorkspaceCompatibleWithCurrentRuntime");
+            var workspacesSource = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var open = RepositorySource.ExtractMethod(workspacesSource, "private void OpenOfficeWorkspaceDirectory");
+            var compatibility = RepositorySource.ExtractMethod(workspacesSource, "private bool IsWorkspaceCompatibleWithCurrentRuntime");
 
             Assert.That(open, Does.Contain("target.UsesUnixPaths"));
             Assert.That(open, Does.Contain("ShowRuntimeFileBrowser("));
@@ -496,11 +492,11 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeImportAutomationAndCacheRoutes_UseTargetIdentity()
         {
-            var mainSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var workspacesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
-            var threadSyncSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.ThreadSync.cs");
-            var sessionsSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Sessions.cs");
-            var historyImport = ExtractMethod(threadSyncSource, "private WorkspaceInfo CreateWorkspaceForHistoryImport");
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var workspacesSource = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
+            var threadSyncSource = RepositorySource.ReadSourceFile("MainForm.ThreadSync.cs");
+            var sessionsSource = RepositorySource.ReadSourceFile("MainForm.Sessions.cs");
+            var historyImport = RepositorySource.ExtractMethod(threadSyncSource, "private WorkspaceInfo CreateWorkspaceForHistoryImport");
 
             Assert.That(mainSource, Does.Contain("StringComparer.Ordinal);"));
             Assert.That(workspacesSource, Does.Contain("WorkspaceRuntimeCacheKeyBuilder.Build("));
@@ -514,9 +510,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SendCancellationStatusMentionsOnlyRuntimeOrAuthenticationChanges()
         {
-            var sendingSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.MessageSending.cs");
-            var englishResources = ReadSource("src", "MyCodex.WinForms", "Resources", "Strings.resx");
-            var chineseResources = ReadSource("src", "MyCodex.WinForms", "Resources", "Strings.zh-CN.resx");
+            var sendingSource = RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
+            var englishResources = RepositorySource.ReadFile("src", "MyCodex.WinForms", "Resources", "Strings.resx");
+            var chineseResources = RepositorySource.ReadFile("src", "MyCodex.WinForms", "Resources", "Strings.zh-CN.resx");
 
             Assert.That(sendingSource, Does.Contain("Send cancelled because the active runtime or authentication source changed."));
             Assert.That(sendingSource, Does.Not.Contain("active runtime or session changed"));
@@ -528,7 +524,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SendPath_UsesEffectiveModelAndReasoningForTurnStartOverrides()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.MessageSending.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
 
             Assert.That(source, Does.Contain("var turnModelId = modelId;"));
             Assert.That(source, Does.Contain("var turnReasoningEffort = reasoningEffort;"));
@@ -541,7 +537,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SendPath_UsesOfficeWorkspaceIdentityForOfficeCollaborationMode()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(source, Does.Contain("IsOfficeSessionOrWorkspace(ChatSession session, WorkspaceInfo workspace)"));
             Assert.That(source, Does.Contain("workspace.Id.StartsWith(\"office:\", StringComparison.OrdinalIgnoreCase)"));
@@ -552,7 +548,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeMode_MapsToAppServerDefaultOrPlanCollaborationMode()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(source, Does.Contain("session.IsPlanModeEnabled ? \"plan\" : \"default\""));
             Assert.That(source, Does.Contain("CreateOfficeCollaborationMode("));
@@ -563,7 +559,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_HasModePartialForSwitchFlow()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
 
             Assert.That(source, Does.Contain("SelectInteractionModeTab"));
             Assert.That(source, Does.Contain("ModeTabControl_SelectedIndexChanged"));
@@ -577,8 +573,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_UsesTwoAccessibleModeTabsAroundOneSharedWorkbench()
         {
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var layoutSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Layout.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var layoutSource = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
 
             Assert.That(mainFormSource, Does.Contain("private TabControl _modeTabControl;"));
             Assert.That(mainFormSource, Does.Contain("private TabPage _codingTabPage;"));
@@ -596,17 +592,17 @@ namespace MyCodex.Application.Tests
             Assert.That(layoutSource, Does.Contain("_modeTabControl.TabStop = true"));
             Assert.That(layoutSource, Does.Not.Contain("DrawMode"));
             Assert.That(layoutSource, Does.Not.Contain("OwnerDraw"));
-            Assert.That(CountOccurrences(mainFormSource, "_workspaceList = CreateWorkspaceListView"), Is.EqualTo(1));
-            Assert.That(CountOccurrences(mainFormSource, "_sessionList = CreateSessionListView"), Is.EqualTo(1));
-            Assert.That(CountOccurrences(mainFormSource, "_chatHistoryListBox = CreateChatHistoryListBox"), Is.EqualTo(1));
-            Assert.That(CountOccurrences(mainFormSource, "_inputBox = CreateInputBox"), Is.EqualTo(1));
-            Assert.That(CountOccurrences(mainFormSource, "_activityBrowseControl = CreateActivityBrowseControl"), Is.EqualTo(1));
+            Assert.That(RepositorySource.CountOccurrences(mainFormSource, "_workspaceList = CreateWorkspaceListView"), Is.EqualTo(1));
+            Assert.That(RepositorySource.CountOccurrences(mainFormSource, "_sessionList = CreateSessionListView"), Is.EqualTo(1));
+            Assert.That(RepositorySource.CountOccurrences(mainFormSource, "_chatHistoryListBox = CreateChatHistoryListBox"), Is.EqualTo(1));
+            Assert.That(RepositorySource.CountOccurrences(mainFormSource, "_inputBox = CreateInputBox"), Is.EqualTo(1));
+            Assert.That(RepositorySource.CountOccurrences(mainFormSource, "_activityBrowseControl = CreateActivityBrowseControl"), Is.EqualTo(1));
         }
 
         [Test]
         public void ModeTabs_AttachActivationAfterConfigAndStateInitialization()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
             var loadConfigIndex = source.IndexOf("LoadAppConfig();", StringComparison.Ordinal);
             var loadStateIndex = source.IndexOf("LoadPersistedState(false);", StringComparison.Ordinal);
             var initializeTabsIndex = source.IndexOf("InitializeModeTabsAfterStateLoad();", StringComparison.Ordinal);
@@ -619,9 +615,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeTabSelection_IsTheOnlyInMemoryActivationPath()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var handler = ExtractMethod(source, "private void ModeTabControl_SelectedIndexChanged");
-            var activation = ExtractMethod(source, "private void ActivateSelectedModeTab");
+            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var handler = RepositorySource.ExtractMethod(source, "private void ModeTabControl_SelectedIndexChanged");
+            var activation = RepositorySource.ExtractMethod(source, "private void ActivateSelectedModeTab");
 
             Assert.That(handler, Does.Contain("ActivateSelectedModeTab();"));
             Assert.That(handler, Does.Not.Contain("ScheduleOfficeCliOnboardingPromptIfNeeded"));
@@ -641,9 +637,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeTabs_UseDefaultStartupModeButRuntimeReloadPreservesCurrentMode()
         {
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs").Replace("\r\n", "\n");
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var onShown = ExtractMethod(mainFormSource, "private async void OnShown");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs").Replace("\r\n", "\n");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var onShown = RepositorySource.ExtractMethod(mainFormSource, "private async void OnShown");
 
             Assert.That(mainFormSource, Does.Contain("preserveCurrentInteractionMode\n                ? preservedInteractionMode\n                : _activeModeSettings.DefaultStartupMode"));
             Assert.That(onShown, Does.Contain("SelectInteractionModeTab(_activeModeSettings.DefaultStartupMode);"));
@@ -652,7 +648,7 @@ namespace MyCodex.Application.Tests
             Assert.That(modesSource, Does.Contain("_modeTabControl.SelectedIndexChanged += ModeTabControl_SelectedIndexChanged;"));
             Assert.That(modesSource, Does.Not.Contain("_officeTabPage.Enabled = false"));
             Assert.That(modesSource, Does.Not.Contain("_codingTabPage.Enabled = false"));
-            var initialization = ExtractMethod(modesSource, "private void InitializeModeTabsAfterStateLoad");
+            var initialization = RepositorySource.ExtractMethod(modesSource, "private void InitializeModeTabsAfterStateLoad");
             Assert.That(initialization, Does.Not.Contain("CodexRuntimeSource"));
             Assert.That(initialization, Does.Not.Contain("RuntimeProfile"));
         }
@@ -660,10 +656,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeTargetTransition_ClearsOnlyTransientActivityAndSuppressesOldTargetRecovery()
         {
-            var runtimeWindows = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.RuntimeWindows.cs");
-            var appServerEvents = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.AppServerEvents.cs");
-            var finalize = ExtractMethod(runtimeWindows, "private void FinalizeRuntimeTransitionState");
-            var disconnected = ExtractMethod(appServerEvents, "private void HandleAppServerDisconnected");
+            var runtimeWindows = RepositorySource.ReadSourceFile("MainForm.RuntimeWindows.cs");
+            var appServerEvents = RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs");
+            var finalize = RepositorySource.ExtractMethod(runtimeWindows, "private void FinalizeRuntimeTransitionState");
+            var disconnected = RepositorySource.ExtractMethod(appServerEvents, "private void HandleAppServerDisconnected");
 
             Assert.That(finalize, Does.Contain("ClearAllThreadBusy();"));
             Assert.That(finalize, Does.Contain("ClearAllInFlightThreadStates();"));
@@ -685,9 +681,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeTabSelection_DoesNotRunBehindOwnedModalDialogs()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var selection = ExtractMethod(source, "private bool SelectInteractionModeTab");
-            var handler = ExtractMethod(source, "private void ModeTabControl_SelectedIndexChanged");
+            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var selection = RepositorySource.ExtractMethod(source, "private bool SelectInteractionModeTab");
+            var handler = RepositorySource.ExtractMethod(source, "private void ModeTabControl_SelectedIndexChanged");
 
             Assert.That(selection, Does.Contain("if (!Enabled || _modeTabControl == null)"));
             Assert.That(handler, Does.Contain("if (!Enabled)"));
@@ -696,8 +692,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeTabs_KeepFocusOnTheTabControlAfterActivation()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var activation = ExtractMethod(source, "private void ActivateSelectedModeTab");
+            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var activation = RepositorySource.ExtractMethod(source, "private void ActivateSelectedModeTab");
 
             Assert.That(activation, Does.Contain("_modeTabControl.Focus();"));
             Assert.That(source, Does.Not.Contain("ModeFocusRole"));
@@ -707,8 +703,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeMode_SchedulesOfficeCliOnboardingPrompt()
         {
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
 
             Assert.That(mainFormSource, Does.Contain("HasCompletedOfficeCliOnboarding"));
             Assert.That(mainFormSource, Does.Contain("ScheduleOfficeCliOnboardingPromptIfNeeded();"));
@@ -721,9 +717,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ManualsAndRepositoryGuidance_DescribeRuntimeAwareCoexistingModeTabs()
         {
-            var englishManual = ReadSource("help", "UserManual.en.html");
-            var chineseManual = ReadSource("help", "用户手册.html");
-            var guidance = ReadSource("AGENTS.md");
+            var englishManual = RepositorySource.ReadFile("help", "UserManual.en.html");
+            var chineseManual = RepositorySource.ReadFile("help", "用户手册.html");
+            var guidance = RepositorySource.ReadFile("AGENTS.md");
 
             Assert.That(englishManual, Does.Contain("two accessible tabs in the same main window"));
             Assert.That(englishManual, Does.Contain("Ctrl+1"));
@@ -754,10 +750,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeCliOnboarding_IsWindowsTargetOnlyAndNeverGatesOfficeTab()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var schedule = ExtractMethod(source, "private void ScheduleOfficeCliOnboardingPromptIfNeeded");
-            var prompt = ExtractMethod(source, "private async Task PromptForOfficeCliIntegrationIfNeededAsync");
-            var relevance = ExtractMethod(source, "private bool IsWindowsOfficeCliIntegrationRelevant");
+            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var schedule = RepositorySource.ExtractMethod(source, "private void ScheduleOfficeCliOnboardingPromptIfNeeded");
+            var prompt = RepositorySource.ExtractMethod(source, "private async Task PromptForOfficeCliIntegrationIfNeededAsync");
+            var relevance = RepositorySource.ExtractMethod(source, "private bool IsWindowsOfficeCliIntegrationRelevant");
 
             Assert.That(schedule, Does.Contain("IsWindowsOfficeCliIntegrationRelevant()"));
             Assert.That(prompt, Does.Contain("IsWindowsOfficeCliIntegrationRelevant()"));
@@ -769,7 +765,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeSwitch_UpdatesWindowTitle()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
 
             Assert.That(source, Does.Contain("RefreshWindowTitle();"));
             Assert.That(source, Does.Contain("MainForm.Title.Mode.Coding"));
@@ -779,7 +775,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void FileMenu_DisablesWorkspaceManagementInOfficeMode()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(source, Does.Contain("var isOfficeMode = _currentInteractionMode == AppInteractionMode.Office"));
             Assert.That(source, Does.Contain("_openWorkspaceFileMenuItem.Enabled = !isOfficeMode"));
@@ -788,7 +784,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeVisibility_AppliesOfficeActivityPaneSetting()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
 
             Assert.That(source, Does.Contain("_contentSplitContainer.Panel2Collapsed = isOfficeMode && !_appConfigSnapshot.OfficeShowActivityPane"));
         }
@@ -796,7 +792,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeVisibility_HidesWorkspaceManagementActionsInOfficeMode()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
 
             Assert.That(source, Does.Contain("_workspaceNewMenuItem.Visible = !isOfficeMode"));
             Assert.That(source, Does.Contain("_workspaceList.Visible = !isOfficeMode"));
@@ -813,7 +809,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeVisibility_HidesCodingOnlyActionsInOfficeMode()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
 
             Assert.That(source, Does.Contain("_gitMenuItem.Visible = !isOfficeMode"));
             Assert.That(source, Does.Contain("_commandMenuButton.Visible = !isOfficeMode"));
@@ -827,10 +823,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeSwitch_PreservesComposeDraftsByModeRuntimeIdentity()
         {
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var attachmentsSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Attachments.cs");
-            var officeRuntimeSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OfficeRuntime.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var attachmentsSource = RepositorySource.ReadSourceFile("MainForm.Attachments.cs");
+            var officeRuntimeSource = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
 
             Assert.That(mainFormSource, Does.Contain("UnboundComposeDraftSessionId"));
             Assert.That(mainFormSource, Does.Not.Contain("_officeUnboundComposeDraft"));
@@ -849,8 +845,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeMode_DoesNotProjectAWorkspaceList()
         {
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var workspacesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var workspacesSource = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
 
             Assert.That(modesSource, Does.Contain("_workspaceList.Visible = !isOfficeMode;"));
             Assert.That(modesSource, Does.Contain("_workspaceList.TabStop = !isOfficeMode;"));
@@ -861,7 +857,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SendPath_SkipsGitMetadataUpdatesForOfficeSessions()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(source, Does.Contain("TryUpdateThreadWorkspaceMetadataAsync"));
             Assert.That(source, Does.Contain("session.Mode == AppInteractionMode.Office"));
@@ -871,7 +867,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerFileBrowser_DefaultsToOfficeRootInOfficeMode()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.SessionSettings.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
 
             Assert.That(source, Does.Contain("_currentInteractionMode == AppInteractionMode.Office"));
             Assert.That(source, Does.Contain("var officeWorkspace = EnsureOfficeWorkspace();"));
@@ -881,7 +877,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeMode_RemovesOfficeCategoryLabels()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Layout.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
 
             Assert.That(source, Does.Contain("GetWorkspaceListAccessibleName"));
             Assert.That(source, Does.Contain("GetWorkspaceSectionTitleText"));
@@ -892,8 +888,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeMode_UsesLocalWindowsWorkspaceCompatibility()
         {
-            var workspacesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
-            var officeRuntimeSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OfficeRuntime.cs");
+            var workspacesSource = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
+            var officeRuntimeSource = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
 
             Assert.That(workspacesSource, Does.Contain("_currentInteractionMode == AppInteractionMode.Office && workspace.Kind == WorkspaceKind.Office"));
             Assert.That(workspacesSource, Does.Contain("WorkspacePathUtilities.LooksLikeWindowsDriveAbsolutePath(workspace.RootPath)"));
@@ -904,7 +900,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeMode_PreservesOfficeSummaryInCompactHeader()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Status.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.Status.cs");
 
             Assert.That(source, Does.Contain("_currentInteractionMode == AppInteractionMode.Office"));
             Assert.That(source, Does.Contain("BuildOfficeHeaderSummary(notSelectedText, notSyncedText)"));
@@ -916,7 +912,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeWorkspace_DoesNotDiscoverChildDirectories()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
 
             Assert.That(source, Does.Not.Contain("_officeRuntimeFileSystem.ListDirectoryAsync("));
             Assert.That(source, Does.Not.Contain("Directory.GetDirectories("));
@@ -926,7 +922,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeWorkspace_HasNoManagedCategoryPruning()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
 
             Assert.That(source, Does.Not.Contain("ManagedOfficeCategory"));
             Assert.That(source, Does.Not.Contain("RefreshOfficeCategoriesAsync"));
@@ -935,7 +931,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeHistoryImport_UsesSingleWorkspaceMapping()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Automation.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.Automation.cs");
 
             Assert.That(source, Does.Contain("ResolveOfficeWorkspaceForImport"));
             Assert.That(source, Does.Not.Contain("CreateOfficeCategoryWorkspace(ResolveOfficeRootPathForHistorySync(), path)"));
@@ -944,7 +940,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeStateRestore_CollapsesToSingleWorkspace()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OfficeRuntime.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
 
             Assert.That(source, Does.Contain("_recentWorkspaces.RemoveAll(item => item != null && item.Kind == WorkspaceKind.Office);"));
             Assert.That(source, Does.Contain("_recentWorkspaces.Add(workspace);"));
@@ -953,7 +949,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeMode_RespectsActivityPaneVisibilityOption()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
 
             Assert.That(source, Does.Contain("_contentSplitContainer.Panel2Collapsed = isOfficeMode && !_appConfigSnapshot.OfficeShowActivityPane"));
             Assert.That(source, Does.Not.Contain("_contentSplitContainer.Panel2Collapsed = false"));
@@ -962,7 +958,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void InputBoxCtrlEnter_SuppressesKeyBeforeAwaitingSend()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
             var methodStart = source.IndexOf("private async void InputBox_KeyDown", StringComparison.Ordinal);
             var methodEnd = source.IndexOf("private void InputBox_TextChanged", StringComparison.Ordinal);
             var method = source.Substring(methodStart, methodEnd - methodStart);
@@ -976,8 +972,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SendBootstrap_ClearsUnboundDraftAfterRestoringItToNewSession()
         {
-            var messageSendingSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.MessageSending.cs");
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
+            var messageSendingSource = RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
             var sendStart = messageSendingSource.IndexOf("RestoreComposeDraftState(pendingDraftState);", StringComparison.Ordinal);
             var sendEnd = messageSendingSource.IndexOf("TraceSendDiagnostic(\"Bootstrap\"", sendStart, StringComparison.Ordinal);
             var sendBootstrap = messageSendingSource.Substring(sendStart, sendEnd - sendStart);
@@ -989,8 +985,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SessionCreationAndActivation_UpdatePerModeSessionSelection()
         {
-            var sessionsSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Sessions.cs");
-            var chatHistoryInteractionSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.ChatHistoryInteraction.cs");
+            var sessionsSource = RepositorySource.ReadSourceFile("MainForm.Sessions.cs");
+            var chatHistoryInteractionSource = RepositorySource.ReadSourceFile("MainForm.ChatHistoryInteraction.cs");
 
             Assert.That(sessionsSource, Does.Contain("UpdateCurrentModeSessionSelection(session);"));
             Assert.That(sessionsSource, Does.Contain("UpdateCurrentModeSessionSelection(_currentSession);"));
@@ -1000,10 +996,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeModeSelectionPersistence_RejectsCodingWorkspaceIds()
         {
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var runtimeConnectionSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.RuntimeConnection.cs");
-            var officeRuntimeSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OfficeRuntime.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var runtimeConnectionSource = RepositorySource.ReadSourceFile("MainForm.RuntimeConnection.cs");
+            var officeRuntimeSource = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
 
             Assert.That(modesSource, Does.Contain("_currentWorkspace.Kind == WorkspaceKind.Office"));
             Assert.That(modesSource, Does.Contain("target.RuntimeScopeId"));
@@ -1020,10 +1016,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeMode_RestoresSavedSessionWhenItStillExists()
         {
-            var modesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var sessionsSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Sessions.cs");
-            var workspacesSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var sessionsSource = RepositorySource.ReadSourceFile("MainForm.Sessions.cs");
+            var workspacesSource = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
             var restoreStart = sessionsSource.IndexOf("private void RestoreOfficeSelectionAfterStateLoad()", StringComparison.Ordinal);
             var restoreEnd = sessionsSource.IndexOf("private void EnsureCurrentSessionMatchesInteractionMode()", restoreStart, StringComparison.Ordinal);
             var restoreSource = sessionsSource.Substring(restoreStart, restoreEnd - restoreStart);
@@ -1048,9 +1044,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeRuntimeRoot_IsResolvedAsynchronouslyAndCachedOutsideConstruction()
         {
-            var mainFormSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.cs");
-            var runtimeConnectionSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.RuntimeConnection.cs");
-            var officeRuntimeSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OfficeRuntime.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var runtimeConnectionSource = RepositorySource.ReadSourceFile("MainForm.RuntimeConnection.cs");
+            var officeRuntimeSource = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
 
             Assert.That(officeRuntimeSource, Does.Contain("private readonly OfficeRuntimeScopeService _officeRuntimeScopeService"));
             Assert.That(officeRuntimeSource, Does.Contain("private readonly OfficeRuntimeStateService _officeRuntimeStateService"));
@@ -1067,7 +1063,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeSessionDeletion_DefaultsLocalHistoryDeletionOn()
         {
-            var sessionsSource = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Sessions.cs");
+            var sessionsSource = RepositorySource.ReadSourceFile("MainForm.Sessions.cs");
 
             Assert.That(sessionsSource, Does.Contain("var defaultDeleteLocalHistory = session.Mode == AppInteractionMode.Office"));
             Assert.That(sessionsSource, Does.Contain("new LocalSessionDeleteConfirmationForm("));
@@ -1077,7 +1073,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeDirectoryOpenMessage_UsesOfficeWording()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
 
             Assert.That(source, Does.Contain("BuildWorkspaceOpenedMessage"));
             Assert.That(source, Does.Contain("MainForm.Message.OfficeDirectoryOpened.Template"));
@@ -1086,8 +1082,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeMode_UsesSessionOnlyNavigationAndAltOneFocusesSessions()
         {
-            var modes = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Modes.cs");
-            var workspaces = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
+            var modes = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var workspaces = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
 
             Assert.That(modes, Does.Contain("_workspaceSectionTitleLabel.Visible = !isOfficeMode;"));
             Assert.That(modes, Does.Contain("_workspaceList.Visible = !isOfficeMode;"));
@@ -1099,9 +1095,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeRootChange_ValidatesBeforeSaveAndDoesNotRefreshCategories()
         {
-            var options = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OptionsSettings.cs");
-            var runtime = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.OfficeRuntime.cs");
-            var save = ExtractMethod(options, "private async Task<Tuple<bool, bool>> SaveModeSettingsForCurrentRuntimeAsync(");
+            var options = RepositorySource.ReadSourceFile("MainForm.OptionsSettings.cs");
+            var runtime = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
+            var save = RepositorySource.ExtractMethod(options, "private async Task<Tuple<bool, bool>> SaveModeSettingsForCurrentRuntimeAsync(");
 
             Assert.That(save.IndexOf("await ResolveAndEnsureOfficeRootAsync(", StringComparison.Ordinal), Is.GreaterThanOrEqualTo(0));
             Assert.That(save.IndexOf("await SaveModeSettingsForCurrentRuntimeAsync(new ModeSettingsSnapshot", StringComparison.Ordinal),
@@ -1113,8 +1109,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeWorkspaceCompatibility_UsesExactRuntimeSingletonIdentity()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Workspaces.cs");
-            var compatibility = ExtractMethod(source, "private bool IsOfficeWorkspaceCompatibleWithActiveRuntime");
+            var source = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
+            var compatibility = RepositorySource.ExtractMethod(source, "private bool IsOfficeWorkspaceCompatibleWithActiveRuntime");
 
             Assert.That(compatibility, Does.Contain("string.Equals("));
             Assert.That(compatibility, Does.Contain("\"office:\" + target.RuntimeScopeId"));
@@ -1124,7 +1120,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void GoalSet_StartsGoalExecutionAfterSuccessfulReplacement()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.Goals.cs").Replace("\r\n", "\n");
+            var source = RepositorySource.ReadSourceFile("MainForm.Goals.cs").Replace("\r\n", "\n");
 
             Assert.That(source, Does.Contain("await StartSessionGoalExecutionAsync(session);"));
             Assert.That(source, Does.Contain("private async Task StartSessionGoalExecutionAsync(ChatSession session)"));
@@ -1132,53 +1128,6 @@ namespace MyCodex.Application.Tests
             Assert.That(
                 source,
                 Does.Contain("await SendCurrentInputAsync(\n                UiLocalization.Text(\"MainForm.Goal.StartPrompt\", \"Please start working on the current goal.\"),\n                false);"));
-        }
-
-        private static string ReadSource(params string[] parts)
-        {
-            return File.ReadAllText(Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                Path.Combine(parts))));
-        }
-
-        private static string ExtractMethod(string source, string signature)
-        {
-            var start = source.IndexOf(signature, StringComparison.Ordinal);
-            Assert.That(start, Is.GreaterThanOrEqualTo(0), signature + " should exist.");
-            var braceStart = source.IndexOf('{', start);
-            Assert.That(braceStart, Is.GreaterThanOrEqualTo(0), signature + " should have a body.");
-            var depth = 0;
-            for (var i = braceStart; i < source.Length; i++)
-            {
-                if (source[i] == '{')
-                {
-                    depth++;
-                }
-                else if (source[i] == '}' && --depth == 0)
-                {
-                    return source.Substring(start, i - start + 1);
-                }
-            }
-
-            Assert.Fail(signature + " body should be complete.");
-            return string.Empty;
-        }
-
-        private static int CountOccurrences(string source, string value)
-        {
-            var count = 0;
-            var offset = 0;
-            while ((offset = source.IndexOf(value, offset, StringComparison.Ordinal)) >= 0)
-            {
-                count++;
-                offset += value.Length;
-            }
-
-            return count;
         }
     }
 }

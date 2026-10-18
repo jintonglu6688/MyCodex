@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Infrastructure.Persistence;
 using NUnit.Framework;
 
@@ -99,7 +100,7 @@ namespace MyCodex.Application.Tests
         public void Program_RunsUserCacheMaintenanceBeforeConfiguringDiagnostics()
         {
             var source = File.ReadAllText(
-                GetRepositoryPath("src", "MyCodex.WinForms", "Program.cs"),
+                RepositorySource.FindSourceFile("Program.cs"),
                 Encoding.UTF8);
             var cleanupIndex = source.IndexOf(
                 "UserCacheMaintenance.CleanupOnStartup(appConfigService);",
@@ -116,24 +117,6 @@ namespace MyCodex.Application.Tests
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             File.WriteAllText(path, "cache");
-        }
-
-        private static string GetRepositoryPath(params string[] parts)
-        {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null && !File.Exists(Path.Combine(directory.FullName, "MyCodex.sln")))
-            {
-                directory = directory.Parent;
-            }
-
-            Assert.That(directory, Is.Not.Null, "Repository root could not be located.");
-            var path = directory.FullName;
-            for (var index = 0; index < parts.Length; index++)
-            {
-                path = Path.Combine(path, parts[index]);
-            }
-
-            return path;
         }
     }
 }

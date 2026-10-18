@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -12,21 +13,21 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RemovedTurnChangesViewer_LeavesGitWorkbenchAndEncodingChecksAvailable()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.DiffWorkbench.cs"));
-            Assert.That(File.Exists(GetMainFormPath("DiffWorkbenchForm.cs")), Is.False);
+            var source = RepositorySource.ReadSourceFile("MainForm.DiffWorkbench.cs");
+            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "DiffWorkbenchForm.cs")), Is.False);
             Assert.That(source, Does.Not.Contain("_turnDiffSnapshots"));
             Assert.That(source, Does.Contain("new GitWorkbenchForm("));
             Assert.That(source, Does.Contain("CheckEncodingSafetyForTurn(threadId, turnId, snapshot)"));
-            Assert.That(File.ReadAllText(GetMainFormPath("MainForm.Layout.cs")), Does.Not.Contain("_viewSelectedTurnChangesMenuItem"));
-            Assert.That(File.ReadAllText(GetMainFormPath("MainForm.AppServerEvents.cs")),
+            Assert.That(RepositorySource.ReadSourceFile("MainForm.Layout.cs"), Does.Not.Contain("_viewSelectedTurnChangesMenuItem"));
+            Assert.That(RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs"),
                 Does.Contain("CheckTurnEncodingSafety(e.ThreadId, state.TurnId, state.DiffText, state.ChangedFiles)"));
         }
 
         [Test]
         public void CompactLayout_PreservesAccessibleNamesAndCommandPlacement()
         {
-            var layout = File.ReadAllText(GetMainFormPath("MainForm.Layout.cs"));
-            var main = File.ReadAllText(GetMainFormPath("MainForm.cs"));
+            var layout = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
+            var main = RepositorySource.ReadSourceFile("MainForm.cs");
             foreach (var removedField in new[] { "_navigationSectionTitleLabel", "_activitySectionTitleLabel", "_sessionInfoSectionTitleLabel" })
             {
                 Assert.That(layout + main, Does.Not.Contain(removedField));
@@ -252,7 +253,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainFormCoreFile_DoesNotRegainExtractedWorkflowImplementations()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(source, Does.Not.Contain("private async Task SendCurrentInputAsync(string overrideText, bool includePendingAttachments)"));
             Assert.That(source, Does.Not.Contain("private async Task<ChatWorkbenchSendResult> SendSubAgentInputAsync("));
@@ -271,8 +272,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_OfficeRuntimeStateAndRootLogicLivesInDedicatedPartial()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var officeRuntimePath = GetMainFormPath("MainForm.OfficeRuntime.cs");
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var officeRuntimePath = RepositorySource.FindSourceFile("MainForm.OfficeRuntime.cs");
             var officeRuntimeSource = File.Exists(officeRuntimePath)
                 ? File.ReadAllText(officeRuntimePath)
                 : string.Empty;
@@ -287,9 +288,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_ModeActivationAndRuntimeTransitionRemainInBoundedPartials()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var modesSource = File.ReadAllText(GetMainFormPath("MainForm.Modes.cs"));
-            var runtimeWindowsSource = File.ReadAllText(GetMainFormPath("MainForm.RuntimeWindows.cs"));
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var runtimeWindowsSource = RepositorySource.ReadSourceFile("MainForm.RuntimeWindows.cs");
 
             Assert.That(modesSource, Does.Contain("private void ActivateSelectedModeTab()"));
             Assert.That(modesSource, Does.Contain("private void CaptureCurrentModeSelection()"));
@@ -302,7 +303,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainFormCoreFile_PhaseCandidateResponsibilitiesDoNotExpandBeforeExtraction()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(
                 CountPrivateMethodDeclarations(source, Phase1GoalPlanMethodNames),
@@ -333,10 +334,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_GoalPlanWorkflowsLiveInDedicatedPartialAndUsePlanner()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var goalsPath = GetMainFormPath("MainForm.Goals.cs");
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var goalsPath = RepositorySource.FindSourceFile("MainForm.Goals.cs");
             var goalsSource = File.Exists(goalsPath) ? File.ReadAllText(goalsPath) : string.Empty;
-            var plannerPath = GetMainFormPath("SessionPlanModePlanner.cs");
+            var plannerPath = RepositorySource.FindSourceFile("SessionPlanModePlanner.cs");
             var plannerSource = File.Exists(plannerPath) ? File.ReadAllText(plannerPath) : string.Empty;
 
             Assert.That(File.Exists(goalsPath), Is.True, "MainForm.Goals.cs should exist after Phase 1.");
@@ -351,10 +352,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_ThreadSyncWorkflowsLiveInDedicatedPartialAndUsePlanner()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var threadSyncPath = GetMainFormPath("MainForm.ThreadSync.cs");
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var threadSyncPath = RepositorySource.FindSourceFile("MainForm.ThreadSync.cs");
             var threadSyncSource = File.Exists(threadSyncPath) ? File.ReadAllText(threadSyncPath) : string.Empty;
-            var plannerPath = GetMainFormPath("ThreadImportFilterPlanner.cs");
+            var plannerPath = RepositorySource.FindSourceFile("ThreadImportFilterPlanner.cs");
             var plannerSource = File.Exists(plannerPath) ? File.ReadAllText(plannerPath) : string.Empty;
 
             Assert.That(File.Exists(threadSyncPath), Is.True, "MainForm.ThreadSync.cs should exist after Phase 2.");
@@ -370,10 +371,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_ChatHistoryInteractionLivesInDedicatedPartialAndUsesPlanner()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var chatHistoryPath = GetMainFormPath("MainForm.ChatHistoryInteraction.cs");
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var chatHistoryPath = RepositorySource.FindSourceFile("MainForm.ChatHistoryInteraction.cs");
             var chatHistorySource = File.Exists(chatHistoryPath) ? File.ReadAllText(chatHistoryPath) : string.Empty;
-            var plannerPath = GetMainFormPath("ChatHistoryContextMenuPlanner.cs");
+            var plannerPath = RepositorySource.FindSourceFile("ChatHistoryContextMenuPlanner.cs");
             var plannerSource = File.Exists(plannerPath) ? File.ReadAllText(plannerPath) : string.Empty;
 
             Assert.That(File.Exists(chatHistoryPath), Is.True, "MainForm.ChatHistoryInteraction.cs should exist after Phase 3.");
@@ -390,8 +391,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_RuntimeConnectionLifecycleLivesInDedicatedPartial()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var runtimeConnectionPath = GetMainFormPath("MainForm.RuntimeConnection.cs");
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var runtimeConnectionPath = RepositorySource.FindSourceFile("MainForm.RuntimeConnection.cs");
             var runtimeConnectionSource = File.Exists(runtimeConnectionPath) ? File.ReadAllText(runtimeConnectionPath) : string.Empty;
 
             Assert.That(File.Exists(runtimeConnectionPath), Is.True, "MainForm.RuntimeConnection.cs should exist after Phase 4.");
@@ -405,10 +406,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_ActivityLogAndStatusTitleLiveInDedicatedPartials()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var activityPath = GetMainFormPath("MainForm.Activity.cs");
-            var statusPath = GetMainFormPath("MainForm.Status.cs");
-            var presenterPath = GetMainFormPath("MainFormStatusPresenter.cs");
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var activityPath = RepositorySource.FindSourceFile("MainForm.Activity.cs");
+            var statusPath = RepositorySource.FindSourceFile("MainForm.Status.cs");
+            var presenterPath = RepositorySource.FindSourceFile("MainFormStatusPresenter.cs");
             var activitySource = File.Exists(activityPath) ? File.ReadAllText(activityPath) : string.Empty;
             var statusSource = File.Exists(statusPath) ? File.ReadAllText(statusPath) : string.Empty;
             var presenterSource = File.Exists(presenterPath) ? File.ReadAllText(presenterPath) : string.Empty;
@@ -430,9 +431,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void Phase7ListItems_LiveOutsideMainFormCoreFile()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var sessionListItemPath = GetMainFormPath("SessionListItem.cs");
-            var workspaceListItemPath = GetMainFormPath("WorkspaceListItem.cs");
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var sessionListItemPath = RepositorySource.FindSourceFile("SessionListItem.cs");
+            var workspaceListItemPath = RepositorySource.FindSourceFile("WorkspaceListItem.cs");
             var sessionListItemSource = File.Exists(sessionListItemPath) ? File.ReadAllText(sessionListItemPath) : string.Empty;
             var workspaceListItemSource = File.Exists(workspaceListItemPath) ? File.ReadAllText(workspaceListItemPath) : string.Empty;
 
@@ -462,7 +463,7 @@ namespace MyCodex.Application.Tests
 
             for (var i = 0; i < expectedFiles.Length; i++)
             {
-                var path = GetMainFormPath(expectedFiles[i]);
+                var path = RepositorySource.FindSourceFile(expectedFiles[i]);
                 Assert.That(File.Exists(path), Is.True, expectedFiles[i] + " should exist.");
                 Assert.That(File.ReadAllText(path), Does.Contain("partial class MainForm"));
             }
@@ -484,7 +485,7 @@ namespace MyCodex.Application.Tests
 
             for (var i = 0; i < futureFiles.Length; i++)
             {
-                var path = GetMainFormPath(futureFiles[i]);
+                var path = RepositorySource.FindSourceFile(futureFiles[i]);
                 Assert.That(File.Exists(path), Is.True, futureFiles[i] + " should exist.");
                 Assert.That(File.ReadAllText(path), Does.Contain("partial class MainForm"));
             }
@@ -507,7 +508,7 @@ namespace MyCodex.Application.Tests
 
             for (var i = 0; i < helpers.Length; i++)
             {
-                var path = GetMainFormPath(helpers[i][0]);
+                var path = RepositorySource.FindSourceFile(helpers[i][0]);
                 Assert.That(File.Exists(path), Is.True, helpers[i][0] + " should exist.");
                 Assert.That(File.ReadAllText(path), Does.Contain(helpers[i][1]));
             }
@@ -516,9 +517,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void Phase6AuthenticationPresentationHelper_ExistsAndSessionSettingsDelegatesToIt()
         {
-            var helperPath = GetMainFormPath("MainFormAuthenticationStatePlanner.cs");
+            var helperPath = RepositorySource.FindSourceFile("MainFormAuthenticationStatePlanner.cs");
             var helperSource = File.Exists(helperPath) ? File.ReadAllText(helperPath) : string.Empty;
-            var sessionSettingsSource = File.ReadAllText(GetMainFormPath("MainForm.SessionSettings.cs"));
+            var sessionSettingsSource = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
 
             Assert.That(File.Exists(helperPath), Is.True, "MainFormAuthenticationStatePlanner.cs should exist.");
             Assert.That(helperSource, Does.Contain("internal static class MainFormAuthenticationStatePlanner"));
@@ -532,9 +533,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainFormCoreFile_DelegatesPhase5BPureResponsibilities()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var statusSource = File.ReadAllText(GetMainFormPath("MainForm.Status.cs"));
-            var automationSource = File.ReadAllText(GetMainFormPath("MainForm.Automation.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
+            var statusSource = RepositorySource.ReadSourceFile("MainForm.Status.cs");
+            var automationSource = RepositorySource.ReadSourceFile("MainForm.Automation.cs");
 
             Assert.That(automationSource, Does.Contain("MainFormModelOptionComposer."));
             Assert.That(source, Does.Contain("ChatHistoryItemFactory."));
@@ -550,7 +551,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_AutomationIntegration_UsesDedicatedRuntimeHost()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(source, Does.Contain("AutomationRuntimeHost"));
             Assert.That(source, Does.Not.Contain("BuildDueRunIds("));
@@ -560,7 +561,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_DelegatesAutomationNavigationDecisions()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.Automation.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.Automation.cs");
 
             Assert.That(source, Does.Contain("MainFormAutomationNavigationPlanner."));
             Assert.That(source, Does.Contain("MainFormAutomationNavigationPlanner.CanOpenThread(run)"));
@@ -572,7 +573,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_DelegatesSessionWorkspacePlanning()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.Automation.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.Automation.cs");
             var navigationScopeBlock = ExtractBlock(
                 source,
                 "private void ApplyAutomationRunNavigationScope",
@@ -593,9 +594,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerEvents_AutomationTerminalEventsRefreshOpenAutomationsForm()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.AppServerEvents.cs"));
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.Automation.cs"));
-            var recoverySource = File.ReadAllText(GetMainFormPath("MainForm.PersistenceRecovery.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs");
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.Automation.cs");
+            var recoverySource = RepositorySource.ReadSourceFile("MainForm.PersistenceRecovery.cs");
             var block = ExtractBlock(
                 source,
                 "if (AppServerEventRouting.IsTurnTerminal(route))",
@@ -624,7 +625,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_AutomationsFormReceivesRunActionCallbacks()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.Automation.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.Automation.cs");
 
             Assert.That(source, Does.Contain("CreateAutomationRunActionCallbacks()"));
             Assert.That(source, Does.Contain("CreateAutomationRunActivityCallbacks()"));
@@ -638,7 +639,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_AutomationsFormReceivesModelSelectionCallbacks()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.Automation.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.Automation.cs");
 
             Assert.That(source, Does.Contain("CreateAutomationModelSelectionCallbacks()"));
             Assert.That(source, Does.Contain("LoadAutomationModelOptionsAsync"));
@@ -650,10 +651,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_MessageSendingWorkflowLivesInDedicatedPartial()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var messageSource = File.ReadAllText(GetMainFormPath("MainForm.MessageSending.cs"));
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var messageSource = RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
 
-            Assert.That(File.Exists(GetMainFormPath("MainForm.MessageSending.cs")), Is.True);
+            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.MessageSending.cs")), Is.True);
             Assert.That(messageSource, Does.Contain("partial class MainForm"));
             Assert.That(messageSource, Does.Contain("private async Task SendCurrentInputAsync(string overrideText, bool includePendingAttachments)"));
             Assert.That(messageSource, Does.Contain("private async Task<ChatWorkbenchSendResult> SendSubAgentInputAsync("));
@@ -666,10 +667,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_SessionDialogWorkflowsLiveInDedicatedPartial()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var workflowSource = File.ReadAllText(GetMainFormPath("MainForm.SessionWorkflows.cs"));
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var workflowSource = RepositorySource.ReadSourceFile("MainForm.SessionWorkflows.cs");
 
-            Assert.That(File.Exists(GetMainFormPath("MainForm.SessionWorkflows.cs")), Is.True);
+            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.SessionWorkflows.cs")), Is.True);
             Assert.That(workflowSource, Does.Contain("partial class MainForm"));
             Assert.That(workflowSource, Does.Contain("private async Task ShowReviewStartDialogAsync("));
             Assert.That(mainSource, Does.Not.Contain("private async Task ShowReviewStartDialogAsync("));
@@ -678,8 +679,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_ForkWorkflowsPassSelectedTurnIdToSegmentedThreadWorkflow()
         {
-            var mainWorkflowSource = File.ReadAllText(GetMainFormPath("MainForm.SessionWorkflows.cs"));
-            var threadWorkflowSource = File.ReadAllText(GetMainFormPath("SessionThreadOperationWorkflow.cs"));
+            var mainWorkflowSource = RepositorySource.ReadSourceFile("MainForm.SessionWorkflows.cs");
+            var threadWorkflowSource = RepositorySource.ReadSourceFile("SessionThreadOperationWorkflow.cs");
 
             Assert.That(threadWorkflowSource, Does.Contain("IAppServerThreadClient appServerClient"));
             Assert.That(threadWorkflowSource, Does.Contain("string lastTurnId"));
@@ -690,11 +691,11 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_Phase5ProjectInstructionsAndBranchingLiveOutsideCoreFile()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var workflowSource = File.ReadAllText(GetMainFormPath("MainForm.SessionWorkflows.cs"));
-            var projectInstructionsSource = File.ReadAllText(GetMainFormPath("MainForm.ProjectInstructions.cs"));
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var workflowSource = RepositorySource.ReadSourceFile("MainForm.SessionWorkflows.cs");
+            var projectInstructionsSource = RepositorySource.ReadSourceFile("MainForm.ProjectInstructions.cs");
 
-            Assert.That(File.Exists(GetMainFormPath("MainForm.ProjectInstructions.cs")), Is.True);
+            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.ProjectInstructions.cs")), Is.True);
             Assert.That(projectInstructionsSource, Does.Contain("partial class MainForm"));
             Assert.That(projectInstructionsSource, Does.Contain("private async Task<string> GenerateProjectInstructionsContentAsync("));
             Assert.That(projectInstructionsSource, Does.Contain("private async Task CleanupProjectInstructionsHelperThreadAsync("));
@@ -712,12 +713,12 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_ThreadSyncWorkflowLivesInDedicatedPartial()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var syncSource = File.ReadAllText(GetMainFormPath("MainForm.ThreadSync.cs"));
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var syncSource = RepositorySource.ReadSourceFile("MainForm.ThreadSync.cs");
 
-            Assert.That(File.Exists(GetMainFormPath("MainForm.ThreadSync.cs")), Is.True);
+            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.ThreadSync.cs")), Is.True);
             Assert.That(syncSource, Does.Contain("partial class MainForm"));
-            Assert.That(File.ReadAllText(GetMainFormPath("MainForm.SubAgents.cs")), Does.Contain("private async Task RunLocalCurrentSubAgentThreadSyncAsync()"));
+            Assert.That(RepositorySource.ReadSourceFile("MainForm.SubAgents.cs"), Does.Contain("private async Task RunLocalCurrentSubAgentThreadSyncAsync()"));
             Assert.That(syncSource, Does.Contain("private async Task RunAutomaticThreadSyncAsync("));
             Assert.That(syncSource, Does.Contain("private async Task ShowThreadAssociationDialogAsync("));
             Assert.That(mainSource, Does.Not.Contain("private async Task RunLocalCurrentSubAgentThreadSyncAsync()"));
@@ -728,11 +729,11 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_ModelAndWorkspaceCommandWorkflowsLiveInDedicatedPartials()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var modelSource = File.ReadAllText(GetMainFormPath("MainForm.Models.cs"));
-            var commandSource = File.ReadAllText(GetMainFormPath("MainForm.CommandTerminal.cs"));
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var modelSource = RepositorySource.ReadSourceFile("MainForm.Models.cs");
+            var commandSource = RepositorySource.ReadSourceFile("MainForm.CommandTerminal.cs");
 
-            Assert.That(File.Exists(GetMainFormPath("MainForm.Models.cs")), Is.True);
+            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.Models.cs")), Is.True);
             Assert.That(modelSource, Does.Contain("partial class MainForm"));
             Assert.That(modelSource, Does.Contain("private async Task LoadAvailableModelsAsync("));
             Assert.That(modelSource, Does.Not.Contain("private void RebuildModelMenu()"));
@@ -745,8 +746,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_ConstructorDelegatesPostReadonlyUiInitialization()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var layoutSource = File.ReadAllText(GetMainFormPath("MainForm.Layout.cs"));
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var layoutSource = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
             var constructorBlock = ExtractBlock(mainSource, "public MainForm(", "public void ApplyStartupArguments");
 
             Assert.That(constructorBlock, Does.Contain("ConfigureConstructedMainFormUi();"));
@@ -761,11 +762,11 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_SessionSettingsSubflowsLiveInFocusedPartials()
         {
-            var sessionSettingsSource = File.ReadAllText(GetMainFormPath("MainForm.SessionSettings.cs"));
-            var runtimeSource = File.ReadAllText(GetMainFormPath("MainForm.RuntimeSettings.cs"));
-            var modelSource = File.ReadAllText(GetMainFormPath("MainForm.ModelSettings.cs"));
-            var permissionSource = File.ReadAllText(GetMainFormPath("MainForm.PermissionSettings.cs"));
-            var optionsSource = File.ReadAllText(GetMainFormPath("MainForm.OptionsSettings.cs"));
+            var sessionSettingsSource = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var runtimeSource = RepositorySource.ReadSourceFile("MainForm.RuntimeSettings.cs");
+            var modelSource = RepositorySource.ReadSourceFile("MainForm.ModelSettings.cs");
+            var permissionSource = RepositorySource.ReadSourceFile("MainForm.PermissionSettings.cs");
+            var optionsSource = RepositorySource.ReadSourceFile("MainForm.OptionsSettings.cs");
 
             Assert.That(runtimeSource, Does.Contain("private async Task OpenAppServerRuntimeSettingsAsync()"));
             Assert.That(modelSource, Does.Contain("private async Task OpenModelSettingsAsync("));
@@ -780,7 +781,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AutomationsForm_EditContextMenuIsWiredToUpdateExistingAutomation()
         {
-            var source = File.ReadAllText(GetMainFormPath("AutomationsForm.cs"));
+            var source = RepositorySource.ReadSourceFile("AutomationsForm.cs");
 
             Assert.That(source, Does.Contain("_editAutomationMenuItem.Click += EditAutomationMenuItem_Click;"));
             Assert.That(source, Does.Contain("private async void EditAutomationMenuItem_Click"));
@@ -793,9 +794,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_AutomationRunTargetsCanOpenThreadAndLocalPaths()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.Automation.cs"));
-            var englishResources = File.ReadAllText(GetWinFormsResourcePath("Strings.resx"));
-            var chineseResources = File.ReadAllText(GetWinFormsResourcePath("Strings.zh-CN.resx"));
+            var source = RepositorySource.ReadSourceFile("MainForm.Automation.cs");
+            var englishResources = RepositorySource.ReadFile("src", "MyCodex.WinForms", "Resources", "Strings.resx");
+            var chineseResources = RepositorySource.ReadFile("src", "MyCodex.WinForms", "Resources", "Strings.zh-CN.resx");
 
             var callbackBlock = ExtractBlock(
                 source,
@@ -841,12 +842,12 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_WorkspaceAutomationEntriesAreWired()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var layoutSource = File.ReadAllText(GetMainFormPath("MainForm.Layout.cs"));
-            var workspaceSource = File.ReadAllText(GetMainFormPath("MainForm.Workspaces.cs"));
-            var sessionsSource = File.ReadAllText(GetMainFormPath("MainForm.Sessions.cs"));
-            var modesSource = File.ReadAllText(GetMainFormPath("MainForm.Modes.cs"));
-            var englishResources = File.ReadAllText(GetWinFormsResourcePath("Strings.resx"));
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var layoutSource = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
+            var workspaceSource = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
+            var sessionsSource = RepositorySource.ReadSourceFile("MainForm.Sessions.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var englishResources = RepositorySource.ReadFile("src", "MyCodex.WinForms", "Resources", "Strings.resx");
 
             Assert.That(mainSource, Does.Contain("private readonly MenuItem _workspaceCreateAutomationMenuItem;"));
             Assert.That(mainSource, Does.Contain("MainForm.Workspace.CreateAutomation"));
@@ -867,7 +868,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerEvents_CommandOutputWritesTerminalButNotActivityLog()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.AppServerEvents.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs");
             var block = ExtractBlock(
                 source,
                 "case AppServerEventRoute.CommandOutput:",
@@ -880,9 +881,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ActivityArea_UsesStableListBoxInsteadOfTextBoxCaret()
         {
-            var mainFormSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var activitySource = File.ReadAllText(GetMainFormPath("MainForm.Activity.cs"));
-            var layoutSource = File.ReadAllText(GetMainFormPath("MainForm.Layout.cs"));
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var activitySource = RepositorySource.ReadSourceFile("MainForm.Activity.cs");
+            var layoutSource = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
             var combinedSource = mainFormSource + activitySource + layoutSource;
             var renderBlock = ExtractBlock(
                 activitySource,
@@ -908,9 +909,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ActivityArea_ReliesOnAccessibilityNotificationsInsteadOfManualSpeech()
         {
-            var mainFormSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var activitySource = File.ReadAllText(GetMainFormPath("MainForm.Activity.cs"));
-            var activityControlSource = File.ReadAllText(GetControlPath("ActivityVirtualBrowseControl.cs"));
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var activitySource = RepositorySource.ReadSourceFile("MainForm.Activity.cs");
+            var activityControlSource = RepositorySource.ReadSourceFile("ActivityVirtualBrowseControl.cs");
             var combinedSource = mainFormSource + activitySource + activityControlSource;
 
             Assert.That(activityControlSource, Does.Contain("AccessibilityNotifyClients(AccessibleEvents.ValueChange, -1);"));
@@ -926,8 +927,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ManualBrowse_DelegatesMainWindowStateToTheSharedContext()
         {
-            var mainFormSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var screenReaderSource = File.ReadAllText(GetMainFormPath("MainForm.ScreenReader.cs"));
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var screenReaderSource = RepositorySource.ReadSourceFile("MainForm.ScreenReader.cs");
             var hotkeyMethod = ExtractBlock(
                 screenReaderSource,
                 "private bool HandleScreenReaderHotkey(Keys keyData)",
@@ -942,7 +943,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ManualBrowse_ReservesAltEnterForTheVirtualCursor()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(source, Does.Contain("_mainManualBrowseContext != null && keyData == (Keys.Alt | Keys.Enter)"));
         }
@@ -950,7 +951,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ActivityManualReadTarget_SupportsBoundaryAndPagingHotkeys()
         {
-            var source = File.ReadAllText(GetMainFormPath("ManualBrowseContext.cs"));
+            var source = RepositorySource.ReadSourceFile("ManualBrowseContext.cs");
             var activityBlock = ExtractBlock(
                 source,
                 "private bool HandleActivityKey(Keys keyData)",
@@ -971,8 +972,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MessageViewerOpenCommandsUseSeparateListAndManualReadCursors()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.ScreenReader.cs"));
-            var contextSource = File.ReadAllText(GetMainFormPath("ManualBrowseContext.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.ScreenReader.cs");
+            var contextSource = RepositorySource.ReadSourceFile("ManualBrowseContext.cs");
             var listMethod = ExtractBlock(
                 source,
                 "private void OpenCurrentChatMessageViewer()",
@@ -991,8 +992,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ActivityArea_ContextMenuUsesSettingsDialogAndClearActivity()
         {
-            var mainFormSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var layoutSource = File.ReadAllText(GetMainFormPath("MainForm.Layout.cs"));
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var layoutSource = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
             var contextMenuBlock = ExtractBlock(
                 layoutSource,
                 "private void ConfigureLogContextMenu()",
@@ -1011,8 +1012,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ChatHistory_ContextMenuDoesNotExposeMessageFilters()
         {
-            var mainFormSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var layoutSource = File.ReadAllText(GetMainFormPath("MainForm.Layout.cs"));
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var layoutSource = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
 
             Assert.That(mainFormSource, Does.Not.Contain("_chatFiltersMenuItem"));
             Assert.That(mainFormSource, Does.Not.Contain("ChatFilterMenuItem_Click"));
@@ -1024,10 +1025,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_CommandLineWorkspaceOpensAndCreatesSessionWhenNoneExists()
         {
-            var mainFormSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var runtimeConnectionSource = File.ReadAllText(GetMainFormPath("MainForm.RuntimeConnection.cs"));
-            var traySource = File.ReadAllText(GetMainFormPath("MainForm.UpdatesTray.cs"));
-            var workspaceSource = File.ReadAllText(GetMainFormPath("MainForm.Workspaces.cs"));
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var runtimeConnectionSource = RepositorySource.ReadSourceFile("MainForm.RuntimeConnection.cs");
+            var traySource = RepositorySource.ReadSourceFile("MainForm.UpdatesTray.cs");
+            var workspaceSource = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
 
             Assert.That(mainFormSource, Does.Contain("private StartupCommandLineOptions _startupCommandLineOptions;"));
             Assert.That(mainFormSource, Does.Contain("ApplyStartupArguments(string[] args)"));
@@ -1041,13 +1042,13 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_ForkResolvesRuntimeSettingsBeforeCreatingAndKeepsOverridesInWorkflow()
         {
-            var sessionWorkflowSource = File.ReadAllText(GetMainFormPath("MainForm.SessionWorkflows.cs"));
+            var sessionWorkflowSource = RepositorySource.ReadSourceFile("MainForm.SessionWorkflows.cs");
             var forkBlock = ExtractBlock(
                 sessionWorkflowSource,
                 "private async Task CreateForkSessionAsync(",
                 "private int GetNextForkIndex(");
             Assert.That(forkBlock, Does.Contain("await ReadSessionModelSettingsAsync(sourceSession, workspace)"));
-            var operationSource = File.ReadAllText(GetMainFormPath("SessionThreadOperationWorkflow.cs"));
+            var operationSource = RepositorySource.ReadSourceFile("SessionThreadOperationWorkflow.cs");
             Assert.That(operationSource, Does.Contain("sourceSession.ModelId, sourceSession.ReasoningEffort"));
             Assert.That(forkBlock, Does.Not.Contain("sourceSession.ModelId"));
             Assert.That(forkBlock, Does.Not.Contain("sourceSession.ReasoningEffort"));
@@ -1057,20 +1058,20 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_ReviewOwnsFreshSettingsAndPreservesSessionOverrides()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.Review.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.Review.cs");
             Assert.That(source, Does.Contain("await ReadSessionModelSettingsAsync(session, workspace)"));
             Assert.That(source, Does.Contain("observed.WorkspaceConfig.ReviewModelId"));
             Assert.That(source, Does.Contain("sourceSession.ApprovalMode, sourceSession.ModelId, sourceSession.ReasoningEffort"));
-            Assert.That(File.ReadAllText(GetMainFormPath("MainForm.cs")), Does.Not.Contain("private async Task StartDetachedReviewAsync("));
+            Assert.That(RepositorySource.ReadSourceFile("MainForm.cs"), Does.Not.Contain("private async Task StartDetachedReviewAsync("));
         }
 
         [Test]
         public void MainForm_LocalDesktopTurnsDoNotApplyRealtimeHistoryReload()
         {
-            var mainFormSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var chatHistorySource = File.ReadAllText(GetMainFormPath("MainForm.ChatHistoryInteraction.cs"));
-            var appServerEventsSource = File.ReadAllText(GetMainFormPath("MainForm.AppServerEvents.cs"));
-            var messageSendingSource = File.ReadAllText(GetMainFormPath("MainForm.MessageSending.cs"));
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var chatHistorySource = RepositorySource.ReadSourceFile("MainForm.ChatHistoryInteraction.cs");
+            var appServerEventsSource = RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs");
+            var messageSendingSource = RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
             var eventBlock = ExtractBlock(
                 appServerEventsSource,
                 "private void AppServerClientOnEventReceived(object sender, AppServerEventArgs e)",
@@ -1096,7 +1097,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerEvents_UpdateHiddenSessionThreadStateBeforeVisibleUiFiltering()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.AppServerEvents.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs");
             var eventBlock = ExtractBlock(
                 source,
                 "private void AppServerClientOnEventReceived(object sender, AppServerEventArgs e)",
@@ -1118,7 +1119,7 @@ namespace MyCodex.Application.Tests
         [TestCase("ProtocolNotice", "ThreadArchivedChanged")]
         public void GlobalProtocolMessages_AreRecordedInCurrentActivityWithoutDuplicatingThreadEvents(string route, string nextRoute)
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.AppServerEvents.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs");
             var block = ExtractBlock(source, "case AppServerEventRoute." + route + ":", "case AppServerEventRoute." + nextRoute + ":");
             Assert.That(block, Does.Contain("if (string.IsNullOrWhiteSpace(e.ThreadId)) ApplyCurrentActivityTimelineEvent(e);"));
             Assert.That(block, Does.Not.Contain(".Focus(").And.Not.Contain(".Select("));
@@ -1127,7 +1128,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_McpMessageOnlyRequestsRequireConfirmationAndUnsupportedRequestsAreCanceled()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.ToolUserInput.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.ToolUserInput.cs");
             var toolInputBlock = ExtractBlock(
                 source,
                 "private async void ShowToolUserInputDialog(AppServerEventArgs request)",
@@ -1147,10 +1148,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_UsesModelessAppServerFileWindowManager()
         {
-            var mainSource = File.ReadAllText(GetMainFormPath("MainForm.cs"));
-            var sessionSettingsSource = File.ReadAllText(GetMainFormPath("MainForm.SessionSettings.cs"));
-            var eventSource = File.ReadAllText(GetMainFormPath("MainForm.AppServerEvents.cs"));
-            var fileWindowsSource = File.ReadAllText(GetMainFormPath("MainForm.AppServerFileWindows.cs"));
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var sessionSettingsSource = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var eventSource = RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs");
+            var fileWindowsSource = RepositorySource.ReadSourceFile("MainForm.AppServerFileWindows.cs");
             var showFilesBlock = ExtractBlock(
                 sessionSettingsSource,
                 "private async Task ShowAppServerFilesAsync(",
@@ -1176,7 +1177,7 @@ namespace MyCodex.Application.Tests
                     metric.FileName,
                     metric.TargetLines,
                     metric.BaselineLines,
-                    ActualLines = CountMeasuredSourceLines(GetMainFormPath(metric.FileName))
+                    ActualLines = CountMeasuredSourceLines(RepositorySource.FindSourceFile(metric.FileName))
                 })
                 .OrderByDescending(metric => metric.ActualLines)
                 .ThenBy(metric => metric.FileName, StringComparer.Ordinal)
@@ -1207,8 +1208,8 @@ namespace MyCodex.Application.Tests
 
         private static string[] GetCurrentMainFormSourceFileNames()
         {
-            var mainFormFileNames = Directory
-                .GetFiles(GetMainFormDirectoryPath(), "MainForm*.cs")
+            var mainFormFileNames = RepositorySource
+                .FindSourceFiles("MyCodex.WinForms", "MainForm*.cs")
                 .Select(Path.GetFileName)
                 .Concat(MainFormSourceMetrics.Select(metric => metric.FileName))
                 .Distinct(StringComparer.Ordinal)
@@ -1249,53 +1250,6 @@ namespace MyCodex.Application.Tests
         private static int CountMeasuredSourceLines(string path)
         {
             return File.ReadLines(path).Count(line => line.Length > 0);
-        }
-
-        private static string GetMainFormPath(string fileName)
-        {
-            return Path.Combine(GetMainFormDirectoryPath(), fileName);
-        }
-
-        private static string GetMainFormDirectoryPath()
-        {
-            return Path.Combine(GetRepositoryRoot(), "src", "MyCodex.WinForms", "Forms");
-        }
-
-        private static string GetControlPath(string fileName)
-        {
-            return Path.Combine(GetRepositoryRoot(), "src", "MyCodex.WinForms", "Controls", fileName);
-        }
-
-        private static string GetWinFormsResourcePath(string fileName)
-        {
-            return Path.Combine(GetRepositoryRoot(), "src", "MyCodex.WinForms", "Resources", fileName);
-        }
-
-        private static string GetRepositoryRoot()
-        {
-            var current = TestContext.CurrentContext.TestDirectory;
-            while (!string.IsNullOrWhiteSpace(current))
-            {
-                if (Directory.Exists(Path.Combine(current, "src", "MyCodex.WinForms")) &&
-                    Directory.Exists(Path.Combine(current, "tests", "MyCodex.Application.Tests")))
-                {
-                    return current;
-                }
-
-                var parent = Directory.GetParent(current);
-                if (parent == null)
-                {
-                    break;
-                }
-
-                current = parent.FullName;
-            }
-
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                ".."));
         }
 
         private static string ExtractBlock(string source, string startMarker, string endMarker)

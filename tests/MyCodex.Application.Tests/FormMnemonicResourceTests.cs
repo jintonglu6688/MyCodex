@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -730,8 +731,7 @@ namespace MyCodex.Application.Tests
 
         private static Dictionary<string, string> LoadResourceValues(string fileName, IEnumerable<string> keys)
         {
-            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "src", "MyCodex.WinForms", "Resources", fileName);
-            path = Path.GetFullPath(path);
+            var path = RepositorySource.GetPath("src", "MyCodex.WinForms", "Resources", fileName);
             var document = XDocument.Load(path);
             var requested = new HashSet<string>(keys ?? Array.Empty<string>(), StringComparer.Ordinal);
             var values = document.Root

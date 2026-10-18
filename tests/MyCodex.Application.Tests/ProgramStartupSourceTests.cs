@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -11,7 +12,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_UsesConfiguredRuntimeStoreDirectly()
         {
-            var source = File.ReadAllText(GetProgramPath());
+            var source = RepositorySource.ReadSourceFile("Program.cs");
             var obsoleteStoreType = "ModeAware" + "AppConfigStore";
             var obsoleteModeContextType = "AppServerRuntime" + "ModeContext";
 
@@ -25,7 +26,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ProductionComposition_DoesNotRecreateRetiredAuthenticationStores()
         {
-            var mainFormSource = File.ReadAllText(Path.Combine(Path.GetDirectoryName(GetProgramPath()), "Forms", "MainForm.cs"));
+            var mainFormSource = File.ReadAllText(Path.Combine(Path.GetDirectoryName(RepositorySource.FindSourceFile("Program.cs")), "Forms", "MainForm.cs"));
 
             Assert.That(mainFormSource, Does.Not.Contain("new JsonAuthenticationSourceSelectionStore"));
             Assert.That(mainFormSource, Does.Not.Contain("new JsonAuthenticationProfileStore"));
@@ -35,7 +36,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ProductionComposition_DoesNotCreateRetiredProviderOrModelRoutingServices()
         {
-            var source = File.ReadAllText(GetProgramPath());
+            var source = RepositorySource.ReadSourceFile("Program.cs");
 
             Assert.That(source, Does.Not.Contain("Open" + "Router"));
             Assert.That(source, Does.Not.Contain("Gateway" + "Runtime"));
@@ -46,7 +47,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ProductionSources_DoNotRetainProviderRoutingUnderLegacyNames()
         {
-            var sourceRoot = Path.GetDirectoryName(Path.GetDirectoryName(GetProgramPath()));
+            var sourceRoot = Path.GetDirectoryName(Path.GetDirectoryName(RepositorySource.FindSourceFile("Program.cs")));
             var retiredTerms = new[]
             {
                 "Open" + "Router",
@@ -79,7 +80,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void BuildAndInstallerSources_DoNotPackageRetiredProviderRuntimes()
         {
-            var repositoryRoot = Path.GetDirectoryName(Path.GetDirectoryName(GetProgramPath()));
+            var repositoryRoot = Path.GetDirectoryName(Path.GetDirectoryName(RepositorySource.FindSourceFile("Program.cs")));
             var paths = new[]
             {
                 Path.Combine(repositoryRoot, "tools", "build", "Build-MyCodex.ps1"),
@@ -104,7 +105,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ProductionAndDistributionSources_DoNotOwnABundledNodeRuntime()
         {
-            var repositoryRoot = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(GetProgramPath())));
+            var repositoryRoot = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(RepositorySource.FindSourceFile("Program.cs"))));
             var paths = new[]
             {
                 Path.Combine(repositoryRoot, "src", "MyCodex.Infrastructure", "Persistence", "AppConfigService.cs"),
@@ -136,7 +137,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ProductionSources_DoNotRetainSharedWindowsCodexHomeSupport()
         {
-            var sourceRoot = Path.GetDirectoryName(Path.GetDirectoryName(GetProgramPath()));
+            var sourceRoot = Path.GetDirectoryName(Path.GetDirectoryName(RepositorySource.FindSourceFile("Program.cs")));
             var offendingFiles = Directory.GetFiles(sourceRoot, "*.cs", SearchOption.AllDirectories)
                 .Where(path => File.ReadAllText(path).IndexOf("SharedWindowsHome", StringComparison.Ordinal) >= 0)
                 .ToArray();
@@ -147,7 +148,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void Program_ResolvesTargetBeforeSettingsAndRoutesOnlyFiniteActivation()
         {
-            var source = File.ReadAllText(GetProgramPath());
+            var source = RepositorySource.ReadSourceFile("Program.cs");
 
             Assert.That(source, Does.Contain("mainForm.ApplyStartupArguments(args)"));
             Assert.That(source, Does.Contain("TargetStartupPlanner.Resolve(snapshot, options.TargetId, options.WorkspacePath)"));
@@ -164,24 +165,11 @@ namespace MyCodex.Application.Tests
         [Test]
         public void Program_DoesNotReloadConfigBeforeMainFormRecoveryBoundary()
         {
-            var source = File.ReadAllText(GetProgramPath());
+            var source = RepositorySource.ReadSourceFile("Program.cs");
 
             Assert.That(source, Does.Contain("CreateInternalToolRegistry()"));
             Assert.That(source, Does.Not.Contain("CreateInternalToolRegistry(appConfigStore.Load())"));
             Assert.That(source, Does.Not.Contain("appConfigService.EnsureConfigDirectory();"));
-        }
-
-        private static string GetProgramPath()
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Program.cs"));
         }
     }
 }

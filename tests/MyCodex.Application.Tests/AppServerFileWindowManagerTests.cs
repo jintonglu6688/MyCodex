@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Domain.Enums;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
@@ -147,7 +148,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void PreviewShownHandler_DoesNotRegisterWatchAfterPreviewWasClosedDuringLoad()
         {
-            var source = File.ReadAllText(GetSourcePath("AppServerFileWindowManager.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerFileWindowManager.cs");
             var loadIndex = source.IndexOf("await form.LoadAsync().ConfigureAwait(true);");
             var disposedCheckIndex = source.IndexOf("if (form.IsDisposed || form.Disposing)", loadIndex);
             var watchIndex = source.IndexOf("await _watchCoordinator.WatchAsync(form).ConfigureAwait(true);", loadIndex);
@@ -161,7 +162,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void BrowserPreviewRequest_RemembersBrowserAsPreviewCloseReturnTarget()
         {
-            var source = File.ReadAllText(GetSourcePath("AppServerFileWindowManager.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerFileWindowManager.cs");
             var browserHandlerIndex = source.IndexOf("form.SetPreviewRequestHandlerForTests(path =>");
             Assert.That(browserHandlerIndex, Is.GreaterThanOrEqualTo(0));
 
@@ -181,7 +182,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void BrowserPreviewRequest_UsesTextFilePolicyAndScopedLocalPathPolicy()
         {
-            var source = File.ReadAllText(GetSourcePath("AppServerFileWindowManager.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerFileWindowManager.cs");
             var handlerIndex = source.IndexOf("form.SetPreviewRequestHandlerForTests(path =>");
             Assert.That(handlerIndex, Is.GreaterThanOrEqualTo(0));
 
@@ -198,22 +199,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void BrowserAndPreview_AreShownAsIndependentWindows()
         {
-            var source = File.ReadAllText(GetSourcePath("AppServerFileWindowManager.cs"));
+            var source = RepositorySource.ReadSourceFile("AppServerFileWindowManager.cs");
 
             Assert.That(source, Does.Not.Contain("form.Show(_owner);"));
             Assert.That(source, Does.Contain("form.Show();"));
-        }
-
-        private static string GetSourcePath(string fileName)
-        {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null && !Directory.Exists(Path.Combine(directory.FullName, "src")))
-            {
-                directory = directory.Parent;
-            }
-
-            Assert.That(directory, Is.Not.Null);
-            return Path.Combine(directory.FullName, "src", "MyCodex.WinForms", "Forms", fileName);
         }
 
         private sealed class FakeFileSystemClient : IAppServerFileSystemClient

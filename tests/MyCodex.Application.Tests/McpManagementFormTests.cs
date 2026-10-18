@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Infrastructure.AuthenticationCenter;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Infrastructure.Codex;
@@ -84,27 +85,17 @@ namespace MyCodex.Application.Tests
             });
         }
 
-        private static string GetWinFormsPath(params string[] parts)
-        {
-            var path = System.IO.Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "src", "MyCodex.WinForms");
-            foreach (var part in parts)
-            {
-                path = System.IO.Path.Combine(path, part);
-            }
-
-            return System.IO.Path.GetFullPath(path);
-        }
-
         [Test]
         public void McpManagementForm_SourceCancelsLifetimeWorkBeforeClose()
         {
-            var source = System.IO.File.ReadAllText(GetWinFormsPath("Forms", "McpManagementForm.cs"));
+            var source = RepositorySource.ReadSourceFile("McpManagementForm.cs");
 
             Assert.That(source, Does.Contain("CancellationTokenSource _lifetimeCancellation"));
             Assert.That(source, Does.Contain("_lifetimeCancellation.Cancel();"));
             Assert.That(source, Does.Contain("SetBusy(true);"));
             Assert.That(source, Does.Contain("if (!await EnsureAppServerAvailableForActionAsync"));
         }
+
         [Test]
         [Apartment(ApartmentState.STA)]
         public void McpManagementForm_ShowsAdvancedDiagnosticsInsteadOfProtocolButtons()
@@ -126,7 +117,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void McpManagementForm_OnlyReloadsOfficialConfigAfterAnExplicitMcpMutation()
         {
-            var source = File.ReadAllText(GetWinFormsPath("Forms", "McpManagementForm.cs"));
+            var source = RepositorySource.ReadSourceFile("McpManagementForm.cs");
 
             Assert.That(source, Does.Not.Contain("_reloadButton"));
             Assert.That(source, Does.Not.Contain("ReloadServerConfigAsync"));

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.WinForms.Localization;
 using NUnit.Framework;
 
@@ -13,7 +14,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WorkspaceContextMenu_ExposesAppServerFilesEntry()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_workspaceAppServerFilesMenuItem"));
             Assert.That(source, Does.Contain("MainForm.Workspace.AppServerFiles"));
@@ -25,7 +26,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WorkspaceContextMenu_DoesNotExposeOfficeCategoryEntries()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Not.Contain("_officeCategoryNewMenuItem"));
             Assert.That(source, Does.Not.Contain("MainForm.OfficeCategory.New"));
@@ -37,7 +38,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void FileMenu_OpenCommandOpensCurrentOfficeWorkspaceDirectory()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("OpenOfficeWorkspaceDirectory();"));
             Assert.That(source, Does.Contain("MainForm.File.OpenOfficeDirectory"));
@@ -47,9 +48,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WslWorkspaceOpening_ExposesSeparateWindowsAndWslEntries()
         {
-            var source = GetMainFormSource();
-            var primaryOpenHandler = ExtractMethod(source, "private async void OnOpenWorkspaceButtonClick");
-            var wslOpenHandler = ExtractMethod(source, "private async void OnOpenWslWorkspaceMenuItemClick");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var primaryOpenHandler = RepositorySource.ExtractUntilNextPrivateMember(source, "private async void OnOpenWorkspaceButtonClick");
+            var wslOpenHandler = RepositorySource.ExtractUntilNextPrivateMember(source, "private async void OnOpenWslWorkspaceMenuItemClick");
 
             Assert.That(source, Does.Contain("_openWslWorkspaceFileMenuItem"));
             Assert.That(source, Does.Contain("_workspaceOpenWslMenuItem"));
@@ -67,7 +68,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficeSessionContextMenuHidesSubAgentsAndArchive()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_sessionSubAgentsMenuItem.Visible = !isOfficeMode"));
             Assert.That(source, Does.Contain("_sessionAdvancedSeparatorMenuItem.Visible = !isOfficeMode"));
@@ -79,7 +80,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WorkspaceContextMenu_GroupsImportAndSyncEntries()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_workspaceImportSyncMenuItem"));
             Assert.That(source, Does.Contain("MainForm.ImportSync.Menu"));
@@ -94,7 +95,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void FileMenu_GroupsImportAndSyncEntries()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_fileImportSyncMenuItem"));
             Assert.That(source, Does.Contain("_fileSyncThreadsMenuItem"));
@@ -109,7 +110,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ImportOtherSessionsEntries_OpenAssociationDialog()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_workspaceImportOtherSessionsMenuItem"));
             Assert.That(source, Does.Contain("MainForm.ImportSync.ImportOtherSessions"));
@@ -122,7 +123,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SessionListFocus_DoesNotTriggerThreadSync()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Not.Contain("_sessionList.Enter += SessionList_Enter"));
             Assert.That(source, Does.Not.Contain("private async void SessionList_Enter"));
@@ -133,7 +134,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void LocalThreadSessionWatcher_ForcesFullThreadSyncWhenSessionFileChanges()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("new FileSystemWatcher(watchRoot, \"*.jsonl\")"));
             Assert.That(source, Does.Contain("IncludeSubdirectories = true"));
@@ -147,7 +148,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void LocalSubAgentThreadSyncTimer_PollsLocalSessionFilesDuringRuntime()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("LocalSubAgentThreadSyncIntervalMilliseconds"));
             Assert.That(source, Does.Contain("_localSubAgentThreadSyncTimer.Tick += LocalSubAgentThreadSyncTimer_Tick"));
@@ -159,7 +160,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WorkspaceContextMenu_FileBrowserEntryTextDoesNotMentionAppServer()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
             var menuText = UiLocalization.Text("MainForm.Workspace.AppServerFiles", "File Browser(&F)...");
 
             Assert.That(menuText, Is.EqualTo("File Browser(&F)...").Or.EqualTo("文件浏览(&F)..."));
@@ -171,7 +172,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void DeletionContextMenus_UseSingleDeleteEntryWithoutPermanentDeleteEntry()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_workspaceContextMenu.MenuItems.Add(_workspaceRemoveMenuItem);"));
             Assert.That(source, Does.Contain("_sessionContextMenu.MenuItems.Add(_sessionRemoveMenuItem);"));
@@ -179,58 +180,6 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("_sessionDeletePermanentlyMenuItem"));
             Assert.That(source, Does.Not.Contain("MainForm.Workspace.DeletePermanent"));
             Assert.That(source, Does.Not.Contain("MainForm.Session.DeletePermanent"));
-        }
-
-        private static string GetMainFormSource()
-        {
-            var formsDirectory = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms"));
-            var files = Directory
-                .GetFiles(formsDirectory, "MainForm*.cs", SearchOption.TopDirectoryOnly)
-                .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-            var builder = new StringBuilder();
-            for (var i = 0; i < files.Length; i++)
-            {
-                builder.AppendLine(File.ReadAllText(files[i]));
-            }
-
-            return builder.ToString();
-        }
-
-        private static string GetMainFormPath()
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                "MainForm.cs"));
-        }
-
-        private static string ExtractMethod(string source, string signature)
-        {
-            var start = source.IndexOf(signature, StringComparison.Ordinal);
-            Assert.That(start, Is.GreaterThanOrEqualTo(0), signature + " should exist.");
-            var nextMethod = source.IndexOf("\r\n        private ", start + signature.Length, StringComparison.Ordinal);
-            if (nextMethod < 0)
-            {
-                nextMethod = source.IndexOf("\n        private ", start + signature.Length, StringComparison.Ordinal);
-            }
-
-            Assert.That(nextMethod, Is.GreaterThan(start), signature + " should be followed by another method.");
-            return source.Substring(start, nextMethod - start);
         }
     }
 }

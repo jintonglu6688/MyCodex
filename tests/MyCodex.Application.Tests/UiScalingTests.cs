@@ -13,6 +13,7 @@ using System.Xml.Linq;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
@@ -348,7 +349,7 @@ namespace MyCodex.Application.Tests
             {
                 var config = (AppConfigSnapshot)serializer.ReadObject(stream);
                 Assert.That(config.UiFontScalePercent, Is.EqualTo(expected));
-                var path = Path.Combine(RepositoryRoot(), "artifacts", "font-scale-" + Guid.NewGuid().ToString("N"));
+                var path = Path.Combine(RepositorySource.Root, "artifacts", "font-scale-" + Guid.NewGuid().ToString("N"));
                 var store = new JsonAppConfigStore(new AppConfigService(path));
                 store.Save(config);
                 Assert.That(store.Load().UiFontScalePercent, Is.EqualTo(expected));
@@ -459,7 +460,7 @@ namespace MyCodex.Application.Tests
             Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
             UiTheme.InitializeUiFontScale(150);
             UiTheme.InitializeUiFontFamily(culture);
-            var paths = new AppConfigService(Path.Combine(RepositoryRoot(), "artifacts", "main-scale-" + Guid.NewGuid().ToString("N")));
+            var paths = new AppConfigService(Path.Combine(RepositorySource.Root, "artifacts", "main-scale-" + Guid.NewGuid().ToString("N")));
             var config = new JsonAppConfigStore(paths);
             var runtime = new CodexRuntimeManager(paths);
             using (var client = new AppServerClient(runtime, config))
@@ -533,12 +534,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void Manifest_DeclaresSystemDpiAndPreservesAccessibilitySwitches()
         {
-            var root = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (!File.Exists(Path.Combine(root.FullName, "MyCodex.sln")))
-            {
-                root = root.Parent;
-            }
-            var dir = Path.Combine(root.FullName, "src", "MyCodex.WinForms");
+            var dir = RepositorySource.GetPath("src", "MyCodex.WinForms");
             var manifest = XDocument.Load(Path.Combine(dir, "app.manifest"));
             Assert.That(manifest.Descendants().Single(e => e.Name.LocalName == "dpiAware").Value, Is.EqualTo("true"));
             Assert.That(manifest.Descendants().Any(e => e.Name.LocalName == "dpiAwareness"), Is.False);
@@ -549,16 +545,6 @@ namespace MyCodex.Application.Tests
             {
                 Assert.That(config, Does.Contain("Switch.UseLegacyAccessibilityFeatures." + i + "=true"));
             }
-        }
-
-        private static string RepositoryRoot()
-        {
-            var root = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (root != null && !File.Exists(Path.Combine(root.FullName, "MyCodex.sln")))
-            {
-                root = root.Parent;
-            }
-            return root.FullName;
         }
 
         private sealed class SilentReader : IScreenReaderService

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -11,9 +12,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ActiveImportPath_UsesOfficialClientAndFiltersUnsafeItems()
         {
-            var formSource = File.ReadAllText(GetSourcePath("MyCodex.WinForms", "Forms", "ExternalAgentConfigImportForm.cs"));
-            var mapperSource = File.ReadAllText(GetSourcePath("MyCodex.Infrastructure", "AppServer", "AppServerExternalAgentConfigMapper.cs"));
-            var settingsSource = File.ReadAllText(GetSourcePath("MyCodex.WinForms", "Forms", "MainForm.SessionSettings.cs"));
+            var formSource = RepositorySource.ReadSourceFile("ExternalAgentConfigImportForm.cs");
+            var mapperSource = RepositorySource.ReadSourceFile("AppServerExternalAgentConfigMapper.cs");
+            var settingsSource = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
 
             Assert.That(formSource, Does.Contain("ExternalAgentConfigImportPolicy.CanImport"));
             Assert.That(formSource, Does.Contain("item.ItemType != ExternalAgentConfigMigrationItemType.Config"));
@@ -25,20 +26,6 @@ namespace MyCodex.Application.Tests
             Assert.That(mapperSource, Does.Not.Contain("Directory."));
             Assert.That(settingsSource, Does.Contain("new ExternalAgentConfigImportForm(_appServerClient, GetImportSyncWorkspacePath(sender))"));
             Assert.That(settingsSource, Does.Contain("AppServerProtocolFeature.ExternalAgentConfigImport"));
-        }
-
-        private static string GetSourcePath(params string[] path)
-        {
-            var parts = new string[]
-            {
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src"
-            };
-            return Path.GetFullPath(Path.Combine(parts.Concat(path).ToArray()));
         }
 
         private static string ExtractConstructor(string source)

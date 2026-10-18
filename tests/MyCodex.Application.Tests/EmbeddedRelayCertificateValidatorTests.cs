@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Infrastructure.RemoteRelay;
 using NUnit.Framework;
 
@@ -67,7 +68,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ValidatorSource_DoesNotOpenOrMutateWindowsCertificateStores()
         {
-            var source = ReadSource("src", "MyCodex.Infrastructure", "RemoteRelay", "EmbeddedRelayCertificateValidator.cs");
+            var source = RepositorySource.ReadSourceFile("EmbeddedRelayCertificateValidator.cs");
 
             Assert.That(source, Does.Not.Contain("X509Store"));
             Assert.That(source, Does.Not.Contain("StoreLocation"));
@@ -119,23 +120,6 @@ namespace MyCodex.Application.Tests
             {
                 return string.Concat(hash.ComputeHash(certificate.RawData).Select(value => value.ToString("x2")));
             }
-        }
-
-        private static string ReadSource(params string[] parts)
-        {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null)
-            {
-                var candidate = Path.Combine(directory.FullName, Path.Combine(parts));
-                if (File.Exists(candidate))
-                {
-                    return File.ReadAllText(candidate);
-                }
-
-                directory = directory.Parent;
-            }
-
-            throw new FileNotFoundException("Could not locate source file.", Path.Combine(parts));
         }
 
         private sealed class CertificateFixture

@@ -1,4 +1,5 @@
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -9,21 +10,21 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SkillsManagementForm_DoesNotExposeAStandaloneSkillMarketplace()
         {
-            var source = File.ReadAllText(GetWinFormsPath("Forms", "SkillsManagementForm.cs"));
-            var programSource = File.ReadAllText(GetWinFormsPath("Program.cs"));
+            var source = RepositorySource.ReadSourceFile("SkillsManagementForm.cs");
+            var programSource = RepositorySource.ReadSourceFile("Program.cs");
 
             Assert.That(source, Does.Not.Contain("SkillMarket"));
             Assert.That(source, Does.Not.Contain("_marketTabPage"));
             Assert.That(source, Does.Not.Contain("InstallSelectedMarketSkillAsync"));
             Assert.That(programSource, Does.Not.Contain("SkillMarketCatalogClient"));
-            Assert.That(File.Exists(GetApplicationPath("Interfaces", "ISkillMarketCatalogClient.cs")), Is.False);
-            Assert.That(File.Exists(GetWinFormsPath("Forms", "SkillMarketListComposer.cs")), Is.False);
+            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.Application", "Interfaces", "ISkillMarketCatalogClient.cs")), Is.False);
+            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "SkillMarketListComposer.cs")), Is.False);
         }
 
         [Test]
         public void SkillsManagementMenuItem_DoesNotSelectAStandaloneSkillMarketTarget()
         {
-            var source = File.ReadAllText(GetWinFormsPath("Forms", "MainForm.SessionSettings.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
 
             Assert.That(source, Does.Contain("new SkillsManagementForm("));
             Assert.That(source, Does.Not.Contain("IsSharedWindowsCodexHomeEnabled()"));
@@ -32,7 +33,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SkillsManagementForm_UsesAppServerFileSystemForUserSkillWrites()
         {
-            var source = File.ReadAllText(GetWinFormsPath("Forms", "SkillsManagementForm.cs"));
+            var source = RepositorySource.ReadSourceFile("SkillsManagementForm.cs");
 
             Assert.That(source, Does.Contain("OfficialSkillFileOperations"));
             Assert.That(source, Does.Contain("IAppServerFileSystemClient"));
@@ -40,7 +41,7 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("Process.Start("));
             Assert.That(source, Does.Contain("source.Kind != SkillSourceKind.User && source.Kind != SkillSourceKind.Workspace"));
 
-            var editorSource = File.ReadAllText(GetWinFormsPath("Forms", "SkillEditForm.cs"));
+            var editorSource = RepositorySource.ReadSourceFile("SkillEditForm.cs");
             Assert.That(editorSource, Does.Not.Contain("SkillFileEditor.Save("));
             Assert.That(editorSource, Does.Not.Contain("Directory.CreateDirectory("));
             Assert.That(editorSource, Does.Not.Contain("Process.Start("));
@@ -49,7 +50,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SkillFileEditor_IsPureAndDoesNotReadOrWriteTargetFiles()
         {
-            var source = File.ReadAllText(GetWinFormsPath("Skills", "SkillFileEditor.cs"));
+            var source = RepositorySource.ReadSourceFile("SkillFileEditor.cs");
 
             Assert.That(source, Does.Not.Contain("File."));
             Assert.That(source, Does.Not.Contain("Directory."));
@@ -58,7 +59,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SkillsManagementForm_DoesNotShowTabInstructionText()
         {
-            var source = File.ReadAllText(GetWinFormsPath("Forms", "SkillsManagementForm.cs"));
+            var source = RepositorySource.ReadSourceFile("SkillsManagementForm.cs");
 
             Assert.That(source, Does.Not.Contain("SkillsManagementForm.Header"));
             Assert.That(source, Does.Not.Contain("SkillsManagementForm.Tip"));
@@ -69,7 +70,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SkillsManagementForm_UninstallUsesObservedUserSkillPathThroughAppServerFileSystem()
         {
-            var source = File.ReadAllText(GetWinFormsPath("Forms", "SkillsManagementForm.cs"));
+            var source = RepositorySource.ReadSourceFile("SkillsManagementForm.cs");
 
             Assert.That(source, Does.Contain("UninstallSelectedSkillAsync"));
             Assert.That(source, Does.Contain("CanUninstallSkill"));
@@ -82,50 +83,11 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SkillsManagementForm_CancelsLifetimeWorkBeforeClose()
         {
-            var source = File.ReadAllText(GetWinFormsPath("Forms", "SkillsManagementForm.cs"));
+            var source = RepositorySource.ReadSourceFile("SkillsManagementForm.cs");
 
             Assert.That(source, Does.Contain("CancellationTokenSource _lifetimeCancellation"));
             Assert.That(source, Does.Contain("_lifetimeCancellation.Cancel();"));
             Assert.That(source, Does.Not.Contain("LoadIndexAsync(System.Threading.CancellationToken.None)"));
         }
-
-        private static string GetWinFormsPath(params string[] parts)
-        {
-            var path = Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms");
-
-            foreach (var part in parts)
-            {
-                path = Path.Combine(path, part);
-            }
-
-            return Path.GetFullPath(path);
-        }
-
-        private static string GetApplicationPath(params string[] parts)
-        {
-            var path = Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.Application");
-
-            foreach (var part in parts)
-            {
-                path = Path.Combine(path, part);
-            }
-
-            return Path.GetFullPath(path);
-        }
-
     }
 }

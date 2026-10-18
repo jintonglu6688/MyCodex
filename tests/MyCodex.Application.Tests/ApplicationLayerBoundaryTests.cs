@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -32,7 +33,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ApplicationLayer_DoesNotStartExternalProcesses()
         {
-            var applicationRoot = FindApplicationRoot();
+            var applicationRoot = RepositorySource.GetPath("src", "MyCodex.Application");
             var violations = new List<string>();
             foreach (var filePath in Directory.GetFiles(applicationRoot, "*.cs", SearchOption.AllDirectories))
             {
@@ -53,29 +54,12 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ApplicationLayer_DoesNotContainConcreteProcessServiceFiles()
         {
-            var serviceRoot = Path.Combine(FindApplicationRoot(), "Services");
+            var serviceRoot = Path.Combine(RepositorySource.GetPath("src", "MyCodex.Application"), "Services");
             var existingFiles = ForbiddenServiceFiles
                 .Where(fileName => File.Exists(Path.Combine(serviceRoot, fileName)))
                 .ToArray();
 
             Assert.That(existingFiles, Is.Empty);
-        }
-
-        private static string FindApplicationRoot()
-        {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null)
-            {
-                var candidate = Path.Combine(directory.FullName, "src", "MyCodex.Application");
-                if (Directory.Exists(candidate))
-                {
-                    return candidate;
-                }
-
-                directory = directory.Parent;
-            }
-
-            throw new DirectoryNotFoundException("Could not locate src\\MyCodex.Application from the test directory.");
         }
 
         private static string GetRelativePath(string root, string path)

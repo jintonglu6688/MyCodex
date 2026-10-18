@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
 
@@ -63,9 +64,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainFormTitle_UsesNoRuntimeLabelForWindowsAndActiveTargetNameForWslOrSsh()
         {
-            var source = ReadFormSource("MainForm.Status.cs");
-            var compose = ExtractMethod(source, "private string ComposeWindowTitle()");
-            var runtimeName = ExtractMethod(source, "private string GetCurrentWindowRuntimeDisplayName()");
+            var source = RepositorySource.ReadSourceFile("MainForm.Status.cs");
+            var compose = RepositorySource.ExtractMethod(source, "private string ComposeWindowTitle()");
+            var runtimeName = RepositorySource.ExtractMethod(source, "private string GetCurrentWindowRuntimeDisplayName()");
 
             Assert.That(compose, Does.Contain("GetCurrentWindowRuntimeDisplayName()"));
             Assert.That(runtimeName, Does.Contain("if (!IsUnixRemoteRuntimeEnabled())"));
@@ -76,8 +77,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainFormWorkingTitle_DistinguishesCurrentSessionFromBackgroundWork()
         {
-            var source = ReadFormSource("MainForm.Status.cs");
-            var method = ExtractMethod(source, "private string GetWindowStatusText()");
+            var source = RepositorySource.ReadSourceFile("MainForm.Status.cs");
+            var method = RepositorySource.ExtractMethod(source, "private string GetWindowStatusText()");
 
             Assert.That(method, Does.Contain("IsThreadBusy(_currentSession.ThreadId)"));
             Assert.That(method, Does.Contain("SessionDisplayFormatter.BuildWorkingStatusText(_currentSession)"));
@@ -90,8 +91,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainFormTitle_ReportsLoginRequiredOnlyWhenAppServerRequiresOfficialLogin()
         {
-            var source = ReadFormSource("MainForm.Status.cs");
-            var method = ExtractMethod(source, "private string GetWindowStatusText()");
+            var source = RepositorySource.ReadSourceFile("MainForm.Status.cs");
+            var method = RepositorySource.ExtractMethod(source, "private string GetWindowStatusText()");
 
             Assert.That(
                 method,
@@ -102,12 +103,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void LiveWorkingIndicators_DoNotTreatInterruptCapabilityAsActiveWork()
         {
-            var status = ExtractMethod(
-                ReadFormSource("MainForm.Status.cs"),
-                "private string GetWindowStatusText()");
-            var sessions = ReadFormSource("MainForm.Sessions.cs");
-            var liveStatus = ReadFormSource("MainForm.LiveWorkStatus.cs");
-            var workbenches = ReadFormSource("MainForm.SessionWorkbenches.cs");
+            var status = RepositorySource.ExtractMethod(RepositorySource.ReadSourceFile("MainForm.Status.cs"), "private string GetWindowStatusText()");
+            var sessions = RepositorySource.ReadSourceFile("MainForm.Sessions.cs");
+            var liveStatus = RepositorySource.ReadSourceFile("MainForm.LiveWorkStatus.cs");
+            var workbenches = RepositorySource.ReadSourceFile("MainForm.SessionWorkbenches.cs");
 
             Assert.That(status, Does.Contain("IsThreadBusy(_currentSession.ThreadId)"));
             Assert.That(status, Does.Not.Contain("IsThreadCurrentlyRunning(_currentSession.ThreadId)"));
@@ -131,51 +130,6 @@ namespace MyCodex.Application.Tests
             Assert.That(
                 MainFormWindowTitleComposer.BuildRuntimeFileWindowTitle(null, "Open File", "File Browser"),
                 Is.EqualTo("Open File"));
-        }
-
-        private static string ReadFormSource(string fileName)
-        {
-            return File.ReadAllText(Path.Combine(
-                GetRepositoryRoot(),
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                fileName));
-        }
-
-        private static string ExtractMethod(string source, string signature)
-        {
-            var start = source.IndexOf(signature, StringComparison.Ordinal);
-            Assert.That(start, Is.GreaterThanOrEqualTo(0), signature);
-            var braceStart = source.IndexOf('{', start);
-            Assert.That(braceStart, Is.GreaterThanOrEqualTo(0), signature);
-            var depth = 0;
-            for (var i = braceStart; i < source.Length; i++)
-            {
-                if (source[i] == '{')
-                {
-                    depth++;
-                }
-                else if (source[i] == '}' && --depth == 0)
-                {
-                    return source.Substring(start, i - start + 1);
-                }
-            }
-
-            Assert.Fail("Method body not found: " + signature);
-            return string.Empty;
-        }
-
-        private static string GetRepositoryRoot()
-        {
-            var root = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (root != null && !Directory.Exists(Path.Combine(root.FullName, "src")))
-            {
-                root = root.Parent;
-            }
-
-            Assert.That(root, Is.Not.Null);
-            return root.FullName;
         }
     }
 }

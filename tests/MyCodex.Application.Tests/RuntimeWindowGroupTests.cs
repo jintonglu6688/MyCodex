@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -10,8 +11,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeWindowGroup_PreflightBlocksUnsafeWindowsButNotActiveTurnsOrCommands()
         {
-            var source = ReadFormSource("MainForm.RuntimeWindows.cs");
-            var preflight = ExtractMethod(source, "private bool PreflightRuntimeWindowsForTransition");
+            var source = RepositorySource.ReadSourceFile("MainForm.RuntimeWindows.cs");
+            var preflight = RepositorySource.ExtractMethod(source, "private bool PreflightRuntimeWindowsForTransition");
 
             Assert.That(preflight, Does.Contain("TryGetUnsafeRuntimeTransitionBlocker(out blockingForm)"));
             Assert.That(preflight, Does.Not.Contain("_busyThreadIds"));
@@ -25,7 +26,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeWindowGroup_ContainsEveryRuntimeRelatedWindowRegistry()
         {
-            var source = ReadFormSource("MainForm.RuntimeWindows.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.RuntimeWindows.cs");
 
             Assert.That(source, Does.Contain("_sessionCommandTerminals.Values"));
             Assert.That(source, Does.Contain("_commandTerminalForm"));
@@ -41,16 +42,16 @@ namespace MyCodex.Application.Tests
         [Test]
         public void GitSettingsEntrypointsUseModalWhileOtherEntrypointsRemainModeless()
         {
-            var source = ReadFormSource("MainForm.GitHosting.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.GitHosting.cs");
             foreach (var name in new[] { "ShowGitEnvironmentForm", "ShowGitRemoteCredentialsForm" })
             {
-                var method = ExtractMethod(source, "private void " + name);
+                var method = RepositorySource.ExtractMethod(source, "private void " + name);
                 Assert.That(method, Does.Contain("form.ShowDialog(this)"));
                 Assert.That(method, Does.Not.Contain(".Show()"));
             }
             foreach (var name in new[] { "ShowGitCloneForm", "ShowGitRemoteRepositoriesForm", "ShowGitHubStoreForm" })
             {
-                var method = ExtractMethod(source, "private void " + name);
+                var method = RepositorySource.ExtractMethod(source, "private void " + name);
                 Assert.That(method, Does.Contain(".Show()"));
                 Assert.That(method, Does.Not.Contain("ShowDialog"));
             }
@@ -59,8 +60,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeWindowGroup_StopCoordinatorTerminatesActivityThenClosesAndFinalizes()
         {
-            var source = ReadFormSource("MainForm.RuntimeWindows.cs");
-            var stop = ExtractMethod(source, "private async Task StopCurrentRuntimeActivityAsync");
+            var source = RepositorySource.ReadSourceFile("MainForm.RuntimeWindows.cs");
+            var stop = RepositorySource.ExtractMethod(source, "private async Task StopCurrentRuntimeActivityAsync");
             var automationIndex = stop.IndexOf("_automationRuntimeHost?.StopForRuntimeTransition(reason);", StringComparison.Ordinal);
             var saveIndex = stop.IndexOf("SaveDetachedSessionWorkbenchDrafts();", StringComparison.Ordinal);
             var interruptIndex = stop.IndexOf("await InterruptAllActiveRuntimeThreadsAsync();", StringComparison.Ordinal);
@@ -96,7 +97,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeSettings_PreflightsTargetChangeBeforeAnyStateOrConfigMutation()
         {
-            var source = ReadFormSource("MainForm.RuntimeSettings.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.RuntimeSettings.cs");
             var targetChangeIndex = source.IndexOf("var runtimeTargetChanged =", StringComparison.Ordinal);
             var gateIndex = source.IndexOf("PreflightRuntimeWindowsForTransition()", targetChangeIndex, StringComparison.Ordinal);
             var confirmationIndex = source.IndexOf("ConfirmRuntimeTargetChange()", gateIndex, StringComparison.Ordinal);
@@ -117,8 +118,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModeSwitchAndAutomation_KeepRuntimeWindowsAlive()
         {
-            var modesSource = ReadFormSource("MainForm.Modes.cs");
-            var mainFormSource = ReadFormSource("MainForm.Automation.cs");
+            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.Automation.cs");
 
             Assert.That(modesSource, Does.Contain("private bool SelectInteractionModeTab(AppInteractionMode nextMode)"));
             Assert.That(modesSource, Does.Not.Contain("PrepareRuntimeWindowsForTransition"));
@@ -128,7 +129,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void FileWindowManager_ProvidesReadOnlySnapshotAndVerifiedClose()
         {
-            var source = ReadFormSource("AppServerFileWindowManager.cs");
+            var source = RepositorySource.ReadSourceFile("AppServerFileWindowManager.cs");
 
             Assert.That(source, Does.Contain("internal IReadOnlyList<Form> GetOpenFormsSnapshot()"));
             Assert.That(source, Does.Contain("internal Form GetBusyFormForRuntimeTransition()"));
@@ -139,51 +140,12 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeWindowEntrypoints_RefuseToOpenWhileTransitionIsInProgress()
         {
-            Assert.That(ReadFormSource("MainForm.CommandTerminal.cs"), Does.Contain("_isRuntimeWindowTransitionInProgress"));
-            Assert.That(ReadFormSource("MainForm.DiffWorkbench.cs"), Does.Contain("_isRuntimeWindowTransitionInProgress"));
-            Assert.That(ReadFormSource("MainForm.SessionSettings.cs"), Does.Contain("_isRuntimeWindowTransitionInProgress"));
-            Assert.That(ReadFormSource("MainForm.SessionWorkbenches.cs"), Does.Contain("_isRuntimeWindowTransitionInProgress"));
-            Assert.That(ReadFormSource("MainForm.Workspaces.cs"), Does.Contain("_isRuntimeWindowTransitionInProgress"));
-            Assert.That(ReadFormSource("MainForm.GitHosting.cs"), Does.Contain("_isRuntimeWindowTransitionInProgress"));
-        }
-
-        private static string ReadFormSource(string fileName)
-        {
-            var root = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (root != null && !Directory.Exists(Path.Combine(root.FullName, "src")))
-            {
-                root = root.Parent;
-            }
-
-            Assert.That(root, Is.Not.Null);
-            return File.ReadAllText(Path.Combine(root.FullName, "src", "MyCodex.WinForms", "Forms", fileName));
-        }
-
-        private static string ExtractMethod(string source, string signature)
-        {
-            var start = source.IndexOf(signature, StringComparison.Ordinal);
-            Assert.That(start, Is.GreaterThanOrEqualTo(0), "Method signature not found: " + signature);
-            var brace = source.IndexOf('{', start);
-            Assert.That(brace, Is.GreaterThan(start));
-            var depth = 0;
-            for (var index = brace; index < source.Length; index++)
-            {
-                if (source[index] == '{')
-                {
-                    depth++;
-                }
-                else if (source[index] == '}')
-                {
-                    depth--;
-                    if (depth == 0)
-                    {
-                        return source.Substring(start, index - start + 1);
-                    }
-                }
-            }
-
-            Assert.Fail("Method body is incomplete: " + signature);
-            return string.Empty;
+            Assert.That(RepositorySource.ReadSourceFile("MainForm.CommandTerminal.cs"), Does.Contain("_isRuntimeWindowTransitionInProgress"));
+            Assert.That(RepositorySource.ReadSourceFile("MainForm.DiffWorkbench.cs"), Does.Contain("_isRuntimeWindowTransitionInProgress"));
+            Assert.That(RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs"), Does.Contain("_isRuntimeWindowTransitionInProgress"));
+            Assert.That(RepositorySource.ReadSourceFile("MainForm.SessionWorkbenches.cs"), Does.Contain("_isRuntimeWindowTransitionInProgress"));
+            Assert.That(RepositorySource.ReadSourceFile("MainForm.Workspaces.cs"), Does.Contain("_isRuntimeWindowTransitionInProgress"));
+            Assert.That(RepositorySource.ReadSourceFile("MainForm.GitHosting.cs"), Does.Contain("_isRuntimeWindowTransitionInProgress"));
         }
     }
 }

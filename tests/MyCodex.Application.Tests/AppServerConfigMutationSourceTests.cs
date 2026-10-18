@@ -1,4 +1,5 @@
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -9,9 +10,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficialConfigObservation_DoesNotRepairOrWriteGeneralSettings()
         {
-            var sessionSettings = File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.SessionSettings.cs"));
-            var options = File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.OptionsSettings.cs"));
-            var events = File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.AppServerEvents.cs"));
+            var sessionSettings = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var options = RepositorySource.ReadSourceFile("MainForm.OptionsSettings.cs");
+            var events = RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs");
 
             Assert.That(sessionSettings, Does.Not.Contain("WriteConfigBatchAsync("));
             Assert.That(options, Does.Not.Contain("WriteConfigBatchAsync("));
@@ -21,9 +22,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void HostSettingsPath_DoesNotOwnOfficialConfigWritesOrLegacyCleanup()
         {
-            var operatorSource = File.ReadAllText(GetPath("src", "MyCodex.Infrastructure", "RemoteRelay", "AppServerHostSettingsOperator.cs"));
-            var contractsSource = File.ReadAllText(GetPath("src", "MyCodex.Application", "CodingRemote", "HostSettingsContracts.cs"));
-            var dispatcherSource = File.ReadAllText(GetPath("src", "MyCodex.Application", "CodingRemote", "RemoteCommandDispatcher.HostSettings.cs"));
+            var operatorSource = RepositorySource.ReadSourceFile("AppServerHostSettingsOperator.cs");
+            var contractsSource = RepositorySource.ReadSourceFile("HostSettingsContracts.cs");
+            var dispatcherSource = RepositorySource.ReadSourceFile("RemoteCommandDispatcher.HostSettings.cs");
 
             Assert.That(operatorSource, Does.Not.Contain("IAppServerConfigClient"));
             Assert.That(operatorSource, Does.Not.Contain("WriteConfigBatchAsync("));
@@ -35,7 +36,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void McpConfigMutation_ReadsFreshObservationAndSendsExpectedVersion()
         {
-            var source = File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "McpManagementForm.cs"));
+            var source = RepositorySource.ReadSourceFile("McpManagementForm.cs");
 
             Assert.That(source, Does.Contain("_configClient.ReadConfigAsync(null, true)"));
             Assert.That(source, Does.Contain("AppServerConfigWriteGuard.Evaluate(snapshot, edits)"));
@@ -45,32 +46,12 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficialSettingsMutation_IsExplicitAndUsesFreshVersionGuardedObservation()
         {
-            var source = File.ReadAllText(GetPath(
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                "MainForm.OfficialCodexSettings.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.OfficialCodexSettings.cs");
 
             Assert.That(source, Does.Contain("_appServerClient.ReadConfigAsync(null, true)"));
             Assert.That(source, Does.Contain("AppServerConfigWriteGuard.EvaluateUserConfig(snapshot, edits)"));
             Assert.That(source, Does.Contain("expectedVersion: guard.ExpectedVersion"));
             Assert.That(source, Does.Contain("reloadUserConfig: true"));
-        }
-
-        private static string GetPath(params string[] parts)
-        {
-            var path = TestContext.CurrentContext.TestDirectory;
-            while (!File.Exists(Path.Combine(path, "MyCodex.sln")))
-            {
-                path = Directory.GetParent(path).FullName;
-            }
-
-            foreach (var part in parts)
-            {
-                path = Path.Combine(path, part);
-            }
-
-            return path;
         }
     }
 }

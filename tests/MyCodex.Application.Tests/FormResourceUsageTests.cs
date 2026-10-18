@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -13,7 +14,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ChineseResources_DoNotContainEncodingReplacementMarkers()
         {
-            var document = XDocument.Load(GetRepositoryPath("src", "MyCodex.WinForms", "Resources", "Strings.zh-CN.resx"));
+            var document = XDocument.Load(RepositorySource.GetPath("src", "MyCodex.WinForms", "Resources", "Strings.zh-CN.resx"));
             var corruptedKeys = document.Root.Elements("data")
                 .Where(element => ((string)element.Element("value") ?? string.Empty).Contains("??")
                     || ((string)element.Element("value") ?? string.Empty).Contains("\uFFFD"))
@@ -141,7 +142,7 @@ namespace MyCodex.Application.Tests
 
         private static string[] LoadResourceKeys(string fileName)
         {
-            var path = GetRepositoryPath("src", "MyCodex.WinForms", "Resources", fileName);
+            var path = RepositorySource.GetPath("src", "MyCodex.WinForms", "Resources", fileName);
             var document = XDocument.Load(path);
             return document.Root
                 .Elements("data")
@@ -152,26 +153,12 @@ namespace MyCodex.Application.Tests
 
         private static string[] LoadSourceTexts()
         {
-            var repositoryRoot = GetRepositoryPath();
+            var repositoryRoot = RepositorySource.Root;
             return Directory.GetFiles(repositoryRoot, "*.cs", SearchOption.AllDirectories)
                 .Where(path => !path.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar))
                 .Where(path => !path.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
                 .Select(File.ReadAllText)
                 .ToArray();
-        }
-
-        private static string GetRepositoryPath(params string[] parts)
-        {
-            var path = Path.Combine(new[]
-            {
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                ".."
-            }.Concat(parts ?? Array.Empty<string>()).ToArray());
-
-            return Path.GetFullPath(path);
         }
     }
 }

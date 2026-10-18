@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -18,8 +19,8 @@ namespace MyCodex.Application.Tests
         {
             var packageReferences = new[]
                 {
-                    XDocument.Load(GetRepositoryPath("src", "MyCodex.WinForms", "MyCodex.WinForms.csproj")),
-                    XDocument.Load(GetRepositoryPath("src", "MyCodex.Infrastructure", "MyCodex.Infrastructure.csproj"))
+                    XDocument.Load(RepositorySource.GetPath("src", "MyCodex.WinForms", "MyCodex.WinForms.csproj")),
+                    XDocument.Load(RepositorySource.GetPath("src", "MyCodex.Infrastructure", "MyCodex.Infrastructure.csproj"))
                 }
                 .SelectMany(project => project.Root.Descendants("PackageReference"))
                 .Select(element => (string)element.Attribute("Include"))
@@ -32,7 +33,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WinFormsProject_CopiesPackageRuntimeDependenciesWhenUsingCommonOutputDirectory()
         {
-            var project = XDocument.Load(GetRepositoryPath("src", "MyCodex.WinForms", "MyCodex.WinForms.csproj"));
+            var project = XDocument.Load(RepositorySource.GetPath("src", "MyCodex.WinForms", "MyCodex.WinForms.csproj"));
             var copyTarget = project.Root
                 .Descendants("Target")
                 .SingleOrDefault(element => string.Equals((string)element.Attribute("Name"), "CopyWinFormsPackageRuntimeDependencies", StringComparison.Ordinal));
@@ -48,7 +49,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WinFormsProject_DoesNotCopyNativePackageDependenciesToOutputRoot()
         {
-            var project = XDocument.Load(GetRepositoryPath("src", "MyCodex.WinForms", "MyCodex.WinForms.csproj"));
+            var project = XDocument.Load(RepositorySource.GetPath("src", "MyCodex.WinForms", "MyCodex.WinForms.csproj"));
             var copyTarget = project.Root
                 .Descendants("Target")
                 .SingleOrDefault(element => string.Equals((string)element.Attribute("Name"), "CopyWinFormsPackageRuntimeDependencies", StringComparison.Ordinal));
@@ -62,7 +63,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WinFormsProject_RemovesUnsupportedNuGetRuntimeLayoutsAfterCopyingRuntimeDependencies()
         {
-            var project = XDocument.Load(GetRepositoryPath("src", "MyCodex.WinForms", "MyCodex.WinForms.csproj"));
+            var project = XDocument.Load(RepositorySource.GetPath("src", "MyCodex.WinForms", "MyCodex.WinForms.csproj"));
             var removeTarget = project.Root
                 .Descendants("Target")
                 .SingleOrDefault(element => string.Equals((string)element.Attribute("Name"), "RemoveWinFormsUnsupportedRuntimeAssetLayouts", StringComparison.Ordinal));
@@ -80,7 +81,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WinFormsAppConfig_DisablesWinFormsUiaAccessibilityImprovements()
         {
-            var appConfigPath = GetRepositoryPath("src", "MyCodex.WinForms", "App.config");
+            var appConfigPath = RepositorySource.GetPath("src", "MyCodex.WinForms", "App.config");
             Assert.That(File.Exists(appConfigPath), Is.True, "WinForms App.config should configure process-wide AppContext switches.");
 
             var appConfig = XDocument.Load(appConfigPath);
@@ -109,7 +110,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void DirectoryBuildProps_UsesRootOutputOnlyWhenTestBuildOutputRootIsEmpty()
         {
-            var project = XDocument.Load(GetRepositoryPath("Directory.Build.props"));
+            var project = XDocument.Load(RepositorySource.GetPath("Directory.Build.props"));
             var propertyGroups = project.Root
                 .Elements("PropertyGroup")
                 .ToArray();
@@ -145,7 +146,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void TestProject_PassesIsolatedOutputRootToProjectReferences()
         {
-            var project = XDocument.Load(GetRepositoryPath("tests", "MyCodex.Application.Tests", "MyCodex.Application.Tests.csproj"));
+            var project = XDocument.Load(RepositorySource.GetPath("tests", "MyCodex.Application.Tests", "MyCodex.Application.Tests.csproj"));
             Assert.That(
                 project.Root
                     .Elements("PropertyGroup")
@@ -164,20 +165,5 @@ namespace MyCodex.Application.Tests
                     Is.EqualTo("MyCodexTestBuildOutputRoot=$(MSBuildThisFileDirectory)bin\\ProjectReferences\\"));
             }
         }
-
-        private static string GetRepositoryPath(params string[] parts)
-        {
-            var path = Path.Combine(new[]
-            {
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                ".."
-            }.Concat(parts ?? Array.Empty<string>()).ToArray());
-
-            return Path.GetFullPath(path);
-        }
-
     }
 }

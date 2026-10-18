@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -10,11 +11,11 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OptionsForm_UsesThemeChoicesWithoutMenuStrip()
         {
-            var source = File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.cs")) +
+            var source = RepositorySource.ReadSourceFile("MainForm.cs") +
                 Environment.NewLine +
-                File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.SessionSettings.cs")) +
+                RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs") +
                 Environment.NewLine +
-                File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "OptionsForm.cs"));
+                RepositorySource.ReadSourceFile("OptionsForm.cs");
 
             Assert.That(source.IndexOf("\"OptionsForm.Theme.FollowSystem\"", StringComparison.Ordinal), Is.GreaterThanOrEqualTo(0));
             Assert.That(source.IndexOf("\"OptionsForm.Theme.Light\"", StringComparison.Ordinal), Is.GreaterThanOrEqualTo(0));
@@ -25,8 +26,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_ListensForSystemThemeChange()
         {
-            var source = File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.cs"));
-            var layout = File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.Layout.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
+            var layout = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
             var handlerStart = source.IndexOf("private void OnSystemUserPreferenceChanged(", StringComparison.Ordinal);
             var handlerEnd = source.IndexOf("private void LoadAppConfig()", handlerStart, StringComparison.Ordinal);
             var handler = source.Substring(handlerStart, handlerEnd - handlerStart);
@@ -39,17 +40,6 @@ namespace MyCodex.Application.Tests
             Assert.That(handler, Does.Contain("ApplyConfiguredTheme()"));
             Assert.That(handler, Does.Not.Contain("UiThemePreference.Auto"));
             Assert.That(source, Does.Contain("UiTheme.ApplyToOpenForms();"));
-        }
-
-        private static string GetPath(params string[] parts)
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                Path.Combine(parts)));
         }
     }
 }

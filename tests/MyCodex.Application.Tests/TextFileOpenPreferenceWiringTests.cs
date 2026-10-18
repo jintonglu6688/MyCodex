@@ -1,4 +1,5 @@
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -9,7 +10,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_WiresTextFileOpenPreferenceProviderToGitWorkbench()
         {
-            var source = ReadSource("MainForm.DiffWorkbench.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.DiffWorkbench.cs");
 
             Assert.That(source, Does.Contain("BuildTextFileOpenPreference"));
             Assert.That(source, Does.Contain("textFileOpenPreferenceProvider"));
@@ -18,22 +19,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_WiresTextFileOpenPreferenceProviderToAppServerFileWindowManager()
         {
-            var source = ReadSource("MainForm.AppServerFileWindows.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.AppServerFileWindows.cs");
 
             Assert.That(source, Does.Contain("BuildTextFileOpenPreference"));
             Assert.That(source, Does.Contain("textFileOpenPreferenceProvider"));
-        }
-
-        private static string ReadSource(string fileName)
-        {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null && !Directory.Exists(Path.Combine(directory.FullName, "src")))
-            {
-                directory = directory.Parent;
-            }
-
-            Assert.That(directory, Is.Not.Null);
-            return File.ReadAllText(Path.Combine(directory.FullName, "src", "MyCodex.WinForms", "Forms", fileName));
         }
     }
 }

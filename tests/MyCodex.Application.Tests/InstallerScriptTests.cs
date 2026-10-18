@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -13,7 +14,7 @@ namespace MyCodex.Application.Tests
         [TestCase("package.bat")]
         public void BuildScript_UsesCrLfSoCmdCanResolveLabels(string fileName)
         {
-            var bytes = File.ReadAllBytes(GetRepositoryPath(fileName));
+            var bytes = File.ReadAllBytes(RepositorySource.GetPath(fileName));
             for (var index = 0; index < bytes.Length; index++)
             {
                 if (bytes[index] == 10)
@@ -27,7 +28,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MyCodexInstaller_RemembersPreviousInstallDirectoryForUpdates()
         {
-            var script = File.ReadAllText(GetRepositoryPath("tools", "installer", "MyCodex.iss"));
+            var script = RepositorySource.ReadFile("tools", "installer", "MyCodex.iss");
 
             Assert.That(script, Does.Match(@"(?im)^AppId=\{\{[0-9A-F-]+\}\s*$"));
             Assert.That(script, Does.Match(@"(?im)^UsePreviousAppDir=yes\s*$"));
@@ -37,7 +38,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MyCodexInstaller_SelectsDesktopShortcutByDefault()
         {
-            var script = File.ReadAllText(GetRepositoryPath("tools", "installer", "MyCodex.iss"));
+            var script = RepositorySource.ReadFile("tools", "installer", "MyCodex.iss");
 
             var taskLine = script
                 .Replace("\r\n", "\n")
@@ -52,7 +53,7 @@ namespace MyCodex.Application.Tests
         [TestCase("build-dev.bat", "Dev")]
         public void BuildScript_DelegatesToSharedPowerShellEntryPoint(string fileName, string profile)
         {
-            var buildScript = NormalizeLineEndings(File.ReadAllText(GetRepositoryPath(fileName)));
+            var buildScript = NormalizeLineEndings(RepositorySource.ReadFile(fileName));
 
             Assert.That(buildScript, Does.Not.Contain("--enable-remote-service"));
             Assert.That(buildScript, Does.Not.Contain("--disable-remote-service"));
@@ -66,7 +67,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SharedBuild_UsesOfficialCodexRuntimeWithoutProviderRuntime()
         {
-            var sharedBuild = File.ReadAllText(GetRepositoryPath("tools", "build", "Build-MyCodex.ps1"));
+            var sharedBuild = RepositorySource.ReadFile("tools", "build", "Build-MyCodex.ps1");
 
             Assert.That(sharedBuild, Does.Not.Contain("mimo2codex"));
             Assert.That(sharedBuild, Does.Contain("Copy-BundledRelay -OutputDirectory $outputDirectory"));
@@ -87,8 +88,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void LocalBuild_AllowsModifiedBackendWhileInstallerKeepsReleaseValidation()
         {
-            var sharedBuild = File.ReadAllText(GetRepositoryPath("tools", "build", "Build-MyCodex.ps1"));
-            var installerBuild = File.ReadAllText(GetRepositoryPath("tools", "installer", "build-installer.ps1"));
+            var sharedBuild = RepositorySource.ReadFile("tools", "build", "Build-MyCodex.ps1");
+            var installerBuild = RepositorySource.ReadFile("tools", "installer", "build-installer.ps1");
 
             Assert.That(sharedBuild, Does.Contain("-AllowDevelopment | Out-Null"));
             Assert.That(sharedBuild, Does.Not.Contain("-AllowDevelopment:($Profile"));
@@ -99,7 +100,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void InstallerBuild_UsesPinnedRelayPreparationWithoutSiblingRepository()
         {
-            var installerBuild = File.ReadAllText(GetRepositoryPath("tools", "installer", "build-installer.ps1"));
+            var installerBuild = RepositorySource.ReadFile("tools", "installer", "build-installer.ps1");
 
             Assert.That(installerBuild, Does.Contain("prepare-relay-runtime.ps1"));
             Assert.That(installerBuild, Does.Not.Contain("MyCodex-relay"));
@@ -109,7 +110,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void PackageBuild_BuildsReleaseOnceAndPackagesThatOutput()
         {
-            var packageBuild = NormalizeLineEndings(File.ReadAllText(GetRepositoryPath("package.bat")));
+            var packageBuild = NormalizeLineEndings(RepositorySource.ReadFile("package.bat"));
 
             Assert.That(packageBuild, Does.Not.Contain("--enable-remote-service"));
             Assert.That(packageBuild, Does.Not.Contain("--disable-remote-service"));
@@ -138,8 +139,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ReleaseDistributionScripts_UseBoundaryAwareSafeDelete()
         {
-            var installerBuild = File.ReadAllText(GetRepositoryPath("tools", "installer", "build-installer.ps1"));
-            var gitCodeDistribution = File.ReadAllText(GetRepositoryPath("tools", "gitcode", "Publish-GitCodeDistributionRepo.ps1"));
+            var installerBuild = RepositorySource.ReadFile("tools", "installer", "build-installer.ps1");
+            var gitCodeDistribution = RepositorySource.ReadFile("tools", "gitcode", "Publish-GitCodeDistributionRepo.ps1");
 
             AssertBoundaryAwareSafeDelete(installerBuild);
             AssertBoundaryAwareSafeDelete(gitCodeDistribution);
@@ -148,7 +149,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void InstallerBuild_PreparesAdaptiveBundledCodexRuntime()
         {
-            var installerBuild = File.ReadAllText(GetRepositoryPath("tools", "installer", "build-installer.ps1"));
+            var installerBuild = RepositorySource.ReadFile("tools", "installer", "build-installer.ps1");
 
             Assert.That(installerBuild, Does.Contain("[string]$BundledCodexVersion"));
             Assert.That(installerBuild, Does.Contain("function Get-LatestInstalledBundledCodexVersion"));
@@ -165,7 +166,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void BundledCodexRuntime_DefaultVersionIsCurrentPinnedPackageVersion()
         {
-            var source = File.ReadAllText(GetRepositoryPath("src", "MyCodex.Shared", "Constants", "CodexRuntimeSources.cs"));
+            var source = RepositorySource.ReadSourceFile("CodexRuntimeSources.cs");
 
             Assert.That(source, Does.Contain("BundledDefaultVersion = \"0.147.0\""));
         }
@@ -173,7 +174,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void InstallerBuild_RemovesNonPinnedBundledCodexRuntimeVersionsFromPackageSource()
         {
-            var installerBuild = File.ReadAllText(GetRepositoryPath("tools", "installer", "build-installer.ps1"));
+            var installerBuild = RepositorySource.ReadFile("tools", "installer", "build-installer.ps1");
 
             Assert.That(installerBuild, Does.Contain("function Remove-NonPinnedBundledCodexRuntimes"));
             Assert.That(installerBuild, Does.Contain("Remove-NonPinnedBundledCodexRuntimes"));
@@ -184,7 +185,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MyCodexInstaller_RemovesInstalledRuntimeDirectoryBeforeCopyingPackagedRuntimes()
         {
-            var script = File.ReadAllText(GetRepositoryPath("tools", "installer", "MyCodex.iss"));
+            var script = RepositorySource.ReadFile("tools", "installer", "MyCodex.iss");
 
             Assert.That(script, Does.Contain(@"Name: ""{app}\runtime\*"""));
             Assert.That(script, Does.Not.Contain(@"Name: ""{app}\runtime\codex\*"""));
@@ -207,20 +208,6 @@ namespace MyCodex.Application.Tests
             Assert.That(script, Does.Contain("$resolvedPath -ne $resolvedRoot"));
             Assert.That(script, Does.Contain("$resolvedPath.StartsWith($rootWithSeparator"));
             Assert.That(script, Does.Not.Contain("$resolvedPath.StartsWith($resolvedRoot"));
-        }
-
-        private static string GetRepositoryPath(params string[] parts)
-        {
-            var path = Path.Combine(new[]
-            {
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                ".."
-            }.Concat(parts ?? Array.Empty<string>()).ToArray());
-
-            return Path.GetFullPath(path);
         }
     }
 }

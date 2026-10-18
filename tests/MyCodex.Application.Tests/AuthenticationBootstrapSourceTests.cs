@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -10,10 +11,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_RoutesLocalLoginThroughCenterAndKeepsRemoteOfficialBootstrap()
         {
-            var formsDirectory = FindFormsDirectory();
-            var mainFormSource = File.ReadAllText(Path.Combine(formsDirectory, "MainForm.cs"));
-            var runtimeConnectionSource = File.ReadAllText(Path.Combine(formsDirectory, "MainForm.RuntimeConnection.cs"));
-            var bootstrapSource = File.ReadAllText(Path.Combine(formsDirectory, "MainForm.AuthenticationBootstrap.cs"));
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var runtimeConnectionSource = RepositorySource.ReadSourceFile("MainForm.RuntimeConnection.cs");
+            var bootstrapSource = RepositorySource.ReadSourceFile("MainForm.AuthenticationBootstrap.cs");
 
             Assert.That(mainFormSource, Does.Not.Contain("AuthenticationCenter"));
             Assert.That(runtimeConnectionSource, Does.Contain("ShowAuthenticationBootstrapIfRequired();"));
@@ -35,10 +35,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void UserCenter_UsesOfficialObservationsAndOnlyTheOfficialResetCreditMutation()
         {
-            var formsDirectory = FindFormsDirectory();
             var source = string.Concat(
-                File.ReadAllText(Path.Combine(formsDirectory, "UserCenterForm.cs")),
-                File.ReadAllText(Path.Combine(formsDirectory, "UserCenterForm.QuotaReset.cs")));
+                RepositorySource.ReadSourceFile("UserCenterForm.cs"),
+                RepositorySource.ReadSourceFile("UserCenterForm.QuotaReset.cs"));
 
             Assert.That(source, Does.Not.Contain("IChatGptAuthBackupStore"));
             Assert.That(source, Does.Not.Contain("UserCenterAuthenticationDisplayMerger"));
@@ -53,8 +52,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ClosingUserCenter_DoesNotRefreshAuthenticationOrStartLoginBootstrap()
         {
-            var formsDirectory = FindFormsDirectory();
-            var source = File.ReadAllText(Path.Combine(formsDirectory, "MainForm.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
             var handlerStart = source.IndexOf(
                 "private async void OnUserCenterMenuItemClick",
                 StringComparison.Ordinal);
@@ -73,19 +71,6 @@ namespace MyCodex.Application.Tests
             var afterClose = handler.Substring(closeBoundary);
             Assert.That(afterClose, Does.Not.Contain("RefreshAuthenticationStateAsync"));
             Assert.That(afterClose, Does.Not.Contain("ShowAuthenticationBootstrapIfRequired"));
-        }
-
-        private static string FindFormsDirectory()
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms"));
         }
     }
 }

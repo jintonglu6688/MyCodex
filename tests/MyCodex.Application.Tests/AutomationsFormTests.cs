@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.WinForms.Forms;
@@ -194,7 +195,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AutomationsForm_PassesActivityCallbacksToRunDetailsForm()
         {
-            var source = File.ReadAllText(GetWinFormsSourcePath("Forms", "AutomationsForm.cs"));
+            var source = RepositorySource.ReadSourceFile("AutomationsForm.cs");
 
             Assert.That(source, Does.Contain("private readonly AutomationRunActivityCallbacks _runActivityCallbacks;"));
             Assert.That(source, Does.Contain("AutomationRunActivityCallbacks runActivityCallbacks = null"));
@@ -849,20 +850,6 @@ namespace MyCodex.Application.Tests
             }
 
             return null;
-        }
-
-        private static string GetWinFormsSourcePath(params string[] parts)
-        {
-            var root = TestContext.CurrentContext.TestDirectory;
-            while (!string.IsNullOrEmpty(root) && !Directory.Exists(Path.Combine(root, "src")))
-            {
-                root = Directory.GetParent(root) == null ? null : Directory.GetParent(root).FullName;
-            }
-
-            Assert.That(root, Is.Not.Null, "Repository root could not be found.");
-            var pathParts = new List<string> { root, "src", "MyCodex.WinForms" };
-            pathParts.AddRange(parts);
-            return Path.Combine(pathParts.ToArray());
         }
 
         private static T FindControlByName<T>(Control root, string name) where T : Control

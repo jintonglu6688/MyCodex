@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
 
@@ -53,8 +54,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainFormShutdown_UsesBudgetedScreenReaderCleanupInsteadOfBlockingUiThread()
         {
-            var source = File.ReadAllText(GetRepositoryPath("src", "MyCodex.WinForms", "Forms", "MainForm.cs"));
-            var method = ExtractMethod(source, "private void OnFormClosed(object sender, FormClosedEventArgs e)");
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
+            var method = RepositorySource.ExtractMethod(source, "private void OnFormClosed(object sender, FormClosedEventArgs e)");
 
             Assert.That(source, Does.Contain("StopScreenReaderServiceWithinExitBudget"));
             Assert.That(source, Does.Contain("ExitScreenReaderStopBudget"));
@@ -65,8 +66,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainFormShutdown_DoesNotDisposeScreenReaderServiceDuringExitCleanup()
         {
-            var source = File.ReadAllText(GetRepositoryPath("src", "MyCodex.WinForms", "Forms", "MainForm.cs"));
-            var method = ExtractMethod(source, "private void StopScreenReaderServiceWithinExitBudget()");
+            var source = RepositorySource.ReadSourceFile("MainForm.cs");
+            var method = RepositorySource.ExtractMethod(source, "private void StopScreenReaderServiceWithinExitBudget()");
 
             Assert.That(method, Does.Not.Contain("_screenReaderService.Dispose()"));
         }
@@ -74,15 +75,15 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ApplicationExit_WindowCloseFileMenuAndTrayUseOneConfirmationImplementation()
         {
-            var mainSource = File.ReadAllText(GetRepositoryPath("src", "MyCodex.WinForms", "Forms", "MainForm.cs"));
-            var traySource = File.ReadAllText(GetRepositoryPath("src", "MyCodex.WinForms", "Forms", "MainForm.UpdatesTray.cs"));
-            var closing = ExtractMethod(mainSource, "private async void OnFormClosing(object sender, FormClosingEventArgs e)");
-            var fileExit = ExtractMethod(mainSource, "private void OnExitMenuItemClick(object sender, EventArgs e)");
-            var trayExit = ExtractMethod(traySource, "private void ExitTrayMenuItem_Click(object sender, EventArgs e)");
-            var request = ExtractMethod(traySource, "private async void RequestApplicationExit()");
-            var confirm = ExtractMethod(traySource, "private bool ConfirmApplicationExit()");
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var traySource = RepositorySource.ReadSourceFile("MainForm.UpdatesTray.cs");
+            var closing = RepositorySource.ExtractMethod(mainSource, "private async void OnFormClosing(object sender, FormClosingEventArgs e)");
+            var fileExit = RepositorySource.ExtractMethod(mainSource, "private void OnExitMenuItemClick(object sender, EventArgs e)");
+            var trayExit = RepositorySource.ExtractMethod(traySource, "private void ExitTrayMenuItem_Click(object sender, EventArgs e)");
+            var request = RepositorySource.ExtractMethod(traySource, "private async void RequestApplicationExit()");
+            var confirm = RepositorySource.ExtractMethod(traySource, "private bool ConfirmApplicationExit()");
 
-            Assert.That(CountOccurrences(mainSource + traySource, "private bool ConfirmApplicationExit()"), Is.EqualTo(1));
+            Assert.That(RepositorySource.CountOccurrences(mainSource + traySource, "private bool ConfirmApplicationExit()"), Is.EqualTo(1));
             Assert.That(closing, Does.Contain("RequestSingleTargetExitAsync"));
             Assert.That(fileExit, Does.Contain("RequestApplicationExit();"));
             Assert.That(trayExit, Does.Contain("RequestApplicationExit();"));
@@ -95,19 +96,19 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ApplicationExitStopsLocalAuthenticationAfterAppServerAndRestoresItBeforeConnect()
         {
-            var main = File.ReadAllText(GetRepositoryPath("src", "MyCodex.WinForms", "Forms", "MainForm.cs"));
-            var closing = ExtractMethod(main, "private void OnFormClosed(object sender, FormClosedEventArgs e)");
+            var main = RepositorySource.ReadSourceFile("MainForm.cs");
+            var closing = RepositorySource.ExtractMethod(main, "private void OnFormClosed(object sender, FormClosedEventArgs e)");
             Assert.That(closing.IndexOf("\"stop-local-authentication-backend\"", StringComparison.Ordinal),
                 Is.GreaterThan(closing.IndexOf("\"dispose-app-server-client\"", StringComparison.Ordinal)));
-            var auth = File.ReadAllText(GetRepositoryPath("src", "MyCodex.WinForms", "Forms", "MainForm.AuthenticationCenter.cs"));
+            var auth = RepositorySource.ReadSourceFile("MainForm.AuthenticationCenter.cs");
             Assert.That(auth, Does.Contain("!IsCurrentExecutionTargetWindows()"));
             Assert.That(auth, Does.Contain("ShutdownLocalBackendAsync"));
-            var stop = ExtractMethod(auth, "private void StopLocalAuthenticationBackendOnExit()");
+            var stop = RepositorySource.ExtractMethod(auth, "private void StopLocalAuthenticationBackendOnExit()");
             Assert.That(stop.IndexOf("IsLocalBackendCreated", StringComparison.Ordinal),
                 Is.LessThan(stop.IndexOf("ShutdownLocalBackendAsync", StringComparison.Ordinal)));
             Assert.That(stop, Does.Not.Contain("IsCurrentExecutionTargetWindows()"), "A Windows lease must be released after switching to WSL/SSH.");
-            var connection = File.ReadAllText(GetRepositoryPath("src", "MyCodex.WinForms", "Forms", "MainForm.RuntimeConnection.cs"));
-            var connect = ExtractMethod(connection, "private async Task<bool> EnsureAppServerConnectedAsync()");
+            var connection = RepositorySource.ReadSourceFile("MainForm.RuntimeConnection.cs");
+            var connect = RepositorySource.ExtractMethod(connection, "private async Task<bool> EnsureAppServerConnectedAsync()");
             Assert.That(connect.IndexOf("EnsureLocalAuthenticationBackendBeforeConnectAsync()", StringComparison.Ordinal),
                 Is.LessThan(connect.IndexOf("_appServerClient.ConnectAsync()", StringComparison.Ordinal)));
         }
@@ -115,9 +116,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ApplicationExit_UsesConcisePromptWhenIdleAndDualModeWarningForAnyActiveRuntimeWork()
         {
-            var source = File.ReadAllText(GetRepositoryPath("src", "MyCodex.WinForms", "Forms", "MainForm.UpdatesTray.cs"));
-            var active = ExtractMethod(source, "private bool HasActiveRuntimeWorkForExit()");
-            var prompt = ExtractMethod(source, "private string BuildApplicationExitPrompt()");
+            var source = RepositorySource.ReadSourceFile("MainForm.UpdatesTray.cs");
+            var active = RepositorySource.ExtractMethod(source, "private bool HasActiveRuntimeWorkForExit()");
+            var prompt = RepositorySource.ExtractMethod(source, "private string BuildApplicationExitPrompt()");
 
             Assert.That(prompt, Does.Contain("HasActiveRuntimeWorkForExit()"));
             Assert.That(prompt, Does.Contain("MainForm.Message.ConfirmExit.Active"));
@@ -133,14 +134,14 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ApplicationExit_ConfirmsThenSavesMergedDualModeStateBeforeCleanup()
         {
-            var mainSource = File.ReadAllText(GetRepositoryPath("src", "MyCodex.WinForms", "Forms", "MainForm.cs"));
-            var traySource = File.ReadAllText(GetRepositoryPath("src", "MyCodex.WinForms", "Forms", "MainForm.UpdatesTray.cs"));
-            var request = ExtractMethod(traySource, "private async void RequestApplicationExit()");
-            var closing = ExtractMethod(mainSource, "private async void OnFormClosing(object sender, FormClosingEventArgs e)");
-            var shutdown = File.ReadAllText(GetRepositoryPath("src", "MyCodex.WinForms", "Forms", "MainForm.TargetShutdown.cs"));
-            var prepare = ExtractMethod(shutdown, "private async Task<bool> PrepareTargetExitAsync(string operationId, bool confirm = false)");
-            var save = ExtractMethod(shutdown, "private async Task<bool> PrepareTargetWindowsAndStateAsync(string operationId)");
-            var closed = ExtractMethod(mainSource, "private void OnFormClosed(object sender, FormClosedEventArgs e)");
+            var mainSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var traySource = RepositorySource.ReadSourceFile("MainForm.UpdatesTray.cs");
+            var request = RepositorySource.ExtractMethod(traySource, "private async void RequestApplicationExit()");
+            var closing = RepositorySource.ExtractMethod(mainSource, "private async void OnFormClosing(object sender, FormClosingEventArgs e)");
+            var shutdown = RepositorySource.ReadSourceFile("MainForm.TargetShutdown.cs");
+            var prepare = RepositorySource.ExtractMethod(shutdown, "private async Task<bool> PrepareTargetExitAsync(string operationId, bool confirm = false)");
+            var save = RepositorySource.ExtractMethod(shutdown, "private async Task<bool> PrepareTargetWindowsAndStateAsync(string operationId)");
+            var closed = RepositorySource.ExtractMethod(mainSource, "private void OnFormClosed(object sender, FormClosedEventArgs e)");
 
             Assert.That(request, Does.Contain("RequestSingleTargetExitAsync(true)"));
             Assert.That(closing, Does.Contain("e.Cancel = true"));
@@ -149,7 +150,7 @@ namespace MyCodex.Application.Tests
                 Is.LessThan(prepare.IndexOf("PrepareAsync(operationId)", StringComparison.Ordinal)));
             Assert.That(save, Does.Not.Contain("_isExitRequested = true"));
             Assert.That(save, Does.Not.Contain("InterruptAllActiveRuntimeThreadsAsync"));
-            var cleanup = ExtractMethod(shutdown, "private async void CloseCommittedTarget()");
+            var cleanup = RepositorySource.ExtractMethod(shutdown, "private async void CloseCommittedTarget()");
             Assert.That(cleanup, Does.Contain("await InterruptAllActiveRuntimeThreadsAsync()"));
             Assert.That(cleanup, Does.Contain("await TerminateAllActiveRuntimeCommandsAsync()"));
             Assert.That(cleanup.IndexOf("await TerminateAllActiveRuntimeCommandsAsync()", StringComparison.Ordinal),
@@ -161,62 +162,6 @@ namespace MyCodex.Application.Tests
             Assert.That(save, Does.Contain("if (!_isPersistenceRecoveryPending && !TryPersistState())"));
             Assert.That(closed, Does.Contain("clear-compose-state"));
             Assert.That(closed, Does.Not.Contain("SaveCurrentComposeState"));
-        }
-
-        private static string ExtractMethod(string source, string signature)
-        {
-            var start = source.IndexOf(signature, StringComparison.Ordinal);
-            Assert.That(start, Is.GreaterThanOrEqualTo(0), signature);
-
-            var braceStart = source.IndexOf('{', start);
-            Assert.That(braceStart, Is.GreaterThanOrEqualTo(0), signature);
-
-            var depth = 0;
-            for (var i = braceStart; i < source.Length; i++)
-            {
-                if (source[i] == '{')
-                {
-                    depth++;
-                }
-                else if (source[i] == '}')
-                {
-                    depth--;
-                    if (depth == 0)
-                    {
-                        return source.Substring(start, i - start + 1);
-                    }
-                }
-            }
-
-            Assert.Fail("Method body not found: " + signature);
-            return string.Empty;
-        }
-
-        private static string GetRepositoryPath(params string[] parts)
-        {
-            var path = Path.Combine(new[]
-            {
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                ".."
-            }.Concat(parts ?? Array.Empty<string>()).ToArray());
-
-            return Path.GetFullPath(path);
-        }
-
-        private static int CountOccurrences(string source, string value)
-        {
-            var count = 0;
-            var index = 0;
-            while ((index = source.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
-            {
-                count++;
-                index += value.Length;
-            }
-
-            return count;
         }
     }
 }

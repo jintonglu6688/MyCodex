@@ -1,4 +1,5 @@
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -9,23 +10,12 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainFormAndSubAgentWorkbenchUseConfiguredSendMessageShortcutMode()
         {
-            var mainFormSource = File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.cs"));
-            var workbenchSource = File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Controls", "ChatWorkbenchControl.cs"));
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
+            var workbenchSource = RepositorySource.ReadSourceFile("ChatWorkbenchControl.cs");
 
             Assert.That(mainFormSource, Does.Contain("SendMessageShortcutPlanner.ResolveAction(GetConfiguredSendMessageShortcutMode(), e.KeyCode, e.Control)"));
             Assert.That(mainFormSource, Does.Contain("GetSendMessageShortcutMode = GetConfiguredSendMessageShortcutMode"));
             Assert.That(workbenchSource, Does.Contain("SendMessageShortcutPlanner.ResolveAction(GetSendMessageShortcutMode(), e.KeyCode, e.Control)"));
-        }
-
-        private static string GetPath(params string[] parts)
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                Path.Combine(parts)));
         }
     }
 }

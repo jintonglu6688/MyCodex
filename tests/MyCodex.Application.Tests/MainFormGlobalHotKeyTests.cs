@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Shared.Constants;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
@@ -14,7 +15,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void GlobalHotKey_UsesWin32RegistrationWithNoRepeatAndHandleLifecycle()
         {
-            var source = ReadFormSource("MainForm.GlobalHotKey.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.GlobalHotKey.cs");
 
             var registered = new List<uint>();
             var binding = new MainWindowHotKeyRegistration((id, modifiers, key) => { registered.Add(modifiers); return true; }, id => { });
@@ -33,7 +34,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void GlobalHotKey_OnlyHandlesItsOwnMessageAndDoesNotAnnounceThroughTts()
         {
-            var source = ReadFormSource("MainForm.GlobalHotKey.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.GlobalHotKey.cs");
 
             Assert.That(source, Does.Contain("m.Msg == WmHotKey && _mainWindowHotKeyRegistration != null"));
             Assert.That(source, Does.Contain("m.WParam == (IntPtr)_mainWindowHotKeyRegistration.RegistrationId"));
@@ -45,8 +46,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void GlobalHotKey_UsesExistingTrayFlowAndLeavesDisabledMainWindowAlone()
         {
-            var source = ReadFormSource("MainForm.GlobalHotKey.cs");
-            var handler = ExtractMethod(source, "private void HandleMainWindowHotKey()");
+            var source = RepositorySource.ReadSourceFile("MainForm.GlobalHotKey.cs");
+            var handler = RepositorySource.ExtractMethod(source, "private void HandleMainWindowHotKey()");
 
             Assert.That(handler, Does.Contain("TryActivateTargetModalWindow()"));
             Assert.That(handler, Does.Contain("if (!Enabled)"));
@@ -62,11 +63,11 @@ namespace MyCodex.Application.Tests
         [Test]
         public void GlobalHotKeyFailureAndTrayLabelsAreLocalized()
         {
-            var source = ReadFormSource("MainForm.GlobalHotKey.cs");
-            var resources = ReadResource("Strings.resx");
-            var chineseResources = ReadResource("Strings.zh-CN.resx");
-            var englishManual = ReadManual("UserManual.en.html");
-            var chineseManual = ReadManual("用户手册.html");
+            var source = RepositorySource.ReadSourceFile("MainForm.GlobalHotKey.cs");
+            var resources = RepositorySource.ReadFile("src", "MyCodex.WinForms", "Resources", "Strings.resx");
+            var chineseResources = RepositorySource.ReadFile("src", "MyCodex.WinForms", "Resources", "Strings.zh-CN.resx");
+            var englishManual = RepositorySource.ReadFile("help", "UserManual.en.html");
+            var chineseManual = RepositorySource.ReadFile("help", "用户手册.html");
 
             Assert.That(source, Does.Contain("MainForm.GlobalHotKey.Status.Unavailable"));
             Assert.That(source, Does.Contain("Trace.TraceWarning(error);"));
@@ -190,56 +191,6 @@ namespace MyCodex.Application.Tests
             Assert.That(firstKeys, Is.Empty);
             Assert.That(secondKeys.Values, Is.EqualTo(new[] { (uint)Keys.F9 }));
             Assert.That(second.IsRegistered, Is.True);
-        }
-
-        private static string ReadFormSource(string fileName)
-        {
-            return File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "MyCodex.WinForms", "Forms", fileName));
-        }
-
-        private static string ExtractMethod(string source, string signature)
-        {
-            var start = source.IndexOf(signature, StringComparison.Ordinal);
-            Assert.That(start, Is.GreaterThanOrEqualTo(0), signature);
-            var braceStart = source.IndexOf('{', start);
-            Assert.That(braceStart, Is.GreaterThanOrEqualTo(0), signature);
-            var depth = 0;
-            for (var i = braceStart; i < source.Length; i++)
-            {
-                if (source[i] == '{')
-                {
-                    depth++;
-                }
-                else if (source[i] == '}' && --depth == 0)
-                {
-                    return source.Substring(start, i - start + 1);
-                }
-            }
-
-            Assert.Fail("Method body not found: " + signature);
-            return string.Empty;
-        }
-
-        private static string ReadResource(string fileName)
-        {
-            return File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "MyCodex.WinForms", "Resources", fileName));
-        }
-
-        private static string ReadManual(string fileName)
-        {
-            return File.ReadAllText(Path.Combine(GetRepositoryRoot(), "help", fileName));
-        }
-
-        private static string GetRepositoryRoot()
-        {
-            var root = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (root != null && !Directory.Exists(Path.Combine(root.FullName, "src")))
-            {
-                root = root.Parent;
-            }
-
-            Assert.That(root, Is.Not.Null);
-            return root.FullName;
         }
     }
 }

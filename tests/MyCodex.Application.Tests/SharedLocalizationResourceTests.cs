@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -18,7 +19,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SourceSharedLocalizationKeys_ArePresentInEnglishAndChineseResources()
         {
-            var sourceRoot = GetRepositoryPath("src");
+            var sourceRoot = RepositorySource.GetPath("src");
             var keys = Directory.GetFiles(sourceRoot, "*.cs", SearchOption.AllDirectories)
                 .Where(path => !IsGeneratedPath(path))
                 .SelectMany(path => SharedLocalizationKeyPattern
@@ -72,7 +73,7 @@ namespace MyCodex.Application.Tests
 
         private static HashSet<string> LoadResourceKeys(string fileName)
         {
-            var path = GetRepositoryPath("src", "MyCodex.Shared", "Resources", fileName);
+            var path = RepositorySource.GetPath("src", "MyCodex.Shared", "Resources", fileName);
             var document = XDocument.Load(path);
             return new HashSet<string>(
                 document.Root
@@ -80,20 +81,6 @@ namespace MyCodex.Application.Tests
                     .Select(element => (string)element.Attribute("name"))
                     .Where(name => !string.IsNullOrWhiteSpace(name)),
                 StringComparer.Ordinal);
-        }
-
-        private static string GetRepositoryPath(params string[] parts)
-        {
-            var path = Path.Combine(new[]
-            {
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                ".."
-            }.Concat(parts ?? Array.Empty<string>()).ToArray());
-
-            return Path.GetFullPath(path);
         }
     }
 }

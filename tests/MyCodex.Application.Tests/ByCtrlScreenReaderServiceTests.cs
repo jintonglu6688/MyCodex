@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Infrastructure.ByCtrl;
 using NUnit.Framework;
 using System;
@@ -27,11 +28,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ByCtrlService_UsesSpeak2AndDoesNotWriteConf()
         {
-            var sourcePath = GetRepositoryPath(
-                "src",
-                "MyCodex.Infrastructure",
-                "ByCtrl",
-                "ByCtrlScreenReaderService.cs");
+            var sourcePath = RepositorySource.FindSourceFile("ByCtrlScreenReaderService.cs");
             var source = File.ReadAllText(sourcePath, Encoding.UTF8);
 
             Assert.That(source, Does.Contain("\"BoyCtrlSpeak2\""));
@@ -48,10 +45,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WinFormsProject_DoesNotPackageByCtrlConf()
         {
-            var projectPath = GetRepositoryPath(
-                "src",
-                "MyCodex.WinForms",
-                "MyCodex.WinForms.csproj");
+            var projectPath = RepositorySource.GetPath("src", "MyCodex.WinForms", "MyCodex.WinForms.csproj");
             var project = File.ReadAllText(projectPath, Encoding.UTF8);
 
             Assert.That(project, Does.Not.Contain("tts\\byctrl\\byctrl.conf"));
@@ -92,24 +86,6 @@ namespace MyCodex.Application.Tests
             Assert.That(method, Is.Not.Null);
 
             return (string[])method.Invoke(null, new object[] { text });
-        }
-
-        private static string GetRepositoryPath(params string[] parts)
-        {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null && !File.Exists(Path.Combine(directory.FullName, "MyCodex.sln")))
-            {
-                directory = directory.Parent;
-            }
-
-            Assert.That(directory, Is.Not.Null, "Repository root could not be located.");
-            var path = directory.FullName;
-            for (var i = 0; i < parts.Length; i++)
-            {
-                path = Path.Combine(path, parts[i]);
-            }
-
-            return path;
         }
     }
 }

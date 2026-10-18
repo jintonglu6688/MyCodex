@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -11,7 +12,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppConfigPersistence_DoesNotRetainAuthenticationOrPrivateCodexHomeAuthority()
         {
-            var source = File.ReadAllText(SourcePath("src", "MyCodex.Infrastructure", "Persistence", "AppConfigService.cs"));
+            var source = RepositorySource.ReadSourceFile("AppConfigService.cs");
 
             foreach (var retiredAuthority in new[]
             {
@@ -32,17 +33,17 @@ namespace MyCodex.Application.Tests
         {
             foreach (var path in new[]
             {
-                SourcePath("src", "MyCodex.Infrastructure", "Persistence", "JsonAuthenticationProfileStore.cs"),
-                SourcePath("src", "MyCodex.Infrastructure", "Persistence", "JsonChatGptAuthBackupStore.cs"),
-                SourcePath("src", "MyCodex.Infrastructure", "Persistence", "AuthenticationProfileCodexHomePolicy.cs"),
-                SourcePath("src", "MyCodex.Infrastructure", "Persistence", "JsonRuntimeSessionDefaultsStore.cs"),
-                SourcePath("src", "MyCodex.Application", "Interfaces", "IAuthenticationProfileStore.cs"),
-                SourcePath("src", "MyCodex.Application", "Interfaces", "IChatGptAuthBackupStore.cs"),
-                SourcePath("src", "MyCodex.Domain", "Entities", "AuthenticationProfile.cs"),
-                SourcePath("src", "MyCodex.Domain", "Entities", "AuthenticationProfileSnapshot.cs"),
-                SourcePath("src", "MyCodex.Domain", "Entities", "ChatGptAuthBackupSnapshot.cs"),
-                SourcePath("src", "MyCodex.WinForms", "Forms", "ChatGptAccountSelectionResolver.cs"),
-                SourcePath("src", "MyCodex.WinForms", "Forms", "ModelReasoningSupportPolicy.cs")
+                RepositorySource.FindSourceFile("JsonAuthenticationProfileStore.cs"),
+                RepositorySource.FindSourceFile("JsonChatGptAuthBackupStore.cs"),
+                RepositorySource.FindSourceFile("AuthenticationProfileCodexHomePolicy.cs"),
+                RepositorySource.FindSourceFile("JsonRuntimeSessionDefaultsStore.cs"),
+                RepositorySource.FindSourceFile("IAuthenticationProfileStore.cs"),
+                RepositorySource.FindSourceFile("IChatGptAuthBackupStore.cs"),
+                RepositorySource.FindSourceFile("AuthenticationProfile.cs"),
+                RepositorySource.FindSourceFile("AuthenticationProfileSnapshot.cs"),
+                RepositorySource.FindSourceFile("ChatGptAuthBackupSnapshot.cs"),
+                RepositorySource.FindSourceFile("ChatGptAccountSelectionResolver.cs"),
+                RepositorySource.FindSourceFile("ModelReasoningSupportPolicy.cs")
             })
             {
                 Assert.That(File.Exists(path), Is.False, path);
@@ -52,7 +53,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeEndpointInitialization_DoesNotCreateAuthenticationBackupStorage()
         {
-            var source = File.ReadAllText(SourcePath("src", "MyCodex.WinForms", "Forms", "MainForm.RuntimeConnection.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.RuntimeConnection.cs");
 
             Assert.That(source, Does.Not.Contain("chatgpt-auth-backups"));
         }
@@ -60,7 +61,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ProductionSources_DoNotRetainPrivateOrSharedCodexHomeAuthority()
         {
-            var sourceRoot = SourcePath("src");
+            var sourceRoot = RepositorySource.GetPath("src");
             var forbidden = new[] { "SharedCodexHome" + "Path", "SharedCodexHome" + "WindowsPath" };
             var offenders = Directory.GetFiles(sourceRoot, "*.cs", SearchOption.AllDirectories)
                 .Where(path => forbidden.Any(term => File.ReadAllText(path).IndexOf(term, StringComparison.Ordinal) >= 0))
@@ -74,26 +75,23 @@ namespace MyCodex.Application.Tests
         {
             foreach (var path in new[]
             {
-                SourcePath("docs", "internal", "known-model-capabilities.md"),
-                SourcePath("docs", "internal", "mimo2codex-vision-investigation.md"),
-                SourcePath("docs", "mimo2codex-runtime-source.md"),
-                SourcePath("src", "MyCodex.Application", "DTOs", "DiscoveredModelCapability.cs"),
-                SourcePath("src", "MyCodex.Application", "Interfaces", "ICompatibleModelDiscoveryClient.cs"),
-                SourcePath("src", "MyCodex.Application", "Services", "ModelCapabilitySnapshots.cs"),
-                SourcePath("src", "MyCodex.Domain", "Entities", "ModelCapabilitySnapshot.cs"),
-                SourcePath("src", "MyCodex.Infrastructure", "Models", "CompatibleModelDiscoveryClient.cs"),
-                SourcePath("src", "MyCodex.Infrastructure", "Models", "CompatibleModelListParser.cs")
+                RepositorySource.GetPath("docs", "internal", "known-model-capabilities.md"),
+                RepositorySource.GetPath("docs", "internal", "mimo2codex-vision-investigation.md"),
+                RepositorySource.GetPath("docs", "mimo2codex-runtime-source.md"),
+                RepositorySource.FindSourceFile("DiscoveredModelCapability.cs"),
+                RepositorySource.FindSourceFile("ICompatibleModelDiscoveryClient.cs"),
+                RepositorySource.FindSourceFile("ModelCapabilitySnapshots.cs"),
+                RepositorySource.FindSourceFile("ModelCapabilitySnapshot.cs"),
+                RepositorySource.FindSourceFile("CompatibleModelDiscoveryClient.cs"),
+                RepositorySource.FindSourceFile("CompatibleModelListParser.cs")
             })
             {
                 Assert.That(File.Exists(path), Is.False, path);
             }
 
-            var defaultsSource = File.ReadAllText(SourcePath(
-                "src", "MyCodex.Application", "Services", "SessionDefaultsService.cs"));
-            var appConfigSource = File.ReadAllText(SourcePath(
-                "src", "MyCodex.Domain", "Entities", "AppConfigSnapshot.cs"));
-            var storeSource = File.ReadAllText(SourcePath(
-                "src", "MyCodex.Infrastructure", "Persistence", "JsonAppConfigStore.cs"));
+            var defaultsSource = RepositorySource.ReadSourceFile("SessionDefaultsService.cs");
+            var appConfigSource = RepositorySource.ReadSourceFile("AppConfigSnapshot.cs");
+            var storeSource = RepositorySource.ReadSourceFile("JsonAppConfigStore.cs");
 
             Assert.That(defaultsSource, Does.Not.Contain("BuiltInDefaultModelId"));
             Assert.That(defaultsSource, Does.Not.Contain("LegacyBuiltInDefaultModelId"));
@@ -104,14 +102,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ReasoningCapabilities_ComeOnlyFromOfficialObservationsOrExplicitPreferences()
         {
-            var defaultsSource = File.ReadAllText(SourcePath(
-                "src", "MyCodex.Application", "Services", "SessionDefaultsService.cs"));
-            var automationSource = File.ReadAllText(SourcePath(
-                "src", "MyCodex.WinForms", "Forms", "AutomationEditForm.cs"));
-            var modelSettingsSource = File.ReadAllText(SourcePath(
-                "src", "MyCodex.WinForms", "Forms", "ModelSettingsForm.cs"));
-            var mapperSource = File.ReadAllText(SourcePath(
-                "src", "MyCodex.Infrastructure", "AppServer", "AppServerAccountConfigMapper.cs"));
+            var defaultsSource = RepositorySource.ReadSourceFile("SessionDefaultsService.cs");
+            var automationSource = RepositorySource.ReadSourceFile("AutomationEditForm.cs");
+            var modelSettingsSource = RepositorySource.ReadSourceFile("ModelSettingsForm.cs");
+            var mapperSource = RepositorySource.ReadSourceFile("AppServerAccountConfigMapper.cs");
 
             Assert.That(defaultsSource, Does.Not.Contain("BuiltInDefaultReasoningEffort"));
             Assert.That(automationSource, Does.Not.Contain("BuiltInDefaultReasoningEffort"));
@@ -126,8 +120,8 @@ namespace MyCodex.Application.Tests
         {
             foreach (var path in new[]
             {
-                SourcePath("help", "UserManual.en.html"),
-                SourcePath("help", "用户手册.html")
+                RepositorySource.GetPath("help", "UserManual.en.html"),
+                RepositorySource.GetPath("help", "用户手册.html")
             })
             {
                 var source = File.ReadAllText(path);
@@ -159,14 +153,6 @@ namespace MyCodex.Application.Tests
                     Is.GreaterThanOrEqualTo(150),
                     path);
             }
-        }
-
-        private static string SourcePath(params string[] parts)
-        {
-            var root = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", ".."));
-            return Path.Combine(new[] { root }.Concat(parts).ToArray());
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -10,7 +11,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerEvents_HandlesInvalidEncryptedContentBeforeDisplayingRawError()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.AppServerEvents.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs");
             var errorBlockStart = source.IndexOf("if (AppServerEventRouting.IsErrorDisplayEvent(route))", StringComparison.Ordinal);
             var repairCall = source.IndexOf("TryHandleInvalidEncryptedContentFailure(route, e)", StringComparison.Ordinal);
             var rawErrorDisplay = source.IndexOf("AddThreadEventHistoryItem(e, GetErrorSenderText(), e.Content, ChatHistoryCategory.Error);", StringComparison.Ordinal);
@@ -23,26 +24,12 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MessageSending_RegistersInvalidEncryptedContentRetryBeforeTurnStart()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.MessageSending.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
             var registerCall = source.IndexOf("RegisterPendingInvalidEncryptedContentRetry(", StringComparison.Ordinal);
             var sendCall = source.IndexOf("var sendResult = await _sessionThreadService.SendUserMessageAsync(", StringComparison.Ordinal);
 
             Assert.That(registerCall, Is.GreaterThanOrEqualTo(0));
             Assert.That(sendCall, Is.GreaterThan(registerCall));
-        }
-
-        private static string GetMainFormPath(string fileName)
-        {
-            return Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                fileName);
         }
     }
 }

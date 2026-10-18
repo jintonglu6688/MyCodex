@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -10,7 +11,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SettingsMenu_DoesNotExposeEffectiveConfigOrRuntimeCapabilitiesEntries()
         {
-            var source = File.ReadAllText(GetSessionSettingsPath());
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
             var forbidden = new[]
             {
                 "Settings.Menu.EffectiveConfig",
@@ -34,7 +35,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ExtensionsMenu_DoesNotExposeExternalAgentConfigImportEntry()
         {
-            var source = File.ReadAllText(GetSessionSettingsPath());
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
 
             Assert.That(source, Does.Not.Contain("Settings.Menu.ExternalAgentConfigImport"));
             Assert.That(source, Does.Not.Contain("_extensionsMenuItem.MenuItems.Add(_externalAgentConfigImportMenuItem)"));
@@ -44,7 +45,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SettingsMenu_DoesNotExposeQuickFileSearchOrAppServerFilesEntry()
         {
-            var source = File.ReadAllText(GetSessionSettingsPath());
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
 
             Assert.That(source, Does.Not.Contain("Settings.Menu.AppServerQuickFileSearch"));
             Assert.That(source, Does.Not.Contain("AppServerQuickFileSearchMenuItem_Click"));
@@ -57,7 +58,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SessionDefaults_UseTargetScopedHostPreferencesAndAppServerObservations()
         {
-            var source = File.ReadAllText(GetSessionSettingsPath());
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
 
             Assert.That(source, Does.Contain("_sessionDefaultsService.Resolve("));
             Assert.That(source, Does.Contain("_availableModels,"));
@@ -69,8 +70,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeSessionDefaults_DoNotUseTargetEndpointStorage()
         {
-            var source = File.ReadAllText(GetSessionSettingsPath());
-            var mainFormSource = File.ReadAllText(GetMainFormPath());
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(source, Does.Not.Contain("JsonRuntimeSessionDefaultsStore"));
             Assert.That(source, Does.Not.Contain("UsesRuntimeEndpointStorage"));
@@ -80,17 +81,17 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ConversationPath_UsesOnlyAppServerModelObservations()
         {
-            var modelSource = File.ReadAllText(GetMainFormPath("MainForm.Models.cs"));
-            var settingsSource = File.ReadAllText(GetSessionSettingsPath());
-            var sendingSource = File.ReadAllText(GetMainFormPath("MainForm.MessageSending.cs"));
+            var modelSource = RepositorySource.ReadSourceFile("MainForm.Models.cs");
+            var settingsSource = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var sendingSource = RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
 
             Assert.That(modelSource, Does.Contain("await RefreshModelConfigurationAsync("));
-            var configSource = File.ReadAllText(GetMainFormPath("MainForm.ModelConfiguration.cs"));
+            var configSource = RepositorySource.ReadSourceFile("MainForm.ModelConfiguration.cs");
             Assert.That(configSource, Does.Contain("AppServerModelConfigurationService"));
             Assert.That(settingsSource, Does.Contain("_globalServerConfigSnapshot);"));
             Assert.That(settingsSource, Does.Contain("_sessionDefaultsService.Resolve("));
             Assert.That(sendingSource, Does.Contain("await PrepareSendSettingsAsync(targetSession, targetWorkspace)"));
-            var preparationSource = File.ReadAllText(GetMainFormPath("MainForm.SendPreparation.cs"));
+            var preparationSource = RepositorySource.ReadSourceFile("MainForm.SendPreparation.cs");
             Assert.That(preparationSource, Does.Contain("await ReadSessionModelSettingsAsync(session, workspace)"));
             Assert.That(configSource, Does.Contain("string.IsNullOrWhiteSpace(resolved.ModelId)"));
             Assert.That(configSource, Does.Contain("SessionDefaultsService.IsReasoningEffortAvailable"));
@@ -111,7 +112,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void NewConversation_AnnouncesFirstObservedModelFallback()
         {
-            var source = File.ReadAllText(GetMainFormPath("MainForm.Sessions.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.Sessions.cs");
 
             Assert.That(source, Does.Contain("UsesFirstObservedModelFallback"));
             Assert.That(source, Does.Contain("MainForm.Message.FirstObservedModelFallback.Template"));
@@ -121,8 +122,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void SettingsMenu_RemoteServiceEntryIsAlwaysAvailable()
         {
-            var sessionSettingsSource = File.ReadAllText(GetSessionSettingsPath());
-            var mainFormSource = File.ReadAllText(GetMainFormPath());
+            var sessionSettingsSource = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(sessionSettingsSource, Does.Contain("_remoteServiceMenuItem = new MenuItem(UiLocalization.Text(\"Settings.Menu.RemoteService\", \"Phone Connection(&R)...\"));"));
             Assert.That(sessionSettingsSource, Does.Contain("_settingsMenuItem.MenuItems.Add(_remoteServiceMenuItem);"));
@@ -138,8 +139,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RemoteHostRealtimeClient_WiresOfficeRemoteService()
         {
-            var source = File.ReadAllText(GetSessionSettingsPath());
-            var method = ExtractMethod(source, "private IRelayHostRealtimeClient CreateRemoteHostRealtimeClient()");
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(source, "private IRelayHostRealtimeClient CreateRemoteHostRealtimeClient()");
 
             Assert.That(method, Does.Contain("CodingRemoteService.CreateOffice("));
             Assert.That(method, Does.Contain("AppInteractionMode.Office"));
@@ -151,8 +152,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RemoteServiceManagement_RestartUsesSafeBeginInvoke()
         {
-            var source = File.ReadAllText(GetSessionSettingsPath());
-            var method = ExtractMethod(source, "private void OpenRemoteServiceManagement()");
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(source, "private void OpenRemoteServiceManagement()");
 
             Assert.That(method, Does.Contain("this.BeginInvokeSafe("));
             Assert.That(method, Does.Not.Contain("BeginInvoke(new Action("));
@@ -161,9 +162,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RemoteServiceManagement_ComposesChannelScopedPairingWorkflow()
         {
-            var source = File.ReadAllText(GetSessionSettingsPath());
-            var formSource = File.ReadAllText(GetRemoteServiceManagementFormPath());
-            var method = ExtractMethod(source, "private void OpenRemoteServiceManagement()");
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var formSource = RepositorySource.ReadSourceFile("RemoteServiceManagementForm.cs");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(source, "private void OpenRemoteServiceManagement()");
 
             Assert.That(method, Does.Contain("var relayClient = new RelayHostClient();"));
             Assert.That(method, Does.Contain("var pairingWorkflow = new SecureRemotePairingWorkflow("));
@@ -176,8 +177,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RefreshOfficialConfigAfterConnect_ChecksStartupFastModePrompt()
         {
-            var source = File.ReadAllText(GetSessionSettingsPath());
-            var method = ExtractMethod(source, "internal async Task RefreshOfficialConfigStateAfterConnectAsync");
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(source, "internal async Task RefreshOfficialConfigStateAfterConnectAsync");
 
             Assert.That(method, Does.Contain("await RefreshGlobalServerConfigAsync(false);"));
             Assert.That(method, Does.Contain("await PromptForStartupFastModeIfNeededAsync();"));
@@ -185,81 +186,6 @@ namespace MyCodex.Application.Tests
                 method.IndexOf("await RefreshGlobalServerConfigAsync(false);", StringComparison.Ordinal),
                 Is.LessThan(method.IndexOf("await PromptForStartupFastModeIfNeededAsync();", StringComparison.Ordinal)));
             Assert.That(method, Does.Not.Contain("WriteConfigBatchAsync("));
-        }
-
-        private static string GetSessionSettingsPath()
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                "MainForm.SessionSettings.cs"));
-        }
-
-        private static string GetMainFormPath()
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                "MainForm.cs"));
-        }
-
-        private static string GetMainFormPath(string fileName)
-        {
-            return Path.Combine(Path.GetDirectoryName(GetMainFormPath()), fileName);
-        }
-
-        private static string GetMainFormAuthenticationSourcePath()
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                "MainForm.AuthenticationSource.cs"));
-        }
-
-        private static string GetRemoteServiceManagementFormPath()
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                "RemoteServiceManagementForm.cs"));
-        }
-
-        private static string ExtractMethod(string source, string signature)
-        {
-            var start = source.IndexOf(signature, StringComparison.Ordinal);
-            Assert.That(start, Is.GreaterThanOrEqualTo(0), signature + " should exist.");
-            var nextMethod = source.IndexOf("\r\n        private ", start + signature.Length, StringComparison.Ordinal);
-            if (nextMethod < 0)
-            {
-                nextMethod = source.IndexOf("\n        private ", start + signature.Length, StringComparison.Ordinal);
-            }
-
-            Assert.That(nextMethod, Is.GreaterThan(start), signature + " should be followed by another method.");
-            return source.Substring(start, nextMethod - start);
         }
     }
 }

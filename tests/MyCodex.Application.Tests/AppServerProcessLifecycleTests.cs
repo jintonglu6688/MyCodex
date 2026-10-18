@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Infrastructure.AppServer;
 using NUnit.Framework;
 
@@ -96,24 +97,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void CleanupResources_TerminatesAppServerProcessTree()
         {
-            var source = File.ReadAllText(GetAppServerProcessLifecyclePath());
+            var source = RepositorySource.ReadSourceFile("AppServerProcessLifecycle.cs");
 
             Assert.That(source, Does.Contain("ProcessTreeTerminator.TryKill(process)"));
-        }
-
-        private static string GetAppServerProcessLifecyclePath()
-        {
-            var path = Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.Infrastructure",
-                "AppServer",
-                "AppServerProcessLifecycle.cs");
-            return Path.GetFullPath(path);
         }
     }
 }

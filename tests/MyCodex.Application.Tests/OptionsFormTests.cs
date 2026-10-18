@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Shared.Constants;
@@ -123,7 +124,7 @@ namespace MyCodex.Application.Tests
             using (var form = new OptionsForm(new AppConfigSnapshot(), null))
             {
                 var list = GetField<ListView>(form, "_customPermissionsListView");
-                var source = File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "OptionsForm.cs"));
+                var source = RepositorySource.ReadSourceFile("OptionsForm.cs");
 
                 Assert.That(list.CheckBoxes, Is.True);
                 Assert.That(list.View, Is.EqualTo(View.Details));
@@ -814,7 +815,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OptionsForm_OfficeCliAsyncCallbacksGuardDisposedForm()
         {
-            var source = File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "OptionsForm.cs"));
+            var source = RepositorySource.ReadSourceFile("OptionsForm.cs");
 
             Assert.That(source, Does.Contain("private bool CanUpdateOfficeCliUi()"));
             Assert.That(source, Does.Contain("private void ShowOfficeCliMessage("));
@@ -930,7 +931,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_SettingsMenuUsesOptionsEntry()
         {
-            var source = File.ReadAllText(GetPath("src", "MyCodex.WinForms", "Forms", "MainForm.SessionSettings.cs"));
+            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
 
             Assert.That(source, Does.Contain("_settingsMenuItem.MenuItems.Add(_optionsMenuItem);"));
             Assert.That(source, Does.Not.Contain("_settingsMenuItem.MenuItems.Add(_notificationSettingsMenuItem);"));
@@ -1068,17 +1069,6 @@ namespace MyCodex.Application.Tests
             var method = typeof(MainForm).GetMethod("AreCustomApprovalSettingsEqual", BindingFlags.Static | BindingFlags.NonPublic);
             Assert.That(method, Is.Not.Null);
             return (bool)method.Invoke(null, new object[] { left, right });
-        }
-
-        private static string GetPath(params string[] parts)
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                Path.Combine(parts)));
         }
     }
 }

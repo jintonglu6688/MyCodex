@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Localization;
 using NUnit.Framework;
@@ -17,7 +18,7 @@ namespace MyCodex.Application.Tests
         [TestCase("PluginListView_SelectedIndexChanged")]
         public void FocusAndFilterHandlers_DoNotInvokePluginServiceOperations(string methodName)
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, methodName);
             var forbiddenCalls = new[]
             {
@@ -43,7 +44,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void LoadDataAsync_RemoteMarketFailureOnlyUpdatesStatus_WithoutShowingMessageBox()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, "LoadDataAsync");
             var remoteErrorBlock = ExtractBlock(body, "if (remoteError != null)");
             var loadPluginsFailedIndex = body.IndexOf(
@@ -71,7 +72,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void LoadDataAsync_PublishesFinalStatusAfterLeavingBusyState()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, "LoadDataAsync");
             var clearBusyIndex = body.LastIndexOf("SetBusy(false)", StringComparison.Ordinal);
             var finalStatusIndex = body.LastIndexOf("UpdateStatusForCurrentView", StringComparison.Ordinal);
@@ -83,7 +84,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RemoteMarketOperations_UseFormCancellationToken()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var loadRemoteMarketItemsBody = ExtractMethodBody(source, "LoadRemoteMarketItemsAsync");
             var installSelectedPluginBody = ExtractMethodBody(source, "InstallSelectedPluginAsync");
 
@@ -96,7 +97,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void TabMetadata_DoesNotAssignAccessibleTabsPrefix_OrTabMnemonics()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
 
             Assert.That(
                 source.IndexOf("PluginManagementForm.Accessible.Tabs", StringComparison.Ordinal),
@@ -111,7 +112,6 @@ namespace MyCodex.Application.Tests
                 Is.GreaterThanOrEqualTo(0),
                 "市场标签页不应包含助记符。");
         }
-
 
         [Test]
         public void PluginIdentityMatching_TreatsSharedDisplayNameAsSameVisiblePlugin()
@@ -242,7 +242,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void InstalledList_DeduplicatesOfficialInstalledPluginObservation()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, "GetInstalledPluginsForView");
 
             Assert.That(
@@ -250,7 +250,6 @@ namespace MyCodex.Application.Tests
                 Is.GreaterThanOrEqualTo(0),
                 "The App Server plugin/installed result can contain duplicate visible plugins and must be deduplicated for display.");
         }
-
 
         [Test]
         public void PluginApps_WithInstallUrlRemainAvailableForConnectionSetup()
@@ -277,7 +276,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ReadPluginDetails_RefreshesAuthorizationActionAfterCachingApps()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, "ReadPluginDetailsAsync");
 
             Assert.That(body, Does.Contain("CacheAuthApps"));
@@ -290,7 +289,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OpenAuth_RefreshesOnInstallAuthorizationOnlyAfterExplicitAction()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var clickBody = ExtractMethodBody(source, "OpenAuthButton_Click");
             var openBody = ExtractMethodBody(source, "OpenSelectedPluginAuthAsync");
             var loadBody = ExtractMethodBody(source, "LoadDataAsync");
@@ -323,11 +322,10 @@ namespace MyCodex.Application.Tests
             Assert.That(InvokeCanRefreshPluginAuthorization(plugin), Is.False);
         }
 
-
         [Test]
         public void RemoteCatalogRegistration_PrecedesTargetRuntimeInstall()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var canInstallBody = ExtractMethodBody(source, "CanInstallMarketItem");
             var sourceBody = ExtractMethodBody(source, "CanInstallMarketItemSource");
             var installBody = ExtractMethodBody(source, "InstallSelectedPluginAsync");
@@ -353,9 +351,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RemoteCatalog_RequiresExplicitMarketplaceRegistrationBeforePluginInstall()
         {
-            var mainSource = File.ReadAllText(GetPluginManagementFormPath());
+            var mainSource = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var registrationSource = File.ReadAllText(Path.Combine(
-                Path.GetDirectoryName(GetPluginManagementFormPath()),
+                Path.GetDirectoryName(RepositorySource.FindSourceFile("PluginManagementForm.cs")),
                 "PluginManagementForm.MarketplaceRegistration.cs"));
             var installBody = ExtractMethodBody(mainSource, "InstallSelectedPluginAsync");
             var registerBody = ExtractMethodBody(registrationSource, "RegisterSelectedMarketplaceAsync");
@@ -411,7 +409,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RemoteAppServerMarketplaceInstall_UsesRemoteInstallRequestInsteadOfLocalMarketplacePath()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var installBody = ExtractMethodBody(source, "InstallSelectedPluginAsync");
             var helperBody = ExtractMethodBody(source, "InstallAppServerPluginAsync");
 
@@ -432,7 +430,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RemoteAppServerMarketplaceUninstallAndAuth_UseResolvedIdentityAliases()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var uninstallBody = ExtractMethodBody(source, "UninstallSelectedPluginAsync");
             var authBody = ExtractMethodBody(source, "GetCachedAuthApps");
 
@@ -446,11 +444,10 @@ namespace MyCodex.Application.Tests
                 "远程市场插件授权入口缓存应按完整 ID、基础 ID 等别名查找，避免刷新后按钮置灰。");
         }
 
-
         [Test]
         public void UninstallSelectedPluginAsync_VerifiesRefreshedStateBeforeReportingSuccess()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, "UninstallSelectedPluginAsync");
             var reloadIndex = body.IndexOf("LoadDataAsync", StringComparison.Ordinal);
             var verificationIndex = body.IndexOf("PluginUninstallWorkflow.IsStillInstalled", StringComparison.Ordinal);
@@ -464,7 +461,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void UninstallAction_UsesSharedCapabilityAndAnnouncesPersistentOutcomes()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var operationBody = ExtractMethodBody(source, "UninstallSelectedPluginAsync");
             var buttonBody = ExtractMethodBody(source, "RefreshActionButtons");
             var menuBody = ExtractMethodBody(source, "RefreshContextMenuItems");
@@ -487,11 +484,10 @@ namespace MyCodex.Application.Tests
             Assert.That(operationBody, Does.Not.Contain(".Focus()"));
         }
 
-
         [Test]
         public void MarketSourceTree_UsesRemoteCatalogBeforeAvailableItemFiltering()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, "RebuildMarketSourceTreeForScope");
 
             Assert.That(
@@ -507,7 +503,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MarketCategories_IncludeRuntimeMarketplacePluginCategories()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, "GetLoadedCategoriesForMarket");
 
             Assert.That(
@@ -519,7 +515,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MarketBrowse_UsesTreeAndExplicitEnterInsteadOfSourceCombo()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var constructorBody = ExtractConstructorBody(source, "PluginManagementForm");
             var keyDownBody = ExtractMethodBody(source, "MarketSourceTreeView_KeyDown");
 
@@ -533,7 +529,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MarketBrowse_DoesNotAnnounceTransientStatus()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, "BrowseMarketScopeAsync");
 
             Assert.That(body, Does.Not.Contain(", true)"));
@@ -542,7 +538,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MarketLayout_DoesNotSetSplitDistanceOrPanelMinSizeBeforeContainerHasWidth()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, "BuildLayout");
 
             Assert.That(body, Does.Not.Contain("SplitterDistance ="));
@@ -553,9 +549,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void LoadDataAsync_UsesCatalogAndInstalledOfficialObservations()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, "LoadDataAsync");
-            var observationSource = File.ReadAllText(GetInstalledPluginObservationServicePath());
+            var observationSource = RepositorySource.ReadSourceFile("AppServerInstalledPluginObservationService.cs");
 
             Assert.That(body, Does.Contain("ListPluginsAsync"));
             Assert.That(body, Does.Contain("LoadInstalledPluginObservationAsync"));
@@ -566,9 +562,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void LoadDataAsync_ExternalRuntimeWithoutInstalledContractRetainsReadOnlyCatalogObservation()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, "LoadInstalledPluginObservationAsync");
-            var observationSource = File.ReadAllText(GetInstalledPluginObservationServicePath());
+            var observationSource = RepositorySource.ReadSourceFile("AppServerInstalledPluginObservationService.cs");
 
             Assert.That(body, Does.Contain("AppServerInstalledPluginObservationService.LoadAsync"));
             Assert.That(observationSource, Does.Contain("SupportsInstalledPluginObservation"));
@@ -581,7 +577,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RemoteCatalogStatus_UsesLocalVersionFromPluginList()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, "GetAvailableMarketItems");
 
             Assert.That(body, Does.Contain("FindInstalledPlugin"));
@@ -592,7 +588,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MarketplaceRefreshAction_UsesOfficialApiAndAccessibleButton()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var handlerBody = ExtractMethodBody(source, "RefreshMarketplaceButton_Click");
             var operationBody = ExtractMethodBody(source, "RefreshMarketplaceAsync");
 
@@ -606,11 +602,10 @@ namespace MyCodex.Application.Tests
             Assert.That(operationBody.IndexOf("MessageBox.Show", StringComparison.Ordinal), Is.LessThan(0));
         }
 
-
         [Test]
         public void PluginManagement_RemovesUnsupportedGlobalEnablementAction()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
 
             Assert.That(source, Does.Not.Contain("_toggleEnabledButton"));
             Assert.That(source, Does.Not.Contain("_toggleEnabledMenuItem"));
@@ -618,7 +613,6 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("CanTogglePluginEnabled"));
             Assert.That(source, Does.Not.Contain("PluginEnablementUnavailable"));
         }
-
 
         [Test]
         public void PluginFolderResolution_UsesTrackedCachePathWhenProtocolPathIsMissing()
@@ -648,7 +642,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void PluginFolderAction_UsesResolvedInstalledFolderForButtonMenuAndOpen()
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var buttonBody = ExtractMethodBody(source, "RefreshActionButtons");
             var menuBody = ExtractMethodBody(source, "RefreshContextMenuItems");
             var openBody = ExtractMethodBody(source, "OpenSelectedPluginFolder");
@@ -658,12 +652,11 @@ namespace MyCodex.Application.Tests
             Assert.That(openBody, Does.Contain("ResolveSelectedPluginFolderPath"));
         }
 
-
         [TestCase("TabControl_SelectedIndexChanged")]
         [TestCase("PluginListView_SelectedIndexChanged")]
         public void FocusAndFilterHandlers_DoNotTogglePluginEnabledState(string methodName)
         {
-            var source = File.ReadAllText(GetPluginManagementFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var body = ExtractMethodBody(source, methodName);
 
             Assert.That(body, Does.Not.Contain("ToggleSelectedPluginEnabledAsync"));
@@ -673,7 +666,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void PluginDetails_ProvidesRemoteSkillPreviewWithoutProtocolMethodText()
         {
-            var source = File.ReadAllText(GetPluginDetailsFormPath());
+            var source = RepositorySource.ReadSourceFile("PluginDetailsForm.cs");
 
             Assert.That(source, Does.Contain("ReadPluginSkillAsync"));
             Assert.That(source, Does.Contain("PluginDetailsForm.Button.PreviewSkill"));
@@ -867,51 +860,6 @@ namespace MyCodex.Application.Tests
 
             Assert.Fail("未找到代码块结束：" + blockHeader);
             return string.Empty;
-        }
-
-        private static string GetPluginManagementFormPath()
-        {
-            var path = Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                "PluginManagementForm.cs");
-            return Path.GetFullPath(path);
-        }
-
-        private static string GetPluginDetailsFormPath()
-        {
-            var path = Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                "PluginDetailsForm.cs");
-            return Path.GetFullPath(path);
-        }
-
-        private static string GetInstalledPluginObservationServicePath()
-        {
-            var path = Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.Application",
-                "Services",
-                "AppServerInstalledPluginObservationService.cs");
-            return Path.GetFullPath(path);
         }
     }
 }

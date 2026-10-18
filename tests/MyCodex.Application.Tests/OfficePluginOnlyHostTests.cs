@@ -1,4 +1,5 @@
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -9,7 +10,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void Program_DoesNotRegisterOfficeInternalToolExecutorByDefault()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Program.cs");
+            var source = RepositorySource.ReadSourceFile("Program.cs");
 
             Assert.That(source, Does.Contain("new InternalToolRegistry(new IInternalToolExecutor[0])"));
             Assert.That(source, Does.Not.Contain("new OfficeDocumentInternalToolExecutor"));
@@ -19,7 +20,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_DoesNotBuildInternalToolContextForOfficeSessions()
         {
-            var source = ReadSource("src", "MyCodex.WinForms", "Forms", "MainForm.InternalTools.cs");
+            var source = RepositorySource.ReadSourceFile("MainForm.InternalTools.cs");
 
             Assert.That(source, Does.Contain("session.Mode == AppInteractionMode.Office"));
             Assert.That(source, Does.Contain("return null;"));
@@ -30,7 +31,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void OfficePromptGuidanceUsesCapabilityFirstToolSelection()
         {
-            var source = ReadSource("src", "MyCodex.Application", "Capabilities", "OfficeDeveloperInstructionComposer.cs");
+            var source = RepositorySource.ReadSourceFile("OfficeDeveloperInstructionComposer.cs");
 
             Assert.That(source, Does.Contain("OfficeCapabilityPackage.CreateDefault()"));
             Assert.That(source, Does.Contain("selected Skill, plugin, MCP tool, or CLI tool"));
@@ -42,17 +43,6 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("office/edit_document"));
             Assert.That(source, Does.Not.Contain("Prefer mycodex-office"));
             Assert.That(source, Does.Not.Contain("MyCodex internal Office document tools"));
-        }
-
-        private static string ReadSource(params string[] parts)
-        {
-            return File.ReadAllText(Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                Path.Combine(parts))));
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -9,25 +10,11 @@ namespace MyCodex.Application.Tests
         [Test]
         public void DiffFocusDoesNotLoadAndExplicitLoadDiffRemainsAvailable()
         {
-            var source = File.ReadAllText(GetSourcePath());
+            var source = RepositorySource.ReadSourceFile("GitWorkbenchForm.cs");
 
             Assert.That(source, Does.Not.Contain("_diffTextBox.Enter += async"));
             Assert.That(source, Does.Not.Contain("EnsureSelectedDiffLoadedOnDiffFocusAsync"));
             Assert.That(source, Does.Contain("_loadDiffMenuItem.Click += async (sender, e) => await LoadSelectedDiffAsync();"));
-        }
-
-        private static string GetSourcePath()
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                "GitWorkbenchForm.cs"));
         }
     }
 }

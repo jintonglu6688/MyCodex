@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Domain.Enums;
 using MyCodex.Shared.Constants;
 using MyCodex.WinForms.Forms;
@@ -808,7 +809,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void Commands_DoNotExposeInsertPath()
         {
-            var source = File.ReadAllText(GetFormSourcePath());
+            var source = RepositorySource.ReadSourceFile("AppServerFileBrowserForm.cs");
 
             Assert.That(source, Does.Not.Contain("InsertPath"));
             Assert.That(source, Does.Not.Contain("InsertSelectedPaths"));
@@ -1521,20 +1522,5 @@ namespace MyCodex.Application.Tests
                 .GetField("_activeColumnIndex", BindingFlags.Instance | BindingFlags.NonPublic)
                 .GetValue(form);
         }
-
-        private static string GetFormSourcePath()
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                "AppServerFileBrowserForm.cs"));
-        }
-
     }
 }

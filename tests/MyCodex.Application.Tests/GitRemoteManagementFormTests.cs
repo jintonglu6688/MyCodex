@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
 
@@ -35,23 +36,12 @@ namespace MyCodex.Application.Tests
         [Test]
         public void GitRemoteManagementForm_CancelsLifetimeWorkBeforeClose()
         {
-            var source = File.ReadAllText(GetWinFormsPath("Forms", "GitRemoteManagementForm.cs"));
+            var source = RepositorySource.ReadSourceFile("GitRemoteManagementForm.cs");
 
             Assert.That(source, Does.Contain("CancellationTokenSource _lifetimeCancellation"));
             Assert.That(source, Does.Contain("_lifetimeCancellation.Cancel();"));
             Assert.That(source, Does.Contain("OperationCanceledException"));
             Assert.That(source, Does.Contain("_lifetimeCancellation.Token"));
-        }
-
-        private static string GetWinFormsPath(params string[] parts)
-        {
-            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "src", "MyCodex.WinForms");
-            foreach (var part in parts)
-            {
-                path = Path.Combine(path, part);
-            }
-
-            return Path.GetFullPath(path);
         }
 
         private sealed class BlockingGitRemoteService : IGitRemoteService

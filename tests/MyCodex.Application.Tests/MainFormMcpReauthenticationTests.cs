@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
 
@@ -87,9 +88,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_RoutesAndPassesSharedMcpReauthenticationStateToManagementForm()
         {
-            var eventSource = File.ReadAllText(GetMainFormPath("MainForm.AppServerEvents.cs"));
-            var settingsSource = File.ReadAllText(GetMainFormPath("MainForm.SessionSettings.cs"));
-            var reauthenticationPath = GetMainFormPath("MainForm.McpReauthentication.cs");
+            var eventSource = RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs");
+            var settingsSource = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
+            var reauthenticationPath = RepositorySource.FindSourceFile("MainForm.McpReauthentication.cs");
             Assert.That(File.Exists(reauthenticationPath), Is.True, "Focused MCP reauthentication partial should exist.");
             var reauthenticationSource = File.ReadAllText(reauthenticationPath);
 
@@ -121,20 +122,6 @@ namespace MyCodex.Application.Tests
                 "MCP server is ready.",
                 mcpServerName: serverName,
                 itemStatus: "ready");
-        }
-
-        private static string GetMainFormPath(string fileName)
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                fileName));
         }
     }
 }

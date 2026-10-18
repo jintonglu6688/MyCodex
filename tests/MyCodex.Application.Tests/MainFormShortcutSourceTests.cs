@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -13,7 +14,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ProcessCmdKey_CtrlEOpensAppServerFileBrowser()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("keyData == (Keys.Control | Keys.E)"));
             Assert.That(source, Does.Contain("OpenAppServerFilesForCurrentWorkspaceAsync();"));
@@ -22,7 +23,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ProcessCmdKey_AltEOpensAppServerFileBrowserRoot()
         {
-            var source = GetMainFormSource().Replace("\r\n", "\n");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs").Replace("\r\n", "\n");
 
             Assert.That(source, Does.Contain("keyData == (Keys.Alt | Keys.E)"));
             Assert.That(source, Does.Contain("OpenAppServerFilesFromDefaultRootAsync();"));
@@ -32,8 +33,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ProcessCmdKey_CtrlTopRowDigitsSelectModeTabsOnlyWhenEnabled()
         {
-            var source = GetMainFormSource();
-            var method = ExtractMethod(source, "protected override bool ProcessCmdKey");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(source, "protected override bool ProcessCmdKey");
 
             Assert.That(method, Does.Contain("if (Enabled && keyData == (Keys.Control | Keys.D1))"));
             Assert.That(method, Does.Contain("SelectInteractionModeTab(AppInteractionMode.Coding);"));
@@ -48,7 +49,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ProcessCmdKey_LeavesCtrlTabNavigationToTabControl()
         {
-            var method = ExtractMethod(GetMainFormSource(), "protected override bool ProcessCmdKey");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs"), "protected override bool ProcessCmdKey");
 
             Assert.That(method, Does.Not.Contain("Keys.Control | Keys.Tab"));
             Assert.That(method, Does.Not.Contain("Keys.Control | Keys.Shift | Keys.Tab"));
@@ -58,7 +59,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ProcessCmdKey_EscapeUsesWindowCloseSettingForMainWindow()
         {
-            var method = ExtractMethod(GetMainFormSource(), "protected override bool ProcessCmdKey");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs"), "protected override bool ProcessCmdKey");
 
             Assert.That(method, Does.Contain("if (keyData == Keys.Escape)"));
             Assert.That(method, Does.Contain("if (_appConfigSnapshot == null || _appConfigSnapshot.CloseSessionWorkbenchOnEscape)"));
@@ -68,7 +69,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void FileMenu_ExposesGlobalFileBrowserEntry()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_openGlobalFileBrowserMenuItem"));
             Assert.That(source, Does.Contain("MainMenu.OpenGlobalFileBrowser"));
@@ -81,7 +82,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void FileMenu_ExposesWorkspaceAndSessionShortcuts()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_openWorkspaceFileMenuItem = new MenuItem"));
             Assert.That(source, Does.Contain("Shortcut = Shortcut.CtrlO"));
@@ -92,9 +93,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void WorkspaceAndSessionLists_ExposePrimaryKeyboardActions()
         {
-            var source = GetMainFormSource();
-            var workspaceKeyDown = ExtractMethod(source, "private async void WorkspaceList_KeyDown");
-            var sessionKeyDown = ExtractMethod(source, "private async void SessionList_KeyDown");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var workspaceKeyDown = RepositorySource.ExtractUntilNextPrivateMember(source, "private async void WorkspaceList_KeyDown");
+            var sessionKeyDown = RepositorySource.ExtractUntilNextPrivateMember(source, "private async void SessionList_KeyDown");
 
             Assert.That(workspaceKeyDown, Does.Contain("e.KeyCode == Keys.Delete"));
             Assert.That(workspaceKeyDown, Does.Contain("await DeleteSelectedWorkspaceAsync();"));
@@ -107,7 +108,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ContextMenus_ShowShortcutHintsForMirroredKeyboardActions()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             AssertMenuItemShortcut(source, "_workspaceNewMenuItem", "Shortcut.CtrlO");
             AssertMenuItemShortcut(source, "_workspaceAppServerFilesMenuItem", "Shortcut.CtrlE");
@@ -121,7 +122,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void FileMenu_DoesNotExposeLegacyRuntimeFileExplorer()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Not.Contain("_fileMenuItem.MenuItems.Add(_runtimeFileExplorerMenuItem)"));
             Assert.That(source, Does.Not.Contain("MainMenu.RuntimeFileExplorer"));
@@ -132,7 +133,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AccountMenu_DoesNotExposeStandaloneOpenRouterOrGatewayEntries()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Not.Contain("_openRouterMenuItem"));
             Assert.That(source, Does.Not.Contain("_gatewayCenterMenuItem"));
@@ -145,12 +146,12 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AccountMenu_OpensBackendAuthenticationCenterWithoutLegacySourceSwitching()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("OnAuthenticationCenterMenuItemClick"));
             Assert.That(source, Does.Contain("new AuthenticationCenterForm("));
             Assert.That(source, Does.Not.Contain("AreEquivalentAuthenticationSourceSelections"));
-            var authentication = File.ReadAllText(Path.Combine(GetFormsDirectory(), "MainForm.AuthenticationCenter.cs"));
+            var authentication = RepositorySource.ReadSourceFile("MainForm.AuthenticationCenter.cs");
             Assert.That(authentication, Does.Contain("AuthenticationCenterClient.CreateLocal("));
             Assert.That(authentication, Does.Not.Contain("RestartAppServerForRuntimeSettingsAsync("));
         }
@@ -158,11 +159,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ModelList_UsesOnlyAppServerObservations()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("new AppServerModelConfigurationService(_appServerClient)"));
-            var configurationSource = File.ReadAllText(Path.Combine(GetFormsDirectory(),
-                "..", "..", "MyCodex.Application", "Services", "AppServerModelConfigurationService.cs"));
+            var configurationSource = RepositorySource.ReadSourceFile("AppServerModelConfigurationService.cs");
             Assert.That(configurationSource, Does.Contain("await _client.ListModelsAsync()"));
             Assert.That(source, Does.Not.Contain("GetCurrentBuiltInSourceModelIds()"));
             Assert.That(source, Does.Not.Contain("AddBuiltInSourceModels"));
@@ -173,8 +173,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerConnection_DoesNotPrepareLegacyModelRelayForAnyTarget()
         {
-            var source = GetMainFormSource();
-            var method = ExtractMethod(source, "private async Task<bool> EnsureAppServerConnectedAsync()");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task<bool> EnsureAppServerConnectedAsync()");
 
             var gatewayReadyIndex = method.IndexOf("EnsureActiveGatewayRuntimeReadyForActionAsync", StringComparison.Ordinal);
 
@@ -184,8 +184,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerAvailableForAction_DoesNotRefreshLegacyAuthenticationSourceForAnyTarget()
         {
-            var source = GetMainFormSource();
-            var method = ExtractMethod(source, "private async Task<bool> EnsureAppServerAvailableForActionAsync(string actionName)");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task<bool> EnsureAppServerAvailableForActionAsync(string actionName)");
 
             var refreshIndex = method.IndexOf("await RefreshCurrentAuthenticationSourceSelectionAsync();", StringComparison.Ordinal);
 
@@ -195,9 +195,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void TargetReloadMenu_UsesTheExplicitAppServerRestartPath()
         {
-            var source = GetMainFormSource();
-            var handler = ExtractMethod(source, "private async void OnTargetReloadMenuItemClick");
-            var fileMenuPopup = ExtractMethod(source, "private void FileMenuItem_Popup");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var handler = RepositorySource.ExtractUntilNextPrivateMember(source, "private async void OnTargetReloadMenuItemClick");
+            var fileMenuPopup = RepositorySource.ExtractUntilNextPrivateMember(source, "private void FileMenuItem_Popup");
 
             Assert.That(source, Does.Contain("_targetReloadMenuItem"));
             Assert.That(source, Does.Contain("_targetReloadMenuItem.Click += OnTargetReloadMenuItemClick"));
@@ -213,8 +213,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AutomaticReconnect_DoesNotUseTheExplicitTargetReloadCommand()
         {
-            var source = GetMainFormSource();
-            var reconnect = ExtractMethod(source, "private async Task<bool> TryRecoverAppServerConnectionAsync(");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var reconnect = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task<bool> TryRecoverAppServerConnectionAsync(");
 
             Assert.That(reconnect, Does.Not.Contain("RestartAppServerForRuntimeSettingsAsync"));
             Assert.That(reconnect, Does.Not.Contain("_appServerClient.RestartAsync"));
@@ -233,8 +233,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeProfileReload_LoadsTargetRuntimeStateWithoutAuthenticationSourceSelection()
         {
-            var source = GetMainFormSource();
-            var method = ExtractMethod(source, "private async Task ReloadLocalStateForCurrentRuntimeProfileAsync(bool saveCurrentComposeState = true)");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task ReloadLocalStateForCurrentRuntimeProfileAsync(bool saveCurrentComposeState = true)");
 
             var reloadIndex = method.IndexOf("ReloadLocalStateForCurrentRuntimeProfile(saveCurrentComposeState);", StringComparison.Ordinal);
 
@@ -245,8 +245,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeSettingsSwitch_SavesOldRuntimeDraftBeforeChangingRuntimeAndReloadsWithoutResaving()
         {
-            var source = GetMainFormSource();
-            var method = ExtractMethod(source, "private async Task OpenAppServerRuntimeSettingsAsync()");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task OpenAppServerRuntimeSettingsAsync()");
 
             var saveIndex = method.IndexOf("SaveCurrentComposeState();", StringComparison.Ordinal);
             var persistIndex = method.IndexOf("PersistState();", StringComparison.Ordinal);
@@ -261,10 +261,10 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeTargetChange_IsMandatoryImmediateStopAndReconnectEvenWhenDisconnected()
         {
-            var source = GetMainFormSource();
-            var open = ExtractMethod(source, "private async Task OpenAppServerRuntimeSettingsAsync()");
-            var hardSwitch = ExtractMethod(source, "private async Task SwitchRuntimeTargetAfterSaveAsync(");
-            var stopAndRestart = ExtractMethod(source, "private async Task StopAndRestartRuntimeAfterSaveAsync(");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var open = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task OpenAppServerRuntimeSettingsAsync()");
+            var hardSwitch = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task SwitchRuntimeTargetAfterSaveAsync(");
+            var stopAndRestart = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task StopAndRestartRuntimeAfterSaveAsync(");
 
             Assert.That(open, Does.Contain("_runtimeTargetIdentityService.ResolveIdentity(_appConfigSnapshot)"));
             Assert.That(open, Does.Contain("_runtimeTargetIdentityService.ResolveIdentity(nextRuntimeSnapshot)"));
@@ -281,9 +281,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeTargetChange_SavesNewConfigThenUsesTargetDefaultMode()
         {
-            var source = GetMainFormSource();
-            var open = ExtractMethod(source, "private async Task OpenAppServerRuntimeSettingsAsync()");
-            var restart = ExtractMethod(source, "private async Task RestartAppServerForRuntimeSettingsAsync(");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var open = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task OpenAppServerRuntimeSettingsAsync()");
+            var restart = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task RestartAppServerForRuntimeSettingsAsync(");
             var assignIndex = open.IndexOf("_appConfigSnapshot.CodexRuntimeSource = form.SelectedRuntimeSource;", StringComparison.Ordinal);
             var saveIndex = open.IndexOf("SaveAppConfig()", assignIndex, StringComparison.Ordinal);
             var switchIndex = open.IndexOf("SwitchRuntimeTargetAfterSaveAsync(", saveIndex, StringComparison.Ordinal);
@@ -303,9 +303,9 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeTargetSwitchUsesTargetDefaultWhileSameTargetRestartPreservesSelectedMode()
         {
-            var source = GetMainFormSource();
-            var targetSwitch = ExtractMethod(source, "private async Task SwitchRuntimeTargetAfterSaveAsync(");
-            var sameTargetRestart = ExtractMethod(source, "private async Task RestartCurrentRuntimeAfterSaveAsync(");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var targetSwitch = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task SwitchRuntimeTargetAfterSaveAsync(");
+            var sameTargetRestart = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task RestartCurrentRuntimeAfterSaveAsync(");
 
             Assert.That(targetSwitch, Does.Contain("true,"));
             Assert.That(sameTargetRestart, Does.Contain("false,"));
@@ -314,9 +314,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeTargetChange_ConfigSaveFailureRestoresOldSnapshotWithoutStoppingActivity()
         {
-            var open = ExtractMethod(
-                GetMainFormSource(),
-                "private async Task OpenAppServerRuntimeSettingsAsync()");
+            var open = RepositorySource.ExtractUntilNextPrivateMember(RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs"), "private async Task OpenAppServerRuntimeSettingsAsync()");
             var saveFailureIndex = open.IndexOf("if (!SaveAppConfig())", StringComparison.Ordinal);
             var restoreIndex = open.IndexOf("_appConfigSnapshot.CodexRuntimeSource = previousSource;", saveFailureIndex, StringComparison.Ordinal);
             var returnIndex = open.IndexOf("return;", restoreIndex, StringComparison.Ordinal);
@@ -333,9 +331,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeTargetRestartFailure_RemainsOnNewTargetTabDisconnectedWithoutFallback()
         {
-            var restart = ExtractMethod(
-                GetMainFormSource(),
-                "private async Task RestartAppServerForRuntimeSettingsAsync(");
+            var restart = RepositorySource.ExtractUntilNextPrivateMember(RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs"), "private async Task RestartAppServerForRuntimeSettingsAsync(");
             var catchIndex = restart.IndexOf("catch (Exception ex)", StringComparison.Ordinal);
             var failure = restart.Substring(catchIndex);
 
@@ -351,7 +347,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RateLimitAutoReset_UsesBackgroundTimerAndSelectedCredit()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_rateLimitAutoResetTimer = new Timer"));
             Assert.That(source, Does.Contain("Interval = RateLimitAutoResetCheckIntervalMilliseconds"));
@@ -367,8 +363,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RuntimeSettingsRestart_LoadsTargetRuntimeStateBeforeRuntimeMetadata()
         {
-            var source = GetMainFormSource();
-            var method = ExtractMethod(source, "private async Task RestartAppServerForRuntimeSettingsAsync(");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task RestartAppServerForRuntimeSettingsAsync(");
 
             var reloadIndex = method.IndexOf("await ReloadLocalStateForCurrentRuntimeProfileAsync(true);", StringComparison.Ordinal);
             var authenticationIndex = method.IndexOf("await RefreshAuthenticationStateAsync(false, false);", StringComparison.Ordinal);
@@ -384,8 +380,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ApprovalDialog_SendsDecisionWithoutConnectionReadinessProbe()
         {
-            var source = GetMainFormSource();
-            var method = ExtractMethod(source, "private async Task ShowApprovalRequestDialogAsync(AppServerEventArgs approvalRequest)");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task ShowApprovalRequestDialogAsync(AppServerEventArgs approvalRequest)");
 
             var resolveIndex = method.IndexOf("ResolveApprovalRequestAsync", StringComparison.Ordinal);
             var gatewayReadyIndex = method.IndexOf("EnsureActiveGatewayRuntimeReadyForActionAsync", StringComparison.Ordinal);
@@ -399,8 +395,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ApprovalDialog_NotifiesOnceBeforeWaitingForItsTargetForeground()
         {
-            var source = GetMainFormSource();
-            var eventMethod = ExtractMethod(source, "private void AppServerClientOnEventReceived");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var eventMethod = RepositorySource.ExtractUntilNextPrivateMember(source, "private void AppServerClientOnEventReceived");
             var approvalCaseIndex = eventMethod.IndexOf("case AppServerEventRoute.ApprovalRequested:", StringComparison.Ordinal);
             var resolvedCaseIndex = eventMethod.IndexOf("case AppServerEventRoute.ApprovalResolved:", approvalCaseIndex, StringComparison.Ordinal);
             Assert.That(approvalCaseIndex, Is.GreaterThanOrEqualTo(0));
@@ -410,14 +406,14 @@ namespace MyCodex.Application.Tests
             Assert.That(approvalCase, Does.Contain("QueueApprovalRequestDialog(e);"));
             Assert.That(approvalCase, Does.Not.Contain("HandleApprovalRequestedNotification(e);"));
 
-            var showMethod = ExtractMethod(source, "private async Task ShowApprovalRequestDialogAsync(AppServerEventArgs approvalRequest)");
+            var showMethod = RepositorySource.ExtractUntilNextPrivateMember(source, "private async Task ShowApprovalRequestDialogAsync(AppServerEventArgs approvalRequest)");
             var notifyIndex = showMethod.IndexOf("HandleApprovalRequestedNotification(approvalRequest);", StringComparison.Ordinal);
             var waitIndex = showMethod.IndexOf("await WaitToPresentTargetInteractionAsync(approvalRequest.RequestId)", StringComparison.Ordinal);
             var showDialogIndex = showMethod.IndexOf("form.ShowDialog(this);", StringComparison.Ordinal);
             Assert.That(notifyIndex, Is.GreaterThanOrEqualTo(0));
             Assert.That(waitIndex, Is.GreaterThan(notifyIndex));
             Assert.That(showDialogIndex, Is.GreaterThan(waitIndex));
-            var presentation = File.ReadAllText(Path.Combine(GetFormsDirectory(), "MainForm.InteractionPresentation.cs"));
+            var presentation = RepositorySource.ReadSourceFile("MainForm.InteractionPresentation.cs");
             Assert.That(presentation, Does.Contain("MainWindowHotKeyNativeMethods.GetForegroundWindow()"));
             Assert.That(presentation, Does.Contain("_targetWindowGroup.GetForms().Contains(foreground)"));
             Assert.That(presentation, Does.Contain("FindVisibleModalDialog(this)"));
@@ -427,8 +423,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerFileBrowserClipboardPaste_UsesCustomMarkerWithoutClipboardText()
         {
-            var source = GetMainFormSource() + Environment.NewLine +
-                         File.ReadAllText(Path.Combine(GetFormsDirectory(), "AppServerFileWindowManager.cs"));
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs") + Environment.NewLine +
+                         RepositorySource.ReadSourceFile("AppServerFileWindowManager.cs");
 
             Assert.That(source, Does.Contain("GetDataPresent(AppServerFileBrowserForm.ClipboardFormat)"));
             Assert.That(source, Does.Not.Contain("Clipboard.ContainsText(TextDataFormat.UnicodeText)"));
@@ -439,7 +435,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AttachmentMenuKeyboardOpen_RestoresFocusWhenMenuCloses()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("ShowPopupMenuBelowControl(_attachmentMenu, _attachmentButton, true)"));
             Assert.That(source, Does.Contain("menu.Collapse += RestoreFocusOnCollapse"));
@@ -449,7 +445,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AttachmentMenuKeyboardOpen_SuppressesSyntheticButtonClick()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_suppressNextAttachmentButtonClick = true;"));
             Assert.That(source, Does.Contain("if (_suppressNextAttachmentButtonClick)"));
@@ -459,7 +455,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void MainForm_AccountUsesAltC_UserCenterUsesAltU_AndAttachmentUsesCtrlShiftA()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_accountMenuItem = new MenuItem(UiLocalization.Text(\"MainMenu.Account\", \"A&ccount\"))"));
             Assert.That(source, Does.Not.Contain("keyData == (Keys.Alt | Keys.A)"));
@@ -472,7 +468,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void HelpMenu_ExposesLogDirectoryEntry()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_openLogDirectoryMenuItem"));
             Assert.That(source, Does.Contain("MainMenu.OpenLogDirectory"));
@@ -485,7 +481,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void HelpMenu_ExposesOfficialWebsiteEntry()
         {
-            var source = GetMainFormSource();
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Contain("_officialWebsiteMenuItem"));
             Assert.That(source, Does.Contain("MainMenu.OfficialWebsite"));
@@ -497,56 +493,13 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ChatHistoryList_UsesLeftRightForTurnAnchorNavigation()
         {
-            var source = GetMainFormSource();
-            var method = ExtractMethod(source, "private void ChatHistoryListBox_AnchorNavigationRequested");
+            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
+            var method = RepositorySource.ExtractUntilNextPrivateMember(source, "private void ChatHistoryListBox_AnchorNavigationRequested");
 
             Assert.That(source, Does.Contain("_chatHistoryListBox.AnchorNavigationRequested += ChatHistoryListBox_AnchorNavigationRequested"));
             Assert.That(method, Does.Contain("TryMoveChatHistorySelectionByTurn(e.Direction)"));
             Assert.That(method, Does.Not.Contain("e.Control && e.KeyCode == Keys.Up"));
             Assert.That(method, Does.Not.Contain("e.Control && e.KeyCode == Keys.Down"));
-        }
-
-        private static string GetMainFormSource()
-        {
-            var formsDirectory = GetFormsDirectory();
-            var files = Directory
-                .GetFiles(formsDirectory, "MainForm*.cs", SearchOption.TopDirectoryOnly)
-                .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-            var builder = new StringBuilder();
-            for (var i = 0; i < files.Length; i++)
-            {
-                builder.AppendLine(File.ReadAllText(files[i]));
-            }
-
-            return builder.ToString();
-        }
-
-        private static string GetFormsDirectory()
-        {
-            return Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms"));
-        }
-
-        private static string ExtractMethod(string source, string signature)
-        {
-            var start = source.IndexOf(signature, StringComparison.Ordinal);
-            Assert.That(start, Is.GreaterThanOrEqualTo(0), signature + " should exist.");
-            var nextMethod = source.IndexOf("\r\n        private ", start + signature.Length, StringComparison.Ordinal);
-            if (nextMethod < 0)
-            {
-                nextMethod = source.IndexOf("\n        private ", start + signature.Length, StringComparison.Ordinal);
-            }
-
-            Assert.That(nextMethod, Is.GreaterThan(start), signature + " should be followed by another method.");
-            return source.Substring(start, nextMethod - start);
         }
 
         private static void AssertMenuItemShortcut(string source, string fieldName, string shortcut)

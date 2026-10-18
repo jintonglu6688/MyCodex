@@ -1,4 +1,5 @@
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -9,17 +10,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void CommandCompletedStatus_UsesTheActivityCommandCompactionRules()
         {
-            var sourcePath = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "MyCodex.WinForms",
-                "Forms",
-                "MainForm.AppServerEvents.cs"));
-            var source = File.ReadAllText(sourcePath);
+            var source = RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs");
 
             Assert.That(source, Does.Contain("route == AppServerEventRoute.CommandCompleted"));
             Assert.That(source, Does.Contain(

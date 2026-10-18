@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using MyCodex.Application.Tests.SourceGuards;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -10,7 +11,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void RenderCodeBlock_AppendsCodeTextLineByLineForTextNavigation()
         {
-            var source = File.ReadAllText(GetSourcePath());
+            var source = RepositorySource.ReadSourceFile("StructuredMessageViewerForm.cs");
             var renderBlock = ExtractBlock(
                 source,
                 "private void RenderCodeBlock(int index, string language, string codeText)",
@@ -18,27 +19,6 @@ namespace MyCodex.Application.Tests
 
             Assert.That(renderBlock, Does.Contain("AppendCodeTextLines(codeText, _codeFont, UiTheme.TextColor, GetCodeBlockBackColor());"));
             Assert.That(renderBlock, Does.Not.Contain("AppendText(codeText, _codeFont, UiTheme.TextColor, GetCodeBlockBackColor());"));
-        }
-
-        private static string GetSourcePath()
-        {
-            return Path.Combine(GetRepositoryRoot(), "src", "MyCodex.WinForms", "Forms", "StructuredMessageViewerForm.cs");
-        }
-
-        private static string GetRepositoryRoot()
-        {
-            var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            while (directory != null && !File.Exists(Path.Combine(directory.FullName, "MyCodex.sln")))
-            {
-                directory = directory.Parent;
-            }
-
-            if (directory == null)
-            {
-                throw new DirectoryNotFoundException("Could not locate repository root.");
-            }
-
-            return directory.FullName;
         }
 
         private static string ExtractBlock(string source, string startMarker, string endMarker)
