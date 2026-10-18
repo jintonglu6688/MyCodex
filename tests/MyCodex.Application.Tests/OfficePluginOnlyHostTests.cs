@@ -41,9 +41,6 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Not.Contain("local Office automation"));
             Assert.That(source, Does.Not.Contain("Office automation surface"));
             Assert.That(source, Does.Not.Contain("legacy MyCodex internal slash-style Office tool"));
-            Assert.That(source, Does.Not.Contain("office/create_document"));
-            Assert.That(source, Does.Not.Contain("office/read_document"));
-            Assert.That(source, Does.Not.Contain("office/edit_document"));
             Assert.That(source, Does.Not.Contain("Prefer mycodex-office"));
             Assert.That(source, Does.Not.Contain("MyCodex internal Office document tools"));
         }

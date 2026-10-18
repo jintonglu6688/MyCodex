@@ -12,14 +12,8 @@ namespace MyCodex.Application.Tests
         public void SkillsManagementForm_DoesNotExposeAStandaloneSkillMarketplace()
         {
             var source = RepositorySource.ReadSourceFile("SkillsManagementForm.cs");
-            var programSource = RepositorySource.ReadSourceFile("Program.cs");
 
-            Assert.That(source, Does.Not.Contain("SkillMarket"));
             Assert.That(source, Does.Not.Contain("_marketTabPage"));
-            Assert.That(source, Does.Not.Contain("InstallSelectedMarketSkillAsync"));
-            Assert.That(programSource, Does.Not.Contain("SkillMarketCatalogClient"));
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.Application", "Interfaces", "ISkillMarketCatalogClient.cs")), Is.False);
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "SkillMarketListComposer.cs")), Is.False);
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -40,7 +34,6 @@ namespace MyCodex.Application.Tests
 
             Assert.That(source, Does.Contain("OfficialSkillFileOperations"));
             Assert.That(source, Does.Contain("IAppServerFileSystemClient"));
-            Assert.That(source, Does.Not.Contain("RemoteMacSkillFileEditor"));
             Assert.That(source, Does.Not.Contain("Process.Start("));
             Assert.That(source, Does.Contain("source.Kind != SkillSourceKind.User && source.Kind != SkillSourceKind.Workspace"));
 
@@ -66,9 +59,6 @@ namespace MyCodex.Application.Tests
         {
             var source = RepositorySource.ReadSourceFile("SkillsManagementForm.cs");
 
-            Assert.That(source, Does.Not.Contain("SkillsManagementForm.Header"));
-            Assert.That(source, Does.Not.Contain("SkillsManagementForm.Tip"));
-            Assert.That(source, Does.Not.Contain("SkillsManagementForm.Accessible.Tabs"));
             Assert.That(source, Does.Not.Contain("AccessibleName = UiLocalization.Text(\"SkillsManagementForm.Label.Skills\", \"Skills\")"));
         }
 
@@ -82,8 +72,6 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("CanUninstallSkill"));
             Assert.That(source, Does.Contain("ResolveSkillSource(skill).Kind == SkillSourceKind.User"));
             Assert.That(source, Does.Contain("_skillFileOperations.DeleteAsync(skill)"));
-            Assert.That(source, Does.Not.Contain("SkillUserUninstallService"));
-            Assert.That(source, Does.Not.Contain("RemoveInstalledSkillBySourcePath"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]

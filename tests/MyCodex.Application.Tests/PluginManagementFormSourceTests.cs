@@ -365,7 +365,6 @@ namespace MyCodex.Application.Tests
             var registrationSource = File.ReadAllText(Path.Combine(
                 Path.GetDirectoryName(RepositorySource.FindSourceFile("PluginManagementForm.cs")),
                 "PluginManagementForm.MarketplaceRegistration.cs"));
-            var installBody = ExtractMethodBody(mainSource, "InstallSelectedPluginAsync");
             var registerBody = ExtractMethodBody(registrationSource, "RegisterSelectedMarketplaceAsync");
 
             Assert.That(mainSource, Does.Contain("_registerMarketplaceButton"));
@@ -376,8 +375,6 @@ namespace MyCodex.Application.Tests
             Assert.That(registrationSource, Does.Contain("MyCodexOfficialMarketplaceBootstrap.RegisterPinnedMarketplaceAsync"));
             Assert.That(registrationSource, Does.Contain("MyCodexOfficialMarketplaceBootstrap.MarketplaceId"));
             Assert.That(registrationSource, Does.Contain("MyCodexOfficialMarketplaceBootstrap.MarketplaceSource"));
-            Assert.That(installBody, Does.Not.Contain("InstallRemoteCatalogPluginAsync"));
-            Assert.That(mainSource + registrationSource, Does.Not.Contain("RegisterAndFindPluginAsync"));
         }
 
         [Test]
@@ -625,19 +622,6 @@ namespace MyCodex.Application.Tests
             Assert.That(operationBody.IndexOf("MessageBox.Show", StringComparison.Ordinal), Is.LessThan(0));
         }
 
-        [Category(SourceGuardCategory.Retired)]
-        [Test]
-        public void PluginManagement_RemovesUnsupportedGlobalEnablementAction()
-        {
-            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
-
-            Assert.That(source, Does.Not.Contain("_toggleEnabledButton"));
-            Assert.That(source, Does.Not.Contain("_toggleEnabledMenuItem"));
-            Assert.That(source, Does.Not.Contain("ToggleSelectedPluginEnabledAsync"));
-            Assert.That(source, Does.Not.Contain("CanTogglePluginEnabled"));
-            Assert.That(source, Does.Not.Contain("PluginEnablementUnavailable"));
-        }
-
         [Test]
         public void PluginFolderResolution_UsesTrackedCachePathWhenProtocolPathIsMissing()
         {
@@ -675,18 +659,6 @@ namespace MyCodex.Application.Tests
             Assert.That(buttonBody, Does.Contain("ResolveSelectedPluginFolderPath"));
             Assert.That(menuBody, Does.Contain("ResolveSelectedPluginFolderPath"));
             Assert.That(openBody, Does.Contain("ResolveSelectedPluginFolderPath"));
-        }
-
-        [Category(SourceGuardCategory.SourceBehavior)]
-        [TestCase("TabControl_SelectedIndexChanged")]
-        [TestCase("PluginListView_SelectedIndexChanged")]
-        public void FocusAndFilterHandlers_DoNotTogglePluginEnabledState(string methodName)
-        {
-            var source = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
-            var body = ExtractMethodBody(source, methodName);
-
-            Assert.That(body, Does.Not.Contain("ToggleSelectedPluginEnabledAsync"));
-            Assert.That(body, Does.Not.Contain("SetPluginEnabledAsync"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]

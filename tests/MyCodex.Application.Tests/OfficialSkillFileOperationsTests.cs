@@ -56,16 +56,6 @@ namespace MyCodex.Application.Tests
             Assert.That(reason, Does.Contain("current App Server observation"));
         }
 
-        [Category(SourceGuardCategory.Retired)]
-        [Test]
-        public void SkillList_DoesNotSynchronizeOrRepairPrivateSkillMirrors()
-        {
-            var source = RepositorySource.ReadSourceFile("AppServerClientOperations.cs");
-
-            Assert.That(source, Does.Not.Contain("_trySynchronizeCurrentAuthenticationSharedSkillsAsync"));
-            Assert.That(source, Does.Not.Contain("_tryRepairLocalPluginMarketManifests"));
-        }
-
         private sealed class FakeFileSystemClient : IAppServerFileSystemClient
         {
             public readonly List<string> CreatedDirectories = new List<string>();

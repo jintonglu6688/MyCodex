@@ -15,11 +15,8 @@ namespace MyCodex.Application.Tests
         public void RemovedTurnChangesViewer_LeavesGitWorkbenchAndEncodingChecksAvailable()
         {
             var source = RepositorySource.ReadSourceFile("MainForm.DiffWorkbench.cs");
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.WinForms", "Forms", "DiffWorkbenchForm.cs")), Is.False);
-            Assert.That(source, Does.Not.Contain("_turnDiffSnapshots"));
             Assert.That(source, Does.Contain("new GitWorkbenchForm("));
             Assert.That(source, Does.Contain("CheckEncodingSafetyForTurn(threadId, turnId, snapshot)"));
-            Assert.That(RepositorySource.ReadSourceFile("MainForm.Layout.cs"), Does.Not.Contain("_viewSelectedTurnChangesMenuItem"));
             Assert.That(RepositorySource.ReadSourceFile("MainForm.AppServerEvents.cs"),
                 Does.Contain("CheckTurnEncodingSafety(e.ThreadId, state.TurnId, state.DiffText, state.ChangedFiles)"));
         }
@@ -542,9 +539,6 @@ namespace MyCodex.Application.Tests
             Assert.That(helperSource, Does.Contain("internal static class MainFormAuthenticationStatePlanner"));
             Assert.That(sessionSettingsSource, Does.Contain("MainFormAuthenticationStatePlanner."));
             Assert.That(helperSource, Does.Not.Contain("AuthenticationCenterForm"));
-            Assert.That(helperSource, Does.Not.Contain("AuthenticationProfileStore"));
-            Assert.That(helperSource, Does.Not.Contain("OpenRouterAccountStore"));
-            Assert.That(helperSource, Does.Not.Contain("RuntimeSessionDefaultsStore"));
         }
 
         [Category(SourceGuardCategory.Placement)]
@@ -635,7 +629,6 @@ namespace MyCodex.Application.Tests
             Assert.That(block, Does.Contain("EnsureThreadTurnSummaryState(e.ThreadId)"));
             Assert.That(recoverySource, Does.Contain("HandleTurnTerminal(e.ThreadId, e.TurnId, completion)"));
             Assert.That(block, Does.Contain("_automationsForm.RefreshAutomationState();"));
-            Assert.That(block, Does.Not.Contain("HandleAutomationRunCompletedNotification"));
             Assert.That(
                 block.IndexOf("UpdateTurnProgressSummaryState(e);", System.StringComparison.Ordinal),
                 Is.LessThan(block.IndexOf("AutomationRunCompletionBuilder.Build(", System.StringComparison.Ordinal)));
@@ -931,8 +924,6 @@ namespace MyCodex.Application.Tests
             Assert.That(combinedSource, Does.Contain("private readonly Label _activityCurrentStatusLabel;"));
             Assert.That(combinedSource, Does.Contain("CreateActivityBrowseControl()"));
             Assert.That(combinedSource, Does.Contain("CreateActivityCurrentStatusLabel()"));
-            Assert.That(combinedSource, Does.Not.Contain("_activityTextBox"));
-            Assert.That(combinedSource, Does.Not.Contain("_activityListBox"));
             Assert.That(renderBlock, Does.Not.Contain("SelectionStart ="));
             Assert.That(renderBlock, Does.Not.Contain("ScrollToCaret()"));
             Assert.That(renderBlock, Does.Not.Contain("deferWhileFocused"));
@@ -957,8 +948,6 @@ namespace MyCodex.Application.Tests
             Assert.That(activityControlSource, Does.Contain("public override int GetChildCount()"));
             Assert.That(activityControlSource, Does.Not.Contain("AccessibilityNotifyClients(AccessibleEvents.Selection"));
             Assert.That(activityControlSource, Does.Not.Contain("AccessibilityNotifyClients(AccessibleEvents.Focus"));
-            Assert.That(activityControlSource, Does.Not.Contain("ActivityVirtualBrowseItemAccessibleObject"));
-            Assert.That(combinedSource, Does.Not.Contain("ActivityRecordReadRequested"));
             Assert.That(combinedSource, Does.Not.Contain("SpeakLine(e.Text)"));
         }
 
@@ -974,7 +963,6 @@ namespace MyCodex.Application.Tests
                 "private void ToggleAutomaticChatReading()");
 
             Assert.That(mainFormSource, Does.Contain("private ManualBrowseContext _mainManualBrowseContext;"));
-            Assert.That(mainFormSource, Does.Not.Contain("_manualReadChatHistoryIndex"));
             Assert.That(screenReaderSource, Does.Contain("_mainManualBrowseContext.HandleHotkey(keyData)"));
             Assert.That(hotkeyMethod, Does.Not.Contain("ManualReadTarget.Activity"));
         }
@@ -1052,20 +1040,6 @@ namespace MyCodex.Application.Tests
             Assert.That(contextMenuBlock, Does.Not.Contain("_clearLogMenuItem"));
         }
 
-        [Category(SourceGuardCategory.Retired)]
-        [Test]
-        public void ChatHistory_ContextMenuDoesNotExposeMessageFilters()
-        {
-            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
-            var layoutSource = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
-
-            Assert.That(mainFormSource, Does.Not.Contain("_chatFiltersMenuItem"));
-            Assert.That(mainFormSource, Does.Not.Contain("ChatFilterMenuItem_Click"));
-            Assert.That(mainFormSource, Does.Not.Contain("CreateChatFilterMenuItem"));
-            Assert.That(layoutSource, Does.Not.Contain("MainForm.Context.MessageFilter"));
-            Assert.That(layoutSource, Does.Not.Contain("MainForm.Context.Filter."));
-        }
-
         [Category(SourceGuardCategory.Placement)]
         [Test]
         public void MainForm_CommandLineWorkspaceOpensAndCreatesSessionWhenNoneExists()
@@ -1098,7 +1072,6 @@ namespace MyCodex.Application.Tests
             Assert.That(operationSource, Does.Contain("sourceSession.ModelId, sourceSession.ReasoningEffort"));
             Assert.That(forkBlock, Does.Not.Contain("sourceSession.ModelId"));
             Assert.That(forkBlock, Does.Not.Contain("sourceSession.ReasoningEffort"));
-
         }
 
         [Category(SourceGuardCategory.Placement)]

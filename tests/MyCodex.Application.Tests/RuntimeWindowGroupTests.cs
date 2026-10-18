@@ -123,7 +123,6 @@ namespace MyCodex.Application.Tests
             var mainFormSource = RepositorySource.ReadSourceFile("MainForm.Automation.cs");
 
             Assert.That(modesSource, Does.Contain("private bool SelectInteractionModeTab(AppInteractionMode nextMode)"));
-            Assert.That(modesSource, Does.Not.Contain("PrepareRuntimeWindowsForTransition"));
             Assert.That(mainFormSource, Does.Contain("if (!SelectInteractionModeTab(interactionMode))"));
         }
 

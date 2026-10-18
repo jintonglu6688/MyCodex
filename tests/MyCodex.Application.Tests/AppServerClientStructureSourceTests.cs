@@ -194,7 +194,6 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("AppServerEventDiagnostics.TraceNotification("));
             Assert.That(source, Does.Contain("AppServerEventDiagnostics.TraceMappedEvent("));
             Assert.That(operationsSource, Does.Contain("AppServerEventDiagnostics.TraceConfigWrite("));
-            Assert.That(startupCoordinatorSource, Does.Not.Contain("AuthenticationMaterialization"));
             Assert.That(startupCoordinatorSource, Does.Not.Contain("Provider"));
             Assert.That(source, Does.Not.Contain("private static void TraceAppServerNotificationDiagnostic("));
             Assert.That(source, Does.Not.Contain("private static bool ShouldTraceAppServerNotification("));
@@ -208,9 +207,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void AppServerClient_DoesNotMaterializeRuntimeConfig()
         {
-            var source = RepositorySource.ReadSourceFile("AppServerClient.cs");
             var startupCoordinatorSource = RepositorySource.ReadSourceFile("AppServerRuntimeStartupCoordinator.cs");
-            Assert.That(source, Does.Not.Contain("AppServerRuntimeConfigMaterializer"));
             Assert.That(startupCoordinatorSource, Does.Not.Contain("Materialization"));
             Assert.That(startupCoordinatorSource, Does.Not.Contain("Provider"));
         }
@@ -227,9 +224,6 @@ namespace MyCodex.Application.Tests
             Assert.That(coordinatorSource, Does.Contain("EnsureWslNetworkReadyAsync("));
             Assert.That(coordinatorSource, Does.Contain("public AppServerRuntimeProcessStartResult StartProcess("));
             Assert.That(coordinatorSource, Does.Contain("public static string BuildRuntimeConnectionKey("));
-            Assert.That(coordinatorSource, Does.Not.Contain("AuthenticationEnvironment"));
-            Assert.That(coordinatorSource, Does.Not.Contain("SourceMaterialization"));
-            Assert.That(coordinatorSource, Does.Not.Contain("AuthenticationSharedSkills"));
             Assert.That(clientSource, Does.Contain("return AppServerRuntimeStartupCoordinator.BuildRuntimeConnectionKey("));
             Assert.That(clientSource, Does.Contain("_runtimeStartupCoordinator.EnsureWslNetworkReadyAsync("));
             Assert.That(clientSource, Does.Contain("_runtimeStartupCoordinator.StartProcess("));
@@ -258,18 +252,12 @@ namespace MyCodex.Application.Tests
             Assert.That(launchInputEnd, Is.GreaterThanOrEqualTo(0));
             var launchInputs = connectCore.Substring(0, launchInputEnd);
             Assert.That(launchInputs, Does.Contain("_runtimeManager.ResolveLaunchInfo(appConfig)"));
-            Assert.That(launchInputs, Does.Not.Contain("BuildAuthenticationEnvironmentVariablesAsync"));
-            Assert.That(launchInputs, Does.Not.Contain("_currentAuthenticationModelCatalogJsonPath"));
-            Assert.That(launchInputs, Does.Not.Contain("_lastAuthenticationMaterializationConnectionKey"));
             Assert.That(launchInputs, Does.Not.Contain("Profile"));
             Assert.That(launchInputs, Does.Not.Contain("Provider"));
             Assert.That(launchInputs, Does.Not.Contain("Relay"));
             Assert.That(launchInputs, Does.Not.Contain("Tunnel"));
             Assert.That(launchInputs, Does.Not.Contain("Credential"));
             Assert.That(launchInputs, Does.Not.Contain("CODEX_HOME"));
-            Assert.That(launchInputs, Does.Not.Contain("SharedWindowsHome"));
-            Assert.That(source, Does.Not.Contain("GetSharedCodexHomeDirectory"));
-            Assert.That(source, Does.Not.Contain("GetAuthenticationProfileCodexHomeDirectory"));
             var restart = source.Substring(restartStart, createThreadStart - restartStart);
             Assert.That(restart, Does.Contain("await ConnectCoreAsync().ConfigureAwait(false);"));
             var buildLaunchInfoStart = runtimeManagerSource.IndexOf("private AppServerLaunchInfo BuildLaunchInfo(", StringComparison.Ordinal);
@@ -279,7 +267,6 @@ namespace MyCodex.Application.Tests
             Assert.That(applyEnvironmentStart, Is.GreaterThan(buildLaunchInfoStart));
 
             var windowsLaunchInfo = runtimeManagerSource.Substring(buildLaunchInfoStart, applyEnvironmentStart - buildLaunchInfoStart);
-            Assert.That(windowsLaunchInfo, Does.Not.Contain("ApplyLocalWindowsHomeEnvironment"));
             Assert.That(windowsLaunchInfo, Does.Not.Contain("environmentVariables[\"HOME\"]"));
         }
 
@@ -288,18 +275,11 @@ namespace MyCodex.Application.Tests
         public void WslAndRemoteStartup_UseOnlyTheirTargetEnvironmentAndOfficialCodexState()
         {
             var clientSource = RepositorySource.ReadSourceFile("AppServerClient.cs");
-            var runtimeManagerSource = RepositorySource.ReadSourceFile("CodexRuntimeManager.cs");
             var connectCoreStart = clientSource.IndexOf("private async Task ConnectCoreAsync()", StringComparison.Ordinal);
             var restartStart = clientSource.IndexOf("public async Task RestartAsync()", connectCoreStart, StringComparison.Ordinal);
             var connectCore = clientSource.Substring(connectCoreStart, restartStart - connectCoreStart);
 
-            Assert.That(connectCore, Does.Not.Contain("AuthenticationMaterialization"));
             Assert.That(connectCore, Does.Contain("_runtimeManager.ResolveLaunchInfo(appConfig)"));
-            Assert.That(connectCore, Does.Not.Contain("BuildAuthenticationEnvironmentVariablesAsync"));
-            Assert.That(connectCore, Does.Not.Contain("_currentAuthenticationModelCatalogJsonPath"));
-            Assert.That(runtimeManagerSource, Does.Not.Contain("ApplyWslCodexHomeEnvironment"));
-            Assert.That(runtimeManagerSource, Does.Not.Contain("MYCODEX_WSL_CODEX_HOME"));
-            Assert.That(runtimeManagerSource, Does.Not.Contain("MYCODEX_WSL_CODEX_HOME_STRATEGY"));
         }
 
         [Category(SourceGuardCategory.Placement)]
@@ -316,7 +296,6 @@ namespace MyCodex.Application.Tests
             var connectionLost = clientSource.Substring(connectionLostStart, timeoutFactoryStart - connectionLostStart);
             Assert.That(connectionLost, Does.Not.Contain("RestartAsync"));
             Assert.That(connectionLost, Does.Not.Contain("ConnectCoreAsync"));
-            Assert.That(connectionLost, Does.Not.Contain("BuildAuthenticationEnvironmentVariablesAsync"));
         }
 
         [Category(SourceGuardCategory.Placement)]
@@ -433,8 +412,6 @@ namespace MyCodex.Application.Tests
             Assert.That(appServerSource, Does.Contain("TraceSkillPluginInputPathDiagnostic(\"skill\""));
             Assert.That(operationsSource, Does.Contain("_traceSkillsListDiagnostics(workspacePaths, forceReload, snapshots)"));
             Assert.That(operationsSource, Does.Contain("_tracePluginListDiagnostics(plugins)"));
-            Assert.That(operationsSource, Does.Not.Contain("SynchronizeCurrentAuthenticationSharedSkills"));
-            Assert.That(operationsSource, Does.Not.Contain("RepairLocalPluginMarketManifests"));
             Assert.That(appServerSource, Does.Contain("Skill/plugin diagnostic. Operation=turn/input"));
             Assert.That(appServerSource, Does.Contain("Skill/plugin diagnostic. Operation=skills/list"));
             Assert.That(appServerSource, Does.Contain("Skill/plugin diagnostic. Operation=plugin/list"));

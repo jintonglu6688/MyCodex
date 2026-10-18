@@ -25,13 +25,10 @@ namespace MyCodex.Application.Tests
         public void HostSettingsPath_DoesNotOwnOfficialConfigWritesOrLegacyCleanup()
         {
             var operatorSource = RepositorySource.ReadSourceFile("AppServerHostSettingsOperator.cs");
-            var contractsSource = RepositorySource.ReadSourceFile("HostSettingsContracts.cs");
             var dispatcherSource = RepositorySource.ReadSourceFile("RemoteCommandDispatcher.HostSettings.cs");
 
             Assert.That(operatorSource, Does.Not.Contain("IAppServerConfigClient"));
             Assert.That(operatorSource, Does.Not.Contain("WriteConfigBatchAsync("));
-            Assert.That(operatorSource, Does.Not.Contain("BuildLegacyContextOverrideCleanupEdits"));
-            Assert.That(contractsSource, Does.Not.Contain("HostSettingsOfficial"));
             Assert.That(dispatcherSource, Does.Not.Contain("\"official\""));
         }
 

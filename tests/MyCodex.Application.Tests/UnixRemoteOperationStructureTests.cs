@@ -32,10 +32,7 @@ namespace MyCodex.Application.Tests
         public void UnixGitRepositoryServices_UseFactoryInsteadOfForwardingWrappers()
         {
             var factory = RepositorySource.ReadSourceFile("UnixGitRepositoryServiceFactory.cs");
-            var root = RepositorySource.Root;
 
-            Assert.That(File.Exists(Path.Combine(root, "src", "MyCodex.Infrastructure", "AppServer", "WslGitRepositoryService.cs")), Is.False);
-            Assert.That(File.Exists(Path.Combine(root, "src", "MyCodex.Infrastructure", "AppServer", "RemoteMacGitRepositoryService.cs")), Is.False);
             Assert.That(factory, Does.Contain("new GitRepositoryService(runner, NormalizeRuntimeWorkspacePath, true, true, false)"));
             Assert.That(factory, Does.Contain("SharedLocalization.Text(\"GitRepositoryService.Error.WorkspacePathRequired\""));
             Assert.That(factory, Does.Contain("workspacePath.Trim().Replace('\\\\', '/')"));

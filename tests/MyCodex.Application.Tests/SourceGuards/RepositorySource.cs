@@ -59,6 +59,12 @@ namespace MyCodex.Application.Tests.SourceGuards
                 .ToArray();
         }
 
+        /// <summary>Returns every production C# file under src, ordered by path.</summary>
+        public static IReadOnlyList<string> FindAllSourceFiles()
+        {
+            return Index.Value.AllPaths;
+        }
+
         public static string ReadSourceFiles(string projectName, string searchPattern)
         {
             var builder = new StringBuilder();
@@ -162,7 +168,14 @@ namespace MyCodex.Application.Tests.SourceGuards
 
                     paths.Add(path);
                 }
+
+                AllPaths = _pathsByName.Values
+                    .SelectMany(paths => paths)
+                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
             }
+
+            public IReadOnlyList<string> AllPaths { get; }
 
             public string Find(string fileName)
             {

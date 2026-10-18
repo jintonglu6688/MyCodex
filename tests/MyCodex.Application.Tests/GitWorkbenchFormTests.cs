@@ -14,7 +14,6 @@ namespace MyCodex.Application.Tests
             var source = RepositorySource.ReadSourceFile("GitWorkbenchForm.cs");
 
             Assert.That(source, Does.Not.Contain("_diffTextBox.Enter += async"));
-            Assert.That(source, Does.Not.Contain("EnsureSelectedDiffLoadedOnDiffFocusAsync"));
             Assert.That(source, Does.Contain("_loadDiffMenuItem.Click += async (sender, e) => await LoadSelectedDiffAsync();"));
         }
     }

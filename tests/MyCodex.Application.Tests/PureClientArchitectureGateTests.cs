@@ -54,15 +54,6 @@ namespace MyCodex.Application.Tests
 
         [Category(SourceGuardCategory.Architecture)]
         [Test]
-        public void RuntimeEndpointInitialization_DoesNotCreateAuthenticationBackupStorage()
-        {
-            var source = RepositorySource.ReadSourceFile("MainForm.RuntimeConnection.cs");
-
-            Assert.That(source, Does.Not.Contain("chatgpt-auth-backups"));
-        }
-
-        [Category(SourceGuardCategory.Architecture)]
-        [Test]
         public void ProductionSources_DoNotRetainPrivateOrSharedCodexHomeAuthority()
         {
             var sourceRoot = RepositorySource.GetPath("src");
@@ -108,15 +99,8 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ReasoningCapabilities_ComeOnlyFromOfficialObservationsOrExplicitPreferences()
         {
-            var defaultsSource = RepositorySource.ReadSourceFile("SessionDefaultsService.cs");
-            var automationSource = RepositorySource.ReadSourceFile("AutomationEditForm.cs");
-            var modelSettingsSource = RepositorySource.ReadSourceFile("ModelSettingsForm.cs");
             var mapperSource = RepositorySource.ReadSourceFile("AppServerAccountConfigMapper.cs");
 
-            Assert.That(defaultsSource, Does.Not.Contain("BuiltInDefaultReasoningEffort"));
-            Assert.That(automationSource, Does.Not.Contain("BuiltInDefaultReasoningEffort"));
-            Assert.That(automationSource, Does.Not.Contain("BuildFallbackReasoningEfforts"));
-            Assert.That(modelSettingsSource, Does.Not.Contain("BuildFallbackEffortChoices"));
             Assert.That(mapperSource, Does.Contain("defaultReasoningEffort"));
             Assert.That(mapperSource, Does.Contain("supportedReasoningEfforts"));
         }

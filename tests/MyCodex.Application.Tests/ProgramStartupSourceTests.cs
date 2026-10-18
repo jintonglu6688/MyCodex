@@ -19,9 +19,6 @@ namespace MyCodex.Application.Tests
 
             Assert.That(source, Does.Not.Contain(obsoleteStoreType));
             Assert.That(source, Does.Not.Contain(obsoleteModeContextType));
-            Assert.That(source, Does.Not.Contain("JsonAuthenticationProfileStore"));
-            Assert.That(source, Does.Not.Contain("JsonChatGptAuthBackupStore"));
-            Assert.That(source, Does.Not.Contain("JsonAuthenticationSourceSelectionStore"));
         }
 
         [Category(SourceGuardCategory.Retired)]
@@ -134,10 +131,6 @@ namespace MyCodex.Application.Tests
             Assert.That(
                 File.ReadAllText(Path.Combine(repositoryRoot, "src", "MyCodex.WinForms", "MyCodex.WinForms.csproj")),
                 Does.Not.Contain("runtime\\node"));
-            Assert.That(File.Exists(Path.Combine(repositoryRoot, "src", "MyCodex.Shared", "Constants", "NodeRuntimeSources.cs")), Is.False);
-            Assert.That(File.Exists(Path.Combine(repositoryRoot, "tools", "runtime", "prepare-node-runtime.ps1")), Is.False);
-            Assert.That(File.Exists(Path.Combine(repositoryRoot, "tools", "runtime", "node-runtime.version")), Is.False);
-            Assert.That(File.Exists(Path.Combine(repositoryRoot, "tools", "runtime", "node-runtime.sha256")), Is.False);
         }
 
         [Category(SourceGuardCategory.Retired)]

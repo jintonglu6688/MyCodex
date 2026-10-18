@@ -39,23 +39,8 @@ namespace MyCodex.Application.Tests
         {
             var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
 
-            Assert.That(source, Does.Not.Contain("Settings.Menu.ExternalAgentConfigImport"));
             Assert.That(source, Does.Not.Contain("_extensionsMenuItem.MenuItems.Add(_externalAgentConfigImportMenuItem)"));
             Assert.That(source, Does.Contain("RefreshAfterExternalAgentConfigImportAsync"));
-        }
-
-        [Category(SourceGuardCategory.Retired)]
-        [Test]
-        public void SettingsMenu_DoesNotExposeQuickFileSearchOrAppServerFilesEntry()
-        {
-            var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
-
-            Assert.That(source, Does.Not.Contain("Settings.Menu.AppServerQuickFileSearch"));
-            Assert.That(source, Does.Not.Contain("AppServerQuickFileSearchMenuItem_Click"));
-            Assert.That(source, Does.Not.Contain("AppServerFuzzyFileSearchForm"));
-            Assert.That(source, Does.Not.Contain("_appServerFilesMenuItem"));
-            Assert.That(source, Does.Not.Contain("Settings.Menu.AppServerFiles"));
-            Assert.That(source, Does.Not.Contain("AppServerFilesMenuItem_Click"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -66,9 +51,6 @@ namespace MyCodex.Application.Tests
 
             Assert.That(source, Does.Contain("_sessionDefaultsService.Resolve("));
             Assert.That(source, Does.Contain("_availableModels,"));
-            Assert.That(source, Does.Not.Contain("LoadEffectiveAuthenticationProfileSnapshotSafe"));
-            Assert.That(source, Does.Not.Contain("OpenRouterSourcePlanner"));
-            Assert.That(source, Does.Not.Contain("ModelConversionSourcePlanner"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -76,11 +58,8 @@ namespace MyCodex.Application.Tests
         public void RuntimeSessionDefaults_DoNotUseTargetEndpointStorage()
         {
             var source = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
-            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
 
-            Assert.That(source, Does.Not.Contain("JsonRuntimeSessionDefaultsStore"));
             Assert.That(source, Does.Not.Contain("UsesRuntimeEndpointStorage"));
-            Assert.That(mainFormSource, Does.Not.Contain("JsonRuntimeSessionDefaultsStore"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -136,8 +115,6 @@ namespace MyCodex.Application.Tests
             Assert.That(sessionSettingsSource, Does.Contain("_remoteServiceMenuItem = new MenuItem(UiLocalization.Text(\"Settings.Menu.RemoteService\", \"Phone Connection(&R)...\"));"));
             Assert.That(sessionSettingsSource, Does.Contain("_settingsMenuItem.MenuItems.Add(_remoteServiceMenuItem);"));
             Assert.That(sessionSettingsSource, Does.Contain("new RemoteServiceManagementForm("));
-            Assert.That(sessionSettingsSource, Does.Not.Contain("RemoteServiceFeatureGate"));
-            Assert.That(mainFormSource, Does.Not.Contain("RemoteServiceFeatureGate"));
             Assert.That(mainFormSource, Does.Contain("_remoteHostRealtimeClient = CreateRemoteHostRealtimeClient();"));
             Assert.That(mainFormSource, Does.Contain("_remoteHostServiceController = new RemoteHostServiceController("));
             Assert.That(mainFormSource, Does.Not.Contain("AuthenticationCenter"));

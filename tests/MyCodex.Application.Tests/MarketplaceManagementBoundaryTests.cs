@@ -14,58 +14,21 @@ namespace MyCodex.Application.Tests
     {
         [Category(SourceGuardCategory.Architecture)]
         [Test]
-        public void StartupComposition_DoesNotOwnLegacyMarketplaceOrSkillTargetState()
-        {
-            var programSource = RepositorySource.ReadSourceFile("Program.cs");
-
-            Assert.That(programSource, Does.Not.Contain("PluginMarketMirrorService"));
-            Assert.That(programSource, Does.Not.Contain("PluginMarketInstallService"));
-            Assert.That(programSource, Does.Not.Contain("SkillMarketInstallService"));
-            Assert.That(programSource, Does.Not.Contain("PluginMarketInstalledStateService"));
-            Assert.That(programSource, Does.Not.Contain("SkillMarketTargetInstaller"));
-        }
-
-        [Category(SourceGuardCategory.Architecture)]
-        [Test]
         public void LegacyTargetMirrorAndInstallerImplementations_AreDeleted()
         {
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.Infrastructure", "Markets", "PluginMarketInstallService.cs")), Is.False);
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.Infrastructure", "Markets", "PluginMarketTargetMirrorInstaller.cs")), Is.False);
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.Infrastructure", "Markets", "SkillMarketInstallService.cs")), Is.False);
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.Infrastructure", "Markets", "SkillMarketTargetInstaller.cs")), Is.False);
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.Infrastructure", "Persistence", "LocalSharedSkillMirrorService.cs")), Is.False);
-            Assert.That(File.Exists(RepositorySource.GetPath("src", "MyCodex.Infrastructure", "Persistence", "LocalPluginSkillMirrorService.cs")), Is.False);
-
             var appConfigSource = RepositorySource.ReadSourceFile("AppConfigService.cs");
-            var skillEditorSource = RepositorySource.ReadSourceFile("SkillFileEditor.cs");
             Assert.That(appConfigSource, Does.Not.Contain("marketplaces"));
-            Assert.That(appConfigSource, Does.Not.Contain("skill-market"));
-            Assert.That(skillEditorSource, Does.Not.Contain("SharedSkillPathResolver"));
         }
 
         [Category(SourceGuardCategory.Architecture)]
         [Test]
         public void PluginManagementComposition_UsesOnlyCatalogAndAppServerForTargetState()
         {
-            var formSource = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
             var compositionSource = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
 
-            var constructor = ExtractConstructor(formSource);
-
-            Assert.That(constructor, Does.Not.Contain("IPluginMarketInstallService"));
-            Assert.That(constructor, Does.Not.Contain("PluginMarketInstalledStateService"));
-            Assert.That(constructor, Does.Not.Contain("PluginRuntimeEnabledStateService"));
             var composition = ExtractMethod(compositionSource, "PluginManagementMenuItem_Click");
             Assert.That(composition, Does.Not.Contain("new PluginMarketInstalledStateService"));
             Assert.That(composition, Does.Not.Contain("new PluginRuntimeEnabledStateService"));
-
-            var attachmentSource = RepositorySource.ReadSourceFile("PluginAttachmentSelectionBuilder.cs");
-            var attachmentBuilder = ExtractBlock(attachmentSource, attachmentSource.IndexOf("public static List<AppServerPluginSummary> BuildInsertablePlugins(", StringComparison.Ordinal));
-            Assert.That(attachmentBuilder, Does.Not.Contain("PluginMarketInstalledStateService"));
-
-            var remoteAttachmentSource = RepositorySource.ReadSourceFile("AppServerCodingRemoteAttachmentCatalogOperator.cs");
-            var remoteList = ExtractBlock(remoteAttachmentSource, remoteAttachmentSource.IndexOf("ListPluginAttachmentsAsync", StringComparison.Ordinal));
-            Assert.That(remoteList, Does.Not.Contain("AddRuntimeInstalledPluginAttachments"));
         }
 
         [Category(SourceGuardCategory.Architecture)]
@@ -209,17 +172,10 @@ namespace MyCodex.Application.Tests
             var pluginClientMethod = typeof(MyCodex.Application.Interfaces.IAppServerPluginClient)
                 .GetMethod("GetInstalledPluginsAsync");
             var operationsSource = RepositorySource.ReadSourceFile("AppServerClientOperations.cs");
-            var formSource = RepositorySource.ReadSourceFile("PluginManagementForm.cs");
 
             Assert.That(pluginClientMethod, Is.Not.Null);
             Assert.That(operationsSource, Does.Contain("plugin/installed"));
             Assert.That(operationsSource, Does.Contain("BuildInstalledPluginSnapshot"));
-            Assert.That(formSource, Does.Not.Contain("TryLoadRuntimeInstalledSnapshotAsync"));
-        }
-
-        private static string ExtractConstructor(string source)
-        {
-            return ExtractBlock(source, source.IndexOf("public PluginManagementForm(", StringComparison.Ordinal));
         }
 
         private static string ExtractMethod(string source, string methodName)

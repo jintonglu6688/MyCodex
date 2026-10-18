@@ -16,33 +16,12 @@ namespace MyCodex.Application.Tests
     {
         [Category(SourceGuardCategory.Retired)]
         [Test]
-        public void FileMenu_DoesNotExposeRedundantModeSwitchEntry()
-        {
-            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
-            var layoutSource = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
-            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
-
-            Assert.That(mainFormSource, Does.Not.Contain("_switchInteractionModeMenuItem"));
-            Assert.That(layoutSource, Does.Not.Contain("_switchInteractionModeMenuItem"));
-            Assert.That(modesSource, Does.Not.Contain("SwitchInteractionModeMenuItem_Click"));
-            Assert.That(modesSource, Does.Not.Contain("UpdateModeMenuState"));
-        }
-
-        [Category(SourceGuardCategory.Retired)]
-        [Test]
         public void FileMenu_DoesNotExposeLegacyOfficeDocumentTaskEntry()
         {
-            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
             var layoutSource = RepositorySource.ReadSourceFile("MainForm.Layout.cs");
-            var modesSource = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
 
-            Assert.That(mainFormSource, Does.Not.Contain("_officeDocumentsMenuItem"));
             Assert.That(layoutSource, Does.Not.Contain("_officeDocumentsMenuItem.Click += OnOfficeDocumentsMenuItemClick"));
             Assert.That(layoutSource, Does.Not.Contain("_fileMenuItem.MenuItems.Add(_officeDocumentsMenuItem)"));
-            Assert.That(modesSource, Does.Not.Contain("_officeDocumentsMenuItem"));
-            Assert.That(mainFormSource, Does.Not.Contain("OfficeDocumentTaskForm"));
-            Assert.That(mainFormSource, Does.Not.Contain("OpenOfficeDocumentTasks"));
-            Assert.That(mainFormSource, Does.Not.Contain("IWorkbenchHost"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -104,7 +83,6 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("await RefreshActiveOfficeRuntimeRootAsync();"));
             Assert.That(configSource, Does.Not.Contain("DefaultStartupMode"));
             Assert.That(configSource, Does.Not.Contain("OfficeRootPath"));
-            Assert.That(configSource, Does.Not.Contain("OfficeRuntimeSettings"));
             Assert.That(modeSettingsSource, Does.Contain("public AppInteractionMode DefaultStartupMode"));
             Assert.That(modeSettingsSource, Does.Contain("public string OfficeRootPath"));
             Assert.That(source, Does.Contain("_appConfigSnapshot.OfficeShowActivityPane = form.OfficeShowActivityPane"));
@@ -199,7 +177,6 @@ namespace MyCodex.Application.Tests
         {
             var sessionSettingsSource = RepositorySource.ReadSourceFile("MainForm.SessionSettings.cs");
             var plannerSource = RepositorySource.ReadSourceFile("MainFormAuthenticationStatePlanner.cs");
-            var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
 
             Assert.That(sessionSettingsSource, Does.Contain("_settingsMenuItem.MenuItems.Add(_appServerRuntimeSettingsMenuItem)"));
             Assert.That(sessionSettingsSource, Does.Contain("MainFormAuthenticationStatePlanner.BuildSettingsMenuState("));
@@ -211,7 +188,6 @@ namespace MyCodex.Application.Tests
             Assert.That(handler, Does.Contain("await OpenAppServerRuntimeSettingsAsync()"));
             Assert.That(handler, Does.Not.Contain("AppInteractionMode.Office"));
             Assert.That(handler, Does.Not.Contain("return;"));
-            Assert.That(mainFormSource, Does.Not.Contain("EnforceBundledAppServerRuntime"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -369,7 +345,6 @@ namespace MyCodex.Application.Tests
             Assert.That(collaboration, Does.Contain("IsOfficeSessionOrWorkspace(session, workspace)"));
             Assert.That(collaboration, Does.Contain("ResolveOfficeRootPathForSession(session, workspace)"));
             Assert.That(collaboration, Does.Not.Contain("_currentInteractionMode"));
-            Assert.That(collaboration, Does.Not.Contain("_appConfigSnapshot.OfficeRootPath"));
             Assert.That(officeDetection, Does.Contain("session.Mode == AppInteractionMode.Office"));
             Assert.That(officeDetection, Does.Not.Contain("_currentInteractionMode"));
             Assert.That(source, Does.Not.Contain("Mode = \"office\""));
@@ -389,8 +364,6 @@ namespace MyCodex.Application.Tests
             Assert.That(open, Does.Contain("session.Mode"));
             Assert.That(open, Does.Not.Contain("_currentInteractionMode"));
             Assert.That(open, Does.Not.Contain("session.OfficeRuntimeScopeId"));
-            Assert.That(source, Does.Not.Contain("GetSessionRuntimeScopeId"));
-            Assert.That(source, Does.Not.Contain("BuildDetachedComposeDraftScopeKey"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -456,8 +429,6 @@ namespace MyCodex.Application.Tests
             Assert.That(restore, Does.Not.Contain("GetFirstVisibleWorkspace();"));
             Assert.That(workspaceRefresh, Does.Contain("ModeWorkspaceProjection.Build("));
             Assert.That(workspaceRefresh, Does.Contain("IsWorkspaceAvailableFromCache"));
-            Assert.That(workspaceRefresh, Does.Not.Contain("EnsureOfficeCategoriesDiscovered"));
-            Assert.That(workspaceRefresh, Does.Not.Contain("NormalizeAndPruneOfficeCategories"));
             Assert.That(workspaceRefresh, Does.Not.Contain("IsWorkspaceAvailable("));
             Assert.That(cachedAvailability, Does.Not.Contain("Directory.Exists"));
             Assert.That(cachedAvailability, Does.Not.Contain("_officeRuntimeFileSystem"));
@@ -474,7 +445,6 @@ namespace MyCodex.Application.Tests
 
             Assert.That(mainFormSource, Does.Contain("RefreshWorkspaceView();"));
             Assert.That(workspaceRefresh, Does.Not.Contain("EnsureDefaultOfficeWorkspace"));
-            Assert.That(workspaceRefresh, Does.Not.Contain("EnsureOfficeRootDirectory"));
             Assert.That(workspaceRefresh, Does.Not.Contain("Directory.CreateDirectory"));
             Assert.That(workspaceRefresh, Does.Not.Contain("ResolveOfficeRootPath(_appConfigSnapshot.OfficeRootPath)"));
         }
@@ -491,8 +461,6 @@ namespace MyCodex.Application.Tests
             Assert.That(availability, Does.Contain("OfficeWorkspaceAvailabilityPlanner.IsUnavailable("));
             Assert.That(availability, Does.Contain("_officeRuntimeRootError"));
             Assert.That(refresh, Does.Contain("RefreshInputState();"));
-            Assert.That(refresh, Does.Not.Contain("RemoveSessionsForRemovedOfficeWorkspaces"));
-            Assert.That(refresh, Does.Not.Contain("NormalizeAndPruneOfficeCategories"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -508,10 +476,7 @@ namespace MyCodex.Application.Tests
             Assert.That(open, Does.Contain("ShowRuntimeFileBrowser("));
             Assert.That(open, Does.Contain("Process.Start(_resolvedOfficeRootPath)"));
             Assert.That(compatibility, Does.Contain("IsOfficeWorkspaceCompatibleWithActiveRuntime"));
-            Assert.That(workspacesSource, Does.Not.Contain("RefreshOfficeCategoriesAsync"));
-            Assert.That(workspacesSource, Does.Not.Contain("CreateOfficeCategoryAsync"));
             Assert.That(modesSource, Does.Not.Contain("Directory.CreateDirectory"));
-            Assert.That(modesSource, Does.Not.Contain("_appConfigSnapshot.OfficeRootPath"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -528,7 +493,6 @@ namespace MyCodex.Application.Tests
             Assert.That(workspacesSource, Does.Contain("WorkspaceRuntimeCacheKeyBuilder.Build("));
             Assert.That(historyImport, Does.Contain("target.RuntimeScopeId"));
             Assert.That(historyImport, Does.Contain("target.HostPlatform"));
-            Assert.That(workspacesSource, Does.Not.Contain("CreateAutomationFromOfficeWorkspace"));
             Assert.That(sessionsSource, Does.Contain("_currentSession.OfficeRuntimeScopeId"));
             Assert.That(mainSource, Does.Not.Contain("ResolveOfficeRootPath(_appConfigSnapshot.OfficeRootPath)"));
         }
@@ -613,7 +577,6 @@ namespace MyCodex.Application.Tests
             Assert.That(mainFormSource, Does.Contain("private TabPage _officeTabPage;"));
             Assert.That(layoutSource, Does.Contain("MainForm.ModeTab.Coding"));
             Assert.That(layoutSource, Does.Contain("MainForm.ModeTab.Office"));
-            Assert.That(layoutSource, Does.Not.Contain("MainForm.Accessible.ModeTabs"));
             Assert.That(layoutSource, Does.Not.Contain("Coding (Ctrl+1)"));
             Assert.That(layoutSource, Does.Not.Contain("Office (Ctrl+2)"));
             Assert.That(layoutSource, Does.Contain("MainForm.Accessible.CodingMode"));
@@ -662,7 +625,6 @@ namespace MyCodex.Application.Tests
             Assert.That(activation, Does.Contain("_modeTabControl.Focus();"));
             Assert.That(activation, Does.Not.Contain("PersistState"));
             Assert.That(activation, Does.Not.Contain("ReloadLocalStateForCurrentRuntimeProfile"));
-            Assert.That(activation, Does.Not.Contain("PrepareRuntimeWindowsForTransition"));
             Assert.That(activation, Does.Not.Contain("EnsureOffice"));
             Assert.That(activation, Does.Not.Contain("RefreshActiveOfficeRuntimeRoot"));
             Assert.That(activation, Does.Not.Contain("RestartAsync"));
@@ -734,8 +696,6 @@ namespace MyCodex.Application.Tests
             var activation = RepositorySource.ExtractMethod(source, "private void ActivateSelectedModeTab");
 
             Assert.That(activation, Does.Contain("_modeTabControl.Focus();"));
-            Assert.That(source, Does.Not.Contain("ModeFocusRole"));
-            Assert.That(source, Does.Not.Contain("RestoreCurrentModeFocusRole"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -842,7 +802,6 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_workspaceNewMenuItem.Visible = !isOfficeMode"));
             Assert.That(source, Does.Contain("_workspaceList.Visible = !isOfficeMode"));
             Assert.That(source, Does.Contain("_workspaceList.TabStop = !isOfficeMode"));
-            Assert.That(source, Does.Not.Contain("_officeCategory"));
             Assert.That(source, Does.Contain("_workspaceImportSyncMenuItem.Visible = !isOfficeMode"));
             Assert.That(source, Does.Contain("_workspaceRemoveMenuItem.Visible = !isOfficeMode"));
             Assert.That(source, Does.Contain("_workspaceArchiveMenuItem.Visible = !isOfficeMode"));
@@ -862,7 +821,6 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_diffWorkbenchButton.Visible = !isOfficeMode"));
             Assert.That(source, Does.Contain("_workspaceProjectInstructionsMenuItem.Visible = !isOfficeMode"));
             Assert.That(source, Does.Contain("_forkMenuItem.Visible = !isOfficeMode"));
-            Assert.That(source, Does.Not.Contain("_deriveMenuItem"));
             Assert.That(source, Does.Contain("_reviewChatHistoryMenuItem.Visible = !isOfficeMode"));
         }
 
@@ -876,7 +834,6 @@ namespace MyCodex.Application.Tests
             var officeRuntimeSource = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
 
             Assert.That(mainFormSource, Does.Contain("UnboundComposeDraftSessionId"));
-            Assert.That(mainFormSource, Does.Not.Contain("_officeUnboundComposeDraft"));
             Assert.That(modesSource, Does.Contain("SaveCurrentModeUnboundComposeState"));
             Assert.That(modesSource, Does.Contain("_composeDraftStore.Save(GetCurrentModeDraftScopeKey(), UnboundComposeDraftSessionId"));
             Assert.That(modesSource, Does.Contain("_composeDraftStore.Get(GetCurrentModeDraftScopeKey(), UnboundComposeDraftSessionId)"));
@@ -932,8 +889,6 @@ namespace MyCodex.Application.Tests
 
             Assert.That(source, Does.Contain("GetWorkspaceListAccessibleName"));
             Assert.That(source, Does.Contain("GetWorkspaceSectionTitleText"));
-            Assert.That(source, Does.Not.Contain("MainForm.Accessible.OfficeCategories"));
-            Assert.That(source, Does.Not.Contain("MainForm.Label.OfficeCategory"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -970,17 +925,6 @@ namespace MyCodex.Application.Tests
 
             Assert.That(source, Does.Not.Contain("_officeRuntimeFileSystem.ListDirectoryAsync("));
             Assert.That(source, Does.Not.Contain("Directory.GetDirectories("));
-            Assert.That(source, Does.Not.Contain("RefreshOfficeCategoriesAsync"));
-        }
-
-        [Category(SourceGuardCategory.Retired)]
-        [Test]
-        public void OfficeWorkspace_HasNoManagedCategoryPruning()
-        {
-            var source = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
-
-            Assert.That(source, Does.Not.Contain("ManagedOfficeCategory"));
-            Assert.That(source, Does.Not.Contain("RefreshOfficeCategoriesAsync"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -1093,7 +1037,6 @@ namespace MyCodex.Application.Tests
             Assert.That(restoreSource, Does.Contain("FindSessionById(_currentOfficeSessionId)"));
             Assert.That(restoreSource.IndexOf("FindSessionById(_currentOfficeSessionId)", StringComparison.Ordinal),
                 Is.LessThan(restoreSource.IndexOf("ResetOfficeSessionForNewTask();", StringComparison.Ordinal)));
-            Assert.That(modesSource, Does.Not.Contain("InvalidateAvailableModelsForModeSwitch"));
             Assert.That(modesSource, Does.Contain("SessionSelectionResolver.RestoreOfficeSelection("));
             var modeRestoreStart = modesSource.IndexOf("private void RestoreSelectionForCurrentMode()", StringComparison.Ordinal);
             var modeRestoreEnd = modesSource.IndexOf("private WorkspaceInfo EnsureOfficeWorkspace()", modeRestoreStart, StringComparison.Ordinal);
@@ -1164,13 +1107,11 @@ namespace MyCodex.Application.Tests
         public void OfficeRootChange_ValidatesBeforeSaveAndDoesNotRefreshCategories()
         {
             var options = RepositorySource.ReadSourceFile("MainForm.OptionsSettings.cs");
-            var runtime = RepositorySource.ReadSourceFile("MainForm.OfficeRuntime.cs");
             var save = RepositorySource.ExtractMethod(options, "private async Task<Tuple<bool, bool>> SaveModeSettingsForCurrentRuntimeAsync(");
 
             Assert.That(save.IndexOf("await ResolveAndEnsureOfficeRootAsync(", StringComparison.Ordinal), Is.GreaterThanOrEqualTo(0));
             Assert.That(save.IndexOf("await SaveModeSettingsForCurrentRuntimeAsync(new ModeSettingsSnapshot", StringComparison.Ordinal),
                 Is.GreaterThan(save.IndexOf("await ResolveAndEnsureOfficeRootAsync(", StringComparison.Ordinal)));
-            Assert.That(runtime, Does.Not.Contain("RefreshOfficeCategoriesAsync"));
             Assert.That(options, Does.Contain("MainForm.Status.OfficeDirectoryChangedFilesNotMoved"));
         }
 

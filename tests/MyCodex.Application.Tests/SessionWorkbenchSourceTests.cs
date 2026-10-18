@@ -53,7 +53,6 @@ namespace MyCodex.Application.Tests
             Assert.That(sessionSource, Does.Contain("Dictionary<string, ManualBrowseContext> _sessionManualBrowseContexts"));
             Assert.That(sessionSource, Does.Contain("GetOrCreateSessionManualBrowseContext"));
             Assert.That(sessionSource, Does.Contain("HandleSessionTerminalScreenReaderHotkey"));
-            Assert.That(sessionSource, Does.Not.Contain("ReleaseSessionManualBrowseContextIfUnused"));
             Assert.That(terminalSource, Does.Contain("ScreenReaderHotkeyPressed"));
             Assert.That(terminalSource, Does.Contain("GetReadableLines()"));
             Assert.That(terminalSource, Does.Contain("TerminalWindowClosed"));

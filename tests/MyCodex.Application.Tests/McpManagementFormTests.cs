@@ -122,7 +122,6 @@ namespace MyCodex.Application.Tests
             var source = RepositorySource.ReadSourceFile("McpManagementForm.cs");
 
             Assert.That(source, Does.Not.Contain("_reloadButton"));
-            Assert.That(source, Does.Not.Contain("ReloadServerConfigAsync"));
             Assert.That(source, Does.Not.Contain("Keys.F5 && e.Control"));
             Assert.That(source, Does.Not.Contain("config.toml"));
             Assert.That(source, Does.Not.Contain("IAppServerFileSystemClient"));

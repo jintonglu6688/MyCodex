@@ -135,9 +135,6 @@ namespace MyCodex.Application.Tests
             var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
             Assert.That(source, Does.Not.Contain("_fileMenuItem.MenuItems.Add(_runtimeFileExplorerMenuItem)"));
-            Assert.That(source, Does.Not.Contain("MainMenu.RuntimeFileExplorer"));
-            Assert.That(source, Does.Not.Contain("RuntimeFileExplorerForm"));
-            Assert.That(source, Does.Not.Contain("ShowRuntimeFileExplorer"));
         }
 
         [Category(SourceGuardCategory.Retired)]
@@ -146,10 +143,6 @@ namespace MyCodex.Application.Tests
         {
             var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
 
-            Assert.That(source, Does.Not.Contain("_openRouterMenuItem"));
-            Assert.That(source, Does.Not.Contain("_gatewayCenterMenuItem"));
-            Assert.That(source, Does.Not.Contain("OnOpenRouterMenuItemClick"));
-            Assert.That(source, Does.Not.Contain("OnGatewayCenterMenuItemClick"));
             Assert.That(source, Does.Not.Contain("_accountMenuItem.MenuItems.Add(_openRouterMenuItem)"));
             Assert.That(source, Does.Not.Contain("_accountMenuItem.MenuItems.Add(_gatewayCenterMenuItem)"));
         }
@@ -162,7 +155,6 @@ namespace MyCodex.Application.Tests
 
             Assert.That(source, Does.Contain("OnAuthenticationCenterMenuItemClick"));
             Assert.That(source, Does.Contain("new AuthenticationCenterForm("));
-            Assert.That(source, Does.Not.Contain("AreEquivalentAuthenticationSourceSelections"));
             var authentication = RepositorySource.ReadSourceFile("MainForm.AuthenticationCenter.cs");
             Assert.That(authentication, Does.Contain("AuthenticationCenterClient.CreateLocal("));
             Assert.That(authentication, Does.Not.Contain("RestartAppServerForRuntimeSettingsAsync("));
@@ -178,9 +170,6 @@ namespace MyCodex.Application.Tests
             var configurationSource = RepositorySource.ReadSourceFile("AppServerModelConfigurationService.cs");
             Assert.That(configurationSource, Does.Contain("await _client.ListModelsAsync()"));
             Assert.That(source, Does.Not.Contain("GetCurrentBuiltInSourceModelIds()"));
-            Assert.That(source, Does.Not.Contain("AddBuiltInSourceModels"));
-            Assert.That(source, Does.Not.Contain("OpenRouterSourcePlanner.BuildEnabledModels"));
-            Assert.That(source, Does.Not.Contain("ModelConversionSourcePlanner.BuildEnabledModels"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]
@@ -237,7 +226,6 @@ namespace MyCodex.Application.Tests
             Assert.That(reconnect, Does.Not.Contain("_appServerClient.RestartAsync"));
             Assert.That(reconnect, Does.Not.Contain("OnTargetReloadMenuItemClick"));
             Assert.That(reconnect, Does.Not.Contain("ReloadLocalStateForCurrentRuntimeProfileAsync"));
-            Assert.That(reconnect, Does.Not.Contain("RefreshCurrentAuthenticationSourceSelectionAsync"));
             Assert.That(reconnect, Does.Not.Contain("FileSystemWatcher"));
             Assert.That(reconnect, Does.Not.Contain("Timer"));
             Assert.That(reconnect, Does.Not.Contain("Activated"));
@@ -257,7 +245,6 @@ namespace MyCodex.Application.Tests
             var reloadIndex = method.IndexOf("ReloadLocalStateForCurrentRuntimeProfile(saveCurrentComposeState);", StringComparison.Ordinal);
 
             Assert.That(reloadIndex, Is.GreaterThanOrEqualTo(0));
-            Assert.That(method, Does.Not.Contain("RefreshCurrentAuthenticationSourceSelectionAsync"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]

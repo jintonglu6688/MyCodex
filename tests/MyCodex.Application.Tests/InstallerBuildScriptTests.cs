@@ -115,13 +115,11 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("await InstallDownloadedUpdateAsync(download.InstallerPath)"));
             Assert.That(source, Does.Contain("Process.Start(AppUpdateService.CreateInstallerStartInfo("));
             Assert.That(source, Does.Not.Contain("RunAllTargetExitAsync"));
-            Assert.That(source, Does.Not.Contain("DeferredUpdateInstallerLauncher.ScheduleAsync"));
             Assert.That(source, Does.Not.Contain("TryReserveSharedUpdate"));
             Assert.That(source, Does.Not.Contain("DiscoverInstallationUsers"));
             Assert.That(source, Does.Not.Contain("FileName = installerPath"));
             Assert.That(source, Does.Not.Contain("Wait-Process -Id"));
             Assert.That(source, Does.Not.Contain("Application.Exit"));
-            Assert.That(source, Does.Not.Contain("StartUpdateInstallerAndExit"));
         }
 
         [Test]

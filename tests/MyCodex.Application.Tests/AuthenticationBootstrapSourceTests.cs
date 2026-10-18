@@ -29,8 +29,6 @@ namespace MyCodex.Application.Tests
             Assert.That(bootstrapSource.IndexOf("OnAuthenticationCenterMenuItemClick", StringComparison.Ordinal),
                 Is.LessThan(bootstrapSource.IndexOf("new AuthenticationBootstrapForm", StringComparison.Ordinal)));
             Assert.That(bootstrapSource, Does.Not.Contain("RemoteUnixSsh"));
-            Assert.That(bootstrapSource, Does.Not.Contain("AuthenticationSource"));
-            Assert.That(bootstrapSource, Does.Not.Contain("ChatGptAuthBackup"));
         }
 
         [Test]
@@ -40,8 +38,6 @@ namespace MyCodex.Application.Tests
                 RepositorySource.ReadSourceFile("UserCenterForm.cs"),
                 RepositorySource.ReadSourceFile("UserCenterForm.QuotaReset.cs"));
 
-            Assert.That(source, Does.Not.Contain("IChatGptAuthBackupStore"));
-            Assert.That(source, Does.Not.Contain("UserCenterAuthenticationDisplayMerger"));
             Assert.That(source, Does.Not.Contain("StartChatGptLoginAsync"));
             Assert.That(source, Does.Not.Contain("StartOpenAiApiKeyLoginAsync"));
             Assert.That(source, Does.Not.Contain("LogoutAsync"));

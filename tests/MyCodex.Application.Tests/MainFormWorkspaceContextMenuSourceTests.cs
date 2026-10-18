@@ -24,19 +24,6 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("_workspaceContextMenu.MenuItems.Add(_workspaceAppServerFilesMenuItem)"));
         }
 
-        [Category(SourceGuardCategory.Retired)]
-        [Test]
-        public void WorkspaceContextMenu_DoesNotExposeOfficeCategoryEntries()
-        {
-            var source = RepositorySource.ReadSourceFiles("MyCodex.WinForms", "MainForm*.cs");
-
-            Assert.That(source, Does.Not.Contain("_officeCategoryNewMenuItem"));
-            Assert.That(source, Does.Not.Contain("MainForm.OfficeCategory.New"));
-            Assert.That(source, Does.Not.Contain("MainForm.OfficeCategory.OpenFolder"));
-            Assert.That(source, Does.Not.Contain("MainForm.OfficeCategory.Refresh"));
-            Assert.That(source, Does.Not.Contain("OnOfficeCategoryNewMenuItemClick"));
-        }
-
         [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void FileMenu_OpenCommandOpensCurrentOfficeWorkspaceDirectory()
@@ -189,10 +176,6 @@ namespace MyCodex.Application.Tests
 
             Assert.That(source, Does.Contain("_workspaceContextMenu.MenuItems.Add(_workspaceRemoveMenuItem);"));
             Assert.That(source, Does.Contain("_sessionContextMenu.MenuItems.Add(_sessionRemoveMenuItem);"));
-            Assert.That(source, Does.Not.Contain("_workspaceDeletePermanentlyMenuItem"));
-            Assert.That(source, Does.Not.Contain("_sessionDeletePermanentlyMenuItem"));
-            Assert.That(source, Does.Not.Contain("MainForm.Workspace.DeletePermanent"));
-            Assert.That(source, Does.Not.Contain("MainForm.Session.DeletePermanent"));
         }
     }
 }

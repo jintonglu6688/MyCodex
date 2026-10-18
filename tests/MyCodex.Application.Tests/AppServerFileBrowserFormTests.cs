@@ -806,16 +806,6 @@ namespace MyCodex.Application.Tests
             }
         }
 
-        [Category(SourceGuardCategory.Retired)]
-        [Test]
-        public void Commands_DoNotExposeInsertPath()
-        {
-            var source = RepositorySource.ReadSourceFile("AppServerFileBrowserForm.cs");
-
-            Assert.That(source, Does.Not.Contain("InsertPath"));
-            Assert.That(source, Does.Not.Contain("InsertSelectedPaths"));
-        }
-
         [Test]
         public async Task AttachSelectedPath_SendsSelectedFilePath()
         {

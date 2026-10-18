@@ -16,12 +16,9 @@ namespace MyCodex.Application.Tests
             Assert.That(source, Does.Contain("GetRemoteAvailableModelsAsync"));
             Assert.That(source, Does.Contain("SaveRemoteOfficialModelDefaultsAsync"));
             Assert.That(source, Does.Contain("new AppServerOfficialHostSettingsOperator(settingsOperator, _appServerClient)"));
-            Assert.That(source, Does.Not.Contain("SetConfiguredDefaultModel"));
             Assert.That(source, Does.Contain("SetConfiguredDefaultApprovalMode"));
             Assert.That(source, Does.Contain("() => System.Threading.Tasks.Task.CompletedTask"));
             Assert.That(source, Does.Contain("Environment.MachineName"));
-            Assert.That(source, Does.Not.Contain("AuthenticationSourceKind"));
-            Assert.That(source, Does.Not.Contain("LoadCurrentAuthenticationSourceSelectionForDiagnostics"));
             Assert.That(source, Does.Not.Contain("Password"));
             Assert.That(source, Does.Not.Contain("ApiKey"));
         }
