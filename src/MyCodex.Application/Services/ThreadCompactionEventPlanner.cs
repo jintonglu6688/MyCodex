@@ -1,8 +1,8 @@
 using System;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal sealed class ThreadCompactionCompletionPlan
+    public sealed class ThreadCompactionCompletionPlan
     {
         public bool ShouldClearCompactionState { get; set; }
 
@@ -17,9 +17,9 @@ namespace MyCodex.WinForms.Forms
         public bool ShouldAnnounceCompletion { get; set; }
     }
 
-    internal static class ThreadCompactionEventPlanner
+    public static class ThreadCompactionEventPlanner
     {
-        internal static bool ShouldHandleTurnCompleted(
+        public static bool ShouldHandleTurnCompleted(
             bool hasRecentCompletionTurn,
             bool isThreadPendingCompaction,
             string activeTurnId,
@@ -44,12 +44,12 @@ namespace MyCodex.WinForms.Forms
                    string.Equals(activeTurnId, eventTurnId, StringComparison.OrdinalIgnoreCase);
         }
 
-        internal static bool ShouldHandleFailure(bool isThreadPendingCompaction, bool isThreadActiveCompaction)
+        public static bool ShouldHandleFailure(bool isThreadPendingCompaction, bool isThreadActiveCompaction)
         {
             return isThreadPendingCompaction || isThreadActiveCompaction;
         }
 
-        internal static ThreadCompactionCompletionPlan BuildCompletionPlan(bool isCurrentSessionThread)
+        public static ThreadCompactionCompletionPlan BuildCompletionPlan(bool isCurrentSessionThread)
         {
             return new ThreadCompactionCompletionPlan
             {

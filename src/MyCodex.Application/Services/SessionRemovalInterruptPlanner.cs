@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using MyCodex.Domain.Entities;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal sealed class SessionRemovalInterruptTarget
+    public sealed class SessionRemovalInterruptTarget
     {
         public SessionRemovalInterruptTarget(string threadId, string turnId)
         {
@@ -17,9 +17,9 @@ namespace MyCodex.WinForms.Forms
         public string TurnId { get; }
     }
 
-    internal static class SessionRemovalInterruptPlanner
+    public static class SessionRemovalInterruptPlanner
     {
-        internal static List<SessionRemovalInterruptTarget> BuildTargets(
+        public static List<SessionRemovalInterruptTarget> BuildTargets(
             IEnumerable<ChatSession> sessions,
             Func<string, bool> canInterruptThread,
             Func<string, string> getInterruptibleTurnId)

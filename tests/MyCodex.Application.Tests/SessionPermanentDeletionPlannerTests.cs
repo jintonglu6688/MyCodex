@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;

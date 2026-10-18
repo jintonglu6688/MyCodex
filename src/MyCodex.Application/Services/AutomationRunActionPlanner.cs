@@ -2,11 +2,11 @@ using System;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal static class AutomationRunActionPlanner
+    public static class AutomationRunActionPlanner
     {
-        internal static bool CanStop(AutomationRunSnapshot run, Func<string, bool> canInterruptThread)
+        public static bool CanStop(AutomationRunSnapshot run, Func<string, bool> canInterruptThread)
         {
             if (run == null ||
                 string.IsNullOrWhiteSpace(run.ThreadId) ||

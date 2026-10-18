@@ -286,7 +286,7 @@ namespace MyCodex.Application.Tests
             Assert.That(File.Exists(goalsPath), Is.True, "MainForm.Goals.cs should exist after Phase 1.");
             Assert.That(goalsSource, Does.Contain("partial class MainForm"));
             Assert.That(File.Exists(plannerPath), Is.True, "SessionPlanModePlanner.cs should exist after Phase 1.");
-            Assert.That(plannerSource, Does.Contain("internal static class SessionPlanModePlanner"));
+            Assert.That(plannerSource, Does.Contain("public static class SessionPlanModePlanner"));
             Assert.That(goalsSource, Does.Contain("SessionPlanModePlanner.CanChangePlanOrGoalState"));
             Assert.That(CountPrivateMethodDeclarations(mainSource, Phase1GoalPlanMethodNames), Is.EqualTo(0));
             Assert.That(CountPrivateMethodDeclarations(goalsSource, Phase1GoalPlanMethodNames), Is.GreaterThanOrEqualTo(20));
@@ -305,7 +305,7 @@ namespace MyCodex.Application.Tests
             Assert.That(File.Exists(threadSyncPath), Is.True, "MainForm.ThreadSync.cs should exist after Phase 2.");
             Assert.That(threadSyncSource, Does.Contain("partial class MainForm"));
             Assert.That(File.Exists(plannerPath), Is.True, "ThreadImportFilterPlanner.cs should exist after Phase 2.");
-            Assert.That(plannerSource, Does.Contain("internal static class ThreadImportFilterPlanner"));
+            Assert.That(plannerSource, Does.Contain("public static class ThreadImportFilterPlanner"));
             Assert.That(threadSyncSource, Does.Contain("ThreadImportFilterPlanner.BelongsToKnownWorkspace"));
             Assert.That(threadSyncSource, Does.Contain("ThreadImportFilterPlanner.FilterProjectInstructionHelperThreads"));
             Assert.That(CountPrivateMethodDeclarations(mainSource, Phase2ThreadSyncMethodNames), Is.EqualTo(0));
@@ -325,7 +325,7 @@ namespace MyCodex.Application.Tests
             Assert.That(File.Exists(chatHistoryPath), Is.True, "MainForm.ChatHistoryInteraction.cs should exist after Phase 3.");
             Assert.That(chatHistorySource, Does.Contain("partial class MainForm"));
             Assert.That(File.Exists(plannerPath), Is.True, "ChatHistoryContextMenuPlanner.cs should exist after Phase 3.");
-            Assert.That(plannerSource, Does.Contain("internal static class ChatHistoryContextMenuPlanner"));
+            Assert.That(plannerSource, Does.Contain("public static class ChatHistoryContextMenuPlanner"));
             Assert.That(chatHistorySource, Does.Contain("ChatHistoryContextMenuPlanner.BuildBasicState"));
             Assert.That(chatHistorySource, Does.Contain("ChatHistoryContextMenuPlanner.BuildPlanModeState"));
             Assert.That(chatHistorySource, Does.Contain("ChatHistoryContextMenuPlanner.BuildGoalState"));

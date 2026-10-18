@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using MyCodex.Domain.Entities;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal static class WorkspaceGitMetadataRefreshPlanner
+    public static class WorkspaceGitMetadataRefreshPlanner
     {
-        internal static bool Apply(IList<WorkspaceInfo> recentWorkspaces, WorkspaceInfo currentWorkspace, WorkspaceInfo refreshedWorkspace)
+        public static bool Apply(IList<WorkspaceInfo> recentWorkspaces, WorkspaceInfo currentWorkspace, WorkspaceInfo refreshedWorkspace)
         {
             if (refreshedWorkspace == null || string.IsNullOrWhiteSpace(refreshedWorkspace.Id))
             {

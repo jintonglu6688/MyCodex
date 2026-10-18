@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal static class LocalThreadSessionWatchPlanner
+    public static class LocalThreadSessionWatchPlanner
     {
-        internal static IReadOnlyList<string> BuildWatchRoots(
+        public static IReadOnlyList<string> BuildWatchRoots(
             IEnumerable<string> codexHomePaths,
             Func<string, bool> directoryExists)
         {

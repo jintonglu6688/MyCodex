@@ -4,11 +4,11 @@ using MyCodex.Application.DTOs;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal static class ThreadImportFilterPlanner
+    public static class ThreadImportFilterPlanner
     {
-        internal static bool BelongsToKnownWorkspace(
+        public static bool BelongsToKnownWorkspace(
             string workspacePath,
             string workspaceId,
             IEnumerable<WorkspaceInfo> recentWorkspaces,
@@ -47,7 +47,7 @@ namespace MyCodex.WinForms.Forms
             return false;
         }
 
-        internal static List<AppServerThreadSummary> FilterProjectInstructionHelperThreads(
+        public static List<AppServerThreadSummary> FilterProjectInstructionHelperThreads(
             IEnumerable<AppServerThreadSummary> threads,
             ISet<string> helperThreadIds)
         {

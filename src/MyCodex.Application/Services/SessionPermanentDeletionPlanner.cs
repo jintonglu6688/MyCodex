@@ -5,25 +5,25 @@ using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Domain.Entities;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal sealed class SessionPermanentDeletionPlan
+    public sealed class SessionPermanentDeletionPlan
     {
         public List<AppServerThreadSummary> Roots { get; } = new List<AppServerThreadSummary>();
         public List<AppServerThreadSummary> Threads { get; } = new List<AppServerThreadSummary>();
         public HashSet<string> MissingThreadIds { get; } = new HashSet<string>(StringComparer.Ordinal);
     }
 
-    internal sealed class SessionPermanentDeletionResult
+    public sealed class SessionPermanentDeletionResult
     {
         public List<string> DeletedThreadIds { get; } = new List<string>();
         public List<string> FailedThreadIds { get; } = new List<string>();
         public Dictionary<string, string> FailureReasons { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
     }
 
-    internal static class SessionPermanentDeletionPlanner
+    public static class SessionPermanentDeletionPlanner
     {
-        internal static async Task<AppServerThreadDetails> ReadDeletionRootAsync(ChatSession session,
+        public static async Task<AppServerThreadDetails> ReadDeletionRootAsync(ChatSession session,
             IReadOnlyList<AppServerThreadSummary> descendants, Func<string, Task<AppServerThreadDetails>> read,
             Func<string, string, Task<bool>> confirmMissing)
         {
@@ -42,7 +42,7 @@ namespace MyCodex.WinForms.Forms
             }
         }
 
-        internal static SessionPermanentDeletionPlan Build(IEnumerable<ChatSession> selected, IEnumerable<AppServerThreadSummary> knownThreads)
+        public static SessionPermanentDeletionPlan Build(IEnumerable<ChatSession> selected, IEnumerable<AppServerThreadSummary> knownThreads)
         {
             var byId = new Dictionary<string, AppServerThreadSummary>(StringComparer.Ordinal);
             foreach (var thread in knownThreads ?? Enumerable.Empty<AppServerThreadSummary>())
@@ -86,7 +86,7 @@ namespace MyCodex.WinForms.Forms
             return plan;
         }
 
-        internal static List<AppServerThreadSummary> Descendants(AppServerThreadSummary root, IEnumerable<AppServerThreadSummary> threads)
+        public static List<AppServerThreadSummary> Descendants(AppServerThreadSummary root, IEnumerable<AppServerThreadSummary> threads)
         {
             var children = threads.ToLookup(thread => thread.ParentThreadId ?? string.Empty, StringComparer.Ordinal);
             var result = new List<AppServerThreadSummary> { root };
@@ -102,7 +102,7 @@ namespace MyCodex.WinForms.Forms
             return result;
         }
 
-        internal static void EnsureCompleteDescendants(AppServerThreadSummary root, IEnumerable<AppServerThreadSummary> discovered)
+        public static void EnsureCompleteDescendants(AppServerThreadSummary root, IEnumerable<AppServerThreadSummary> discovered)
         {
             if (root == null) throw new InvalidOperationException("Missing deletion root.");
             var threads = discovered.ToList();
@@ -113,7 +113,7 @@ namespace MyCodex.WinForms.Forms
                 throw new InvalidOperationException("Unresolved descendant relationship.");
         }
 
-        internal static bool SameScope(SessionPermanentDeletionPlan first, SessionPermanentDeletionPlan second)
+        public static bool SameScope(SessionPermanentDeletionPlan first, SessionPermanentDeletionPlan second)
         {
             return first.MissingThreadIds.SetEquals(second.MissingThreadIds) &&
                 new HashSet<string>(first.Threads.Select(thread => thread.ThreadId), StringComparer.Ordinal)
@@ -122,7 +122,7 @@ namespace MyCodex.WinForms.Forms
                     .SetEquals(second.Roots.Select(thread => thread.ThreadId));
         }
 
-        internal static async Task<SessionPermanentDeletionResult> ExecuteAsync(
+        public static async Task<SessionPermanentDeletionResult> ExecuteAsync(
             SessionPermanentDeletionPlan plan, Func<string, Task> deleteThread,
             Action<IReadOnlyList<string>> confirmed, Func<bool> isCurrent, Func<string, bool> wasConfirmed = null)
         {

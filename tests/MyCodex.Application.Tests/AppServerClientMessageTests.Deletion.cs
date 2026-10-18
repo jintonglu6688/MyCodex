@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Services;
 using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
 using MyCodex.Infrastructure.AppServer;

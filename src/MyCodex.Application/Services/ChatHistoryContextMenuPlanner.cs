@@ -1,20 +1,20 @@
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal sealed class ChatHistoryBasicContextMenuState
+    public sealed class ChatHistoryBasicContextMenuState
     {
         public bool CopySelectedEnabled { get; set; }
 
         public bool FindEnabled { get; set; }
     }
 
-    internal sealed class ChatHistoryPlanModeMenuState
+    public sealed class ChatHistoryPlanModeMenuState
     {
         public bool Enabled { get; set; }
 
         public bool Checked { get; set; }
     }
 
-    internal sealed class ChatHistoryGoalMenuState
+    public sealed class ChatHistoryGoalMenuState
     {
         public bool SetEnabled { get; set; }
 
@@ -25,9 +25,9 @@ namespace MyCodex.WinForms.Forms
         public bool MenuEnabled { get; set; }
     }
 
-    internal static class ChatHistoryContextMenuPlanner
+    public static class ChatHistoryContextMenuPlanner
     {
-        internal static ChatHistoryBasicContextMenuState BuildBasicState(bool hasSelectedChatItem, int visibleItemCount)
+        public static ChatHistoryBasicContextMenuState BuildBasicState(bool hasSelectedChatItem, int visibleItemCount)
         {
             var hasVisibleItems = visibleItemCount > 0;
             return new ChatHistoryBasicContextMenuState
@@ -37,7 +37,7 @@ namespace MyCodex.WinForms.Forms
             };
         }
 
-        internal static ChatHistoryPlanModeMenuState BuildPlanModeState(bool canTogglePlanMode, bool isPlanModeEnabled)
+        public static ChatHistoryPlanModeMenuState BuildPlanModeState(bool canTogglePlanMode, bool isPlanModeEnabled)
         {
             return new ChatHistoryPlanModeMenuState
             {
@@ -46,7 +46,7 @@ namespace MyCodex.WinForms.Forms
             };
         }
 
-        internal static ChatHistoryGoalMenuState BuildGoalState(bool canManageGoal, bool hasThread)
+        public static ChatHistoryGoalMenuState BuildGoalState(bool canManageGoal, bool hasThread)
         {
             var state = new ChatHistoryGoalMenuState
             {

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using MyCodex.Application.DTOs;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal sealed class CommandTerminalResizePlanner
+    public sealed class CommandTerminalResizePlanner
     {
         private readonly TimeSpan _throttleInterval;
         private readonly HashSet<string> _disabledProcessIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -69,7 +69,7 @@ namespace MyCodex.WinForms.Forms
         }
     }
 
-    internal sealed class CommandTerminalResizePlan
+    public sealed class CommandTerminalResizePlan
     {
         public bool ShouldSend { get; set; }
 

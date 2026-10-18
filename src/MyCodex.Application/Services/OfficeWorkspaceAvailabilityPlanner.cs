@@ -2,11 +2,11 @@ using System;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal static class OfficeWorkspaceAvailabilityPlanner
+    public static class OfficeWorkspaceAvailabilityPlanner
     {
-        internal static bool IsUnavailable(
+        public static bool IsUnavailable(
             WorkspaceInfo workspace,
             string activeOfficeRuntimeScopeId,
             string activeOfficeRootError)
@@ -24,7 +24,7 @@ namespace MyCodex.WinForms.Forms
             return string.Equals(workspace.Id, activeWorkspaceId, StringComparison.OrdinalIgnoreCase);
         }
 
-        internal static bool ResolveForProjection(
+        public static bool ResolveForProjection(
             WorkspaceInfo workspace,
             string activeOfficeRuntimeScopeId,
             string activeOfficeRootError,

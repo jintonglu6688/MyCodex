@@ -1,6 +1,6 @@
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal sealed class SessionPlanModeAvailabilityContext
+    public sealed class SessionPlanModeAvailabilityContext
     {
         public bool HasSession { get; set; }
 
@@ -16,9 +16,9 @@ namespace MyCodex.WinForms.Forms
         public bool IsThreadCompacting { get; set; }
     }
 
-    internal static class SessionPlanModePlanner
+    public static class SessionPlanModePlanner
     {
-        internal static bool CanChangePlanOrGoalState(SessionPlanModeAvailabilityContext context)
+        public static bool CanChangePlanOrGoalState(SessionPlanModeAvailabilityContext context)
         {
             if (context == null ||
                 !context.HasSession ||

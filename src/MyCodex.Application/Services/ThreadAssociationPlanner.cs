@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using MyCodex.Application.DTOs;
 using MyCodex.Domain.Entities;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal enum ThreadAssociationStatus
+    public enum ThreadAssociationStatus
     {
         Unassociated,
         AssociatedElsewhere,
         AssociatedCurrentWorkspace
     }
 
-    internal enum ThreadAssociationFilterMode
+    public enum ThreadAssociationFilterMode
     {
         Linkable,
         All,
@@ -21,7 +21,7 @@ namespace MyCodex.WinForms.Forms
         AssociatedCurrentWorkspace
     }
 
-    internal sealed class ThreadAssociationCandidate
+    public sealed class ThreadAssociationCandidate
     {
         public ThreadAssociationCandidate(AppServerThreadSummary thread, ThreadAssociationStatus status)
         {
@@ -39,9 +39,9 @@ namespace MyCodex.WinForms.Forms
         }
     }
 
-    internal static class ThreadAssociationPlanner
+    public static class ThreadAssociationPlanner
     {
-        internal static List<ThreadAssociationCandidate> BuildCandidates(
+        public static List<ThreadAssociationCandidate> BuildCandidates(
             IEnumerable<AppServerThreadSummary> threads,
             IEnumerable<ChatSession> sessions,
             string targetWorkspaceId,
@@ -79,7 +79,7 @@ namespace MyCodex.WinForms.Forms
             return candidates;
         }
 
-        internal static bool IsVisible(ThreadAssociationCandidate candidate, ThreadAssociationFilterMode filterMode)
+        public static bool IsVisible(ThreadAssociationCandidate candidate, ThreadAssociationFilterMode filterMode)
         {
             if (candidate == null)
             {

@@ -1,10 +1,10 @@
 using System;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal static class ThreadGoalRuntimeStatePlanner
+    public static class ThreadGoalRuntimeStatePlanner
     {
-        internal static string ResolveEffectiveStatus(string persistedStatus, bool isThreadRunning)
+        public static string ResolveEffectiveStatus(string persistedStatus, bool isThreadRunning)
         {
             if (!isThreadRunning || string.IsNullOrWhiteSpace(persistedStatus))
             {

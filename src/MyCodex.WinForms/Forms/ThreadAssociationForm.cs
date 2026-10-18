@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
 using MyCodex.Shared.Constants;
 using MyCodex.WinForms.Localization;

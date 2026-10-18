@@ -1,9 +1,9 @@
 using System;
 using MyCodex.Application.CodingRemote;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal sealed class RemoteHostMutationRefreshPlan
+    public sealed class RemoteHostMutationRefreshPlan
     {
         public RemoteHostMutationRefreshPlan(
             bool reloadLocalStateForCurrentRuntime,
@@ -36,9 +36,9 @@ namespace MyCodex.WinForms.Forms
         }
     }
 
-    internal static class RemoteHostMutationRefreshPlanner
+    public static class RemoteHostMutationRefreshPlanner
     {
-        internal static RemoteHostMutationRefreshPlan Build(RemoteHostMutation mutation)
+        public static RemoteHostMutationRefreshPlan Build(RemoteHostMutation mutation)
         {
             if (mutation == null)
             {

@@ -1,9 +1,9 @@
 using System;
 using MyCodex.Domain.Entities;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal sealed class SessionActivationPlan
+    public sealed class SessionActivationPlan
     {
         public SessionActivationPlan(ChatSession session, bool includeSystemHeader)
         {
@@ -29,14 +29,14 @@ namespace MyCodex.WinForms.Forms
         }
     }
 
-    internal static class SessionActivationWorkflowPlanner
+    public static class SessionActivationWorkflowPlanner
     {
-        internal static SessionActivationPlan BuildActivation(ChatSession session, bool includeSystemHeader)
+        public static SessionActivationPlan BuildActivation(ChatSession session, bool includeSystemHeader)
         {
             return new SessionActivationPlan(session, includeSystemHeader);
         }
 
-        internal static bool ShouldSkipExplicitActivation(ChatSession currentSession, ChatSession requestedSession)
+        public static bool ShouldSkipExplicitActivation(ChatSession currentSession, ChatSession requestedSession)
         {
             return currentSession != null &&
                    requestedSession != null &&

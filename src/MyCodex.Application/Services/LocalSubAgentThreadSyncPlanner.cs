@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MyCodex.Application.DTOs;
-using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
 
-namespace MyCodex.WinForms.Forms
+namespace MyCodex.Application.Services
 {
-    internal static class LocalSubAgentThreadSyncPlanner
+    public static class LocalSubAgentThreadSyncPlanner
     {
-        internal static List<AppServerThreadSummary> FilterCurrentParentSubAgents(
+        public static List<AppServerThreadSummary> FilterCurrentParentSubAgents(
             IEnumerable<AppServerThreadSummary> threads,
             string parentThreadId,
             ISet<string> ignoredThreadIds)
@@ -24,7 +23,7 @@ namespace MyCodex.WinForms.Forms
                 .Skip(1).Select(session => indexed[session.ThreadId]).ToList();
         }
 
-        internal static bool IsUserSubAgent(AppServerThreadSummary thread)
+        public static bool IsUserSubAgent(AppServerThreadSummary thread)
         {
             return thread != null && !string.Equals(thread.SubAgentSourceKind, "review", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(thread.SubAgentSourceKind, "compact", StringComparison.OrdinalIgnoreCase);

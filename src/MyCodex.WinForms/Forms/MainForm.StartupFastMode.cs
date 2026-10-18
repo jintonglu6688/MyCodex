@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MyCodex.Application.Services;
 using MyCodex.WinForms.Localization;
 
 namespace MyCodex.WinForms.Forms
