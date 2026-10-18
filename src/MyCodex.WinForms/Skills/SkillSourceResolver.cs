@@ -56,7 +56,7 @@ namespace MyCodex.WinForms.Skills
                 return CreateSimple(SkillSourceKind.Unknown);
             }
 
-            var skillPath = NormalizePath(ResolveSkillPath(skill.Path));
+            var skillPath = PortableSkillPath.Normalize(ResolveSkillPath(skill.Path));
             var plugin = FindPluginBySourcePath(skillPath, plugins);
             if (plugin != null)
             {
@@ -120,7 +120,7 @@ namespace MyCodex.WinForms.Skills
                 .Select(item => new
                 {
                     Plugin = item,
-                    Root = NormalizePath(item.SourcePath)
+                    Root = PortableSkillPath.Normalize(item.SourcePath)
                 })
                 .Where(item => IsPathUnderRoot(skillPath, item.Root))
                 .OrderByDescending(item => item.Root.Length)
@@ -182,7 +182,7 @@ namespace MyCodex.WinForms.Skills
                 return false;
             }
 
-            var workspaceSkillsRoot = NormalizePath(CombinePortable(workspacePath, ".codex", "skills"));
+            var workspaceSkillsRoot = PortableSkillPath.Normalize(CombinePortable(workspacePath, ".codex", "skills"));
             return IsPathUnderRoot(skillPath, workspaceSkillsRoot);
         }
 
@@ -233,17 +233,10 @@ namespace MyCodex.WinForms.Skills
                 return string.Empty;
             }
 
-            var normalized = NormalizePath(path);
+            var normalized = PortableSkillPath.Normalize(path);
             return normalized.EndsWith("/" + SkillFileEditor.SkillFileName, StringComparison.OrdinalIgnoreCase)
                 ? normalized.Substring(0, normalized.Length - SkillFileEditor.SkillFileName.Length - 1)
                 : normalized;
-        }
-
-        private static string NormalizePath(string path)
-        {
-            return string.IsNullOrWhiteSpace(path)
-                ? string.Empty
-                : path.Trim().Replace('\\', '/').TrimEnd('/');
         }
 
         private static string CombinePortable(params string[] parts)

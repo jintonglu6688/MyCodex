@@ -6,6 +6,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
+using MyCodex.Shared.Helpers;
 using MyCodex.Shared.Localization;
 
 namespace MyCodex.Application.Services
@@ -262,10 +263,10 @@ namespace MyCodex.Application.Services
 
             return new AutomationModelResolution
             {
-                ConfiguredModelId = TrimToNull(definition != null ? definition.ModelId : null),
-                ConfiguredReasoningEffort = TrimToNull(definition != null ? definition.ReasoningEffort : null),
-                ModelId = TrimToNull(definition != null ? definition.ModelId : null),
-                ReasoningEffort = TrimToNull(definition != null ? definition.ReasoningEffort : null)
+                ConfiguredModelId = TextValueHelper.TrimToNull(definition != null ? definition.ModelId : null),
+                ConfiguredReasoningEffort = TextValueHelper.TrimToNull(definition != null ? definition.ReasoningEffort : null),
+                ModelId = TextValueHelper.TrimToNull(definition != null ? definition.ModelId : null),
+                ReasoningEffort = TextValueHelper.TrimToNull(definition != null ? definition.ReasoningEffort : null)
             };
         }
 
@@ -276,11 +277,11 @@ namespace MyCodex.Application.Services
                 return;
             }
 
-            run.ConfiguredModelId = TrimToNull(modelResolution.ConfiguredModelId);
-            run.ConfiguredReasoningEffort = TrimToNull(modelResolution.ConfiguredReasoningEffort);
-            run.ActualModelId = TrimToNull(modelResolution.ModelId);
-            run.ActualReasoningEffort = TrimToNull(modelResolution.ReasoningEffort);
-            run.ModelResolutionMessage = TrimToNull(modelResolution.Message);
+            run.ConfiguredModelId = TextValueHelper.TrimToNull(modelResolution.ConfiguredModelId);
+            run.ConfiguredReasoningEffort = TextValueHelper.TrimToNull(modelResolution.ConfiguredReasoningEffort);
+            run.ActualModelId = TextValueHelper.TrimToNull(modelResolution.ModelId);
+            run.ActualReasoningEffort = TextValueHelper.TrimToNull(modelResolution.ReasoningEffort);
+            run.ModelResolutionMessage = TextValueHelper.TrimToNull(modelResolution.Message);
         }
 
         public bool CompleteByThread(string threadId, string turnId, AutomationRunCompletion completion)
@@ -459,11 +460,6 @@ namespace MyCodex.Application.Services
             catch
             {
             }
-        }
-
-        private static string TrimToNull(string value)
-        {
-            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
     }
 }

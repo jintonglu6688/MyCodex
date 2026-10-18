@@ -8,6 +8,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
+using MyCodex.Shared.Helpers;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
 
@@ -561,12 +562,12 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
-            SelectReasoningEffort(FirstNonEmpty(preferredEffortId, model.DefaultReasoningEffort, ResolveInitialReasoningEffort()));
+            SelectReasoningEffort(TextValueHelper.FirstNonEmptyTrimmed(preferredEffortId, model.DefaultReasoningEffort, ResolveInitialReasoningEffort()));
         }
 
         private void SelectReasoningEffort(string effortId)
         {
-            var normalized = TrimToNull(effortId);
+            var normalized = TextValueHelper.TrimToNull(effortId);
             for (var i = 0; i < _reasoningEffortComboBox.Items.Count; i++)
             {
                 var item = _reasoningEffortComboBox.Items[i] as ReasoningEffortItem;
@@ -690,7 +691,7 @@ namespace MyCodex.WinForms.Forms
         private string GetSelectedModelId()
         {
             var item = _modelComboBox.SelectedItem as AutomationModelItem;
-            return item != null ? TrimToNull(item.ModelId) : ResolveInitialModelId();
+            return item != null ? TextValueHelper.TrimToNull(item.ModelId) : ResolveInitialModelId();
         }
 
         private bool SupportsReasoningEffortForModel(string modelId)
@@ -854,7 +855,7 @@ namespace MyCodex.WinForms.Forms
                 _inputItemsListView.Items.Add(new ListViewItem(new[]
                 {
                     AutomationDisplayText.InputItemKind(item.Type),
-                    FirstNonEmpty(item.DisplayName, item.Name, item.Path),
+                    TextValueHelper.FirstNonEmptyTrimmed(item.DisplayName, item.Name, item.Path),
                     item.Path ?? string.Empty
                 }) { Tag = item });
             }
@@ -879,9 +880,9 @@ namespace MyCodex.WinForms.Forms
             return new AutomationInputItemSnapshot
             {
                 Type = item.Type,
-                Name = TrimToNull(item.Name),
-                DisplayName = TrimToNull(item.DisplayName),
-                Path = TrimToNull(item.Path)
+                Name = TextValueHelper.TrimToNull(item.Name),
+                DisplayName = TextValueHelper.TrimToNull(item.DisplayName),
+                Path = TextValueHelper.TrimToNull(item.Path)
             };
         }
 
@@ -905,19 +906,14 @@ namespace MyCodex.WinForms.Forms
             return result;
         }
 
-        private static string TrimToNull(string value)
-        {
-            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-        }
-
         private string ResolveInitialModelId()
         {
-            return TrimToNull(_context.ModelId);
+            return TextValueHelper.TrimToNull(_context.ModelId);
         }
 
         private string ResolveInitialReasoningEffort()
         {
-            return TrimToNull(_context.ReasoningEffort);
+            return TextValueHelper.TrimToNull(_context.ReasoningEffort);
         }
 
         private static AutomationCreationContext BuildContext(AutomationDefinitionSnapshot definition)
@@ -943,19 +939,6 @@ namespace MyCodex.WinForms.Forms
                 ReasoningEffort = definition.ReasoningEffort,
                 ApprovalMode = definition.ApprovalMode
             };
-        }
-
-        private static string FirstNonEmpty(params string[] values)
-        {
-            foreach (var value in values ?? new string[0])
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    return value.Trim();
-                }
-            }
-
-            return string.Empty;
         }
 
         private static Control CreateLabeledControl(string labelText, Control control)
@@ -1106,7 +1089,7 @@ namespace MyCodex.WinForms.Forms
             {
                 ModelId = string.IsNullOrWhiteSpace(modelId) ? null : modelId.Trim();
                 Text = text ?? string.Empty;
-                DefaultReasoningEffort = TrimToNull(defaultReasoningEffort);
+                DefaultReasoningEffort = TextValueHelper.TrimToNull(defaultReasoningEffort);
                 Efforts = efforts ?? new List<AppServerModelEffortOption>();
             }
 

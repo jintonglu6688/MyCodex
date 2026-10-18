@@ -55,7 +55,7 @@ namespace MyCodex.WinForms.Forms
             _connectionClient = connectionClient ?? throw new ArgumentNullException(nameof(connectionClient));
             _threadClient = threadClient ?? throw new ArgumentNullException(nameof(threadClient));
             _existingThreadIds = new HashSet<string>(existingThreadIds ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
-            _currentWorkspacePath = NormalizePath(currentWorkspacePath);
+            _currentWorkspacePath = WorkspacePathUtilities.NormalizeLocalOrUnixPath(currentWorkspacePath);
             _isWorkspacePathAvailable = isWorkspacePathAvailable ?? IsLocalWorkspacePathAvailable;
 
             Text = UiLocalization.Text("ArchivedThreadRestoreForm.Title", "Restore Archived Threads");
@@ -367,7 +367,7 @@ namespace MyCodex.WinForms.Forms
                     var candidate = item.Tag as ArchivedThreadCandidate;
                     item.Checked = candidate != null &&
                         candidate.CanRestore &&
-                        string.Equals(NormalizePath(candidate.Thread.WorkingDirectory), _currentWorkspacePath, StringComparison.OrdinalIgnoreCase);
+                        string.Equals(WorkspacePathUtilities.NormalizeLocalOrUnixPath(candidate.Thread.WorkingDirectory), _currentWorkspacePath, StringComparison.OrdinalIgnoreCase);
                 }
             }
             finally
@@ -500,31 +500,9 @@ namespace MyCodex.WinForms.Forms
                 : thread.ThreadId;
         }
 
-        private static string NormalizePath(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return string.Empty;
-            }
-
-            try
-            {
-                if (WorkspacePathUtilities.LooksLikeUnixAbsolutePath(path))
-                {
-                    return WorkspacePathUtilities.NormalizeUnixAbsolutePath(path);
-                }
-
-                return Path.GetFullPath(path.Trim());
-            }
-            catch
-            {
-                return path.Trim();
-            }
-        }
-
         private static bool IsLocalWorkspacePathAvailable(string path)
         {
-            return !string.IsNullOrWhiteSpace(path) && Directory.Exists(NormalizePath(path));
+            return !string.IsNullOrWhiteSpace(path) && Directory.Exists(WorkspacePathUtilities.NormalizeLocalOrUnixPath(path));
         }
 
         private static Button CreateButton(string text, string accessibleName)

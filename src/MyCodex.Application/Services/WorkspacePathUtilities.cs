@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace MyCodex.Application.Services
 {
@@ -77,6 +78,32 @@ namespace MyCodex.Application.Services
             }
 
             return parts.Count == 0 ? "/" : "/" + string.Join("/", parts.ToArray());
+        }
+
+        /// <summary>
+        /// Normalizes a Unix absolute path with NormalizeUnixAbsolutePath and any other path with Path.GetFullPath.
+        /// Returns an empty string for blank input and the trimmed input when the path cannot be resolved.
+        /// </summary>
+        public static string NormalizeLocalOrUnixPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                if (LooksLikeUnixAbsolutePath(path))
+                {
+                    return NormalizeUnixAbsolutePath(path);
+                }
+
+                return Path.GetFullPath(path.Trim());
+            }
+            catch
+            {
+                return path.Trim();
+            }
         }
 
         public static string GetWorkspaceName(string normalizedPath)

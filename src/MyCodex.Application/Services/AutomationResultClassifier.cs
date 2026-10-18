@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MyCodex.Application.DTOs;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
+using MyCodex.Shared.Helpers;
 
 namespace MyCodex.Application.Services
 {
@@ -30,8 +31,8 @@ namespace MyCodex.Application.Services
                 run.TurnId = completion.TurnId;
             }
 
-            run.Summary = TrimToNull(completion.Summary);
-            run.ErrorMessage = TrimToNull(completion.ErrorMessage);
+            run.Summary = TextValueHelper.TrimToNull(completion.Summary);
+            run.ErrorMessage = TextValueHelper.TrimToNull(completion.ErrorMessage);
             run.GeneratedArtifacts = CopyList(completion.GeneratedArtifacts);
             run.ChangedFiles = CopyList(completion.ChangedFiles);
 
@@ -89,11 +90,6 @@ namespace MyCodex.Application.Services
             }
 
             return result;
-        }
-
-        private static string TrimToNull(string value)
-        {
-            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
     }
 }

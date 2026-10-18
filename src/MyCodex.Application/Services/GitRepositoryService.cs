@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Shared.Helpers;
 using MyCodex.Shared.Localization;
 
 namespace MyCodex.Application.Services
@@ -812,7 +813,7 @@ namespace MyCodex.Application.Services
                 var gitInfo = ReadLocalGitInfo(normalizedPath);
                 snapshot.IsGitRepository = gitInfo != null && gitInfo.IsGitRepository;
                 snapshot.CanInitializeRepository = !snapshot.IsGitRepository;
-                snapshot.StatusErrorMessage = FirstNonEmpty(
+                snapshot.StatusErrorMessage = TextValueHelper.FirstNonEmptyTrimmed(
                     statusResult.StandardError,
                     statusResult.StandardOutput,
                     SharedLocalization.Text("GitRepositoryService.Error.StatusFailed", "Failed to read Git status."));
@@ -937,7 +938,7 @@ namespace MyCodex.Application.Services
                 StandardError = result.StandardError,
                 DisplayMessage = result.Success
                     ? SharedLocalization.Text("GitRepositoryService.Operation.ReadCommitDiff", "Loaded commit diff.")
-                    : FirstNonEmpty(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
+                    : TextValueHelper.FirstNonEmptyTrimmed(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
             };
         }
 
@@ -951,7 +952,7 @@ namespace MyCodex.Application.Services
                 15000);
             if (!result.Success)
             {
-                throw new InvalidOperationException(FirstNonEmpty(
+                throw new InvalidOperationException(TextValueHelper.FirstNonEmptyTrimmed(
                     result.StandardError,
                     result.StandardOutput,
                     SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed.")));
@@ -1111,8 +1112,8 @@ namespace MyCodex.Application.Services
                 version.Success ? "ok" : "error",
                 SharedLocalization.Text("GitRepositoryService.Diagnostics.GitVersion.Title", "Git executable"),
                 version.Success
-                    ? FirstNonEmpty(version.StandardOutput, SharedLocalization.Text("GitRepositoryService.Diagnostics.GitVersion.Available", "Git is available."))
-                    : FirstNonEmpty(version.StandardError, version.StandardOutput, SharedLocalization.Text("GitRepositoryService.Diagnostics.GitVersion.Unavailable", "Git is not available.")),
+                    ? TextValueHelper.FirstNonEmptyTrimmed(version.StandardOutput, SharedLocalization.Text("GitRepositoryService.Diagnostics.GitVersion.Available", "Git is available."))
+                    : TextValueHelper.FirstNonEmptyTrimmed(version.StandardError, version.StandardOutput, SharedLocalization.Text("GitRepositoryService.Diagnostics.GitVersion.Unavailable", "Git is not available.")),
                 version.Success ? string.Empty : SharedLocalization.Text("GitRepositoryService.Diagnostics.GitVersion.Suggestion", "Install Git or check the runtime Git configuration."));
 
             var repository = RunCommand(normalizedPath, Args("rev-parse", "--is-inside-work-tree"), 15000);
@@ -1123,7 +1124,7 @@ namespace MyCodex.Application.Services
                 SharedLocalization.Text("GitRepositoryService.Diagnostics.Repository.Title", "Repository"),
                 isRepository
                     ? SharedLocalization.Text("GitRepositoryService.Diagnostics.Repository.Valid", "Current workspace is inside a Git work tree.")
-                    : FirstNonEmpty(repository.StandardError, repository.StandardOutput, SharedLocalization.Text("GitRepositoryService.Diagnostics.Repository.Invalid", "Current workspace is not a Git repository.")),
+                    : TextValueHelper.FirstNonEmptyTrimmed(repository.StandardError, repository.StandardOutput, SharedLocalization.Text("GitRepositoryService.Diagnostics.Repository.Invalid", "Current workspace is not a Git repository.")),
                 isRepository ? string.Empty : SharedLocalization.Text("GitRepositoryService.Diagnostics.Repository.Suggestion", "Initialize a repository or open an existing Git workspace."));
             if (!isRepository)
             {
@@ -1195,7 +1196,7 @@ namespace MyCodex.Application.Services
 
         private void AddRepositoryOwnershipDiagnostic(IList<GitRepositoryDiagnosticEntry> entries, string standardOutput, string standardError)
         {
-            var detail = FirstNonEmpty(standardError, standardOutput, string.Empty);
+            var detail = TextValueHelper.FirstNonEmptyTrimmed(standardError, standardOutput, string.Empty);
             var hasOwnershipProblem = ContainsRepositoryOwnershipError(detail);
             AddDiagnostic(
                 entries,
@@ -1248,8 +1249,8 @@ namespace MyCodex.Application.Services
                 SharedLocalization.Text(
                     "GitRepositoryService.Diagnostics.WorkingTree.Detail.Template",
                     "Branch: {0}\r\nUpstream: {1}\r\nStaged: {2}\r\nUnstaged: {3}\r\nUntracked: {4}\r\nConflicts: {5}\r\nStashes: {6}\r\nAhead: {7}\r\nBehind: {8}"),
-                FirstNonEmpty(snapshot.Branch, SharedLocalization.Text("GitRepositoryService.Diagnostics.Value.Unknown", "(unknown)")),
-                FirstNonEmpty(snapshot.Upstream, SharedLocalization.Text("GitRepositoryService.Diagnostics.Value.None", "(none)")),
+                TextValueHelper.FirstNonEmptyTrimmed(snapshot.Branch, SharedLocalization.Text("GitRepositoryService.Diagnostics.Value.Unknown", "(unknown)")),
+                TextValueHelper.FirstNonEmptyTrimmed(snapshot.Upstream, SharedLocalization.Text("GitRepositoryService.Diagnostics.Value.None", "(none)")),
                 snapshot.StagedCount,
                 snapshot.UnstagedCount,
                 snapshot.UntrackedCount,
@@ -1274,7 +1275,7 @@ namespace MyCodex.Application.Services
                     entries,
                     "warning",
                     SharedLocalization.Text("GitRepositoryService.Diagnostics.ObjectDatabase.Title", "Object database"),
-                    FirstNonEmpty(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Diagnostics.ObjectDatabase.Unavailable", "Object database statistics are unavailable.")),
+                    TextValueHelper.FirstNonEmptyTrimmed(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Diagnostics.ObjectDatabase.Unavailable", "Object database statistics are unavailable.")),
                     SharedLocalization.Text("GitRepositoryService.Diagnostics.ObjectDatabase.UnavailableSuggestion", "Run diagnostics again later, or use the command line if Git reports repository integrity errors."));
                 return;
             }
@@ -1434,7 +1435,7 @@ namespace MyCodex.Application.Services
                 StandardError = result.StandardError,
                 DisplayMessage = result.Success
                     ? SharedLocalization.Text("GitRepositoryService.Operation.ReadStashDiff", "Loaded stash diff.")
-                    : FirstNonEmpty(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
+                    : TextValueHelper.FirstNonEmptyTrimmed(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
             };
         }
 
@@ -1459,7 +1460,7 @@ namespace MyCodex.Application.Services
                 StandardError = result.StandardError,
                 DisplayMessage = result.Success
                     ? SharedLocalization.Text("GitRepositoryService.Operation.ReadStashFileDiff", "Loaded stash file diff.")
-                    : FirstNonEmpty(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
+                    : TextValueHelper.FirstNonEmptyTrimmed(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
             };
         }
 
@@ -1959,7 +1960,7 @@ namespace MyCodex.Application.Services
                 StandardError = result.StandardError,
                 DisplayMessage = result.Success
                     ? SharedLocalization.Text("GitRepositoryService.Operation.ReadDiff", "Loaded selected diff.")
-                    : FirstNonEmpty(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
+                    : TextValueHelper.FirstNonEmptyTrimmed(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
             };
         }
 
@@ -2117,7 +2118,7 @@ namespace MyCodex.Application.Services
                 ExitCode = result.ExitCode,
                 StandardOutput = result.StandardOutput,
                 StandardError = result.StandardError,
-                DisplayMessage = FirstNonEmpty(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
+                DisplayMessage = TextValueHelper.FirstNonEmptyTrimmed(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
             };
         }
 
@@ -2153,7 +2154,7 @@ namespace MyCodex.Application.Services
                 StandardError = result.StandardError,
                 DisplayMessage = result.Success
                     ? SharedLocalization.Text("GitRepositoryService.Operation.ReadConflictDetails", "Loaded conflict details.")
-                    : FirstNonEmpty(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
+                    : TextValueHelper.FirstNonEmptyTrimmed(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
             };
         }
 
@@ -2289,7 +2290,7 @@ namespace MyCodex.Application.Services
                 StandardError = result.StandardError,
                 DisplayMessage = result.Success
                     ? successMessage
-                    : FirstNonEmpty(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
+                    : TextValueHelper.FirstNonEmptyTrimmed(result.StandardError, result.StandardOutput, SharedLocalization.Text("GitRepositoryService.Error.OperationFailed", "Git operation failed."))
             };
         }
 
@@ -2365,24 +2366,6 @@ namespace MyCodex.Application.Services
             return normalizedPath;
         }
 
-        private static string FirstNonEmpty(params string[] values)
-        {
-            if (values == null)
-            {
-                return string.Empty;
-            }
-
-            for (var i = 0; i < values.Length; i++)
-            {
-                if (!string.IsNullOrWhiteSpace(values[i]))
-                {
-                    return values[i].Trim();
-                }
-            }
-
-            return string.Empty;
-        }
-
         private static bool IsAlreadyUpToDateResult(GitOperationResult result)
         {
             if (result == null || !result.Success)
@@ -2390,7 +2373,7 @@ namespace MyCodex.Application.Services
                 return false;
             }
 
-            var combined = FirstNonEmpty(result.StandardOutput, result.StandardError);
+            var combined = TextValueHelper.FirstNonEmptyTrimmed(result.StandardOutput, result.StandardError);
             return combined.IndexOf("already up to date", StringComparison.OrdinalIgnoreCase) >= 0 ||
                    combined.IndexOf("is up to date", StringComparison.OrdinalIgnoreCase) >= 0;
         }
@@ -2398,7 +2381,7 @@ namespace MyCodex.Application.Services
         private static void ThrowGitReadFailure(string resourceKey, string fallback, GitCommandResult result)
         {
             var prefix = SharedLocalization.Text(resourceKey, fallback);
-            var details = FirstNonEmpty(
+            var details = TextValueHelper.FirstNonEmptyTrimmed(
                 result == null ? null : result.StandardError,
                 result == null ? null : result.StandardOutput);
             throw new InvalidOperationException(string.IsNullOrWhiteSpace(details)
@@ -2408,7 +2391,7 @@ namespace MyCodex.Application.Services
 
         private static bool IsEmptyCommitHistoryResult(GitCommandResult result)
         {
-            var text = FirstNonEmpty(
+            var text = TextValueHelper.FirstNonEmptyTrimmed(
                 result == null ? null : result.StandardError,
                 result == null ? null : result.StandardOutput);
             return text.IndexOf("does not have any commits", StringComparison.OrdinalIgnoreCase) >= 0 ||

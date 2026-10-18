@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Domain.Entities;
+using MyCodex.Shared.Helpers;
 using MyCodex.Shared.Localization;
 
 namespace MyCodex.Application.Services
@@ -33,8 +34,8 @@ namespace MyCodex.Application.Services
 
         public async Task<AutomationModelResolution> ResolveAsync(AutomationDefinitionSnapshot definition)
         {
-            var configuredModelId = TrimToNull(definition != null ? definition.ModelId : null);
-            var configuredReasoningEffort = TrimToNull(definition != null ? definition.ReasoningEffort : null);
+            var configuredModelId = TextValueHelper.TrimToNull(definition != null ? definition.ModelId : null);
+            var configuredReasoningEffort = TextValueHelper.TrimToNull(definition != null ? definition.ReasoningEffort : null);
             if (_officialSettingsResolver != null)
             {
                 var settings = await _officialSettingsResolver(definition).ConfigureAwait(false);
@@ -42,8 +43,8 @@ namespace MyCodex.Application.Services
                     settings.ModelId, settings.ReasoningEffort, false, null);
             }
             var models = await LoadModelsSafeAsync().ConfigureAwait(false);
-            var defaultModelId = TrimToNull(_defaultModelIdProvider != null ? _defaultModelIdProvider() : null);
-            var defaultReasoningEffort = TrimToNull(_defaultReasoningEffortProvider != null ? _defaultReasoningEffortProvider() : null);
+            var defaultModelId = TextValueHelper.TrimToNull(_defaultModelIdProvider != null ? _defaultModelIdProvider() : null);
+            var defaultReasoningEffort = TextValueHelper.TrimToNull(_defaultReasoningEffortProvider != null ? _defaultReasoningEffortProvider() : null);
             var configuredModel = FindModel(models, configuredModelId);
 
             if (!string.IsNullOrWhiteSpace(configuredModelId) &&
@@ -59,7 +60,7 @@ namespace MyCodex.Application.Services
             }
 
             var fallbackModel = SelectFallbackModel(models, defaultModelId);
-            var fallbackModelId = TrimToNull(fallbackModel != null ? fallbackModel.ModelId : defaultModelId);
+            var fallbackModelId = TextValueHelper.TrimToNull(fallbackModel != null ? fallbackModel.ModelId : defaultModelId);
             var fallbackReasoningEffort = ResolveReasoningEffort(fallbackModelId, fallbackModel, null, defaultReasoningEffort);
             var usedFallback = !string.IsNullOrWhiteSpace(configuredModelId) &&
                                !string.Equals(configuredModelId, fallbackModelId, StringComparison.OrdinalIgnoreCase);
@@ -98,7 +99,7 @@ namespace MyCodex.Application.Services
 
         private string ResolveReasoningEffort(string modelId, AppServerModelOption model, string preferredReasoningEffort, string defaultReasoningEffort)
         {
-            modelId = TrimToNull(modelId);
+            modelId = TextValueHelper.TrimToNull(modelId);
             if (string.IsNullOrWhiteSpace(modelId))
             {
                 return NormalizeReasoningEffort(preferredReasoningEffort, defaultReasoningEffort);
@@ -111,7 +112,7 @@ namespace MyCodex.Application.Services
 
             return NormalizeReasoningEffort(
                 preferredReasoningEffort,
-                TrimToNull(model != null ? model.DefaultReasoningEffort : null),
+                TextValueHelper.TrimToNull(model != null ? model.DefaultReasoningEffort : null),
                 defaultReasoningEffort);
         }
 
@@ -149,12 +150,12 @@ namespace MyCodex.Application.Services
         {
             return new AutomationModelResolution
             {
-                ConfiguredModelId = TrimToNull(configuredModelId),
-                ConfiguredReasoningEffort = TrimToNull(configuredReasoningEffort),
-                ModelId = TrimToNull(modelId),
-                ReasoningEffort = TrimToNull(reasoningEffort),
+                ConfiguredModelId = TextValueHelper.TrimToNull(configuredModelId),
+                ConfiguredReasoningEffort = TextValueHelper.TrimToNull(configuredReasoningEffort),
+                ModelId = TextValueHelper.TrimToNull(modelId),
+                ReasoningEffort = TextValueHelper.TrimToNull(reasoningEffort),
                 UsedFallback = usedFallback,
-                Message = TrimToNull(message)
+                Message = TextValueHelper.TrimToNull(message)
             };
         }
 
@@ -180,11 +181,6 @@ namespace MyCodex.Application.Services
             }
 
             return null;
-        }
-
-        private static string TrimToNull(string value)
-        {
-            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
     }
 }

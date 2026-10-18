@@ -19,7 +19,7 @@ namespace MyCodex.WinForms.Skills
         public OfficialSkillFileOperations(IAppServerFileSystemClient fileSystemClient, string workspacePath)
         {
             _fileSystemClient = fileSystemClient ?? throw new ArgumentNullException(nameof(fileSystemClient));
-            _workspacePath = NormalizePath(workspacePath);
+            _workspacePath = PortableSkillPath.Normalize(workspacePath);
         }
 
         public void RefreshObservations(IEnumerable<AppServerSkillInfo> skills)
@@ -212,7 +212,7 @@ namespace MyCodex.WinForms.Skills
 
         private static string ResolveSkillDirectory(string path)
         {
-            var normalized = NormalizePath(path);
+            var normalized = PortableSkillPath.Normalize(path);
             return normalized.EndsWith("/" + SkillFileName, StringComparison.OrdinalIgnoreCase)
                 ? normalized.Substring(0, normalized.Length - SkillFileName.Length - 1)
                 : normalized;
@@ -222,12 +222,12 @@ namespace MyCodex.WinForms.Skills
         {
             return string.Join("/", (parts ?? new string[0])
                 .Where(item => !string.IsNullOrWhiteSpace(item))
-                .Select((item, index) => index == 0 ? NormalizePath(item) : item.Trim().Trim('/', '\\')));
+                .Select((item, index) => index == 0 ? PortableSkillPath.Normalize(item) : item.Trim().Trim('/', '\\')));
         }
 
         private static string GetParentPath(string path)
         {
-            var normalized = NormalizePath(path);
+            var normalized = PortableSkillPath.Normalize(path);
             var separator = normalized.LastIndexOf('/');
             return separator <= 0 ? string.Empty : normalized.Substring(0, separator);
         }
@@ -239,19 +239,14 @@ namespace MyCodex.WinForms.Skills
 
         private static bool IsUnderRoot(string path, string root)
         {
-            var normalizedPath = NormalizePath(path);
-            var normalizedRoot = NormalizePath(root).TrimEnd('/');
+            var normalizedPath = PortableSkillPath.Normalize(path);
+            var normalizedRoot = PortableSkillPath.Normalize(root).TrimEnd('/');
             return normalizedPath.StartsWith(normalizedRoot + "/", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool PathsEqual(string left, string right)
         {
-            return string.Equals(NormalizePath(left), NormalizePath(right), StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static string NormalizePath(string path)
-        {
-            return string.IsNullOrWhiteSpace(path) ? string.Empty : path.Trim().Replace('\\', '/').TrimEnd('/');
+            return string.Equals(PortableSkillPath.Normalize(left), PortableSkillPath.Normalize(right), StringComparison.OrdinalIgnoreCase);
         }
     }
 }

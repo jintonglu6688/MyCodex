@@ -68,7 +68,7 @@ namespace MyCodex.WinForms.Forms
             _connectionClient = connectionClient ?? throw new ArgumentNullException(nameof(connectionClient));
             _threadClient = threadClient ?? throw new ArgumentNullException(nameof(threadClient));
             _existingThreadIds = new HashSet<string>(existingThreadIds ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
-            _currentWorkspacePath = NormalizePath(currentWorkspacePath);
+            _currentWorkspacePath = WorkspacePathUtilities.NormalizeLocalOrUnixPath(currentWorkspacePath);
             _isWorkspacePathAvailable = isWorkspacePathAvailable ?? IsLocalWorkspacePathAvailable;
             _shouldShowThread = shouldShowThread ?? (_ => true);
 
@@ -354,7 +354,7 @@ namespace MyCodex.WinForms.Forms
             {
                 var summary = item.Tag as AppServerThreadSummary;
                 item.Checked = summary != null &&
-                    string.Equals(NormalizePath(summary.WorkingDirectory), _currentWorkspacePath, StringComparison.OrdinalIgnoreCase);
+                    string.Equals(WorkspacePathUtilities.NormalizeLocalOrUnixPath(summary.WorkingDirectory), _currentWorkspacePath, StringComparison.OrdinalIgnoreCase);
             }
 
             UpdateImportButtonState();
@@ -488,7 +488,7 @@ namespace MyCodex.WinForms.Forms
 
         private static string GetWorkspaceName(string workingDirectory)
         {
-            var normalizedPath = NormalizePath(workingDirectory);
+            var normalizedPath = WorkspacePathUtilities.NormalizeLocalOrUnixPath(workingDirectory);
             if (string.IsNullOrWhiteSpace(normalizedPath))
             {
                 return UiLocalization.Text("ThreadImportForm.Value.UnknownWorkspace", "Unknown Workspace");
@@ -499,31 +499,9 @@ namespace MyCodex.WinForms.Forms
             return string.IsNullOrWhiteSpace(directoryName) ? normalizedPath : directoryName;
         }
 
-        private static string NormalizePath(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return string.Empty;
-            }
-
-            try
-            {
-                if (WorkspacePathUtilities.LooksLikeUnixAbsolutePath(path))
-                {
-                    return WorkspacePathUtilities.NormalizeUnixAbsolutePath(path);
-                }
-
-                return Path.GetFullPath(path.Trim());
-            }
-            catch
-            {
-                return path.Trim();
-            }
-        }
-
         private static bool IsLocalWorkspacePathAvailable(string path)
         {
-            return !string.IsNullOrWhiteSpace(path) && Directory.Exists(NormalizePath(path));
+            return !string.IsNullOrWhiteSpace(path) && Directory.Exists(WorkspacePathUtilities.NormalizeLocalOrUnixPath(path));
         }
 
         private static Button CreateButton(string text, string accessibleName)

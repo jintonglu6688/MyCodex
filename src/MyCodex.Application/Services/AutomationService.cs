@@ -5,6 +5,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
+using MyCodex.Shared.Helpers;
 using MyCodex.Shared.Localization;
 
 namespace MyCodex.Application.Services
@@ -51,15 +52,15 @@ namespace MyCodex.Application.Services
             {
                 Id = _newId(),
                 Name = request.Name.Trim(),
-                Description = TrimToNull(request.Description),
+                Description = TextValueHelper.TrimToNull(request.Description),
                 Kind = request.Kind,
                 Enabled = true,
                 Prompt = request.Prompt.Trim(),
                 InputItems = CloneInputItems(request.InputItems),
                 Schedule = request.Schedule ?? new AutomationScheduleSnapshot(),
                 Context = request.Context ?? new AutomationContextSnapshot(),
-                ModelId = TrimToNull(request.ModelId),
-                ReasoningEffort = TrimToNull(request.ReasoningEffort),
+                ModelId = TextValueHelper.TrimToNull(request.ModelId),
+                ReasoningEffort = TextValueHelper.TrimToNull(request.ReasoningEffort),
                 ApprovalMode = request.ApprovalMode,
                 AllowNoFindingsAutoArchive = request.AllowNoFindingsAutoArchive,
                 CreatedAt = now,
@@ -89,14 +90,14 @@ namespace MyCodex.Application.Services
                 snapshot = Normalize(snapshot);
                 definition = FindDefinition(snapshot, request.Id);
                 definition.Name = request.Name.Trim();
-                definition.Description = TrimToNull(request.Description);
+                definition.Description = TextValueHelper.TrimToNull(request.Description);
                 definition.Kind = request.Kind;
                 definition.Prompt = request.Prompt.Trim();
                 definition.InputItems = CloneInputItems(request.InputItems);
                 definition.Schedule = request.Schedule ?? new AutomationScheduleSnapshot();
                 definition.Context = request.Context ?? new AutomationContextSnapshot();
-                definition.ModelId = TrimToNull(request.ModelId);
-                definition.ReasoningEffort = TrimToNull(request.ReasoningEffort);
+                definition.ModelId = TextValueHelper.TrimToNull(request.ModelId);
+                definition.ReasoningEffort = TextValueHelper.TrimToNull(request.ReasoningEffort);
                 definition.ApprovalMode = request.ApprovalMode;
                 definition.AllowNoFindingsAutoArchive = request.AllowNoFindingsAutoArchive;
                 definition.UpdatedAt = _now();
@@ -264,11 +265,6 @@ namespace MyCodex.Application.Services
             }
         }
 
-        private static string TrimToNull(string value)
-        {
-            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-        }
-
         private static List<AutomationInputItemSnapshot> CloneInputItems(IEnumerable<AutomationInputItemSnapshot> inputItems)
         {
             var clones = new List<AutomationInputItemSnapshot>();
@@ -287,9 +283,9 @@ namespace MyCodex.Application.Services
                 clones.Add(new AutomationInputItemSnapshot
                 {
                     Type = item.Type,
-                    Name = TrimToNull(item.Name),
-                    DisplayName = TrimToNull(item.DisplayName),
-                    Path = TrimToNull(item.Path)
+                    Name = TextValueHelper.TrimToNull(item.Name),
+                    DisplayName = TextValueHelper.TrimToNull(item.DisplayName),
+                    Path = TextValueHelper.TrimToNull(item.Path)
                 });
             }
 

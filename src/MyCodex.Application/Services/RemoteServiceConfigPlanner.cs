@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using MyCodex.Application.RemoteRelay;
 using MyCodex.Domain.Entities;
+using MyCodex.Shared.Helpers;
 
 namespace MyCodex.Application.Services
 {
@@ -197,18 +198,18 @@ namespace MyCodex.Application.Services
             var embedded = IsEmbeddedMode(snapshot.RemoteServiceMode);
             return new RelayHostConfig
             {
-                HostDisplayName = TrimToNull(snapshot.ThisPcName),
-                RelayHost = TrimToNull(snapshot.RelayHost),
-                ConnectionHost = embedded ? TrimToNull(snapshot.EmbeddedRelayInternalHost) : null,
+                HostDisplayName = TextValueHelper.TrimToNull(snapshot.ThisPcName),
+                RelayHost = TextValueHelper.TrimToNull(snapshot.RelayHost),
+                ConnectionHost = embedded ? TextValueHelper.TrimToNull(snapshot.EmbeddedRelayInternalHost) : null,
                 ConnectionPort = embedded ? snapshot.EmbeddedRelayInternalPort : 0,
                 ConnectionTlsRequired = embedded && snapshot.EmbeddedRelayInternalUseTls,
                 RelayPort = snapshot.RelayPort,
                 TlsRequired = snapshot.UseTls,
-                CertificateSha256 = embedded ? TrimToNull(snapshot.EmbeddedRelayCertificateSha256) : null,
-                TenantId = TrimToNull(snapshot.TenantId),
+                CertificateSha256 = embedded ? TextValueHelper.TrimToNull(snapshot.EmbeddedRelayCertificateSha256) : null,
+                TenantId = TextValueHelper.TrimToNull(snapshot.TenantId),
                 TenantSecret = accessSecret,
-                RelaySigningPublicKey = TrimToNull(snapshot.RelaySigningPublicKey),
-                RelaySigningKeyFingerprint = TrimToNull(snapshot.RelaySigningKeyFingerprint)
+                RelaySigningPublicKey = TextValueHelper.TrimToNull(snapshot.RelaySigningPublicKey),
+                RelaySigningKeyFingerprint = TextValueHelper.TrimToNull(snapshot.RelaySigningKeyFingerprint)
             };
         }
 
@@ -234,11 +235,6 @@ namespace MyCodex.Application.Services
                 CanRefreshDevices = configured,
                 CanRevokeDevice = deviceSelected
             };
-        }
-
-        private static string TrimToNull(string value)
-        {
-            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
         private static string NormalizeMode(string mode)

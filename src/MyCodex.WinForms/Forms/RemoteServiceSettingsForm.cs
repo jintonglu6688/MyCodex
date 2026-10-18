@@ -7,6 +7,7 @@ using MyCodex.Application.Interfaces;
 using MyCodex.Application.RemoteRelay;
 using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
+using MyCodex.Shared.Helpers;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
 
@@ -327,7 +328,7 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
-            var relayHost = TrimToNull(_serviceHostTextBox.Text);
+            var relayHost = TextValueHelper.TrimToNull(_serviceHostTextBox.Text);
             if (relayHost == null)
             {
                 SetServerInfoStatus(
@@ -436,7 +437,7 @@ namespace MyCodex.WinForms.Forms
             }
 
             RemoteServiceConfigPlanner.SelectMode(_snapshot, selectedMode);
-            _snapshot.ThisPcName = TrimToNull(_thisPcNameTextBox.Text);
+            _snapshot.ThisPcName = TextValueHelper.TrimToNull(_thisPcNameTextBox.Text);
             RemoteServiceConfigPlanner.EnsureDefaults(_snapshot, Environment.MachineName);
             _hostIdTextBox.Text = _snapshot.HostId ?? string.Empty;
 
@@ -476,7 +477,7 @@ namespace MyCodex.WinForms.Forms
 
         private void CaptureSelectedModeFields()
         {
-            var relayHost = TrimToNull(_serviceHostTextBox.Text);
+            var relayHost = TextValueHelper.TrimToNull(_serviceHostTextBox.Text);
             var relayPort = Convert.ToInt32(_portNumericUpDown.Value);
             var mode = string.IsNullOrWhiteSpace(_loadedMode) ? SelectedServiceModeForTests : _loadedMode;
             if (IsEmbeddedMode(mode))
@@ -488,7 +489,7 @@ namespace MyCodex.WinForms.Forms
             }
 
             var profile = _snapshot.ExternalProfile;
-            if (_saveSharedAsync == null && (!string.Equals(TrimToNull(profile.RelayHost), relayHost, StringComparison.OrdinalIgnoreCase) ||
+            if (_saveSharedAsync == null && (!string.Equals(TextValueHelper.TrimToNull(profile.RelayHost), relayHost, StringComparison.OrdinalIgnoreCase) ||
                 profile.RelayPort != relayPort ||
                 profile.UseTls != _useTlsCheckBox.Checked))
             {
@@ -499,7 +500,7 @@ namespace MyCodex.WinForms.Forms
             profile.RelayHost = relayHost;
             profile.RelayPort = relayPort;
             profile.UseTls = _useTlsCheckBox.Checked;
-            profile.TenantId = TrimToNull(_tenantIdTextBox.Text);
+            profile.TenantId = TextValueHelper.TrimToNull(_tenantIdTextBox.Text);
             _externalSecretDraft = _accessSecretTextBox.Text;
         }
 
@@ -718,11 +719,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyDialogButton(button, glyph);
             return button;
-        }
-
-        private static string TrimToNull(string value)
-        {
-            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
         private static bool IsEmbeddedMode(string mode)

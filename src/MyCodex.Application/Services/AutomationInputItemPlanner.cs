@@ -4,6 +4,7 @@ using System.IO;
 using MyCodex.Application.DTOs;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
+using MyCodex.Shared.Helpers;
 using MyCodex.Shared.Localization;
 
 namespace MyCodex.Application.Services
@@ -60,7 +61,7 @@ namespace MyCodex.Application.Services
 
         private AutomationInputItemPlan BuildStructuredInput(AutomationInputItemSnapshot item)
         {
-            var displayName = FirstNonEmpty(item.Name, item.DisplayName, item.Path, "(unnamed)");
+            var displayName = TextValueHelper.FirstNonEmptyTrimmed(item.Name, item.DisplayName, item.Path, "(unnamed)");
             var path = item.Path == null ? null : item.Path.Trim();
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -77,7 +78,7 @@ namespace MyCodex.Application.Services
                 new AppServerUserInputItem
                 {
                     Type = item.Type == AutomationInputItemKind.Plugin ? "mention" : "skill",
-                    Name = FirstNonEmpty(item.Name, item.DisplayName, path),
+                    Name = TextValueHelper.FirstNonEmptyTrimmed(item.Name, item.DisplayName, path),
                     Path = path
                 }
             });
@@ -109,19 +110,6 @@ namespace MyCodex.Application.Services
             return string.Format(
                 SharedLocalization.Text("AutomationInputItemPlanner.Error.SkillUnavailable", "Automation referenced skill is unavailable: {0}"),
                 displayName);
-        }
-
-        private static string FirstNonEmpty(params string[] values)
-        {
-            foreach (var value in values ?? new string[0])
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    return value.Trim();
-                }
-            }
-
-            return string.Empty;
         }
     }
 }

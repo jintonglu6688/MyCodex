@@ -4,6 +4,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
+using MyCodex.Shared.Helpers;
 
 namespace MyCodex.Infrastructure.AppServer
 {
@@ -120,30 +121,12 @@ namespace MyCodex.Infrastructure.AppServer
                     return RuntimeFileSystemOperationResult.Ok(successMessage);
                 }
 
-                return RuntimeFileSystemOperationResult.Fail(FirstNonEmpty(result.StandardError, result.StandardOutput, "Runtime file operation failed."));
+                return RuntimeFileSystemOperationResult.Fail(TextValueHelper.FirstNonEmptyTrimmed(result.StandardError, result.StandardOutput, "Runtime file operation failed."));
             }
             catch (Exception ex)
             {
                 return RuntimeFileSystemOperationResult.Fail(ex.Message);
             }
-        }
-
-        private static string FirstNonEmpty(params string[] values)
-        {
-            if (values == null)
-            {
-                return string.Empty;
-            }
-
-            for (var i = 0; i < values.Length; i++)
-            {
-                if (!string.IsNullOrWhiteSpace(values[i]))
-                {
-                    return values[i].Trim();
-                }
-            }
-
-            return string.Empty;
         }
     }
 }

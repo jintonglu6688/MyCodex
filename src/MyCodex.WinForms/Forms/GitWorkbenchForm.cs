@@ -11,6 +11,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
 using MyCodex.Shared.Constants;
+using MyCodex.Shared.Helpers;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
 
@@ -682,7 +683,7 @@ namespace MyCodex.WinForms.Forms
                 return status.Branch;
             }
 
-            return FirstNonEmpty(_initialBranchLabel, UiLocalization.Text("GitWorkbenchForm.Value.UnknownBranch", "(Unknown branch)"));
+            return TextValueHelper.FirstNonEmptyTrimmed(_initialBranchLabel, UiLocalization.Text("GitWorkbenchForm.Value.UnknownBranch", "(Unknown branch)"));
         }
 
         private static int GetGroupOrder(GitChangedFileEntry entry)
@@ -733,7 +734,7 @@ namespace MyCodex.WinForms.Forms
                     workspaceText);
             }
 
-            var branch = FirstNonEmpty(status.Branch, _initialBranchLabel, UiLocalization.Text("GitWorkbenchForm.Value.UnknownBranch", "(Unknown branch)"));
+            var branch = TextValueHelper.FirstNonEmptyTrimmed(status.Branch, _initialBranchLabel, UiLocalization.Text("GitWorkbenchForm.Value.UnknownBranch", "(Unknown branch)"));
             var upstream = string.IsNullOrWhiteSpace(status.Upstream)
                 ? UiLocalization.Text("GitWorkbenchForm.Value.NoUpstream", "(No upstream)")
                 : status.Upstream;
@@ -1559,7 +1560,7 @@ namespace MyCodex.WinForms.Forms
                 ? UiLocalization.Text("GitWorkbenchForm.Value.UnknownCommit", "(Unknown commit)")
                 : string.Format(
                     UiLocalization.Text("GitWorkbenchForm.Value.CommitSummary.Template", "{0} {1}"),
-                    FirstNonEmpty(lastCommit.ShortSha, lastCommit.FullSha),
+                    TextValueHelper.FirstNonEmptyTrimmed(lastCommit.ShortSha, lastCommit.FullSha),
                     lastCommit.Subject);
             var messageMode = string.IsNullOrWhiteSpace(subject) && string.IsNullOrWhiteSpace(body)
                 ? UiLocalization.Text("GitWorkbenchForm.Value.AmendReuseMessage", "Reuse previous commit message")
@@ -1585,8 +1586,8 @@ namespace MyCodex.WinForms.Forms
         private string BuildPushConfirmText(GitRepositoryStatusSnapshot status)
         {
             status = status ?? new GitRepositoryStatusSnapshot();
-            var branch = FirstNonEmpty(status.Branch, UiLocalization.Text("GitWorkbenchForm.Value.UnknownBranch", "(Unknown branch)"));
-            var upstream = FirstNonEmpty(status.Upstream, UiLocalization.Text("GitWorkbenchForm.Value.NoUpstream", "(No upstream)"));
+            var branch = TextValueHelper.FirstNonEmptyTrimmed(status.Branch, UiLocalization.Text("GitWorkbenchForm.Value.UnknownBranch", "(Unknown branch)"));
+            var upstream = TextValueHelper.FirstNonEmptyTrimmed(status.Upstream, UiLocalization.Text("GitWorkbenchForm.Value.NoUpstream", "(No upstream)"));
             var noAheadText = status.AheadCount.GetValueOrDefault() == 0
                 ? UiLocalization.Text("GitWorkbenchForm.Value.PushNoAhead", "No local commits are currently detected ahead of upstream.")
                 : string.Format(
@@ -1606,8 +1607,8 @@ namespace MyCodex.WinForms.Forms
         private string BuildPullConfirmText(GitRepositoryStatusSnapshot status)
         {
             status = status ?? new GitRepositoryStatusSnapshot();
-            var branch = FirstNonEmpty(status.Branch, UiLocalization.Text("GitWorkbenchForm.Value.UnknownBranch", "(Unknown branch)"));
-            var upstream = FirstNonEmpty(status.Upstream, UiLocalization.Text("GitWorkbenchForm.Value.NoUpstream", "(No upstream)"));
+            var branch = TextValueHelper.FirstNonEmptyTrimmed(status.Branch, UiLocalization.Text("GitWorkbenchForm.Value.UnknownBranch", "(Unknown branch)"));
+            var upstream = TextValueHelper.FirstNonEmptyTrimmed(status.Upstream, UiLocalization.Text("GitWorkbenchForm.Value.NoUpstream", "(No upstream)"));
             var localChangesText = status.Files.Count > 0
                 ? string.Format(
                     UiLocalization.Text("GitWorkbenchForm.Value.PullLocalChanges.Template", "Local changes: {0}. Pull may fail or create conflicts."),
@@ -1839,7 +1840,7 @@ namespace MyCodex.WinForms.Forms
                 return string.Empty;
             }
 
-            var output = FirstNonEmpty(result.StandardOutput, result.StandardError);
+            var output = TextValueHelper.FirstNonEmptyTrimmed(result.StandardOutput, result.StandardError);
             return string.IsNullOrWhiteSpace(output)
                 ? result.DisplayMessage
                 : result.DisplayMessage + Environment.NewLine + output;
@@ -3534,24 +3535,6 @@ namespace MyCodex.WinForms.Forms
             return entry == null || !entry.HasLineStats
                 ? "-"
                 : entry.DeletedLineCount.ToString();
-        }
-
-        private static string FirstNonEmpty(params string[] values)
-        {
-            if (values == null)
-            {
-                return string.Empty;
-            }
-
-            for (var i = 0; i < values.Length; i++)
-            {
-                if (!string.IsNullOrWhiteSpace(values[i]))
-                {
-                    return values[i].Trim();
-                }
-            }
-
-            return string.Empty;
         }
 
         private enum GitWorkbenchFileFilter

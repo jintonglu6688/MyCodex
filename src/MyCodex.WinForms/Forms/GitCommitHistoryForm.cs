@@ -9,6 +9,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
 using MyCodex.Shared.Constants;
+using MyCodex.Shared.Helpers;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
 
@@ -1604,7 +1605,7 @@ namespace MyCodex.WinForms.Forms
                         UiLocalization.Text(
                             "GitCommitHistoryForm.Confirm.AmendMessage.Template",
                             "Amend the latest commit message?\r\n\r\nCommit: {0}\r\nNew subject: {1}\r\n\r\nThis rewrites the latest commit."),
-                        FirstNonEmpty(entry.ShortSha, entry.FullSha),
+                        TextValueHelper.FirstNonEmptyTrimmed(entry.ShortSha, entry.FullSha),
                         form.CommitSubject),
                     AppConstants.AppName,
                     MessageBoxButtons.YesNo,
@@ -2790,7 +2791,7 @@ namespace MyCodex.WinForms.Forms
                     "GitCommitHistoryForm.Confirm.CherryPick.Template",
                     "Cherry-pick this commit onto the current branch?\r\n\r\nCurrent branch: {0}\r\nTarget commit: {1}\r\n{2}\r\n\r\n{3}\r\n\r\nThis runs: git cherry-pick <commit>"),
                 branch,
-                entry == null ? string.Empty : FirstNonEmpty(entry.ShortSha, entry.FullSha),
+                entry == null ? string.Empty : TextValueHelper.FirstNonEmptyTrimmed(entry.ShortSha, entry.FullSha),
                 entry == null ? string.Empty : GetSubjectText(entry),
                 localChanges);
         }
@@ -2815,7 +2816,7 @@ namespace MyCodex.WinForms.Forms
                 .Take(maxItems)
                 .Select(entry => string.Format(
                     UiLocalization.Text("GitCommitHistoryForm.Value.RevertCommitLine.Template", "- {0} {1}"),
-                    FirstNonEmpty(entry.ShortSha, entry.FullSha),
+                    TextValueHelper.FirstNonEmptyTrimmed(entry.ShortSha, entry.FullSha),
                     GetSubjectText(entry)))
                 .ToList();
             if (items.Length > maxItems)
@@ -2831,24 +2832,6 @@ namespace MyCodex.WinForms.Forms
                     "Revert {0} selected commits?\r\n\r\nGit will process them in the order shown in the list.\r\n\r\n{1}\r\n\r\nThis creates new commit(s) that reverse the selected commits."),
                 items.Length,
                 string.Join(Environment.NewLine, lines.ToArray()));
-        }
-
-        private static string FirstNonEmpty(params string[] values)
-        {
-            if (values == null)
-            {
-                return string.Empty;
-            }
-
-            for (var i = 0; i < values.Length; i++)
-            {
-                if (!string.IsNullOrWhiteSpace(values[i]))
-                {
-                    return values[i].Trim();
-                }
-            }
-
-            return string.Empty;
         }
 
         private static Button CreateButton(string text, string accessibleName, int tabIndex)
