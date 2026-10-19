@@ -42,7 +42,7 @@ $exe = Join-Path $package 'mycodex-auth-host.exe'
 Assert ($LASTEXITCODE -eq 0) 'Fixture compilation failed'
 Copy-Item -LiteralPath $exe -Destination (Join-Path $source 'MyCodex.exe')
 [IO.File]::WriteAllText((Join-Path $package 'LICENSE'), 'fixture', $utf8)
-$manifest = @{schemaVersion=1; hostVersion='0.3.8'; protocolVersion=3; upstreamRevision='790ed8009df809bedaf6c31b5ced05da46bb1f1f'; sourceRevision=('a'*40); sourceDirty=$false; target='x86_64-pc-windows-msvc'; executable='mycodex-auth-host.exe'; sha256=(Get-FileHash $exe).Hash.ToLowerInvariant()}
+$manifest = @{schemaVersion=1; hostVersion='0.3.9'; protocolVersion=3; upstreamRevision='790ed8009df809bedaf6c31b5ced05da46bb1f1f'; sourceRevision=('a'*40); sourceDirty=$false; target='x86_64-pc-windows-msvc'; executable='mycodex-auth-host.exe'; sha256=(Get-FileHash $exe).Hash.ToLowerInvariant()}
 Write-Json (Join-Path $package 'mycodex-auth-host.manifest.json') $manifest
 $expected = Join-Path $work 'expected.json'
 Write-Json $expected $manifest

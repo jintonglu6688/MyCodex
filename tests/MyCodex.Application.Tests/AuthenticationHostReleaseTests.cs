@@ -88,16 +88,16 @@ namespace MyCodex.Application.Tests
             Assert.That(result.StandardOutput.Trim(), Is.EqualTo("installed"));
         }
 
-        [TestCase("Linux", "x86_64", "x86_64-unknown-linux-gnu", "e54658c5cee0d0b068a8f315ab86821f3130fbb7304e86284fdefb722ed3e312")]
-        [TestCase("Linux", "aarch64", "aarch64-unknown-linux-gnu", "d0b24044dfabfad193a72175cea621d38d69bf88d201a01f17b7d1db3cd4d877")]
-        [TestCase("Darwin", "arm64", "aarch64-apple-darwin", "b405099d132e2c41de3da75d1bcff2e051e694babf6bebad21cd79bc4d91a01f")]
+        [TestCase("Linux", "x86_64", "x86_64-unknown-linux-gnu", "e8833406f5e4acf72172bb62a63839e17114694542b0f8a8cc313b70e7d477ee")]
+        [TestCase("Linux", "aarch64", "aarch64-unknown-linux-gnu", "9a594a0397f4ed30dcd2ac38b30736446329ae0e6018c40dddddf4b583cf62ec")]
+        [TestCase("Darwin", "arm64", "aarch64-apple-darwin", "092700fbd29f99bdeda7cf39ff3933becdd07c8c8fefaa95f1995635162f1e48")]
         public void SupportedTargetsSelectThePinnedGitCodeArchive(string system, string architecture,
             string target, string hash)
         {
             var release = AuthenticationHostDeployment.ParseProbe(system + "\n" + architecture + "\n");
             Assert.That(release.Target, Is.EqualTo(target));
             Assert.That(release.Sha256, Is.EqualTo(hash));
-            Assert.That(release.FileName, Is.EqualTo("mycodex-auth-host-0.3.8-" + target + ".tar.gz"));
+            Assert.That(release.FileName, Is.EqualTo("mycodex-auth-host-0.3.9-" + target + ".tar.gz"));
         }
 
         [Test]
@@ -116,6 +116,7 @@ namespace MyCodex.Application.Tests
         [TestCase("0.3.5", 3, "790ed8009df809bedaf6c31b5ced05da46bb1f1f")]
         [TestCase("0.3.6", 3, "790ed8009df809bedaf6c31b5ced05da46bb1f1f")]
         [TestCase("0.3.7", 3, "790ed8009df809bedaf6c31b5ced05da46bb1f1f")]
+        [TestCase("0.3.8", 3, "790ed8009df809bedaf6c31b5ced05da46bb1f1f")]
         public void DifferentInstalledBuildIsOfferedAnUpdateOnlyWhenItsPackageIsCoherent(string hostVersion, int protocol, string upstream)
         {
             var archive = AuthenticationHostRelease.ForTarget("Linux", "x86_64");
@@ -163,7 +164,7 @@ namespace MyCodex.Application.Tests
             var archive = AuthenticationHostRelease.ForTarget("Linux", "x86_64");
             var manifest = new Dictionary<string, object>
             {
-                { "schemaVersion", 1 }, { "hostVersion", "0.3.8" }, { "protocolVersion", 3 },
+                { "schemaVersion", 1 }, { "hostVersion", "0.3.9" }, { "protocolVersion", 3 },
                 { "upstreamRevision", "790ed8009df809bedaf6c31b5ced05da46bb1f1f" },
                 { "sourceRevision", new string('a', 40) }, { "sourceDirty", false },
                 { "target", archive.Target }, { "executable", "mycodex-auth-host" },
