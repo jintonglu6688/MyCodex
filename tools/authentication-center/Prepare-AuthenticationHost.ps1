@@ -51,7 +51,7 @@ $currentChanges = & git -C $sourcePath status --porcelain --untracked-files=norm
 if ($LASTEXITCODE -ne 0 -or ((-not [string]::IsNullOrWhiteSpace(($currentChanges -join "`n"))) -ne $dirty)) {
     throw 'The source cleanliness changed during the build. Run preparation again.'
 }
-if ($identity.hostVersion -ne '0.3.9' -or $identity.protocolVersion -ne 3 -or
+if ($identity.hostVersion -ne '0.3.10' -or $identity.protocolVersion -ne 3 -or
     $identity.upstreamRevision -ne '790ed8009df809bedaf6c31b5ced05da46bb1f1f' -or
     $identity.sourceRevision -ne $revision -or $identity.sourceDirty -isnot [bool] -or $identity.sourceDirty -ne $dirty -or
     $identity.target -ne 'x86_64-pc-windows-msvc') {
