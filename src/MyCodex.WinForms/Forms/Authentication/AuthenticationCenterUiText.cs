@@ -42,6 +42,16 @@ namespace MyCodex.WinForms.Forms
                             : UiLocalization.Text("AuthenticationCenter.Kind.Other", "Other provider");
         }
 
+        // Format choices name the connection too; provider lists show it in a separate column.
+        internal static string FormatChoice(string kind)
+        {
+            return kind == "chat_completions"
+                ? UiLocalization.Text("AuthenticationProviderEdit.Format.ChatCompletions", "Chat Completions (protocol conversion)")
+                : kind == "anthropic"
+                    ? UiLocalization.Text("AuthenticationProviderEdit.Format.Anthropic", "Anthropic (protocol conversion)")
+                    : UiLocalization.Text("AuthenticationProviderEdit.Format.Responses", "Responses (direct)");
+        }
+
         internal static string Connection(string kind)
         {
             return kind == "chat_completions" || kind == "anthropic"

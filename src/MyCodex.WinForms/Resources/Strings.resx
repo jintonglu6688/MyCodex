@@ -13144,6 +13144,18 @@ Local configuration directory: {1}</value>
   <data name="AuthenticationQuery.Name" xml:space="preserve"><value>Parameter &amp;name</value></data>
   <data name="AuthenticationQuery.Value" xml:space="preserve"><value>Parameter &amp;value</value></data>
   <data name="AuthenticationQuery.InvalidName" xml:space="preserve"><value>Enter a nonempty, unique parameter name.</value></data>
+  <data name="AuthenticationProviderEdit.Format.Responses" xml:space="preserve"><value>Responses (direct)</value></data>
+  <data name="AuthenticationProviderEdit.Format.ChatCompletions" xml:space="preserve"><value>Chat Completions (protocol conversion)</value></data>
+  <data name="AuthenticationProviderEdit.Format.Anthropic" xml:space="preserve"><value>Anthropic (protocol conversion)</value></data>
+  <data name="AuthenticationAdvanced.AddHeader" xml:space="preserve"><value>Add header (&amp;G)</value></data>
+  <data name="AuthenticationAdvanced.HeaderTitle" xml:space="preserve"><value>Request header</value></data>
+  <data name="AuthenticationAdvanced.AddBody" xml:space="preserve"><value>Add override (&amp;5)</value></data>
+  <data name="AuthenticationAdvanced.BodyTitle" xml:space="preserve"><value>Request body override</value></data>
+  <data name="AuthenticationKeyValue.Name" xml:space="preserve"><value>&amp;Name</value></data>
+  <data name="AuthenticationKeyValue.Value" xml:space="preserve"><value>&amp;Value</value></data>
+  <data name="AuthenticationKeyValue.Type" xml:space="preserve"><value>Value &amp;type</value></data>
+  <data name="AuthenticationKeyValue.InvalidName" xml:space="preserve"><value>Enter a nonempty, unique name.</value></data>
+  <data name="AuthenticationKeyValue.InvalidValue" xml:space="preserve"><value>Enter a valid {0} value.</value></data>
   <data name="AuthenticationProviderEdit.Context" xml:space="preserve"><value>Context and compaction</value></data>
   <data name="AuthenticationContext.Remote" xml:space="preserve"><value>Remote compaction (&amp;2)</value></data>
   <data name="AuthenticationContext.Window" xml:space="preserve"><value>1M context window (&amp;1)</value></data>

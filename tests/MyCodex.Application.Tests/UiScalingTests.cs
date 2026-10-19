@@ -22,6 +22,7 @@ using MyCodex.Infrastructure.AuthenticationCenter;
 using MyCodex.Infrastructure.GitHosting;
 using MyCodex.Infrastructure.Markets;
 using MyCodex.Infrastructure.Persistence;
+using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Theming;
 using NUnit.Framework;
@@ -63,7 +64,7 @@ namespace MyCodex.Application.Tests
         public void ScaledDialog_PreservesInitialFocus(int percent)
         {
             UiTheme.InitializeUiFontScale(percent);
-            using (var form = new AuthenticationQueryParameterEditForm(null, null, new string[0]))
+            using (var form = new AuthenticationKeyValueEditForm(AuthenticationKeyValueTexts.Query(), null, null, null, new string[0]))
             {
                 form.Show();
                 System.Windows.Forms.Application.DoEvents();

@@ -560,7 +560,7 @@ namespace MyCodex.WinForms.Forms
         {
             internal ProviderKindChoice(string kind) { Kind = kind; }
             internal string Kind { get; private set; }
-            public override string ToString() { return AuthenticationCenterUiText.Kind(Kind); }
+            public override string ToString() { return AuthenticationCenterUiText.FormatChoice(Kind); }
         }
     }
 }

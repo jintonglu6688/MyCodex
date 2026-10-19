@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
 using MyCodex.Application.Interfaces;
@@ -27,8 +25,8 @@ namespace MyCodex.WinForms.Controls
         private readonly ThemedTextBox _effortParameter = new ThemedTextBox();
         private readonly ComboBox _thinkingParameter = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
         private readonly ComboBox _effortMode = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
-        private readonly Dictionary<string, DataGridView> _maps = new Dictionary<string, DataGridView>();
-        private readonly AuthenticationQueryParametersControl _query;
+        private readonly Dictionary<string, AuthenticationKeyValueListControl> _maps = new Dictionary<string, AuthenticationKeyValueListControl>();
+        private readonly AuthenticationKeyValueListControl _query;
         private string _kind;
 
         public AuthenticationAdvancedControl(Dictionary<string, object> original)
@@ -50,10 +48,11 @@ namespace MyCodex.WinForms.Controls
             Add(UiLocalization.Text("AuthenticationAdvanced.EffortParameter", "Reason&ing effort parameter"), _effortParameter);
             Add(UiLocalization.Text("AuthenticationAdvanced.ThinkingParameter", "Thinking &option"), _thinkingParameter);
             Add(UiLocalization.Text("AuthenticationAdvanced.EffortMode", "Effort value mo&de"), _effortMode);
-            AddMap("requestHeaders", UiLocalization.Text("AuthenticationAdvanced.Headers", "Request headers(&V)"));
-            AddMap("requestBody", UiLocalization.Text("AuthenticationAdvanced.Body", "Request body overrides(&W)"));
-            _query = new AuthenticationQueryParametersControl(Value(_original, "queryParams") as IDictionary<string, object>);
-            Add(UiLocalization.Text("AuthenticationAdvanced.Query", "&Query parameters"), _query);
+            AddMap("requestHeaders", AuthenticationKeyValueTexts.Headers());
+            AddMap("requestBody", AuthenticationKeyValueTexts.Body());
+            var query = AuthenticationKeyValueTexts.Query();
+            _query = new AuthenticationKeyValueListControl(Value(_original, "queryParams") as IDictionary<string, object>, query);
+            Add(query.List, _query);
             _auth.Items.AddRange(new object[] { "bearer", "x-api-key" });
             _auth.SelectedItem = Value(_original, "anthropicAuthHeader") ?? "x-api-key";
             if (_auth.SelectedIndex < 0) { _auth.SelectedIndex = 0; }
@@ -137,8 +136,8 @@ namespace MyCodex.WinForms.Controls
             {
                 Set(result, "userAgent", _agent.Text.Trim());
                 if (_kind == "chat_completions") result["promptCacheRouting"] = _cache.SelectedItem as string;
-                result["requestHeaders"] = ReadMap("requestHeaders");
-                result["requestBody"] = ReadMap("requestBody");
+                result["requestHeaders"] = _maps["requestHeaders"].Read();
+                result["requestBody"] = _maps["requestBody"].Read();
             }
             return result;
         }
@@ -161,57 +160,11 @@ namespace MyCodex.WinForms.Controls
             control.Visible = visible;
             _fields.GetControlFromPosition(0, _fields.GetRow(control)).Visible = visible;
         }
-        private void AddMap(string key, string caption)
+        private void AddMap(string key, AuthenticationKeyValueTexts texts)
         {
-            var grid = new DataGridView { Height = 145, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, RowHeadersVisible = true, AllowUserToAddRows = true, AllowUserToDeleteRows = true };
-            grid.BackgroundColor = UiTheme.CardBackColor;
-            grid.DefaultCellStyle.BackColor = UiTheme.CardBackColor;
-            grid.DefaultCellStyle.ForeColor = UiTheme.TextColor;
-            grid.Columns.Add("key", UiLocalization.Text("AuthenticationAdvanced.Key", "Key"));
-            grid.Columns.Add("value", UiLocalization.Text("AuthenticationAdvanced.Value", "Value"));
-            var type = new DataGridViewComboBoxColumn { Name = "type", HeaderText = UiLocalization.Text("AuthenticationAdvanced.Type", "Type") };
-            type.Items.AddRange("string", "number", "boolean", "null", "preserved");
-            grid.Columns.Add(type);
-            var map = Value(_original, key) as IDictionary<string, object>;
-            if (map != null)
-            {
-                foreach (var pair in map)
-                {
-                    var compound = pair.Value is IDictionary || (pair.Value is IEnumerable && !(pair.Value is string));
-                    var typeName = compound ? "preserved" : pair.Value == null ? "null" : pair.Value is bool ? "boolean" : pair.Value is string ? "string" : "number";
-                    var index = grid.Rows.Add(pair.Key, compound ? UiLocalization.Text("AuthenticationAdvanced.Preserved", "Existing structured value (preserved)") : Convert.ToString(pair.Value, CultureInfo.InvariantCulture), typeName);
-                    if (compound) { grid.Rows[index].ReadOnly = true; grid.Rows[index].Tag = pair.Value; }
-                }
-            }
-            grid.DefaultValuesNeeded += (sender, args) => args.Row.Cells[2].Value = "string";
-            _maps.Add(key, grid);
-            Add(caption, grid);
-        }
-        private Dictionary<string, object> ReadMap(string key)
-        {
-            var grid = _maps[key];
-            grid.EndEdit();
-            var values = new Dictionary<string, object>(StringComparer.Ordinal);
-            foreach (DataGridViewRow row in grid.Rows)
-            {
-                if (row.IsNewRow) { continue; }
-                var name = Convert.ToString(row.Cells[0].Value)?.Trim();
-                var value = Convert.ToString(row.Cells[1].Value) ?? string.Empty;
-                if (string.IsNullOrWhiteSpace(name) || values.ContainsKey(name)) { throw new AuthenticationCenterException("invalid_params"); }
-                switch (Convert.ToString(row.Cells[2].Value))
-                {
-                    case "preserved": values[name] = row.Tag; break;
-                    case "null": values[name] = null; break;
-                    case "number":
-                        if (!decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)) { throw new AuthenticationCenterException("invalid_params"); }
-                        values[name] = number; break;
-                    case "boolean":
-                        if (!bool.TryParse(value, out var boolean)) { throw new AuthenticationCenterException("invalid_params"); }
-                        values[name] = boolean; break;
-                    default: values[name] = value; break;
-                }
-            }
-            return values;
+            var list = new AuthenticationKeyValueListControl(Value(_original, key) as IDictionary<string, object>, texts);
+            _maps.Add(key, list);
+            Add(texts.List, list);
         }
         private static object Value(IDictionary<string, object> source, string key) { return source != null && source.TryGetValue(key, out var value) ? value : null; }
         private static void Fill(ComboBox control, string[] values, string selected)

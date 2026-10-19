@@ -522,9 +522,14 @@ namespace MyCodex.Application.Tests
             "AuthenticationModel.Name", "AuthenticationModel.Id", "AuthenticationModel.Context", "AuthenticationModel.Levels",
             "AuthenticationModel.Default", "AuthenticationModel.Parallel", "AuthenticationModel.Save", "AuthenticationModel.Cancel"
         })]
-        [TestCase("AuthenticationQueryParameterEditForm", new[]
+        [TestCase("AuthenticationKeyValueEditForm.Query", new[]
         {
             "AuthenticationQuery.Name", "AuthenticationQuery.Value", "AuthenticationProviderEdit.Button.Save", "AuthenticationProviderEdit.Button.Cancel"
+        })]
+        [TestCase("AuthenticationKeyValueEditForm.Typed", new[]
+        {
+            "AuthenticationKeyValue.Name", "AuthenticationKeyValue.Value", "AuthenticationKeyValue.Type",
+            "AuthenticationProviderEdit.Button.Save", "AuthenticationProviderEdit.Button.Cancel"
         })]
         [TestCase("AuthenticationAdvancedControl", new[]
         {
@@ -532,6 +537,7 @@ namespace MyCodex.Application.Tests
             "AuthenticationAdvanced.Agent", "AuthenticationAdvanced.Cache", "AuthenticationAdvanced.Thinking", "AuthenticationAdvanced.Effort",
             "AuthenticationAdvanced.EffortParameter", "AuthenticationAdvanced.Headers", "AuthenticationAdvanced.Body", "AuthenticationAdvanced.Query",
             "AuthenticationAdvanced.ThinkingParameter", "AuthenticationAdvanced.EffortMode", "AuthenticationQuery.Add",
+            "AuthenticationAdvanced.AddHeader", "AuthenticationAdvanced.AddBody",
             "AuthenticationProviderEdit.Button.Save", "AuthenticationProviderEdit.Button.Cancel"
         })]
         public void ActiveChineseMnemonics_AreUniqueWithinForm(string formName, string[] keys)

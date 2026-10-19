@@ -344,7 +344,7 @@ namespace MyCodex.Application.Tests
                 System.Windows.Forms.Application.DoEvents();
                 var content = FormTestDriver.Field<Panel>(form, "_content");
                 var advanced = FormTestDriver.Field<AuthenticationAdvancedControl>(form, "_advanced");
-                var query = FormTestDriver.Field<AuthenticationQueryParametersControl>(advanced, "_query");
+                var query = FormTestDriver.Field<AuthenticationKeyValueListControl>(advanced, "_query");
                 var add = FormTestDriver.Field<Button>(query, "_add");
                 add.Focus();
                 System.Windows.Forms.Application.DoEvents();

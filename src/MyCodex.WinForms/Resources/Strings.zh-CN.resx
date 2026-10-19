@@ -13099,6 +13099,18 @@ MyCodex 桌面客户端。</value>
   <data name="AuthenticationQuery.Name" xml:space="preserve"><value>参数名(&amp;N)</value></data>
   <data name="AuthenticationQuery.Value" xml:space="preserve"><value>参数值(&amp;V)</value></data>
   <data name="AuthenticationQuery.InvalidName" xml:space="preserve"><value>请输入非空且不重复的参数名。</value></data>
+  <data name="AuthenticationProviderEdit.Format.Responses" xml:space="preserve"><value>Responses (直连)</value></data>
+  <data name="AuthenticationProviderEdit.Format.ChatCompletions" xml:space="preserve"><value>Chat Completions (协议转换)</value></data>
+  <data name="AuthenticationProviderEdit.Format.Anthropic" xml:space="preserve"><value>Anthropic (协议转换)</value></data>
+  <data name="AuthenticationAdvanced.AddHeader" xml:space="preserve"><value>添加请求头(&amp;G)</value></data>
+  <data name="AuthenticationAdvanced.HeaderTitle" xml:space="preserve"><value>请求头</value></data>
+  <data name="AuthenticationAdvanced.AddBody" xml:space="preserve"><value>添加覆盖项(&amp;5)</value></data>
+  <data name="AuthenticationAdvanced.BodyTitle" xml:space="preserve"><value>请求体覆盖项</value></data>
+  <data name="AuthenticationKeyValue.Name" xml:space="preserve"><value>名称(&amp;N)</value></data>
+  <data name="AuthenticationKeyValue.Value" xml:space="preserve"><value>值(&amp;V)</value></data>
+  <data name="AuthenticationKeyValue.Type" xml:space="preserve"><value>值类型(&amp;T)</value></data>
+  <data name="AuthenticationKeyValue.InvalidName" xml:space="preserve"><value>请输入非空且不重复的名称。</value></data>
+  <data name="AuthenticationKeyValue.InvalidValue" xml:space="preserve"><value>请输入有效的 {0} 值。</value></data>
   <data name="AuthenticationProviderEdit.Context" xml:space="preserve"><value>上下文与压缩</value></data>
   <data name="AuthenticationContext.Remote" xml:space="preserve"><value>启用远程压缩(&amp;2)</value></data>
   <data name="AuthenticationContext.Window" xml:space="preserve"><value>1M 上下文(&amp;1)</value></data>
