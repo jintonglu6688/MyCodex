@@ -119,7 +119,7 @@ namespace MyCodex.WinForms.Forms
                     { Dock = DockStyle.Top, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, AutoScroll = false };
                 Section(UiLocalization.Text("AuthenticationProviderEdit.Advanced", "Advanced settings")).Controls.Add(_advanced);
                 _advanced.Kind = CurrentKind;
-                _kindComboBox.SelectedIndexChanged += (sender, args) => _advanced.Kind = CurrentKind;
+                _kindComboBox.SelectedIndexChanged += async (sender, args) => { _advanced.Kind = CurrentKind; await SwitchBaseUrlForKindAsync(); };
                 _models.FetchRequested += async (sender, args) => await FetchModelsAsync();
                 _models.ModelAdded += async (sender, modelId) => await CompleteAddedModelAsync(modelId);
             }
@@ -180,6 +180,8 @@ namespace MyCodex.WinForms.Forms
                     if (_original == null || reauthenticate) { await _login.StartLoginAsync(); }
                     else { await _login.RestoreAsync(); }
                 }
+                // Earlier versions saved a format change without moving the preset endpoint.
+                else { await SwitchBaseUrlForKindAsync(); }
             };
             FormClosing += ClosingAsync;
             UpdateActions();
@@ -278,6 +280,28 @@ namespace MyCodex.WinForms.Forms
                 await CompleteModelMetadataAsync(baseUrl, presets, usedCatalog, filled, added);
             }
             catch (OperationCanceledException) { }
+        }
+
+        // A preset endpoint follows the selected format; a URL the user typed stays unchanged.
+        internal async Task SwitchBaseUrlForKindAsync()
+        {
+            var kind = CurrentKind;
+            var baseUrl = _urlTextBox.Text;
+            var target = AuthenticationProtocolBaseUrlPlanner.Resolve(baseUrl, kind, _template, null);
+            if (target == null && _modelMetadata != null)
+            {
+                try
+                {
+                    var presets = await _modelMetadata.ReadPresetsAsync(_lifetime.Token);
+                    if (_disposed || _saving || SaveOutcomeUnknown || CurrentKind != kind ||
+                        !string.Equals(_urlTextBox.Text, baseUrl, StringComparison.Ordinal)) { return; }
+                    target = AuthenticationProtocolBaseUrlPlanner.Resolve(baseUrl, kind, _template, presets);
+                }
+                catch (OperationCanceledException) { return; }
+            }
+            if (target == null) { return; }
+            _urlTextBox.Text = target;
+            Announce(string.Format(UiLocalization.Text("AuthenticationProviderEdit.BaseUrlSwitched", "API base URL changed to {0} for the selected upstream format."), target));
         }
 
         // Public catalog data may arrive later; it only fills fields still blank.

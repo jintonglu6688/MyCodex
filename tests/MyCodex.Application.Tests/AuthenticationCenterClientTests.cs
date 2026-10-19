@@ -168,7 +168,8 @@ namespace MyCodex.Application.Tests
                 if (method == "gui/preset/list")
                     return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>
                     {
-                        { "presets", new[] { new Dictionary<string, object> { { "id", "custom" }, { "name", "Custom" }, { "kind", "responses" }, { "available", true }, { "allowsProtocolSelection", true } } } }
+                        { "presets", new[] { new Dictionary<string, object> { { "id", "custom" }, { "name", "Custom" }, { "kind", "responses" }, { "available", true }, { "allowsProtocolSelection", true },
+                            { "protocolBaseUrls", new Dictionary<string, object> { { "responses", "https://a.test" }, { "anthropic", "https://a.test/anthropic" }, { "future", 1 } } } } } }
                     });
                 if (method == "gui/model/fetch")
                 {
@@ -184,6 +185,8 @@ namespace MyCodex.Application.Tests
             });
             var presets = await client.ReadPresetsAsync(CancellationToken.None);
             Assert.That(presets[0].Available && presets[0].AllowsProtocolSelection, Is.True);
+            Assert.That(presets[0].ProtocolBaseUrls, Is.EqualTo(new Dictionary<string, string>
+                { { "responses", "https://a.test" }, { "anthropic", "https://a.test/anthropic" } }));
             var models = await client.FetchModelsAsync(new AuthenticationModelFetchRequest { Kind = "chatgpt", AccountId = "account-a" }, CancellationToken.None);
             Assert.That(models[0].ContextWindow, Is.Null);
             models[0].DisplayName = "Custom name";

@@ -20,6 +20,99 @@ namespace MyCodex.Application.Tests
     public sealed class AuthenticationModelMetadataFillTests
     {
         [Test]
+        public void FormatChangeMovesPresetEndpointAndKeepsTypedUrl()
+        {
+            var client = new AuthenticationCenterClient("Test", (method, values, token) =>
+                Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>()));
+            var provider = new AuthenticationProvider
+            {
+                Id = "deepseek", Name = "DeepSeek", Kind = "responses", BaseUrl = "https://api.deepseek.com", Model = "deepseek-flash", Version = "1",
+                Models = new List<AuthenticationCatalogModel> { new AuthenticationCatalogModel { Model = "deepseek-flash" } }
+            };
+            var metadata = new AuthenticationModelMetadataService(new FakeCatalogSource(ModelMetadataResolverTests.Catalog()),
+                token => Task.FromResult<IReadOnlyList<AuthenticationProviderPreset>>(new[] { DeepSeekPreset() }));
+            using (var form = new AuthenticationProviderEditForm(client, provider, modelMetadata: metadata))
+            {
+                form.ShowInTaskbar = false;
+                form.Show();
+                var kind = FormTestDriver.Field<ComboBox>(form, "_kindComboBox");
+                var url = FormTestDriver.Field<TextBox>(form, "_urlTextBox");
+                var status = FormTestDriver.Field<TextBox>(form, "_statusLabel");
+
+                kind.SelectedIndex = 2;
+                System.Windows.Forms.Application.DoEvents();
+                Assert.That(url.Text, Is.EqualTo("https://api.deepseek.com/anthropic"));
+                Assert.That(status.Text, Does.Contain("https://api.deepseek.com/anthropic"));
+
+                kind.SelectedIndex = 1;
+                System.Windows.Forms.Application.DoEvents();
+                Assert.That(url.Text, Is.EqualTo("https://api.deepseek.com"));
+
+                url.Text = "https://relay.example.test/v1";
+                kind.SelectedIndex = 2;
+                System.Windows.Forms.Application.DoEvents();
+                Assert.That(url.Text, Is.EqualTo("https://relay.example.test/v1"), "A URL the user typed is never replaced.");
+            }
+        }
+
+        [Test]
+        public void OpeningProviderSavedWithMismatchedPresetEndpointCorrectsIt()
+        {
+            var client = new AuthenticationCenterClient("Test", (method, values, token) =>
+                Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>()));
+            var provider = new AuthenticationProvider
+            {
+                Id = "deepseek", Name = "DeepSeek", Kind = "anthropic", BaseUrl = "https://api.deepseek.com", Model = "deepseek-flash", Version = "1",
+                Models = new List<AuthenticationCatalogModel> { new AuthenticationCatalogModel { Model = "deepseek-flash" } }
+            };
+            var metadata = new AuthenticationModelMetadataService(new FakeCatalogSource(ModelMetadataResolverTests.Catalog()),
+                token => Task.FromResult<IReadOnlyList<AuthenticationProviderPreset>>(new[] { DeepSeekPreset() }));
+            using (var form = new AuthenticationProviderEditForm(client, provider, modelMetadata: metadata))
+            {
+                form.ShowInTaskbar = false;
+                form.Show();
+                System.Windows.Forms.Application.DoEvents();
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_urlTextBox").Text, Is.EqualTo("https://api.deepseek.com/anthropic"));
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_statusLabel").Text, Does.Contain("https://api.deepseek.com/anthropic"));
+            }
+        }
+
+        [Test]
+        public void OpeningProviderWithMatchingEndpointLeavesItUnchanged()
+        {
+            var client = new AuthenticationCenterClient("Test", (method, values, token) =>
+                Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>()));
+            var provider = new AuthenticationProvider
+            {
+                Id = "deepseek", Name = "DeepSeek", Kind = "responses", BaseUrl = "https://api.deepseek.com", Model = "deepseek-flash", Version = "1",
+                Models = new List<AuthenticationCatalogModel> { new AuthenticationCatalogModel { Model = "deepseek-flash" } }
+            };
+            var metadata = new AuthenticationModelMetadataService(new FakeCatalogSource(ModelMetadataResolverTests.Catalog()),
+                token => Task.FromResult<IReadOnlyList<AuthenticationProviderPreset>>(new[] { DeepSeekPreset() }));
+            using (var form = new AuthenticationProviderEditForm(client, provider, modelMetadata: metadata))
+            {
+                form.ShowInTaskbar = false;
+                form.Show();
+                System.Windows.Forms.Application.DoEvents();
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_urlTextBox").Text, Is.EqualTo("https://api.deepseek.com"));
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_statusLabel").Text, Does.Not.Contain("/anthropic"));
+            }
+        }
+
+        private static AuthenticationProviderPreset DeepSeekPreset()
+        {
+            return new AuthenticationProviderPreset
+            {
+                Name = "DeepSeek", Kind = "responses", BaseUrl = "https://api.deepseek.com",
+                ProtocolBaseUrls = new Dictionary<string, string>
+                {
+                    { "responses", "https://api.deepseek.com" }, { "chat_completions", "https://api.deepseek.com" },
+                    { "anthropic", "https://api.deepseek.com/anthropic" }
+                }
+            };
+        }
+
+        [Test]
         public async Task RetrievedAndExistingModelsReceiveOnlyBlankFields()
         {
             var requests = new List<string>();

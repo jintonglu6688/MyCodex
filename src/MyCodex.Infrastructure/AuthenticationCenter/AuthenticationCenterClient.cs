@@ -216,8 +216,22 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                 BaseUrl = Text(value, "baseUrl"), Model = Text(value, "model"),
                 Available = Flag(value, "available"), UnavailableReason = Text(value, "unavailableReason"),
                 AllowsProtocolSelection = Flag(value, "allowsProtocolSelection"),
+                ProtocolBaseUrls = ReadProtocolBaseUrls(value),
                 Models = ReadModels(value), Advanced = ReadAdvanced(value)
             }).ToList();
+        }
+
+        private static Dictionary<string, string> ReadProtocolBaseUrls(IDictionary<string, object> value)
+        {
+            var result = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (value.TryGetValue("protocolBaseUrls", out var item) && item is IDictionary<string, object> urls)
+            {
+                foreach (var entry in urls)
+                {
+                    if (entry.Value is string url && url.Length > 0) result[entry.Key] = url;
+                }
+            }
+            return result;
         }
 
         public async Task<IReadOnlyList<AuthenticationCatalogModel>> FetchModelsAsync(AuthenticationModelFetchRequest request, CancellationToken cancellationToken)

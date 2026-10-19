@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace MyCodex.Application.DTOs
@@ -68,6 +69,8 @@ namespace MyCodex.Application.DTOs
         public bool Available { get; set; }
         public string UnavailableReason { get; set; }
         public bool AllowsProtocolSelection { get; set; }
+        // Upstream format kind to that provider's base URL for the format; absent from older backends.
+        public Dictionary<string, string> ProtocolBaseUrls { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
         public List<AuthenticationCatalogModel> Models { get; set; } = new List<AuthenticationCatalogModel>();
         public Dictionary<string, object> Advanced { get; set; } = new Dictionary<string, object>();
 

@@ -12974,6 +12974,7 @@ Local configuration directory: {1}</value>
   </data>
   <data name="AuthenticationProviderEdit.FetchChanged" xml:space="preserve"><value>Settings changed while loading models. Retrieve models again for the current settings.</value></data>
   <data name="AuthenticationProviderEdit.NoModels" xml:space="preserve"><value>No models were returned. Existing models were retained; you can add models manually.</value></data>
+  <data name="AuthenticationProviderEdit.BaseUrlSwitched" xml:space="preserve"><value>API base URL changed to {0} for the selected upstream format.</value></data>
   <data name="AuthenticationLogin.Cancel" xml:space="preserve"><value>Cancel sign-in(&amp;T)</value></data>
   <data name="AuthenticationProviderEdit.Status" xml:space="preserve"><value>Configuration status</value></data>
   <data name="AuthenticationLogin.ExchangeFailed" xml:space="preserve"><value>Authorization was received, but the account credentials could not be retrieved. Check the network connection and sign in again.</value></data>

@@ -12929,6 +12929,7 @@ MyCodex 桌面客户端。</value>
   </data>
   <data name="AuthenticationProviderEdit.FetchChanged" xml:space="preserve"><value>获取模型期间设置已更改，请按当前设置重新获取模型。</value></data>
   <data name="AuthenticationProviderEdit.NoModels" xml:space="preserve"><value>未返回模型，已有模型已保留；您可以手动添加模型。</value></data>
+  <data name="AuthenticationProviderEdit.BaseUrlSwitched" xml:space="preserve"><value>已改用所选上游格式对应的 API 地址：{0}</value></data>
   <data name="AuthenticationLogin.Cancel" xml:space="preserve"><value>取消登录(&amp;T)</value></data>
   <data name="AuthenticationProviderEdit.Status" xml:space="preserve"><value>配置状态</value></data>
   <data name="AuthenticationLogin.ExchangeFailed" xml:space="preserve"><value>已收到授权，但无法获取账号凭据。请检查网络连接后重新登录。</value></data>
