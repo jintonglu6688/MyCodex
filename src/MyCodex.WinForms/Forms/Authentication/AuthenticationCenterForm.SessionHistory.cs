@@ -89,7 +89,7 @@ namespace MyCodex.WinForms.Forms
             }
             catch (Exception error)
             {
-                if (!IsDisposed) Announce(AuthenticationCenterUiText.Error(error));
+                if (!IsDisposed) AnnounceError(AuthenticationCenterUiText.Error(error));
             }
             finally
             {
@@ -131,7 +131,11 @@ namespace MyCodex.WinForms.Forms
                 _busy = false;
                 // The ChatGPT account's live route may have changed; show the state Codex now uses.
                 await RefreshAsync();
-                if (!IsDisposed && _loaded) Announce(SessionHistoryResultText(result));
+                if (!IsDisposed && _loaded)
+                {
+                    if (!result.Reconnected || (result.Moved != null && result.Moved.Error != null)) AnnounceError(SessionHistoryResultText(result));
+                    else Announce(SessionHistoryResultText(result));
+                }
             }
             catch (OperationCanceledException)
             {
@@ -142,7 +146,7 @@ namespace MyCodex.WinForms.Forms
                 {
                     if (error is AuthenticationCenterException failure && failure.Code == "operation_unknown")
                         _reconnectPending = true;
-                    Announce(AuthenticationCenterUiText.Error(error));
+                    AnnounceError(AuthenticationCenterUiText.Error(error));
                 }
             }
             finally

@@ -280,7 +280,7 @@ For controls:
 - Set `TabStop = false` for display-only labels, status areas, decorative controls, and refresh controls unless interaction is required.
 - Use concise accessible names; do not duplicate long visible descriptions or append control-type words unnecessarily.
 - Put status changes in visible status text.
-- Keep status changes visible and readable through native controls. Authentication center and sign-in UI must not call `IScreenReaderService.Speak(...)` for operation progress, results, or errors; let the user's screen reader read the controls on demand.
+- Keep status changes visible and readable through native controls. Authentication center and sign-in UI must not call `IScreenReaderService.Speak(...)` for operation progress, results, or errors; let the user's screen reader read the controls on demand. The one exception is a short spoken confirmation after a provider is enabled and MyCodex reconnects. Errors there also open a standard error message box (`AuthenticationCenterUiText.ShowError`) so screen reader users notice them.
 - Keep forms resizable and set sensible `MinimumSize` where the surrounding form pattern expects it.
 - Avoid changing private field names that tests access through reflection unless tests are updated intentionally.
 

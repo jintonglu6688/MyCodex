@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -52,6 +53,7 @@ namespace MyCodex.WinForms.Forms
         private string _currentProviderId;
         private string _liveState;
         private string _liveAccountLabel;
+        private string _shownLoadError;
         private IReadOnlyList<AuthenticationProviderPreset> _presets;
         private readonly AuthenticationModelMetadataService _modelMetadata;
 
@@ -186,7 +188,7 @@ namespace MyCodex.WinForms.Forms
                 await RefreshAsync();
                 if (!IsDisposed) _providersList.Focus();
             };
-            _refreshButton.Click += async (sender, args) => await RefreshAsync();
+            _refreshButton.Click += async (sender, args) => { _shownLoadError = null; await RefreshAsync(); };
             _updateBackendButton.Click += async (sender, args) => await UpdateBackendAsync();
             _retryButton.Click += async (sender, args) => await RetryConnectionAsync();
             _sessionHistoryCheckBox.Click += async (sender, args) => await ToggleSessionHistoryAsync();
@@ -289,14 +291,16 @@ namespace MyCodex.WinForms.Forms
                 }
                 _loaded = true;
                 _updateAvailable = false;
-                var readyStatus = snapshot.RouteRequired
-                    ? !snapshot.ManualRestartRequired && !snapshot.StartupRecoveryReady
+                var routeError = !snapshot.RouteRequired ? null
+                    : !snapshot.ManualRestartRequired && !snapshot.StartupRecoveryReady
                         ? AuthenticationCenterUiText.Error(new AuthenticationCenterException("startup_registration_failed"))
                         : !snapshot.RouterRunning
                             ? UiLocalization.Text("AuthenticationCenter.Error.RouterUnavailable", "The current configuration requires conversion, but its route is unavailable. Refresh or switch to a direct provider.")
-                            : snapshot.ManualRestartRequired
+                            : null;
+                var readyStatus = snapshot.RouteRequired
+                    ? routeError ?? (snapshot.ManualRestartRequired
                                 ? UiLocalization.Text("AuthenticationCenter.Status.ManualRestart", "Conversion routing is ready. After this target restarts, open MyCodex to restore the route before using its CLI.")
-                                : string.Format(UiLocalization.Text("AuthenticationCenter.Status.RouterReady", "Configurations loaded. Conversion routing is ready; active requests: {0}."), snapshot.RouteInFlight)
+                                : string.Format(UiLocalization.Text("AuthenticationCenter.Status.RouterReady", "Configurations loaded. Conversion routing is ready; active requests: {0}."), snapshot.RouteInFlight))
                     : UiLocalization.Text("AuthenticationCenter.Status.Ready", "Configurations loaded. Saving does not switch the current provider.");
                     if (!snapshot.RouteRequired) readyStatus = UiLocalization.Text("AuthenticationCenter.Status.NativeReady", "Configurations loaded. Editing the current provider reads global settings; saving it updates them immediately.");
                 if (snapshot.Aggregating && snapshot.RouterRunning)
@@ -306,6 +310,13 @@ namespace MyCodex.WinForms.Forms
                 readyStatus = AuthenticationCenterUiText.LiveStatus(snapshot, readyStatus);
                 if (aggregationNote != null) readyStatus += " " + aggregationNote;
                 Announce(sessionHistoryNote == null ? readyStatus : readyStatus + " " + sessionHistoryNote);
+                ShowLoadError(string.Join(Environment.NewLine, new[]
+                {
+                    routeError,
+                    AuthenticationCenterUiText.SyncErrorText(snapshot),
+                    aggregationNote,
+                    _sessionHistory == null ? sessionHistoryNote : null
+                }.Where(text => !string.IsNullOrEmpty(text))));
             }
             catch (OperationCanceledException)
             {
@@ -318,6 +329,8 @@ namespace MyCodex.WinForms.Forms
                     _updateAvailable = error is AuthenticationCenterException failure && failure.Code == "backend_update_available";
                     _providersList.Items.Clear();
                     Announce(AuthenticationCenterUiText.Error(error));
+                    // An available backend update is an offer with its own button, not a failure.
+                    ShowLoadError(_updateAvailable ? null : AuthenticationCenterUiText.Error(error));
                 }
             }
             finally
@@ -348,7 +361,7 @@ namespace MyCodex.WinForms.Forms
                 catch (OperationCanceledException) { return; }
                 catch (Exception error)
                 {
-                    if (!IsDisposed) Announce(AuthenticationCenterUiText.Error(error));
+                    if (!IsDisposed) AnnounceError(AuthenticationCenterUiText.Error(error));
                     return;
                 }
                 finally
@@ -383,7 +396,7 @@ namespace MyCodex.WinForms.Forms
                 UpdateActions();
                 try { provider = await _client.ReadForEditAsync(provider, _lifetime.Token); }
                 catch (OperationCanceledException) { return; }
-                catch (Exception error) { if (!IsDisposed) Announce(AuthenticationCenterUiText.Error(error)); return; }
+                catch (Exception error) { if (!IsDisposed) AnnounceError(AuthenticationCenterUiText.Error(error)); return; }
                 finally { _busy = false; if (!IsDisposed) UpdateActions(); }
             }
             if (IsDisposed) return;
@@ -397,7 +410,7 @@ namespace MyCodex.WinForms.Forms
                 {
                     _reconnectPending = true;
                     await RefreshAsync();
-                    Announce(AuthenticationCenterUiText.Error(new AuthenticationCenterException("operation_unknown")));
+                    AnnounceError(AuthenticationCenterUiText.Error(new AuthenticationCenterException("operation_unknown")));
                 }
             }
             if (!IsDisposed)
@@ -413,7 +426,7 @@ namespace MyCodex.WinForms.Forms
             await RefreshAsync(saved.Id);
             if (IsDisposed) return;
             if (_reconnectPending)
-                Announce(UiLocalization.Text("AuthenticationCenter.Status.ReconnectFailed", "Global configuration is applied, but MyCodex could not reconnect. Retry the connection; the global change has not been rolled back."));
+                AnnounceError(UiLocalization.Text("AuthenticationCenter.Status.ReconnectFailed", "Global configuration is applied, but MyCodex could not reconnect. Retry the connection; the global change has not been rolled back."));
             else if (saved.RecoveryRequired && SelectedProvider?.Id == saved.Id)
                 Announce(UiLocalization.Text("AuthenticationCenter.Status.SavedForEnable", "Configuration saved. Select Enable to back up the old configuration automatically, switch to this provider and reconnect. The current configuration has not changed."));
         }
@@ -480,7 +493,9 @@ namespace MyCodex.WinForms.Forms
                     await RefreshAsync(selectedId);
                     if (_loaded && successStatus != null)
                     {
-                        Announce(successStatus());
+                        // A deletion that could not reconnect is reported as a failure.
+                        if (_reconnectPending) AnnounceError(successStatus());
+                        else Announce(successStatus());
                     }
                 }
             }
@@ -496,7 +511,7 @@ namespace MyCodex.WinForms.Forms
                     {
                         _reconnectPending = true;
                     }
-                    Announce(AuthenticationCenterUiText.Error(error));
+                    AnnounceError(AuthenticationCenterUiText.Error(error));
                 }
             }
             finally
@@ -554,7 +569,7 @@ namespace MyCodex.WinForms.Forms
             catch (OperationCanceledException) { }
             catch (Exception error)
             {
-                if (!IsDisposed) Announce(AuthenticationCenterUiText.Error(error));
+                if (!IsDisposed) AnnounceError(AuthenticationCenterUiText.Error(error));
             }
             finally
             {
@@ -596,9 +611,16 @@ namespace MyCodex.WinForms.Forms
                 await RefreshAsync(provider.Id);
                 if (!IsDisposed)
                 {
-                    Announce(result.GlobalApplied && result.Reconnected
-                        ? UiLocalization.Text("AuthenticationCenter.Status.Applied", "Global configuration applied and MyCodex reconnected. Existing threads may require a compatible model or a new conversation.")
-                        : UiLocalization.Text("AuthenticationCenter.Status.ReconnectFailed", "Global configuration is applied, but MyCodex could not reconnect. Retry the connection; the global change has not been rolled back."));
+                    if (result.Reconnected)
+                    {
+                        Announce(UiLocalization.Text("AuthenticationCenter.Status.Applied", "Global configuration applied and MyCodex reconnected. Existing threads may require a compatible model or a new conversation."));
+                        // The one spoken result here: the switch finishes away from the focused control.
+                        _screenReader?.Speak(string.Format(UiLocalization.Text("AuthenticationCenter.Speech.Enabled", "{0} enabled."), provider.Name), true, false, true);
+                    }
+                    else
+                    {
+                        AnnounceError(UiLocalization.Text("AuthenticationCenter.Status.ReconnectFailed", "Global configuration is applied, but MyCodex could not reconnect. Retry the connection; the global change has not been rolled back."));
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -611,7 +633,7 @@ namespace MyCodex.WinForms.Forms
                 {
                     if (error is AuthenticationCenterException failure && failure.Code == "operation_unknown")
                         _reconnectPending = true;
-                    Announce(AuthenticationCenterUiText.Error(error));
+                    AnnounceError(AuthenticationCenterUiText.Error(error));
                 }
             }
             finally
@@ -641,9 +663,8 @@ namespace MyCodex.WinForms.Forms
                 }
                 _reconnectPending = !connected;
                 RefreshOfficialIdentity();
-                Announce(connected
-                    ? UiLocalization.Text("AuthenticationCenter.Status.Reconnected", "MyCodex reconnected. No provider configuration was reapplied.")
-                    : UiLocalization.Text("AuthenticationCenter.Status.ReconnectFailed", "Global configuration is applied, but MyCodex could not reconnect. Retry the connection; the global change has not been rolled back."));
+                if (connected) Announce(UiLocalization.Text("AuthenticationCenter.Status.Reconnected", "MyCodex reconnected. No provider configuration was reapplied."));
+                else AnnounceError(UiLocalization.Text("AuthenticationCenter.Status.ReconnectFailed", "Global configuration is applied, but MyCodex could not reconnect. Retry the connection; the global change has not been rolled back."));
             }
             catch (OperationCanceledException)
             {
@@ -652,7 +673,7 @@ namespace MyCodex.WinForms.Forms
             {
                 if (!IsDisposed)
                 {
-                    Announce(AuthenticationCenterUiText.Error(error));
+                    AnnounceError(AuthenticationCenterUiText.Error(error));
                 }
             }
             finally
@@ -681,6 +702,25 @@ namespace MyCodex.WinForms.Forms
         private void Announce(string text)
         {
             _statusLabel.Text = text;
+        }
+
+        private void AnnounceError(string text)
+        {
+            Announce(text);
+            AuthenticationCenterUiText.ShowError(this, text);
+        }
+
+        // A refresh follows most operations, so a loading problem is shown once until it changes or the user refreshes.
+        private void ShowLoadError(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                _shownLoadError = null;
+                return;
+            }
+            if (string.Equals(text, _shownLoadError, StringComparison.Ordinal)) return;
+            _shownLoadError = text;
+            AuthenticationCenterUiText.ShowError(this, text);
         }
 
         protected override void Dispose(bool disposing)

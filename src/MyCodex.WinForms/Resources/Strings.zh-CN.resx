@@ -12660,6 +12660,9 @@ MyCodex 桌面客户端。</value>
   <data name="AuthenticationCenter.Status.Applied" xml:space="preserve">
     <value>全局配置已应用，MyCodex 已重新连接。旧会话可能需要兼容的模型或新建对话。</value>
   </data>
+  <data name="AuthenticationCenter.Speech.Enabled" xml:space="preserve">
+    <value>已启用 {0}。</value>
+  </data>
   <data name="AuthenticationCenter.Status.ReconnectFailed" xml:space="preserve">
     <value>全局配置已应用，但 MyCodex 重新连接失败。请重试连接；全局修改未回滚。</value>
   </data>

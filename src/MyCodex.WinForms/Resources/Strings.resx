@@ -12705,6 +12705,9 @@ Local configuration directory: {1}</value>
   <data name="AuthenticationCenter.Status.Applied" xml:space="preserve">
     <value>Global configuration applied and MyCodex reconnected. Existing threads may require a compatible model or a new conversation.</value>
   </data>
+  <data name="AuthenticationCenter.Speech.Enabled" xml:space="preserve">
+    <value>{0} enabled.</value>
+  </data>
   <data name="AuthenticationCenter.Status.ReconnectFailed" xml:space="preserve">
     <value>Global configuration is applied, but MyCodex could not reconnect. Retry the connection; the global change has not been rolled back.</value>
   </data>

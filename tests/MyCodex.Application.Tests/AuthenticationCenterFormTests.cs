@@ -217,9 +217,9 @@ namespace MyCodex.Application.Tests
             }
         }
 
-        [TestCase("zh-CN", "全局配置已应用")]
-        [TestCase("en-US", "Global configuration applied")]
-        public void EnterEnablesSelectedProviderWithReadableStatusWithoutEditing(string culture, string expectedStatus)
+        [TestCase("zh-CN", "全局配置已应用", "已启用")]
+        [TestCase("en-US", "Global configuration applied", "enabled")]
+        public void EnterEnablesSelectedProviderWithReadableStatusWithoutEditing(string culture, string expectedStatus, string expectedSpeech)
         {
             var previousCulture = Thread.CurrentThread.CurrentUICulture;
             try
@@ -254,7 +254,8 @@ namespace MyCodex.Application.Tests
                     Assert.That(args.Handled && args.SuppressKeyPress, Is.True);
                     Assert.That(applies, Is.EqualTo(1));
                     Assert.That(client.ReadForEditCalls, Is.Zero);
-                    Assert.That(reader.SpeakCalls, Is.Zero);
+                    Assert.That(reader.SpeakCalls, Is.EqualTo(1), "A successful switch is the one result the authentication center speaks.");
+                    Assert.That(reader.LastSpokenText, Does.Contain("a").And.Contain(expectedSpeech));
                     Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Does.StartWith(expectedStatus));
                     Assert.That(list.SelectedItems[0].Tag, Is.SameAs(client.Providers[0]));
                     Assert.That(list.Focused, Is.True);
@@ -284,13 +285,18 @@ namespace MyCodex.Application.Tests
                 var list = FormTestDriver.Field<ListView>(form, "_providersList");
                 var listHandle = list.Handle;
                 list.Items[0].Selected = true;
+                ErrorBoxRecorder.Clear();
                 var applying = form.ApplySelectedAsync();
                 form.ApplySelectedAsync().GetAwaiter().GetResult();
                 Assert.That(applies, Is.EqualTo(1));
                 Assert.That(reader.SpeakCalls, Is.Zero);
                 reply.SetResult(new AuthenticationApplyResult { GlobalApplied = globalApplied, Reconnected = reconnected });
                 applying.GetAwaiter().GetResult();
-                Assert.That(reader.SpeakCalls, Is.Zero);
+                var succeeded = globalApplied && reconnected;
+                Assert.That(reader.SpeakCalls, Is.EqualTo(succeeded ? 1 : 0), "Only a confirmed switch is spoken.");
+                Assert.That(ErrorBoxRecorder.Messages, Has.Count.EqualTo(succeeded ? 0 : 1), "A failed or unconfirmed switch opens one error box.");
+                if (!succeeded)
+                    Assert.That(ErrorBoxRecorder.Messages[0], Is.EqualTo(FormTestDriver.Field<Label>(form, "_statusLabel").Text));
             }
         }
 
@@ -328,7 +334,7 @@ namespace MyCodex.Application.Tests
                     form.ApplySelectedAsync().GetAwaiter().GetResult();
                     Assert.That(applies, Is.EqualTo(1));
                     Assert.That(client.Current, Is.EqualTo(saved.Id));
-                    Assert.That(reader.SpeakCalls, Is.Zero);
+                    Assert.That(reader.SpeakCalls, Is.EqualTo(1), "Only the confirmed switch is spoken, not the save.");
                 }
             }
         }
@@ -752,6 +758,38 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Test]
+        public void LoadErrorsOpenOneErrorBoxUntilTheyChangeOrTheUserRefreshes()
+        {
+            var client = new FakeClient { SyncError = "database_failed" };
+            client.Providers.Add(Provider("a"));
+            var reader = new Reader();
+            using (var form = new AuthenticationCenterForm(client, reader) { ShowInTaskbar = false })
+            {
+                form.Show();
+                ErrorBoxRecorder.Clear();
+                form.RefreshAsync().GetAwaiter().GetResult();
+                var status = FormTestDriver.Field<Label>(form, "_statusLabel");
+                Assert.That(ErrorBoxRecorder.Messages, Has.Count.EqualTo(1));
+                Assert.That(status.Text, Does.Contain(ErrorBoxRecorder.Messages[0]), "The error stays readable in the status line.");
+                form.RefreshAsync().GetAwaiter().GetResult();
+                Assert.That(ErrorBoxRecorder.Messages, Has.Count.EqualTo(1), "Refreshes after other operations do not repeat an unchanged error.");
+                FormTestDriver.Field<Button>(form, "_refreshButton").PerformClick();
+                Assert.That(ErrorBoxRecorder.Messages, Has.Count.EqualTo(2), "An explicit refresh reports the error again.");
+                client.SyncError = null;
+                form.RefreshAsync().GetAwaiter().GetResult();
+                Assert.That(ErrorBoxRecorder.Messages, Has.Count.EqualTo(2));
+                client.Failure = new AuthenticationCenterException("backend_update_available");
+                form.RefreshAsync().GetAwaiter().GetResult();
+                Assert.That(ErrorBoxRecorder.Messages, Has.Count.EqualTo(2), "An available backend update is not an error.");
+                client.Failure = new AuthenticationCenterException("database_failed");
+                form.RefreshAsync().GetAwaiter().GetResult();
+                Assert.That(ErrorBoxRecorder.Messages, Has.Count.EqualTo(3));
+                Assert.That(ErrorBoxRecorder.Messages[2], Is.EqualTo(status.Text));
+                Assert.That(reader.SpeakCalls, Is.Zero, "Errors use the message box, not speech.");
+            }
+        }
+
         private static AuthenticationProvider Provider(string id)
         {
             return new AuthenticationProvider { Id = id, Name = id, Kind = "responses", BaseUrl = "https://example.test/v1", Model = "test", Version = "v1", HasApiKey = true };
@@ -1017,6 +1055,7 @@ namespace MyCodex.Application.Tests
             internal TaskCompletionSource<AuthenticationCenterSnapshot> ReadReply;
             internal AuthenticationProviderEdit LastEdit;
             internal bool RouteRequired, RouterRunning, SupportsSessionHistory, SupportsAggregation, Aggregating;
+            internal string SyncError;
 
             public Task<AuthenticationCenterSnapshot> ReadAsync(CancellationToken cancellationToken)
             {
@@ -1026,7 +1065,7 @@ namespace MyCodex.Application.Tests
                     throw Failure;
                 }
                 if (ReadReply != null) return ReadReply.Task;
-                return Task.FromResult(new AuthenticationCenterSnapshot { TargetName = "Test", CodexHome = "test-home", CurrentProviderId = Current, Providers = Providers.ToList(), RouteRequired = RouteRequired, RouterRunning = RouterRunning, RouteInFlight = 3, SupportsSessionHistory = SupportsSessionHistory, SupportsAggregation = SupportsAggregation, Aggregating = Aggregating });
+                return Task.FromResult(new AuthenticationCenterSnapshot { TargetName = "Test", CodexHome = "test-home", CurrentProviderId = Current, Providers = Providers.ToList(), RouteRequired = RouteRequired, RouterRunning = RouterRunning, RouteInFlight = 3, SupportsSessionHistory = SupportsSessionHistory, SupportsAggregation = SupportsAggregation, Aggregating = Aggregating, SyncError = SyncError });
             }
 
             public Task<AuthenticationProvider> SaveAsync(AuthenticationProviderEdit edit, CancellationToken cancellationToken)

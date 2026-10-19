@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Interfaces;
 using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.AuthenticationCenter;
 using MyCodex.WinForms.Controls;
@@ -305,6 +306,54 @@ namespace MyCodex.Application.Tests
                 form.SelectNextControl(FormTestDriver.Field<Button>(login, "_start"), false, true, true, false);
                 Assert.That(FormTestDriver.Field<TextBox>(login, "_code").Focused, Is.True,
                     "Shift+Tab must also skip the sign-in status.");
+            }
+        }
+
+        [Test]
+        public async Task FetchedModelsMoveFocusToTheModelList()
+        {
+            var client = new AuthenticationCenterClient("Test", (method, values, token) =>
+                Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object> { { "models", new object[]
+                {
+                    new Dictionary<string, object> { { "model", "first" } },
+                    new Dictionary<string, object> { { "model", "second" } }
+                } } }));
+            using (var form = new AuthenticationProviderEditForm(client, template:
+                new AuthenticationProviderPreset { Kind = "responses", Name = "Test", BaseUrl = "https://example.test/v1" }))
+            {
+                form.ShowInTaskbar = false;
+                form.Show();
+                ErrorBoxRecorder.Clear();
+                await form.FetchModelsAsync();
+                var list = FormTestDriver.Field<ListView>(FormTestDriver.Field<AuthenticationModelsControl>(form, "_models"), "_list");
+                Assert.That(list.Items.Count, Is.EqualTo(2));
+                Assert.That(list.Focused, Is.True);
+                Assert.That(list.SelectedItems.Count, Is.EqualTo(1));
+                Assert.That(list.FocusedItem, Is.SameAs(list.SelectedItems[0]));
+                Assert.That(ErrorBoxRecorder.Messages, Is.Empty);
+            }
+        }
+
+        [Test]
+        public async Task FailedModelFetchAndMissingRequiredFieldsOpenErrorBoxes()
+        {
+            var client = new AuthenticationCenterClient("Test", (method, values, token) =>
+                throw new AuthenticationCenterException("upstream_unreachable"));
+            using (var form = new AuthenticationProviderEditForm(client, template:
+                new AuthenticationProviderPreset { Kind = "responses", Name = "Test", BaseUrl = "https://example.test/v1" },
+                save: (edit, token) => throw new InvalidOperationException("Save must not run.")))
+            {
+                form.ShowInTaskbar = false;
+                form.Show();
+                ErrorBoxRecorder.Clear();
+                await form.FetchModelsAsync();
+                var status = FormTestDriver.Field<Control>(form, "_statusLabel");
+                Assert.That(ErrorBoxRecorder.Messages, Is.EqualTo(new[] { status.Text }));
+                FormTestDriver.Field<TextBox>(form, "_nameTextBox").Text = string.Empty;
+                await form.SaveAsync();
+                Assert.That(ErrorBoxRecorder.Messages, Has.Count.EqualTo(2));
+                Assert.That(ErrorBoxRecorder.Messages[1], Is.EqualTo(status.Text));
+                Assert.That(FormTestDriver.Field<TextBox>(form, "_nameTextBox").Focused, Is.True, "Focus returns to the field to fix.");
             }
         }
 

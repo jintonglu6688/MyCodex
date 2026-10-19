@@ -95,6 +95,7 @@ namespace MyCodex.WinForms.Forms
             {
                 SaveOutcomeUnknown = error is AuthenticationCenterException failure && failure.Code == "operation_unknown";
                 _status.Text = AuthenticationCenterUiText.Error(error);
+                if (!(error is OperationCanceledException)) AuthenticationCenterUiText.ShowError(this, _status.Text);
                 _editor.Focus();
             }
             finally

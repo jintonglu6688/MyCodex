@@ -2,6 +2,7 @@ using System;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Shared.Constants;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
 
@@ -9,6 +10,21 @@ namespace MyCodex.WinForms.Forms
 {
     internal static class AuthenticationCenterUiText
     {
+        // Errors stay in the status line and also open a standard error box, which screen readers read on display without competing speech.
+        internal static Action<IWin32Window, string, string> ErrorPresenter = (owner, text, caption) =>
+            MessageBox.Show(owner, text, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+        internal static void ShowError(Control owner, string text)
+        {
+            if (string.IsNullOrWhiteSpace(text) || owner == null || owner.IsDisposed)
+            {
+                return;
+            }
+            var form = owner.FindForm();
+            var caption = Name(form?.Text ?? string.Empty);
+            ErrorPresenter(form ?? (IWin32Window)owner, text, string.IsNullOrEmpty(caption) ? AppConstants.AppName : caption);
+        }
+
         internal static string Name(string caption)
         {
             var index = caption.LastIndexOf("(&", StringComparison.Ordinal);
@@ -260,32 +276,37 @@ namespace MyCodex.WinForms.Forms
                     status = UiLocalization.Text("AuthenticationCenter.Status.LiveUnavailable", "The current global configuration could not be confirmed. Saved configurations can still be edited.");
                     break;
             }
-            if (!string.IsNullOrEmpty(snapshot.SyncError))
+            var error = SyncErrorText(snapshot);
+            if (error != null)
             {
-                string error;
-                switch (snapshot.SyncError)
-                {
-                    case "config_conflict":
-                        error = UiLocalization.Text("AuthenticationCenter.Error.SyncChanged", "The global configuration changed while it was being read. Refresh to check its current state.");
-                        break;
-                    case "account_write_failed":
-                    case "database_failed":
-                    case "provider_write_failed":
-                        error = UiLocalization.Text("AuthenticationCenter.Error.SyncSave", "The global authentication could not be saved in the authentication center. Refresh to retry.");
-                        break;
-                    case "unsupported_auth_source":
-                    case "external_profile_unsupported":
-                    case "unsupported_protocol":
-                    case "unsupported_api_format":
-                        error = UiLocalization.Text("AuthenticationCenter.Error.SyncUnsupported", "This global configuration cannot be synchronized automatically. Review its authentication source and provider settings, or add a configuration manually.");
-                        break;
-                    default:
-                        error = Error(new AuthenticationCenterException(snapshot.SyncError));
-                        break;
-                }
                 status += Environment.NewLine + error;
             }
             return status;
+        }
+
+        // Automatic capture of the global configuration failed; null when it succeeded.
+        internal static string SyncErrorText(AuthenticationCenterSnapshot snapshot)
+        {
+            if (string.IsNullOrEmpty(snapshot.SyncError))
+            {
+                return null;
+            }
+            switch (snapshot.SyncError)
+            {
+                case "config_conflict":
+                    return UiLocalization.Text("AuthenticationCenter.Error.SyncChanged", "The global configuration changed while it was being read. Refresh to check its current state.");
+                case "account_write_failed":
+                case "database_failed":
+                case "provider_write_failed":
+                    return UiLocalization.Text("AuthenticationCenter.Error.SyncSave", "The global authentication could not be saved in the authentication center. Refresh to retry.");
+                case "unsupported_auth_source":
+                case "external_profile_unsupported":
+                case "unsupported_protocol":
+                case "unsupported_api_format":
+                    return UiLocalization.Text("AuthenticationCenter.Error.SyncUnsupported", "This global configuration cannot be synchronized automatically. Review its authentication source and provider settings, or add a configuration manually.");
+                default:
+                    return Error(new AuthenticationCenterException(snapshot.SyncError));
+            }
         }
     }
 }

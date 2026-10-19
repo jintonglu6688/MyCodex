@@ -220,9 +220,8 @@ namespace MyCodex.WinForms.Forms
                 await RefreshAsync();
                 if (!IsDisposed && _loaded)
                 {
-                    Announce(result.Reconnected
-                        ? success(result.State)
-                        : UiLocalization.Text("AuthenticationCenter.Status.ReconnectFailed", "Global configuration is applied, but MyCodex could not reconnect. Retry the connection; the global change has not been rolled back."));
+                    if (result.Reconnected) Announce(success(result.State));
+                    else AnnounceError(UiLocalization.Text("AuthenticationCenter.Status.ReconnectFailed", "Global configuration is applied, but MyCodex could not reconnect. Retry the connection; the global change has not been rolled back."));
                 }
             }
             catch (OperationCanceledException)
@@ -234,7 +233,7 @@ namespace MyCodex.WinForms.Forms
                 {
                     if (error is AuthenticationCenterException failure && failure.Code == "operation_unknown")
                         _reconnectPending = true;
-                    Announce(AuthenticationCenterUiText.Error(error));
+                    AnnounceError(AuthenticationCenterUiText.Error(error));
                 }
             }
             finally

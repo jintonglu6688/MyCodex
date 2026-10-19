@@ -197,7 +197,7 @@ namespace MyCodex.WinForms.Controls
             catch (OperationCanceledException) { }
             catch (Exception error)
             {
-                if (!_disposed && generation == _generation) Announce(AuthenticationCenterUiText.Error(error));
+                if (!_disposed && generation == _generation) AnnounceError(AuthenticationCenterUiText.Error(error), true);
             }
             finally { _polling = false; }
         }
@@ -218,7 +218,7 @@ namespace MyCodex.WinForms.Controls
                 if (!_disposed) SetLogin(new AuthenticationDeviceLogin { LoginId = _login.LoginId, Status = "cancelled" });
             }
             catch (OperationCanceledException) { }
-            catch (Exception error) { if (!_disposed) Announce(AuthenticationCenterUiText.Error(error)); }
+            catch (Exception error) { if (!_disposed) AnnounceError(AuthenticationCenterUiText.Error(error)); }
             finally
             {
                 _cancelling = false;
@@ -266,7 +266,7 @@ namespace MyCodex.WinForms.Controls
                 case "expired": Announce(login.Method == "browser"
                     ? UiLocalization.Text("AuthenticationLogin.BrowserExpired", "Browser sign-in expired. Start sign-in again.")
                     : UiLocalization.Text("AuthenticationAccounts.Expired", "The device code expired. Start sign-in again.")); break;
-                default: Announce(AuthenticationCenterUiText.Error(new AuthenticationCenterException(login.Error))); break;
+                default: AnnounceError(AuthenticationCenterUiText.Error(new AuthenticationCenterException(login.Error)), true); break;
             }
             UpdateActions();
         }
@@ -303,7 +303,7 @@ namespace MyCodex.WinForms.Controls
             }
             catch (Exception)
             {
-                Announce(_login.Method == "browser"
+                AnnounceError(_login.Method == "browser"
                     ? UiLocalization.Text("AuthenticationLogin.BrowserOpenFailed", "Could not open the browser. Retry Open verification page, or use device code sign-in.")
                     : UiLocalization.Text("AuthenticationLogin.OpenFailed", "Could not open the browser. Use Open verification page to retry, or visit https://auth.openai.com/codex/device manually."));
                 return false;
@@ -316,7 +316,7 @@ namespace MyCodex.WinForms.Controls
             UpdateActions();
             try { await action(); }
             catch (OperationCanceledException) { }
-            catch (Exception error) { if (!_disposed) Announce(AuthenticationCenterUiText.Error(error)); }
+            catch (Exception error) { if (!_disposed) AnnounceError(AuthenticationCenterUiText.Error(error)); }
             finally { IsBusy = false; if (!_disposed) UpdateActions(); }
         }
 
@@ -340,6 +340,14 @@ namespace MyCodex.WinForms.Controls
             if (_status.Text == message) return;
             _status.Text = message;
             StateChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        // Polling reports the same failure repeatedly; once shows it a single time.
+        private void AnnounceError(string message, bool once = false)
+        {
+            if (once && _status.Text == message) return;
+            Announce(message);
+            AuthenticationCenterUiText.ShowError(this, message);
         }
 
         private async Task CancelDetachedAsync(string id)

@@ -119,7 +119,7 @@ namespace MyCodex.WinForms.Forms
                 _status.Text = UiLocalization.Text("AuthenticationSavedAccounts.Hint", "Deleting a provider keeps its saved account. Accounts can be removed here.");
             }
             catch (OperationCanceledException) { }
-            catch (Exception error) { if (!_disposed) _status.Text = AuthenticationCenterUiText.Error(error); }
+            catch (Exception error) { if (!_disposed) ShowError(AuthenticationCenterUiText.Error(error)); }
             finally
             {
                 _busy = false;
@@ -147,15 +147,21 @@ namespace MyCodex.WinForms.Forms
                 _busy = false;
                 await RefreshAsync();
                 if (!_disposed && ReconnectPending)
-                    _status.Text = UiLocalization.Text("AuthenticationSavedAccounts.Reconnect", "Account removed. Close this window and retry the connection in Authentication Center.");
+                    ShowError(UiLocalization.Text("AuthenticationSavedAccounts.Reconnect", "Account removed. Close this window and retry the connection in Authentication Center."));
             }
             catch (Exception error)
             {
                 var code = (error as AuthenticationCenterException)?.Code;
                 ReconnectPending = code == "operation_unknown";
-                if (!_disposed) _status.Text = AuthenticationCenterUiText.Error(error);
+                if (!_disposed) ShowError(AuthenticationCenterUiText.Error(error));
             }
             finally { _busy = false; if (!_disposed) { UpdateActions(); _accounts.Focus(); } }
+        }
+
+        private void ShowError(string text)
+        {
+            _status.Text = text;
+            AuthenticationCenterUiText.ShowError(this, text);
         }
 
         private void UpdateActions()

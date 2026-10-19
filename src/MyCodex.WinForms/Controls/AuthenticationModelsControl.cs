@@ -148,6 +148,15 @@ namespace MyCodex.WinForms.Controls
             _list.Focus();
         }
 
+        // Moves focus into the list, keeping the selection or starting at the default model.
+        internal void FocusList()
+        {
+            if (_list.Items.Count == 0) { return; }
+            if (Selected == null) { SelectModel(_defaultModel ?? (_list.Items[0].Tag as AuthenticationCatalogModel)?.Model); }
+            if (Selected == null) { _list.Items[0].Selected = _list.Items[0].Focused = true; }
+            _list.Focus();
+        }
+
         private void Changed() { RefreshList(); ModelsChanged?.Invoke(this, EventArgs.Empty); }
         private void RefreshList()
         {

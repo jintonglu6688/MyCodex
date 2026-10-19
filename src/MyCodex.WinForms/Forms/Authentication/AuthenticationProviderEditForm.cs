@@ -257,9 +257,10 @@ namespace MyCodex.WinForms.Forms
                     }
                 }
                 Announce(status);
+                if (fetched.Count > 0) { _models.FocusList(); }
             }
             catch (OperationCanceledException) { }
-            catch (Exception error) { if (!_disposed) { Announce(AuthenticationCenterUiText.Error(error)); } }
+            catch (Exception error) { if (!_disposed) { AnnounceError(AuthenticationCenterUiText.Error(error)); } }
             finally { _fetching = false; if (!_disposed) { _models.Fetching = false; UpdateActions(); } }
             if (baseUrl != null) { await CompleteModelMetadataAsync(baseUrl, presets, usedCatalog, status); }
         }
@@ -371,7 +372,7 @@ namespace MyCodex.WinForms.Forms
             if (_editingConfig || _saving || _fetching || _disposed || _login?.IsLoginActive == true) return;
             AuthenticationProviderEdit edit;
             try { edit = CreateEdit(ReadAdvanced()); }
-            catch (AuthenticationCenterException error) { Announce(AuthenticationCenterUiText.Error(error)); return; }
+            catch (AuthenticationCenterException error) { AnnounceError(AuthenticationCenterUiText.Error(error)); return; }
             _editingConfig = true;
             UpdateActions();
             try
@@ -392,7 +393,7 @@ namespace MyCodex.WinForms.Forms
                 }
             }
             catch (OperationCanceledException) { }
-            catch (Exception error) { if (!_disposed) Announce(AuthenticationCenterUiText.Error(error)); }
+            catch (Exception error) { if (!_disposed) AnnounceError(AuthenticationCenterUiText.Error(error)); }
             finally
             {
                 _editingConfig = false;
@@ -482,14 +483,14 @@ namespace MyCodex.WinForms.Forms
             if (_saving || _fetching || _editingConfig || _disposed || SaveOutcomeUnknown || _login?.IsLoginActive == true) { return; }
             if (string.IsNullOrWhiteSpace(_nameTextBox.Text) || (!_chatGpt && string.IsNullOrWhiteSpace(_models.DefaultModel)) || (_chatGpt && string.IsNullOrWhiteSpace(_login.AccountId)))
             {
-                Announce(UiLocalization.Text("AuthenticationProviderEdit.Required", "Enter a name and choose a default model. For ChatGPT, complete sign-in first."));
+                AnnounceError(UiLocalization.Text("AuthenticationProviderEdit.Required", "Enter a name and choose a default model. For ChatGPT, complete sign-in first."));
                 if (string.IsNullOrWhiteSpace(_nameTextBox.Text)) { _nameTextBox.Focus(); }
                 else if (!_chatGpt) { _models.SelectNextControl(null, true, true, true, false); }
                 return;
             }
             Dictionary<string, object> advanced;
             try { advanced = ReadAdvanced(); }
-            catch (AuthenticationCenterException error) { Announce(AuthenticationCenterUiText.Error(error)); return; }
+            catch (AuthenticationCenterException error) { AnnounceError(AuthenticationCenterUiText.Error(error)); return; }
             _saving = true;
             UpdateActions();
             Announce(UiLocalization.Text("AuthenticationProviderEdit.Status.Saving", "Saving configuration…"));
@@ -527,7 +528,7 @@ namespace MyCodex.WinForms.Forms
             catch (Exception error)
             {
                 SaveOutcomeUnknown = error is AuthenticationCenterException failure && failure.Code == "operation_unknown";
-                if (!_disposed) { Announce(AuthenticationCenterUiText.Error(error)); }
+                if (!_disposed) { AnnounceError(AuthenticationCenterUiText.Error(error)); }
             }
             finally { _saving = false; if (!_disposed) { UpdateActions(); } }
         }
@@ -551,6 +552,7 @@ namespace MyCodex.WinForms.Forms
             _content.Enabled = !_saving && !_editingConfig;
         }
         private void Announce(string text) { _statusLabel.Text = text; }
+        private void AnnounceError(string text) { Announce(text); AuthenticationCenterUiText.ShowError(this, text); }
         protected override void Dispose(bool disposing)
         {
             if (disposing && !_disposed) { _disposed = true; _lifetime.Cancel(); _lifetime.Dispose(); _keyTextBox?.Clear(); }
