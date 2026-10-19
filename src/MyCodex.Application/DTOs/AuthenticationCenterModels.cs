@@ -44,6 +44,10 @@ namespace MyCodex.Application.DTOs
         public string EditorText { get; set; }
         // null asks the backend to refuse conflicts; "keepMine" or "keepTheirs" resolves them.
         public string EditorConflictPolicy { get; set; }
+        // The row is not the provider in use, so it may be saved while work is running.
+        public bool AllowWhileBusy { get; set; }
+        // Saved without reconnecting: the backend refuses anything that changes what Codex uses.
+        public bool InactiveOnly { get; set; }
     }
 
     public sealed class AuthenticationCatalogModel
@@ -100,6 +104,7 @@ namespace MyCodex.Application.DTOs
         public bool SupportsFullConfigEditor { get; set; }
         public bool SupportsSessionHistory { get; set; }
         public bool SupportsAggregation { get; set; }
+        public bool SupportsInactiveSaveWhileBusy { get; set; }
         // Codex is in aggregation mode: routed through the host with several providers listed.
         public bool Aggregating { get; set; }
         public bool RouteRequired { get; set; }

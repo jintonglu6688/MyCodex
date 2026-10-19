@@ -78,10 +78,21 @@ namespace MyCodex.Application.Services
         public async Task<AuthenticationSaveResult> SaveAsync(AuthenticationProviderEdit edit, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            using (var lease = _acquireTransition())
+            IDisposable lease;
+            try
             {
-                if (lease == null) throw new AuthenticationCenterException("runtime_busy");
-                await CheckAuthenticationAsync();
+                lease = _acquireTransition();
+            }
+            catch (AuthenticationCenterException busy) when (busy.Code == "runtime_busy" && edit.AllowWhileBusy)
+            {
+                // Running work keeps its configuration: store the row only, without reconnecting.
+                lease = null;
+            }
+            if (lease == null && !edit.AllowWhileBusy) throw new AuthenticationCenterException("runtime_busy");
+            using (lease)
+            {
+                edit.InactiveOnly = lease == null;
+                if (lease != null) await CheckAuthenticationAsync();
                 AuthenticationProvider saved;
                 try
                 {
@@ -95,7 +106,7 @@ namespace MyCodex.Application.Services
                 return new AuthenticationSaveResult
                 {
                     Provider = saved,
-                    Reconnected = !saved.GlobalApplied || await TryReconnectAsync()
+                    Reconnected = !saved.GlobalApplied || (lease != null && await TryReconnectAsync())
                 };
             }
         }

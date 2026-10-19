@@ -758,6 +758,29 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [TestCase(true, "other", true)]
+        [TestCase(true, "current", false)]
+        [TestCase(true, "new-row", true)]
+        [TestCase(false, "other", false)]
+        public void OnlyProvidersNotInUseMaySaveWhileWorkRuns(bool supported, string editedId, bool allowed)
+        {
+            var client = new FakeClient { SupportsInactiveSaveWhileBusy = supported, Current = "current" };
+            client.Providers.Add(Provider("current"));
+            client.Providers.Add(Provider("other"));
+            AuthenticationProviderEdit seen = null;
+            using (var form = new AuthenticationCenterForm(client, new Reader(), save: (edit, token) =>
+            {
+                seen = edit;
+                return Task.FromResult(new AuthenticationSaveResult { Provider = Provider(edit.Id), Reconnected = true });
+            }))
+            {
+                form.RefreshAsync().GetAwaiter().GetResult();
+                var save = (Func<AuthenticationProviderEdit, CancellationToken, Task<AuthenticationSaveResult>>)FormTestDriver.Invoke(form, "SaveForEditor");
+                save(new AuthenticationProviderEdit { Id = editedId }, CancellationToken.None).GetAwaiter().GetResult();
+                Assert.That(seen.AllowWhileBusy, Is.EqualTo(allowed));
+            }
+        }
+
         [Test]
         public void LoadErrorsOpenOneErrorBoxUntilTheyChangeOrTheUserRefreshes()
         {
@@ -1056,6 +1079,7 @@ namespace MyCodex.Application.Tests
             internal AuthenticationProviderEdit LastEdit;
             internal bool RouteRequired, RouterRunning, SupportsSessionHistory, SupportsAggregation, Aggregating;
             internal string SyncError;
+            internal bool SupportsInactiveSaveWhileBusy;
 
             public Task<AuthenticationCenterSnapshot> ReadAsync(CancellationToken cancellationToken)
             {
@@ -1065,7 +1089,7 @@ namespace MyCodex.Application.Tests
                     throw Failure;
                 }
                 if (ReadReply != null) return ReadReply.Task;
-                return Task.FromResult(new AuthenticationCenterSnapshot { TargetName = "Test", CodexHome = "test-home", CurrentProviderId = Current, Providers = Providers.ToList(), RouteRequired = RouteRequired, RouterRunning = RouterRunning, RouteInFlight = 3, SupportsSessionHistory = SupportsSessionHistory, SupportsAggregation = SupportsAggregation, Aggregating = Aggregating, SyncError = SyncError });
+                return Task.FromResult(new AuthenticationCenterSnapshot { TargetName = "Test", CodexHome = "test-home", CurrentProviderId = Current, Providers = Providers.ToList(), RouteRequired = RouteRequired, RouterRunning = RouterRunning, RouteInFlight = 3, SupportsSessionHistory = SupportsSessionHistory, SupportsAggregation = SupportsAggregation, Aggregating = Aggregating, SyncError = SyncError, SupportsInactiveSaveWhileBusy = SupportsInactiveSaveWhileBusy });
             }
 
             public Task<AuthenticationProvider> SaveAsync(AuthenticationProviderEdit edit, CancellationToken cancellationToken)

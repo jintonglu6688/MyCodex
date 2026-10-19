@@ -40,6 +40,47 @@ namespace MyCodex.Application.Tests
             Assert.That(Assert.ThrowsAsync<AuthenticationCenterException>(() => coordinator.ApplyAsync(Provider(), CancellationToken.None)).Code, Is.EqualTo("runtime_busy"));
         }
 
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(true, true)]
+        public async Task BusySaveStoresOnlyProvidersNotInUseWithoutReconnecting(bool allowWhileBusy, bool unexpectedGlobalWrite)
+        {
+            var gate = new RuntimeOperationGate();
+            var saves = new List<IDictionary<string, object>>();
+            var reconnects = 0;
+            var authenticationReads = 0;
+            var client = new AuthenticationCenterClient("Test", (method, values, token) =>
+            {
+                Assert.That(method, Is.EqualTo("gui/provider/save"));
+                saves.Add(values);
+                return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>
+                {
+                    { "id", "b" }, { "version", "v2" }, { "kind", "responses" }, { "globalApplied", unexpectedGlobalWrite && saves.Count == 1 }
+                });
+            });
+            var coordinator = new AuthenticationApplyCoordinator(client, gate.TryEnterTransition, () => { reconnects++; return Task.FromResult(true); },
+                () => { authenticationReads++; return Task.FromResult(new AppServerAuthenticationState()); });
+            var edit = new AuthenticationProviderEdit { Id = "b", Name = "B", Kind = "responses", BaseUrl = "https://b.example.test/v1", Model = "m", AllowWhileBusy = allowWhileBusy };
+            using (gate.EnterOperation())
+            {
+                if (!allowWhileBusy)
+                {
+                    Assert.That(Assert.ThrowsAsync<AuthenticationCenterException>(() => coordinator.SaveAsync(edit, CancellationToken.None)).Code, Is.EqualTo("runtime_busy"));
+                    Assert.That(saves, Is.Empty);
+                    return;
+                }
+                var busy = await coordinator.SaveAsync(edit, CancellationToken.None);
+                Assert.That(saves[0]["inactiveOnly"], Is.EqualTo(true), "The backend must refuse anything that changes the provider in use.");
+                Assert.That(busy.Reconnected, Is.EqualTo(!unexpectedGlobalWrite), "A global write that cannot reconnect is reported, not hidden.");
+                Assert.That(reconnects, Is.Zero, "Running work must not be interrupted.");
+                Assert.That(authenticationReads, Is.Zero);
+            }
+            var idle = await coordinator.SaveAsync(edit, CancellationToken.None);
+            Assert.That(saves[1].ContainsKey("inactiveOnly"), Is.False, "Without running work the usual save applies.");
+            Assert.That(idle.Reconnected, Is.True);
+            Assert.That(authenticationReads, Is.EqualTo(1));
+        }
+
         [TestCase(false, true)]
         [TestCase(true, true)]
         [TestCase(false, false)]

@@ -192,6 +192,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                 SupportsFullConfigEditor = Strings(status, "capabilities")?.Contains("fullConfigEditor") == true,
                 SupportsSessionHistory = Strings(status, "capabilities")?.Contains("unifiedSessionHistory") == true,
                 SupportsAggregation = Strings(status, "capabilities")?.Contains("aggregation") == true,
+                SupportsInactiveSaveWhileBusy = Strings(status, "capabilities")?.Contains("inactiveSaveWhileBusy") == true,
                 Aggregating = Flag(status, "aggregating"),
                 RouteRequired = Flag(status, "routeRequired"),
                 RouterRunning = Flag(status, "routerRunning"),
@@ -296,6 +297,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                 if (edit.EditorConflictPolicy != null) editor["onConflict"] = edit.EditorConflictPolicy;
                 parameters["editor"] = editor;
             }
+            if (edit.InactiveOnly) parameters["inactiveOnly"] = true;
             var result = await _request("provider/save", parameters, cancellationToken).ConfigureAwait(false);
             // A refused conflict writes nothing; the caller lets the user choose which side to keep.
             if (result.TryGetValue("editorConflict", out var conflict) && conflict is IDictionary<string, object> details)

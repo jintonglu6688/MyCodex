@@ -30,6 +30,7 @@ namespace MyCodex.WinForms.Forms
         private bool _supportsConfigEditing;
         private bool _supportsFullConfigEditor;
         private bool _supportsSessionHistory;
+        private bool _supportsInactiveSaveWhileBusy;
         private readonly Button _addButton;
         private readonly Button _accountsButton;
         private readonly Button _refreshButton;
@@ -246,6 +247,7 @@ namespace MyCodex.WinForms.Forms
                 _supportsConfigEditing = snapshot.SupportsConfigEditing;
             _supportsFullConfigEditor = snapshot.SupportsFullConfigEditor;
             _supportsSessionHistory = snapshot.SupportsSessionHistory;
+            _supportsInactiveSaveWhileBusy = snapshot.SupportsInactiveSaveWhileBusy;
                 _supportsAggregation = snapshot.SupportsAggregation;
                 var aggregationNote = await ReadStackStateAsync();
                 if (IsDisposed) return;
@@ -400,7 +402,7 @@ namespace MyCodex.WinForms.Forms
                 finally { _busy = false; if (!IsDisposed) UpdateActions(); }
             }
             if (IsDisposed) return;
-            using (var editor = new AuthenticationProviderEditForm(_client, provider, null, template, reauthenticate, _save, _supportsContextSettings, _supportsConfigEditing, _modelMetadata, _supportsFullConfigEditor))
+            using (var editor = new AuthenticationProviderEditForm(_client, provider, null, template, reauthenticate, SaveForEditor(), _supportsContextSettings, _supportsConfigEditing, _modelMetadata, _supportsFullConfigEditor))
             {
                 if (editor.ShowDialog(this) == DialogResult.OK)
                 {
@@ -417,6 +419,19 @@ namespace MyCodex.WinForms.Forms
             {
                 _providersList.Focus();
             }
+        }
+
+        // A provider other than the one in use can be saved while work runs; the work keeps its configuration.
+        private Func<AuthenticationProviderEdit, CancellationToken, Task<AuthenticationSaveResult>> SaveForEditor()
+        {
+            if (_save == null) return null;
+            var current = _currentProviderId;
+            var allowed = _supportsInactiveSaveWhileBusy && !string.IsNullOrEmpty(current);
+            return (edit, token) =>
+            {
+                edit.AllowWhileBusy = allowed && !string.Equals(edit.Id, current, StringComparison.Ordinal);
+                return _save(edit, token);
+            };
         }
 
         internal async Task CompleteProviderSaveAsync(AuthenticationSaveResult result)
