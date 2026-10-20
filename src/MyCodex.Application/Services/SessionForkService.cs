@@ -34,9 +34,7 @@ namespace MyCodex.Application.Services
             cancellationToken.ThrowIfCancellationRequested();
             if (!string.IsNullOrWhiteSpace(lastTurnId))
             {
-                var connection = _client as IAppServerConnectionClient;
-                if (connection == null || connection.ProtocolCapabilities == null ||
-                    !connection.ProtocolCapabilities.SupportsThreadForkLastTurnId)
+                if (!SupportsForkFromTurn(_client))
                 {
                     throw new NotSupportedException(SharedLocalization.Text("SessionFork.UnsupportedAnchor", "This runtime does not support forking through a selected turn. Update the runtime or use a full fork."));
                 }
@@ -45,9 +43,7 @@ namespace MyCodex.Application.Services
                 string status;
                 if (details == null || !string.Equals(details.ThreadId, source.ThreadId, StringComparison.Ordinal) ||
                     !details.TurnStatuses.TryGetValue(lastTurnId, out status) ||
-                    !(string.Equals(status, "completed", StringComparison.Ordinal) ||
-                      string.Equals(status, "interrupted", StringComparison.Ordinal) ||
-                      string.Equals(status, "failed", StringComparison.Ordinal)))
+                    !IsFinishedTurnStatus(status))
                 {
                     throw new InvalidOperationException(SharedLocalization.Text("SessionFork.InvalidAnchor", "The selected turn is missing or has not finished. Refresh the conversation and choose a finished turn."));
                 }
@@ -62,6 +58,20 @@ namespace MyCodex.Application.Services
                 throw new InvalidOperationException(SharedLocalization.Text("SessionFork.MissingThread", "The fork did not return a new thread ID."));
             }
             return summary;
+        }
+
+        public static bool SupportsForkFromTurn(IAppServerThreadClient client)
+        {
+            var connection = client as IAppServerConnectionClient;
+            return connection != null && connection.ProtocolCapabilities != null &&
+                connection.ProtocolCapabilities.SupportsThreadForkLastTurnId;
+        }
+
+        public static bool IsFinishedTurnStatus(string status)
+        {
+            return string.Equals(status, "completed", StringComparison.Ordinal) ||
+                string.Equals(status, "interrupted", StringComparison.Ordinal) ||
+                string.Equals(status, "failed", StringComparison.Ordinal);
         }
 
         public async Task<string> TrySetNameAsync(string threadId, string title)

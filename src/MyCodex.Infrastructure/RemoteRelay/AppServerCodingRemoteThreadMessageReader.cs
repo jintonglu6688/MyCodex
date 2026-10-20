@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MyCodex.Application.CodingRemote;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
@@ -93,7 +94,7 @@ namespace MyCodex.Infrastructure.RemoteRelay
                 return page;
             }
 
-            AddMessages(page, session.Id, details, request, true);
+            AddMessages(page, session.Id, details, request, ShouldExposeTurnActions());
 
             return page;
         }
@@ -243,7 +244,8 @@ namespace MyCodex.Infrastructure.RemoteRelay
 
         private bool ShouldExposeTurnActions()
         {
-            return _interactionMode == AppInteractionMode.Coding;
+            return _interactionMode == AppInteractionMode.Coding &&
+                SessionForkService.SupportsForkFromTurn(_threadClient);
         }
 
         private static IReadOnlyList<CodingRemoteMessageItem> MapMessages(AppServerThreadDetails details, int limit, bool allowTurnActions)
@@ -263,8 +265,8 @@ namespace MyCodex.Infrastructure.RemoteRelay
             {
                 var message = source[index];
                 var canCopy = !string.IsNullOrWhiteSpace(message.Content);
-                var hasValidTurn = allowTurnActions && message.TurnIndex > 0 && turnCount >= message.TurnIndex && !string.IsNullOrWhiteSpace(message.TurnId);
-                var trimTurnsAfterTurn = hasValidTurn ? turnCount - message.TurnIndex : 0;
+                var canForkFromTurn = allowTurnActions && IsForkableTurn(details, message, turnCount);
+                var trimTurnsAfterTurn = canForkFromTurn ? turnCount - message.TurnIndex : 0;
                 result.Add(new CodingRemoteMessageItem
                 {
                     MessageId = RemoteConversationStableIdentity.CreateMessageId(message),
@@ -280,7 +282,7 @@ namespace MyCodex.Infrastructure.RemoteRelay
                     Actions = new CodingRemoteMessageActions
                     {
                         Copy = canCopy,
-                        ForkFromTurn = hasValidTurn,
+                        ForkFromTurn = canForkFromTurn,
                     },
                     OperationPreview = new CodingRemoteMessageOperationPreview
                     {
@@ -290,6 +292,16 @@ namespace MyCodex.Infrastructure.RemoteRelay
             }
 
             return result;
+        }
+
+        private static bool IsForkableTurn(AppServerThreadDetails details, AppServerThreadMessage message, int turnCount)
+        {
+            string status;
+            return message.TurnIndex > 0 &&
+                turnCount >= message.TurnIndex &&
+                !string.IsNullOrWhiteSpace(message.TurnId) &&
+                details.TurnStatuses.TryGetValue(message.TurnId, out status) &&
+                SessionForkService.IsFinishedTurnStatus(status);
         }
 
         private static string BuildTurnPreview(IReadOnlyList<AppServerThreadMessage> messages, int turnIndex)

@@ -189,6 +189,61 @@ namespace MyCodex.Application.Tests
             Assert.That(message.OperationPreview.TrimTurnsAfterTurn, Is.EqualTo(1));
         }
 
+        [TestCase(false, "completed")]
+        [TestCase(true, "inProgress")]
+        [TestCase(true, null)]
+        public async Task ListMessagesAsync_HidesForkFromTurnWhenRuntimeOrTurnCannotFork(bool supportsTurnBoundedFork, string turnStatus)
+        {
+            var store = CreateCodingSessionStore();
+            var threadClient = new FakeThreadClient();
+            threadClient.ProtocolCapabilities.SupportsThreadForkLastTurnId = supportsTurnBoundedFork;
+            threadClient.Details.TurnCount = 3;
+            threadClient.Details.TurnStatuses.Clear();
+            if (turnStatus != null)
+            {
+                threadClient.Details.TurnStatuses["turn-2"] = turnStatus;
+            }
+
+            threadClient.Details.Messages.Add(new AppServerThreadMessage
+            {
+                ThreadId = "thread-1",
+                TurnId = "turn-2",
+                TurnIndex = 2,
+                Sender = "assistant",
+                Content = "assistant reply"
+            });
+            var reader = new AppServerCodingRemoteThreadMessageReader(store, threadClient);
+
+            var page = await reader.ListMessagesAsync(
+                new CodingRemoteMessagesListRequest { SessionId = "session-1", Limit = 0 },
+                CancellationToken.None);
+
+            var message = page.Messages[0];
+            Assert.That(message.Actions.Copy, Is.True);
+            Assert.That(message.Actions.ForkFromTurn, Is.False);
+            Assert.That(message.OperationPreview.TrimTurnsAfterTurn, Is.EqualTo(0));
+        }
+
+        private static FakeAppStateStore CreateCodingSessionStore()
+        {
+            return new FakeAppStateStore
+            {
+                Snapshot = new AppStateSnapshot
+                {
+                    Sessions =
+                    {
+                        new ChatSession
+                        {
+                            Id = "session-1",
+                            ThreadId = "thread-1",
+                            WorkspaceId = "workspace-1",
+                            Mode = AppInteractionMode.Coding
+                        }
+                    }
+                }
+            };
+        }
+
         [Test]
         public async Task ListMessagesAsync_OfficeModeReadsOfficeSessionWithoutTurnOperations()
         {
@@ -433,7 +488,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
-        private sealed class FakeThreadClient : IAppServerThreadClient, IAppServerInteractionClient
+        private sealed class FakeThreadClient : IAppServerThreadClient, IAppServerInteractionClient, IAppServerConnectionClient
         {
             public FakeThreadClient()
             {
@@ -441,7 +496,18 @@ namespace MyCodex.Application.Tests
                 {
                     ThreadId = "thread-a"
                 };
+                Details.TurnStatuses["turn-1"] = "completed";
+                Details.TurnStatuses["turn-2"] = "completed";
+                ProtocolCapabilities = new AppServerProtocolCapabilities { SupportsThreadForkLastTurnId = true };
             }
+
+            public event System.EventHandler<AppServerEventArgs> EventReceived
+            {
+                add { }
+                remove { }
+            }
+
+            public AppServerProtocolCapabilities ProtocolCapabilities { get; }
 
             public AppServerThreadDetails Details { get; }
 
@@ -510,6 +576,8 @@ namespace MyCodex.Application.Tests
             public Task ResolveApprovalRequestAsync(string requestId, AppServerApprovalDecision decision) { throw new System.NotSupportedException(); }
             public Task ResolveToolUserInputRequestAsync(string requestId, IDictionary<string, string[]> answers) { throw new System.NotSupportedException(); }
             public Task CancelToolUserInputRequestAsync(string requestId) { throw new System.NotSupportedException(); }
+            public Task ConnectAsync() { throw new System.NotSupportedException(); }
+            public Task RestartAsync() { throw new System.NotSupportedException(); }
         }
     }
 }
