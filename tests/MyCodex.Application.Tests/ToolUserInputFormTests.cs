@@ -1,3 +1,5 @@
+﻿using System;
+using System.Drawing;
 using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +44,37 @@ namespace MyCodex.Application.Tests
                 ok.PerformClick();
                 Assert.That(form.Answers[request.Questions[0].Id], Is.EqualTo(new[] { "always" }));
                 Assert.That(form.DialogResult, Is.EqualTo(DialogResult.OK));
+            }
+        }
+
+        [TestCase(150)]
+        [TestCase(400)]
+        [Apartment(ApartmentState.STA)]
+        public void Confirmation_LongContentGrowsWithoutCoveringQuestions(int wordCount)
+        {
+            var content = "Allow the tool to continue? " + string.Join(" ", Enumerable.Repeat("detail", wordCount));
+            var questions = new[]
+            {
+                new AppServerToolUserInputQuestion { Id = "choice", Question = "Continue?" }
+            };
+            using (var form = new ToolUserInputForm(questions, "MCP Confirmation", content, true))
+            {
+                form.Show();
+                System.Windows.Forms.Application.DoEvents();
+                var summary = Descendants(form).OfType<AccessibleStaticTextControl>().Single();
+                var scrollPanel = summary.Parent.Controls.OfType<Panel>().Single(panel => panel.AutoScroll);
+                var needed = TextRenderer.MeasureText(
+                    summary.Text,
+                    summary.Font,
+                    new Size(summary.Width, int.MaxValue),
+                    TextFormatFlags.WordBreak | TextFormatFlags.Left).Height;
+
+                Assert.That(needed, Is.GreaterThan(120), "the content must be longer than the old fixed row");
+                Assert.That(summary.Height, Is.GreaterThanOrEqualTo(Math.Min(needed, summary.MaximumSize.Height)));
+                Assert.That(summary.Height, Is.LessThanOrEqualTo(form.ClientSize.Height / 2));
+                Assert.That(scrollPanel.Top, Is.GreaterThanOrEqualTo(summary.Bottom));
+                Assert.That(scrollPanel.Height, Is.GreaterThan(0));
+                form.Hide();
             }
         }
 

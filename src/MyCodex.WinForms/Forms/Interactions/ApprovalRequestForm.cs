@@ -45,13 +45,14 @@ namespace MyCodex.WinForms.Forms
                 Padding = new Padding(UiTheme.OuterPadding),
                 TabStop = false
             };
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 86F));
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
             _summaryControl = new AccessibleStaticTextControl
             {
                 Dock = DockStyle.Fill,
+                AutoSize = true,
                 Text = summary.QuestionText,
                 AccessibleName = summary.QuestionText,
                 AccessibleRole = AccessibleRole.StaticText,
@@ -60,6 +61,7 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 0,
                 Margin = new Padding(0, 0, 0, UiTheme.ControlSpacing)
             };
+            _summaryControl.LimitHeightToShareOf(root, 0.5F);
 
             _detailsTextBox = CreateReadOnlyDetailsTextBox(
                 summary.DetailsText,

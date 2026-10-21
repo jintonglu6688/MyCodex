@@ -55,7 +55,7 @@ namespace MyCodex.WinForms.Forms
                 Padding = new Padding(12),
                 TabStop = false
             };
-            root.RowStyles.Add(confirmation ? new RowStyle(SizeType.Absolute, 120F) : new RowStyle(SizeType.AutoSize));
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
@@ -128,6 +128,7 @@ namespace MyCodex.WinForms.Forms
                 _confirmationControl = new AccessibleStaticTextControl
                 {
                     Dock = DockStyle.Fill,
+                    AutoSize = true,
                     Text = titleLabel.Text,
                     AccessibleName = titleLabel.Text,
                     AccessibleRole = AccessibleRole.StaticText,
@@ -136,6 +137,7 @@ namespace MyCodex.WinForms.Forms
                     TabIndex = 0,
                     Margin = new Padding(0, 0, 0, 8)
                 };
+                _confirmationControl.LimitHeightToShareOf(root, 0.5F);
                 root.Controls.Add(_confirmationControl, 0, 0);
                 titleLabel.Dispose();
             }

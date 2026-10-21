@@ -378,6 +378,36 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [TestCase(2)]
+        [TestCase(6)]
+        [Apartment(ApartmentState.STA)]
+        public void Form_ShortQuestionDoesNotOverlapItsAnswerControls(int optionCount)
+        {
+            var queue = new AsyncInputRequestQueue();
+            var request = BuildRequest("item-1", "Short?");
+            ((List<AppServerToolUserInputQuestion>)request.ToolQuestions)[0] = CreateChoiceQuestion("async-1", "Short?", optionCount);
+            queue.Enqueue(request, "Project / One");
+
+            using (var form = new AsyncInputRequestForm(queue))
+            {
+                form.RefreshRequests();
+                form.Show();
+                System.Windows.Forms.Application.DoEvents();
+                var question = FormTestDriver.FindControlOrDefault<Control>(form, "1. Short?");
+
+                foreach (Control sibling in question.Parent.Controls)
+                {
+                    if (sibling != question && sibling.Visible)
+                    {
+                        Assert.That(sibling.Top, Is.GreaterThanOrEqualTo(question.Bottom),
+                            "answer controls must start below the question text");
+                    }
+                }
+
+                form.Hide();
+            }
+        }
+
         [TestCase(3, "My own answer\r\nwith details")]
         [TestCase(6, "My own answer\r\nwith details")]
         [TestCase(3, "Option 1")]
