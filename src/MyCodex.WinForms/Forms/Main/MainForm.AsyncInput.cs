@@ -23,7 +23,7 @@ namespace MyCodex.WinForms.Forms
                 string.Empty,
                 UiLocalization.Text("MainForm.Accessible.PendingAsyncInput", "Pending questions"),
                 6,
-                delegate { ShowPendingAsyncInputWindow(true); });
+                delegate { ShowPendingAsyncInputWindow(); });
             _pendingAsyncInputButton.Visible = false;
         }
 
@@ -47,10 +47,10 @@ namespace MyCodex.WinForms.Forms
             {
                 _asyncInputRequestForm.AddRequest(pending);
             }
-            else if (wasEmpty)
+            else
             {
                 _asyncInputRequestForm.RefreshRequests(pending.Key);
-                ShowPendingAsyncInputWindow(ContainsFocus || Form.ActiveForm == this);
+                ShowPendingAsyncInputWindow();
             }
 
             RefreshPendingAsyncInputButton();
@@ -79,7 +79,7 @@ namespace MyCodex.WinForms.Forms
             _asyncInputRequestForm.RefreshRequests();
         }
 
-        private void ShowPendingAsyncInputWindow(bool activate)
+        private void ShowPendingAsyncInputWindow()
         {
             if (_asyncInputRequests.Count == 0)
             {
@@ -87,17 +87,7 @@ namespace MyCodex.WinForms.Forms
             }
 
             EnsureAsyncInputForm();
-            if (!_asyncInputRequestForm.Visible)
-            {
-                _asyncInputRequestForm.RefreshRequests();
-                _asyncInputRequestForm.Show(this);
-            }
-
-            if (activate)
-            {
-                _asyncInputRequestForm.Activate();
-                _asyncInputRequestForm.FocusQuestion();
-            }
+            _asyncInputRequestForm.ShowFor(this);
         }
 
         private async void AsyncInputRequestForm_SubmitRequested(object sender, AsyncInputRequestEventArgs e)

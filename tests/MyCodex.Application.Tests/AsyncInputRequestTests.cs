@@ -301,6 +301,65 @@ namespace MyCodex.Application.Tests
 
         [Test]
         [Apartment(ApartmentState.STA)]
+        public void Form_ShownInBackgroundStaysPendingUntilItIsForeground()
+        {
+            var queue = new AsyncInputRequestQueue();
+            queue.Enqueue(BuildRequest("item-1", "First?"), "Project / One");
+
+            using (var owner = new Form())
+            using (var form = new AsyncInputRequestForm(queue))
+            {
+                var foreground = new IntPtr(-1);
+                form.ForegroundWindowProvider = () => foreground;
+                owner.Show();
+                form.ShowFor(owner);
+                Assert.That(form.Visible, Is.True);
+                Assert.That(form.ActivationPending, Is.True);
+
+                FormTestDriver.Invoke(form, "TryBringForward");
+                Assert.That(form.ActivationPending, Is.True, "Another application keeps the foreground.");
+
+                foreground = form.Handle;
+                FormTestDriver.Invoke(form, "TryBringForward");
+                Assert.That(form.ActivationPending, Is.False);
+
+                foreground = new IntPtr(-1);
+                form.AddRequest(queue.Enqueue(BuildRequest("item-2", "Second?"), "Project / One"));
+                Assert.That(form.ActivationPending, Is.True, "A new request in the background asks for the window again.");
+
+                form.Hide();
+                Assert.That(form.ActivationPending, Is.False);
+                owner.Hide();
+            }
+        }
+
+        [Test]
+        [Apartment(ApartmentState.STA)]
+        public void Form_NewRequestLeavesVisibleWindowAloneWhileMyCodexIsForeground()
+        {
+            var queue = new AsyncInputRequestQueue();
+            queue.Enqueue(BuildRequest("item-1", "First?"), "Project / One");
+
+            using (var owner = new Form())
+            using (var form = new AsyncInputRequestForm(queue))
+            {
+                var foreground = new IntPtr(-1);
+                form.ForegroundWindowProvider = () => foreground;
+                owner.Show();
+                form.ShowFor(owner);
+                foreground = form.Handle;
+                FormTestDriver.Invoke(form, "TryBringForward");
+
+                foreground = owner.Handle;
+                form.AddRequest(queue.Enqueue(BuildRequest("item-2", "Second?"), "Project / One"));
+                Assert.That(form.ActivationPending, Is.False);
+                form.Hide();
+                owner.Hide();
+            }
+        }
+
+        [Test]
+        [Apartment(ApartmentState.STA)]
         public void Form_NarrowWindowExpandsLongQuestionHeight()
         {
             var longQuestion = string.Join(" ", Enumerable.Repeat("Long question content for larger text and narrow windows.", 20));

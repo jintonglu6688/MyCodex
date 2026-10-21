@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.WinForms.Controls;
@@ -36,6 +37,7 @@ namespace MyCodex.WinForms.Forms
         private readonly List<QuestionEditor> _editors = new List<QuestionEditor>();
         private string _currentKey;
         private bool _refreshing;
+        private readonly Timer _activationTimer = new Timer { Interval = 150 };
 
         internal AsyncInputRequestForm(AsyncInputRequestQueue queue)
         {
@@ -51,6 +53,7 @@ namespace MyCodex.WinForms.Forms
             ShowInTaskbar = false;
             KeyPreview = true;
             UiTheme.ApplyForm(this);
+            _activationTimer.Tick += delegate { TryBringForward(); };
 
             var root = new TableLayoutPanel
             {
@@ -142,6 +145,29 @@ namespace MyCodex.WinForms.Forms
 
         protected override bool ShowWithoutActivation => true;
 
+        /// <summary>
+        /// True while the window is showing but has not been the foreground window since its
+        /// latest request arrived, for example because MyCodex was in the background.
+        /// </summary>
+        internal bool ActivationPending { get; private set; }
+
+        internal Func<IntPtr> ForegroundWindowProvider { get; set; } = NativeMethods.GetForegroundWindow;
+
+        /// <summary>
+        /// Shows the window for its owner and brings it forward as soon as the owner is the
+        /// foreground window, which covers returning to MyCodex with Alt+Tab.
+        /// </summary>
+        internal void ShowFor(Form owner)
+        {
+            if (!Visible)
+            {
+                RefreshRequests();
+                Show(owner);
+            }
+
+            RequestActivation();
+        }
+
         internal void RefreshRequests(string preferredKey = null)
         {
             SaveCurrentAnswers();
@@ -185,6 +211,13 @@ namespace MyCodex.WinForms.Forms
             {
                 _requestPicker.SelectedIndex = 0;
             }
+
+            // Leave a window the user is working with in place, but bring it forward when
+            // they return to MyCodex from another application.
+            if (Visible && Control.FromHandle(ForegroundWindowProvider()) == null)
+            {
+                RequestActivation();
+            }
         }
 
         internal void FocusQuestion()
@@ -209,6 +242,71 @@ namespace MyCodex.WinForms.Forms
             _statusLabel.Text = statusText ?? string.Empty;
         }
 
+        protected override void OnActivated(EventArgs e)
+        {
+            StopActivationRequest();
+            base.OnActivated(e);
+        }
+
+        protected override void OnVisibleChanged(EventArgs e)
+        {
+            if (!Visible)
+            {
+                StopActivationRequest();
+            }
+
+            base.OnVisibleChanged(e);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _activationTimer.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        private void RequestActivation()
+        {
+            ActivationPending = true;
+            _activationTimer.Start();
+            TryBringForward();
+        }
+
+        private void StopActivationRequest()
+        {
+            ActivationPending = false;
+            _activationTimer.Stop();
+        }
+
+        /// <summary>
+        /// Activation is refused while another application is in the foreground, so keep checking
+        /// until the user returns to the owner window; never take focus from another window.
+        /// </summary>
+        private void TryBringForward()
+        {
+            if (!ActivationPending || !Visible || IsDisposed)
+            {
+                StopActivationRequest();
+                return;
+            }
+
+            var foreground = ForegroundWindowProvider();
+            if (foreground == Handle)
+            {
+                StopActivationRequest();
+                return;
+            }
+
+            if (Owner != null && Owner.IsHandleCreated && foreground == Owner.Handle)
+            {
+                Activate();
+                FocusQuestion();
+            }
+        }
+
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -219,6 +317,12 @@ namespace MyCodex.WinForms.Forms
             }
 
             base.OnFormClosing(e);
+        }
+
+        private static class NativeMethods
+        {
+            [DllImport("user32.dll")]
+            public static extern IntPtr GetForegroundWindow();
         }
 
         private Button CreateButton(string text, string accessibleName, int tabIndex, UiGlyph glyph)
