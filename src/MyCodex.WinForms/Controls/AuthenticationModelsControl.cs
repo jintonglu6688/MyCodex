@@ -13,7 +13,7 @@ namespace MyCodex.WinForms.Controls
 {
     public sealed class AuthenticationModelsControl : UserControl
     {
-        private readonly ListView _list = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, MultiSelect = false, HideSelection = false, TabIndex = 0 };
+        private readonly ListView _list = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, MultiSelect = false, HideSelection = false, TabIndex = 1 };
         private readonly Button _fetch;
         private readonly List<AuthenticationCatalogModel> _models = new List<AuthenticationCatalogModel>();
         private string _defaultModel;
@@ -53,13 +53,14 @@ namespace MyCodex.WinForms.Controls
             var add = AuthenticationCenterUiText.Button(UiLocalization.Text("AuthenticationModels.Add", "&Add model"), 1);
             _fetch.Click += (sender, args) => FetchRequested?.Invoke(this, EventArgs.Empty);
             add.Click += (sender, args) => Edit(true);
-            var actions = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, TabStop = false, TabIndex = 1 };
+            // The actions sit above the list so they stay visible when the section starts near the bottom of the window.
+            var actions = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, TabStop = false, TabIndex = 0 };
             actions.Controls.AddRange(new Control[] { _fetch, add });
             var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, TabStop = false };
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            layout.Controls.Add(_list, 0, 0);
-            layout.Controls.Add(actions, 0, 1);
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            layout.Controls.Add(actions, 0, 0);
+            layout.Controls.Add(_list, 0, 1);
             Controls.Add(layout);
         }
 

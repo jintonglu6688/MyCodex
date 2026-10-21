@@ -260,18 +260,21 @@ namespace MyCodex.Application.Tests
                 var list = FormTestDriver.Field<ListView>(models, "_list");
                 Assert.That(list.Items.Count, Is.EqualTo(2));
                 var clear = FormTestDriver.Field<CheckBox>(form, "_clearKeyCheckBox");
+                var fetch = FormTestDriver.Field<Button>(models, "_fetch");
                 clear.Focus();
                 form.SelectNextControl(clear, true, true, true, false);
+                Assert.That(fetch.Focused, Is.True, "Tab after basic settings must reach the model actions above the list.");
+                var add = fetch.Parent.Controls[1];
+                add.Focus();
+                form.SelectNextControl(add, true, true, true, false);
                 Assert.That(list.Visible && list.Enabled && list.Focused, Is.True,
-                    "Tab after basic settings must enter the model list.");
+                    "Tab after model actions must enter the model list.");
                 System.Windows.Forms.Application.DoEvents();
                 var advanced = FormTestDriver.Field<AuthenticationAdvancedControl>(form, "_advanced");
                 var fullUrl = FormTestDriver.Field<CheckBox>(advanced, "_full");
-                var add = FormTestDriver.Field<Button>(models, "_fetch").Parent.Controls[1];
-                add.Focus();
-                form.SelectNextControl(add, true, true, true, false);
+                form.SelectNextControl(list, true, true, true, false);
                 Assert.That(fullUrl.Visible && fullUrl.Enabled && fullUrl.Focused, Is.True,
-                    "Tab after model actions must enter the advanced settings.");
+                    "Tab after the model list must enter the advanced settings.");
             }
         }
 
@@ -331,6 +334,29 @@ namespace MyCodex.Application.Tests
                 Assert.That(list.SelectedItems.Count, Is.EqualTo(1));
                 Assert.That(list.FocusedItem, Is.SameAs(list.SelectedItems[0]));
                 Assert.That(ErrorBoxRecorder.Messages, Is.Empty);
+            }
+        }
+
+        [Test]
+        public void NewProviderShowsModelActionsWithoutScrolling()
+        {
+            var client = new AuthenticationCenterClient("Test", (method, values, token) =>
+                throw new InvalidOperationException("Unexpected request: " + method));
+            using (var form = new AuthenticationProviderEditForm(client, template:
+                new AuthenticationProviderPreset { Kind = "responses", Name = "Test", AllowsProtocolSelection = true }, supportsContextSettings: true))
+            {
+                form.ShowInTaskbar = false;
+                form.Show();
+                System.Windows.Forms.Application.DoEvents();
+                var models = FormTestDriver.Field<AuthenticationModelsControl>(form, "_models");
+                var fetch = FormTestDriver.Field<Button>(models, "_fetch");
+                var list = FormTestDriver.Field<ListView>(models, "_list");
+                var content = FormTestDriver.Field<Panel>(form, "_content");
+                var bounds = content.RectangleToClient(fetch.RectangleToScreen(fetch.ClientRectangle));
+                Assert.That(content.ClientRectangle.Contains(bounds), Is.True,
+                    "Get models must be visible when the editor opens, not below the scrolled area.");
+                Assert.That(fetch.Parent.TabIndex, Is.LessThan(list.TabIndex), "Tab order must follow the visual order.");
+                Assert.That(fetch.Parent.Bottom, Is.LessThanOrEqualTo(list.Top));
             }
         }
 
