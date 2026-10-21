@@ -41,6 +41,7 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
+            RemoteAsyncInputEvents.PublishQueued(_remoteAppServerEventForwarder, pending);
             EnsureAsyncInputForm();
             if (_asyncInputRequestForm.Visible)
             {
@@ -220,6 +221,7 @@ namespace MyCodex.WinForms.Forms
 
         private void CompleteAsyncInputRequest(string key)
         {
+            RemoteAsyncInputEvents.PublishResolved(_remoteAppServerEventForwarder, _asyncInputRequests.Find(key));
             _asyncInputRequests.Remove(key);
             RefreshPendingAsyncInputButton();
             if (_asyncInputRequestForm == null || _asyncInputRequestForm.IsDisposed)

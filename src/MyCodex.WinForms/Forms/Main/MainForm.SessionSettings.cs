@@ -430,7 +430,8 @@ namespace MyCodex.WinForms.Forms
                 planExecutionResponder,
                 BuildHostSettingsOperator(),
                 _appServerClient,
-                pendingInteractions: _pendingRemoteInteractions.ListPending);
+                pendingInteractions: _pendingRemoteInteractions.ListPending,
+                asyncInputResponder: new WinFormsCodingRemoteAsyncInputResponder(this, _asyncInputRequests, SendAsyncInputResponseAsync, CompleteAsyncInputRequest));
             _remoteCommandDispatcher = dispatcher;
             var realtimeClient = new RelayHostRealtimeClient(
                 dispatcher,

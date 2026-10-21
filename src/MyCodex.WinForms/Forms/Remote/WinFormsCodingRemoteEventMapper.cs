@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using MyCodex.Application.CodingRemote;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.RemoteRelay;
@@ -29,6 +30,16 @@ namespace MyCodex.WinForms.Forms
             }
 
             if (TryMapToolInputCompleted(appEvent, session, out remoteEvent))
+            {
+                return true;
+            }
+
+            if (TryMapAsyncInputQueued(appEvent, session, out remoteEvent))
+            {
+                return true;
+            }
+
+            if (TryMapAsyncInputResolved(appEvent, session, out remoteEvent))
             {
                 return true;
             }
@@ -171,7 +182,7 @@ namespace MyCodex.WinForms.Forms
                     { "title", UiLocalization.Text("ToolUserInputForm.Title", "Plan Mode") },
                     { "headerText", UiLocalization.Text("ToolUserInputForm.Header", "The tool needs additional input before it can continue.") },
                     { "detailsText", appEvent.Content },
-                    { "questions", BuildToolInputQuestions(appEvent.ToolQuestions) }
+                    { "questions", BuildToolInputQuestions(appEvent.ToolQuestions, false) }
                 }
             };
             return true;
@@ -204,7 +215,73 @@ namespace MyCodex.WinForms.Forms
             return true;
         }
 
-        private static IReadOnlyList<Dictionary<string, object>> BuildToolInputQuestions(IReadOnlyList<AppServerToolUserInputQuestion> questions)
+        private static bool TryMapAsyncInputQueued(AppServerEventArgs appEvent, ChatSession session, out RemoteRelayEvent remoteEvent)
+        {
+            remoteEvent = null;
+            if (!IsRemoteThreadEvent(appEvent, session, RemoteAsyncInputRequests.QueuedEventType) ||
+                string.IsNullOrWhiteSpace(appEvent.RequestId) ||
+                appEvent.ToolQuestions == null ||
+                appEvent.ToolQuestions.Count == 0)
+            {
+                return false;
+            }
+
+            remoteEvent = new RemoteRelayEvent
+            {
+                RequestId = appEvent.RequestId,
+                OperationId = appEvent.TurnId,
+                EventType = RemoteEventTypes.ToolInputRequested,
+                Payload = new Dictionary<string, object>
+                {
+                    { "sessionId", session.Id },
+                    { "threadId", appEvent.ThreadId },
+                    { "turnId", appEvent.TurnId },
+                    { "itemId", appEvent.ItemId },
+                    { "requestId", appEvent.RequestId },
+                    { "kind", RemoteAsyncInputRequests.Kind },
+                    { "status", "waiting_input" },
+                    { "title", UiLocalization.Text("AsyncInputForm.Title", "Pending questions") },
+                    {
+                        "headerText",
+                        string.IsNullOrWhiteSpace(appEvent.Details)
+                            ? null
+                            : string.Format(CultureInfo.CurrentCulture, UiLocalization.Text("AsyncInputForm.Source.Template", "Source: {0}"), appEvent.Details)
+                    },
+                    // The Windows window always offers a free-form answer next to the suggested options.
+                    { "questions", BuildToolInputQuestions(appEvent.ToolQuestions, true) }
+                }
+            };
+            return true;
+        }
+
+        private static bool TryMapAsyncInputResolved(AppServerEventArgs appEvent, ChatSession session, out RemoteRelayEvent remoteEvent)
+        {
+            remoteEvent = null;
+            if (!IsRemoteThreadEvent(appEvent, session, RemoteAsyncInputRequests.ResolvedEventType) ||
+                string.IsNullOrWhiteSpace(appEvent.RequestId))
+            {
+                return false;
+            }
+
+            remoteEvent = new RemoteRelayEvent
+            {
+                RequestId = appEvent.RequestId,
+                OperationId = appEvent.TurnId,
+                EventType = RemoteEventTypes.ToolInputCompleted,
+                Payload = new Dictionary<string, object>
+                {
+                    { "sessionId", session.Id },
+                    { "threadId", appEvent.ThreadId },
+                    { "turnId", appEvent.TurnId },
+                    { "requestId", appEvent.RequestId },
+                    { "kind", RemoteAsyncInputRequests.Kind },
+                    { "status", "input_completed" }
+                }
+            };
+            return true;
+        }
+
+        private static IReadOnlyList<Dictionary<string, object>> BuildToolInputQuestions(IReadOnlyList<AppServerToolUserInputQuestion> questions, bool offerOtherWithOptions)
         {
             var result = new List<Dictionary<string, object>>();
             foreach (var question in questions)
@@ -220,7 +297,7 @@ namespace MyCodex.WinForms.Forms
                     { "header", question.Header },
                     { "question", question.Question },
                     { "description", question.Description },
-                    { "isOther", question.IsOther },
+                    { "isOther", question.IsOther || (offerOtherWithOptions && question.Options != null && question.Options.Count > 0) },
                     { "isSecret", question.IsSecret },
                     { "options", BuildToolInputOptions(question.Options) }
                 });

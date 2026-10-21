@@ -35,8 +35,9 @@ namespace MyCodex.Application.CodingRemote
                 {
                     foreach (var key in _pending.Where(pair =>
                         string.Equals(pair.Value.ThreadId, appEvent.ThreadId, StringComparison.OrdinalIgnoreCase) &&
-                        (endedThread || string.IsNullOrWhiteSpace(appEvent.TurnId) ||
-                         string.Equals(pair.Value.TurnId, appEvent.TurnId, StringComparison.Ordinal))).Select(pair => pair.Key).ToArray())
+                        (endedThread || (!pair.Value.SurvivesTurnEnd &&
+                         (string.IsNullOrWhiteSpace(appEvent.TurnId) ||
+                          string.Equals(pair.Value.TurnId, appEvent.TurnId, StringComparison.Ordinal))))).Select(pair => pair.Key).ToArray())
                     {
                         _pending.Remove(key);
                     }
@@ -46,7 +47,8 @@ namespace MyCodex.Application.CodingRemote
                 {
                     var completedType = string.Equals(appEvent.EventType, "approval_resolved", StringComparison.OrdinalIgnoreCase)
                         ? RemoteEventTypes.ApprovalRequested :
-                        string.Equals(appEvent.EventType, "tool_user_input_resolved", StringComparison.OrdinalIgnoreCase)
+                        string.Equals(appEvent.EventType, "tool_user_input_resolved", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(appEvent.EventType, RemoteAsyncInputRequests.ResolvedEventType, StringComparison.OrdinalIgnoreCase)
                         ? RemoteEventTypes.ToolInputRequested :
                         string.Equals(appEvent.EventType, "plan_execution_completed", StringComparison.OrdinalIgnoreCase)
                         ? RemoteEventTypes.PlanExecutionRequested : null;
@@ -79,6 +81,8 @@ namespace MyCodex.Application.CodingRemote
                 {
                     ThreadId = appEvent.ThreadId,
                     TurnId = appEvent.TurnId,
+                    // Async questions stay answerable after the turn that asked them ends.
+                    SurvivesTurnEnd = RemoteAsyncInputRequests.IsAsyncRequestId(remoteEvent.RequestId),
                     Json = RemoteRelayPayloadJsonSerializer.SerializeEvent(remoteEvent)
                 };
             }
@@ -123,6 +127,7 @@ namespace MyCodex.Application.CodingRemote
         {
             public string ThreadId { get; set; }
             public string TurnId { get; set; }
+            public bool SurvivesTurnEnd { get; set; }
             public string Json { get; set; }
         }
     }

@@ -1673,6 +1673,69 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public async Task DispatchAsync_AsyncToolInput_RoutesAnswersAndIgnoreToAsyncResponder()
+        {
+            var service = new FakeCodingRemoteService();
+            var responder = new RecordingAsyncInputResponder();
+            var dispatcher = new RemoteCommandDispatcher(
+                service,
+                null,
+                new RemoteWriteCoordinator(),
+                null,
+                null,
+                asyncInputResponder: responder);
+
+            var respond = await dispatcher.DispatchAsync(
+                new RemoteRelayCommand
+                {
+                    RequestId = "cmd-1",
+                    CommandType = RemoteCommandTypes.ToolInputRespond,
+                    Payload = new Dictionary<string, object>
+                    {
+                        { "requestId", "async:thread-1:item-1" },
+                        { "answers", new Dictionary<string, object> { { "async-1", new object[] { "A" } } } }
+                    }
+                },
+                CancellationToken.None).ConfigureAwait(false);
+            var ignore = await dispatcher.DispatchAsync(
+                new RemoteRelayCommand
+                {
+                    RequestId = "cmd-2",
+                    CommandType = RemoteCommandTypes.ToolInputCancel,
+                    Payload = new Dictionary<string, object> { { "requestId", "async:thread-1:item-1" } }
+                },
+                CancellationToken.None).ConfigureAwait(false);
+
+            Assert.That(service.LastToolInputRespondRequest, Is.Null);
+            Assert.That(service.LastToolInputCancelRequest, Is.Null);
+            Assert.That(responder.LastRespondRequest.Answers["async-1"], Is.EqualTo(new[] { "A" }));
+            Assert.That(responder.LastIgnoreRequest.RequestId, Is.EqualTo("async:thread-1:item-1"));
+            Assert.That(respond.EventType, Is.EqualTo(RemoteEventTypes.ToolInputResponseResult));
+            Assert.That(respond.Payload["completed"], Is.EqualTo(true));
+            Assert.That(ignore.Payload["canceled"], Is.EqualTo(true));
+        }
+
+        [Test]
+        public async Task DispatchAsync_AsyncToolInputWithoutResponder_ReturnsOperationNotAvailable()
+        {
+            var service = new FakeCodingRemoteService();
+            var dispatcher = new RemoteCommandDispatcher(service, new RemoteWriteCoordinator());
+
+            var result = await dispatcher.DispatchAsync(
+                new RemoteRelayCommand
+                {
+                    RequestId = "cmd-1",
+                    CommandType = RemoteCommandTypes.ToolInputCancel,
+                    Payload = new Dictionary<string, object> { { "requestId", "async:thread-1:item-1" } }
+                },
+                CancellationToken.None).ConfigureAwait(false);
+
+            Assert.That(service.LastToolInputCancelRequest, Is.Null);
+            Assert.That(result.EventType, Is.EqualTo(RemoteEventTypes.RemoteError));
+            Assert.That(result.Payload["code"], Is.EqualTo(RemoteErrorCodes.OperationNotAvailable));
+        }
+
+        [Test]
         public async Task DispatchAsync_PlanExecutionRespond_PassesActionAndReturnsResult()
         {
             var responder = new RecordingPlanExecutionResponder();
@@ -2309,6 +2372,29 @@ namespace MyCodex.Application.Tests
                 CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(new AppServerRateLimitResetConsumeResult());
+            }
+        }
+
+        private sealed class RecordingAsyncInputResponder : ICodingRemoteAsyncInputResponder
+        {
+            public CodingRemoteToolInputRespondRequest LastRespondRequest { get; private set; }
+
+            public CodingRemoteToolInputCancelRequest LastIgnoreRequest { get; private set; }
+
+            public Task<CodingRemoteToolInputResponseResult> RespondAsyncInputAsync(
+                CodingRemoteToolInputRespondRequest request,
+                CancellationToken cancellationToken)
+            {
+                LastRespondRequest = request;
+                return Task.FromResult(new CodingRemoteToolInputResponseResult { RequestId = request.RequestId, Completed = true });
+            }
+
+            public Task<CodingRemoteToolInputResponseResult> IgnoreAsyncInputAsync(
+                CodingRemoteToolInputCancelRequest request,
+                CancellationToken cancellationToken)
+            {
+                LastIgnoreRequest = request;
+                return Task.FromResult(new CodingRemoteToolInputResponseResult { RequestId = request.RequestId, Completed = true, Canceled = true });
             }
         }
 

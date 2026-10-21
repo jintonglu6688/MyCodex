@@ -46,6 +46,23 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void AsyncQuestion_SurvivesTurnEndUntilResolvedOrThreadEnds()
+        {
+            var state = new RemotePendingInteractionState();
+            const string requestId = "async:thread-a:item-a";
+            state.Observe(new AppServerEventArgs(RemoteAsyncInputRequests.QueuedEventType, "", threadId: "thread-a", turnId: "turn-a", requestId: requestId), Event(RemoteEventTypes.ToolInputRequested, requestId));
+            state.Observe(new AppServerEventArgs("turn_completed", "", threadId: "thread-a", turnId: "turn-a"), null);
+            Assert.That(state.ListPending(), Has.Count.EqualTo(1));
+
+            state.Observe(new AppServerEventArgs(RemoteAsyncInputRequests.ResolvedEventType, "", threadId: "thread-a", requestId: requestId), null);
+            Assert.That(state.ListPending(), Is.Empty);
+
+            state.Observe(new AppServerEventArgs(RemoteAsyncInputRequests.QueuedEventType, "", threadId: "thread-a", turnId: "turn-a", requestId: requestId), Event(RemoteEventTypes.ToolInputRequested, requestId));
+            state.Observe(new AppServerEventArgs("thread_archived", "", threadId: "thread-a"), null);
+            Assert.That(state.ListPending(), Is.Empty);
+        }
+
+        [Test]
         public void ResolvedEvent_RemovesRequestEvenWhenSessionCanNoLongerBeMapped()
         {
             var state = new RemotePendingInteractionState();

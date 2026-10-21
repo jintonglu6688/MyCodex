@@ -201,6 +201,69 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void TryMap_AsyncInputQueued_BuildsAsyncToolInputEventWithFreeFormAnswer()
+        {
+            var session = new ChatSession { Id = "session-1", ThreadId = "thread-1", Mode = AppInteractionMode.Coding };
+            var question = new AppServerToolUserInputQuestion { Id = "async-1", Question = "使用哪个数据库？" };
+            question.Options.Add(new AppServerToolUserInputOption { Label = "SQLite", Value = "SQLite" });
+            var appEvent = new AppServerEventArgs(
+                RemoteAsyncInputRequests.QueuedEventType,
+                "assistant reply",
+                threadId: "thread-1",
+                turnId: "turn-1",
+                itemId: "item-1",
+                requestId: "async:thread-1:item-1",
+                details: "工作区 / 会话",
+                toolQuestions: new[] { question });
+
+            RemoteRelayEvent remoteEvent;
+            var mapped = WinFormsCodingRemoteEventMapper.TryMap(appEvent, session, out remoteEvent);
+
+            Assert.That(mapped, Is.True);
+            Assert.That(remoteEvent.EventType, Is.EqualTo(RemoteEventTypes.ToolInputRequested));
+            Assert.That(remoteEvent.RequestId, Is.EqualTo("async:thread-1:item-1"));
+            Assert.That(remoteEvent.Payload["kind"], Is.EqualTo("async"));
+            Assert.That(remoteEvent.Payload["title"], Is.EqualTo(UiLocalization.Text("AsyncInputForm.Title", "Pending questions")));
+            Assert.That((string)remoteEvent.Payload["headerText"], Does.Contain("工作区 / 会话"));
+            Assert.That(remoteEvent.Payload.ContainsKey("detailsText"), Is.False);
+            var questions = (IReadOnlyList<Dictionary<string, object>>)remoteEvent.Payload["questions"];
+            Assert.That(questions[0]["id"], Is.EqualTo("async-1"));
+            Assert.That(questions[0]["isOther"], Is.EqualTo(true));
+        }
+
+        [Test]
+        public void TryMap_AsyncInputResolved_BuildsToolInputCompletedEvent()
+        {
+            var session = new ChatSession { Id = "session-1", ThreadId = "thread-1", Mode = AppInteractionMode.Coding };
+            var appEvent = new AppServerEventArgs(
+                RemoteAsyncInputRequests.ResolvedEventType,
+                string.Empty,
+                threadId: "thread-1",
+                turnId: "turn-1",
+                requestId: "async:thread-1:item-1");
+
+            RemoteRelayEvent remoteEvent;
+            var mapped = WinFormsCodingRemoteEventMapper.TryMap(appEvent, session, out remoteEvent);
+
+            Assert.That(mapped, Is.True);
+            Assert.That(remoteEvent.EventType, Is.EqualTo(RemoteEventTypes.ToolInputCompleted));
+            Assert.That(remoteEvent.Payload["requestId"], Is.EqualTo("async:thread-1:item-1"));
+        }
+
+        [Test]
+        public void TryMap_RawAsyncInputRequested_IsNotPublishedBeforeWindowsQueuesIt()
+        {
+            var session = new ChatSession { Id = "session-1", ThreadId = "thread-1", Mode = AppInteractionMode.Coding };
+            var question = new AppServerToolUserInputQuestion { Id = "async-1", Question = "Q" };
+            var appEvent = new AppServerEventArgs("async_input_requested", "reply", threadId: "thread-1", itemId: "item-1", toolQuestions: new[] { question });
+
+            RemoteRelayEvent remoteEvent;
+            WinFormsCodingRemoteEventMapper.TryMap(appEvent, session, out remoteEvent);
+
+            Assert.That(remoteEvent == null || remoteEvent.EventType != RemoteEventTypes.ToolInputRequested, Is.True);
+        }
+
+        [Test]
         public void TryMap_PlanExecutionRequested_BuildsRemotePlanPromptEvent()
         {
             var session = new ChatSession { Id = "session-1", ThreadId = "thread-1", Mode = AppInteractionMode.Coding };

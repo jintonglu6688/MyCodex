@@ -18,6 +18,7 @@ namespace MyCodex.Application.CodingRemote
         private readonly IHostSettingsOperator _hostSettingsOperator;
         private readonly IAppServerAuthenticationClient _accountClient;
         private readonly Func<IReadOnlyList<RemoteRelayEvent>> _pendingInteractions;
+        private readonly ICodingRemoteAsyncInputResponder _asyncInputResponder;
 
         public RemoteCommandDispatcher(ICodingRemoteService codingRemoteService, RemoteWriteCoordinator writeCoordinator)
             : this(codingRemoteService, writeCoordinator, null)
@@ -46,7 +47,8 @@ namespace MyCodex.Application.CodingRemote
             ICodingRemotePlanExecutionResponder planExecutionResponder,
             IHostSettingsOperator hostSettingsOperator = null,
             IAppServerAuthenticationClient accountClient = null,
-            Func<IReadOnlyList<RemoteRelayEvent>> pendingInteractions = null)
+            Func<IReadOnlyList<RemoteRelayEvent>> pendingInteractions = null,
+            ICodingRemoteAsyncInputResponder asyncInputResponder = null)
         {
             _codingRemoteService = codingRemoteService ?? throw new ArgumentNullException(nameof(codingRemoteService));
             _officeRemoteService = officeRemoteService;
@@ -56,6 +58,7 @@ namespace MyCodex.Application.CodingRemote
             _hostSettingsOperator = hostSettingsOperator;
             _accountClient = accountClient;
             _pendingInteractions = pendingInteractions;
+            _asyncInputResponder = asyncInputResponder;
         }
 
         private async Task<RemoteRelayEvent> DispatchCoreAsync(RemoteRelayCommand command, CancellationToken cancellationToken)
@@ -1023,13 +1026,26 @@ namespace MyCodex.Application.CodingRemote
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Tool input answers are required.");
             }
 
-            var result = await _codingRemoteService.RespondToolInputAsync(
-                new CodingRemoteToolInputRespondRequest
+            var respondRequest = new CodingRemoteToolInputRespondRequest
+            {
+                RequestId = requestId,
+                Answers = answers
+            };
+            CodingRemoteToolInputResponseResult result;
+            if (RemoteAsyncInputRequests.IsAsyncRequestId(requestId))
+            {
+                if (_asyncInputResponder == null)
                 {
-                    RequestId = requestId,
-                    Answers = answers
-                },
-                cancellationToken).ConfigureAwait(false);
+                    return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.OperationNotAvailable, "Remote async input response is not available.");
+                }
+
+                result = await _asyncInputResponder.RespondAsyncInputAsync(respondRequest, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                result = await _codingRemoteService.RespondToolInputAsync(respondRequest, cancellationToken).ConfigureAwait(false);
+            }
+
             result = result ?? new CodingRemoteToolInputResponseResult
             {
                 RequestId = requestId,
@@ -1047,9 +1063,22 @@ namespace MyCodex.Application.CodingRemote
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Tool input request ID is required.");
             }
 
-            var result = await _codingRemoteService.CancelToolInputAsync(
-                new CodingRemoteToolInputCancelRequest { RequestId = requestId },
-                cancellationToken).ConfigureAwait(false);
+            var cancelRequest = new CodingRemoteToolInputCancelRequest { RequestId = requestId };
+            CodingRemoteToolInputResponseResult result;
+            if (RemoteAsyncInputRequests.IsAsyncRequestId(requestId))
+            {
+                if (_asyncInputResponder == null)
+                {
+                    return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.OperationNotAvailable, "Remote async input response is not available.");
+                }
+
+                result = await _asyncInputResponder.IgnoreAsyncInputAsync(cancelRequest, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                result = await _codingRemoteService.CancelToolInputAsync(cancelRequest, cancellationToken).ConfigureAwait(false);
+            }
+
             result = result ?? new CodingRemoteToolInputResponseResult
             {
                 RequestId = requestId,
