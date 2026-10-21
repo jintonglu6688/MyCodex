@@ -256,17 +256,7 @@ namespace MyCodex.WinForms.Forms
         private string BuildAsyncInputSourceName(string threadId)
         {
             var session = FindSessionByThreadId(threadId);
-            if (session == null)
-            {
-                var background = UiLocalization.Text("MainForm.Notification.Target.BackgroundSession", "Background session");
-                return string.IsNullOrWhiteSpace(threadId) ? background : background + " (" + threadId + ")";
-            }
-
-            var workspace = FindWorkspaceById(session.WorkspaceId);
-            var sessionName = string.IsNullOrWhiteSpace(session.Title) ? session.ThreadId : session.Title;
-            return workspace == null || string.IsNullOrWhiteSpace(workspace.Name)
-                ? sessionName
-                : workspace.Name + " / " + sessionName;
+            return AsyncInputSourceNameBuilder.Build(threadId, session, session == null ? null : FindWorkspaceById(session.WorkspaceId));
         }
 
     }

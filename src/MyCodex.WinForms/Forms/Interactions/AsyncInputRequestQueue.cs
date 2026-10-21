@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MyCodex.Application.DTOs;
+using MyCodex.Domain.Entities;
 using MyCodex.WinForms.Localization;
 
 namespace MyCodex.WinForms.Forms
@@ -12,6 +13,23 @@ namespace MyCodex.WinForms.Forms
         internal static bool ShouldAnnounce(bool wasEmpty, bool isForeground)
         {
             return !wasEmpty || !isForeground;
+        }
+    }
+
+    internal static class AsyncInputSourceNameBuilder
+    {
+        internal static string Build(string threadId, ChatSession session, WorkspaceInfo workspace)
+        {
+            if (session == null)
+            {
+                var background = UiLocalization.Text("MainForm.Notification.Target.BackgroundSession", "Background session");
+                return string.IsNullOrWhiteSpace(threadId) ? background : background + " (" + threadId + ")";
+            }
+
+            var sessionName = string.IsNullOrWhiteSpace(session.Title) ? session.ThreadId : session.Title;
+            return workspace == null || string.IsNullOrWhiteSpace(workspace.Name)
+                ? sessionName
+                : workspace.Name + " / " + sessionName;
         }
     }
 
