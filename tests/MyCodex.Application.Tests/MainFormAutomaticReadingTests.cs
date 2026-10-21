@@ -84,7 +84,7 @@ namespace MyCodex.Application.Tests
             config.Save(new AppConfigSnapshot
             {
                 EnableAutomaticChatReading = true,
-                ApprovalRequestNotificationMode = NotificationPromptMode.Speech
+                ApprovalRequestNotificationMode = NotificationPromptMode.Off
             });
             var runtime = new CodexRuntimeManager(paths);
             var reader = new Reader();
@@ -102,15 +102,15 @@ namespace MyCodex.Application.Tests
                     Assert.That(reader.Texts, Has.Count.EqualTo(1));
                     FormTestDriver.Invoke(form, "HandleApprovalRequestedNotification", new AppServerEventArgs(
                         "approval_requested", "Approval needed", threadId: "selected", requestId: "test-approval"));
-                    Assert.That(reader.Texts, Has.Count.EqualTo(1), "Notifications must not add speech to reply reading.");
+                    Assert.That(reader.Texts, Has.Count.EqualTo(2), "A hidden target speaks a request that opens a dialog.");
                     var stopCount = reader.StopCount;
                     FormTestDriver.Invoke(form, "ToggleAutomaticChatReading");
                     Assert.That(config.Load().EnableAutomaticChatReading, Is.False);
                     Assert.That(reader.StopCount, Is.EqualTo(stopCount));
                     FormTestDriver.Invoke(form, "TryAutoReadIncomingMessage", item, "selected");
-                    Assert.That(reader.Texts, Has.Count.EqualTo(1));
-                    Assert.That(FormTestDriver.Invoke(form, "SpeakManualTextWithScreenReader", "manual navigation"), Is.True);
                     Assert.That(reader.Texts, Has.Count.EqualTo(2));
+                    Assert.That(FormTestDriver.Invoke(form, "SpeakManualTextWithScreenReader", "manual navigation"), Is.True);
+                    Assert.That(reader.Texts, Has.Count.EqualTo(3));
                 }
                 finally
                 {

@@ -62,7 +62,7 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void Arrival_DeduplicatesAndAnnouncesOnlyBackgroundOrLaterRequests()
+        public void Arrival_DeduplicatesRepeatedDelivery()
         {
             var queue = new AsyncInputRequestQueue();
             var first = queue.Enqueue(BuildRequest("item-1", "First?"), "Project / One");
@@ -74,9 +74,6 @@ namespace MyCodex.Application.Tests
                 Assert.That(first, Is.Not.Null);
                 Assert.That(duplicate, Is.Null, "duplicate delivery must not trigger another announcement");
                 Assert.That(later, Is.Not.Null);
-                Assert.That(AsyncInputArrivalPlanner.ShouldAnnounce(true, true), Is.False);
-                Assert.That(AsyncInputArrivalPlanner.ShouldAnnounce(true, false), Is.True);
-                Assert.That(AsyncInputArrivalPlanner.ShouldAnnounce(false, true), Is.True);
                 Assert.That(queue.Count, Is.EqualTo(2));
             });
         }

@@ -34,7 +34,6 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
-            var wasEmpty = _asyncInputRequests.Count == 0;
             var pending = _asyncInputRequests.Enqueue(request, BuildAsyncInputSourceName(request.ThreadId));
             if (pending == null)
             {
@@ -58,11 +57,7 @@ namespace MyCodex.WinForms.Forms
                 CultureInfo.CurrentCulture,
                 UiLocalization.Text("MainForm.Status.AsyncInputRequested.Template", "Received a request for additional information. {0} pending."),
                 _asyncInputRequests.Count);
-            SetHighPriorityStatus(notice);
-            if (AsyncInputArrivalPlanner.ShouldAnnounce(wasEmpty, ContainsFocus || Form.ActiveForm == this))
-            {
-                SpeakAuxiliaryTextWithScreenReader(notice);
-            }
+            NotifyInteractionRequest(notice);
         }
 
         private void EnsureAsyncInputForm()

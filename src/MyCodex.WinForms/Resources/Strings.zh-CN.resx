@@ -334,10 +334,10 @@
     <value>子代理结束后播放音效</value>
   </data>
 <data name="NotificationSettingsForm.Check.ApprovalRequestSound" xml:space="preserve">
-    <value>审批弹出时播放音效(&amp;A)</value>
+    <value>收到审批或提问时播放音效(&amp;A)</value>
   </data>
 <data name="NotificationSettingsForm.Accessible.ApprovalRequestSound" xml:space="preserve">
-    <value>审批弹出时播放音效</value>
+    <value>收到审批或提问时播放音效</value>
   </data>
 <data name="NotificationSettingsForm.Check.SendMessageSound" xml:space="preserve">
     <value>发送消息后播放音效(&amp;S)</value>

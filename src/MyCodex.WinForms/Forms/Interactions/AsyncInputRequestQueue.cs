@@ -8,14 +8,6 @@ using MyCodex.WinForms.Localization;
 
 namespace MyCodex.WinForms.Forms
 {
-    internal static class AsyncInputArrivalPlanner
-    {
-        internal static bool ShouldAnnounce(bool wasEmpty, bool isForeground)
-        {
-            return !wasEmpty || !isForeground;
-        }
-    }
-
     internal static class AsyncInputSourceNameBuilder
     {
         internal static string Build(string threadId, ChatSession session, WorkspaceInfo workspace)

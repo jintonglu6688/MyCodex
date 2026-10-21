@@ -334,10 +334,10 @@
     <value>Play sound when a subagent completes</value>
   </data>
 <data name="NotificationSettingsForm.Check.ApprovalRequestSound" xml:space="preserve">
-    <value>Play sound when an approval request appears(&amp;A)</value>
+    <value>Play sound for approvals and questions(&amp;A)</value>
   </data>
 <data name="NotificationSettingsForm.Accessible.ApprovalRequestSound" xml:space="preserve">
-    <value>Play sound when an approval request appears</value>
+    <value>Play sound for approvals and questions</value>
   </data>
 <data name="NotificationSettingsForm.Check.SendMessageSound" xml:space="preserve">
     <value>Play sound after sending a message(&amp;S)</value>

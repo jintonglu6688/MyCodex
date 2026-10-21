@@ -222,9 +222,10 @@ namespace MyCodex.WinForms.Forms
                     {
                         AddThreadEventHistoryItem(e, GetStatusSenderText(), e.Content, ChatHistoryCategory.System);
                     }
-                    SetHighPriorityStatus(e.IsMcpElicitationConfirmation
+                    NotifyInteractionRequest((e.IsMcpElicitationConfirmation
                         ? UiLocalization.Text("MainForm.Status.McpConfirmationRequested", "Received MCP confirmation request")
-                        : UiLocalization.Text("MainForm.Status.ToolInputRequested", "Received tool input request"));
+                        : UiLocalization.Text("MainForm.Status.ToolInputRequested", "Received tool input request")) +
+                        " " + BuildNotificationTargetText(e.ThreadId));
                     ShowToolUserInputDialog(e);
                     return;
                 case AppServerEventRoute.AsyncInputRequested:
@@ -236,7 +237,8 @@ namespace MyCodex.WinForms.Forms
                         AddThreadEventHistoryItem(e, GetStatusSenderText(), e.Content, ChatHistoryCategory.System);
                     }
 
-                    SetHighPriorityStatus(UiLocalization.Text("MainForm.Status.McpElicitationRequested", "Received MCP input request"));
+                    NotifyInteractionRequest(UiLocalization.Text("MainForm.Status.McpElicitationRequested", "Received MCP input request") +
+                        " " + BuildNotificationTargetText(e.ThreadId));
                     ShowMcpElicitationUrlDialog(e);
                     return;
                 case AppServerEventRoute.ToolUserInputResolved:
@@ -1341,14 +1343,14 @@ namespace MyCodex.WinForms.Forms
             }
 
             var summary = ApprovalRequestSummaryBuilder.Build(e);
-            var targetText = BuildNotificationTargetText(e != null ? e.ThreadId : null);
-            SetHighPriorityStatus(summary.SpeechSummary + " " + targetText);
-            var notificationMode = GetApprovalRequestNotificationMode();
-            ExecuteNotificationPrompt(
-                notificationMode,
-                ApprovalSoundFileName,
-                string.Empty,
-                false);
+            NotifyInteractionRequest(summary.SpeechSummary + " " + BuildNotificationTargetText(e != null ? e.ThreadId : null));
+        }
+
+        private void NotifyInteractionRequest(string notice)
+        {
+            SetHighPriorityStatus(notice);
+            _ = InteractionRequestNotifier.Notify(GetApprovalRequestNotificationMode(), notice,
+                () => PlayNotificationSound(ApprovalSoundFileName), text => SpeakAuxiliaryTextWithScreenReader(text));
         }
 
         private NotificationPromptMode GetTurnCompletedNotificationMode()
