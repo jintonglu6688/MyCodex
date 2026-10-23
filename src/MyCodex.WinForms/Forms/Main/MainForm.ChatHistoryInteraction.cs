@@ -404,9 +404,14 @@ namespace MyCodex.WinForms.Forms
                 _chatHistoryListBox.FocusedIndex,
                 preserveSelection);
             _allChatHistoryItems.Clear();
+            _visibleVoiceTranscriptIds.Clear();
             if (items != null && items.Length > 0)
             {
-                _allChatHistoryItems.AddRange(items);
+                foreach (var item in items)
+                {
+                    _allChatHistoryItems.Add(item);
+                    if (item?.IsVoiceTranscript == true && item.SourceItemId != null) _visibleVoiceTranscriptIds.Add(item.SourceItemId);
+                }
             }
 
             ApplyChatHistoryFilters(selectionSnapshot);

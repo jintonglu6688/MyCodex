@@ -15,23 +15,10 @@ namespace MyCodex.Infrastructure.AppServer
         // observed for a 338-turn thread) and currently caps a page at 100 turns, so request as
         // many turns per page as it allows.
         internal const int PageSize = 1000;
-        // A complete read returns the whole thread in one reply, as before pagination.
-        internal const int FullReadTimeoutMs = 180000;
 
         internal static async Task<IDictionary<string, object>> ReadAsync(
             AppServerRequestInvoker send, string threadId, bool paginate, CancellationToken cancellationToken)
         {
-            if (paginate)
-            {
-                // One complete read costs one request instead of one per page. Pagination stays as
-                // the fallback because complete reads are deprecated for paginated threads.
-                var complete = await TryReadCompleteAsync(send, threadId, cancellationToken).ConfigureAwait(false);
-                if (complete != null)
-                {
-                    return complete;
-                }
-            }
-
             var total = Stopwatch.StartNew();
             var step = Stopwatch.StartNew();
             var turns = new List<object>();
@@ -119,67 +106,6 @@ namespace MyCodex.Infrastructure.AppServer
                     pages, turns.Count, step.ElapsedMilliseconds, total.ElapsedMilliseconds, AppServerHistoryLoadTrace.DescribeError(ex));
                 throw;
             }
-        }
-
-        private static async Task<IDictionary<string, object>> TryReadCompleteAsync(
-            AppServerRequestInvoker send, string threadId, CancellationToken cancellationToken)
-        {
-            var watch = Stopwatch.StartNew();
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var result = await send("thread/read", new Dictionary<string, object>
-                {
-                    { "threadId", threadId },
-                    { "includeTurns", true }
-                }, cancellationToken, FullReadTimeoutMs).ConfigureAwait(false);
-                cancellationToken.ThrowIfCancellationRequested();
-                var thread = AppServerJsonValueReader.GetDictionary(result, "thread");
-                var turns = AppServerJsonValueReader.GetValue(thread, "turns") as IList;
-                if (IsCompleteHistory(thread, turns, threadId))
-                {
-                    AppServerHistoryLoadTrace.Information("complete-read", threadId, "Turns={0}; ElapsedMs={1}",
-                        turns.Count, watch.ElapsedMilliseconds);
-                    return thread;
-                }
-
-                AppServerHistoryLoadTrace.Warning("complete-read-fallback", threadId, "Reason=incomplete; ElapsedMs={0}",
-                    watch.ElapsedMilliseconds);
-                return null;
-            }
-            catch (Exception ex) when (!(ex is OperationCanceledException) && !(ex is TimeoutException) &&
-                                       !cancellationToken.IsCancellationRequested)
-            {
-                // Paging after a timeout would only take longer; other failures may mean the runtime
-                // no longer serves complete reads.
-                AppServerHistoryLoadTrace.Warning("complete-read-fallback", threadId, "ElapsedMs={0}; {1}",
-                    watch.ElapsedMilliseconds, AppServerHistoryLoadTrace.DescribeError(ex));
-                return null;
-            }
-        }
-
-        private static bool IsCompleteHistory(IDictionary<string, object> thread, IList turns, string threadId)
-        {
-            // An empty list may be a deprecated reply that omits paginated history; paging confirms it cheaply.
-            if (turns == null || turns.Count == 0 ||
-                !string.Equals(AppServerJsonValueReader.GetString(thread, "id"), threadId, StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            foreach (var entry in turns)
-            {
-                var turn = entry as IDictionary<string, object>;
-                var view = AppServerJsonValueReader.GetString(turn, "itemsView");
-                if (string.IsNullOrWhiteSpace(AppServerJsonValueReader.GetString(turn, "id")) ||
-                    !(AppServerJsonValueReader.GetValue(turn, "items") is IList) ||
-                    (view != null && !string.Equals(view, "full", StringComparison.Ordinal)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         private static int CountItems(object value)

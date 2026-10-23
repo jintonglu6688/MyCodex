@@ -995,7 +995,7 @@ namespace MyCodex.WinForms.Forms
 
             var hasAttachments = _pendingAttachments.Count > 0;
             _attachmentPanel.Visible = hasAttachments;
-            _composePanel.Height = _composePanel.IsHandleCreated ? UiTheme.Scale(hasAttachments ? 206 : 110) : hasAttachments ? 206 : 110;
+            UpdateComposePanelHeight();
             _pendingAttachmentListBox.Enabled = hasAttachments && _currentSession != null && workspaceAvailable;
             _removeSelectedAttachmentMenuItem.Enabled = hasAttachments && _pendingAttachmentListBox.SelectedItem is PendingAttachmentItem;
             _clearAttachmentsMenuItem.Enabled = hasAttachments;

@@ -322,16 +322,16 @@
     <value>Sound</value>
   </data>
 <data name="NotificationSettingsForm.Check.TurnCompletedSound" xml:space="preserve">
-    <value>Play sound when a turn completes(&amp;T)</value>
+    <value>Play sound when a turn completes or fails(&amp;T)</value>
   </data>
 <data name="NotificationSettingsForm.Accessible.TurnCompletedSound" xml:space="preserve">
-    <value>Play sound when a turn completes</value>
+    <value>Play sound when a turn completes or fails</value>
   </data>
 <data name="NotificationSettingsForm.Check.SubAgentTurnCompletedSound" xml:space="preserve">
-    <value>Play sound when a subagent completes(&amp;G)</value>
+    <value>Play sound when a subagent completes or fails(&amp;G)</value>
   </data>
 <data name="NotificationSettingsForm.Accessible.SubAgentTurnCompletedSound" xml:space="preserve">
-    <value>Play sound when a subagent completes</value>
+    <value>Play sound when a subagent completes or fails</value>
   </data>
 <data name="NotificationSettingsForm.Check.ApprovalRequestSound" xml:space="preserve">
     <value>Play sound for approvals and questions(&amp;A)</value>
@@ -13863,5 +13863,149 @@ Update now? Choose No to continue using the existing runtime.</value>
   </data>
   <data name="Aggregation.Status.Working" xml:space="preserve">
     <value>Applying aggregation and restarting Codex…</value>
+  </data>
+  <data name="VoiceChatForm.Status.Loading" xml:space="preserve">
+    <value>Loading official voices…</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Mute" xml:space="preserve">
+    <value>Mute microphone</value>
+  </data>
+  <data name="VoiceChatForm.Label.Voice" xml:space="preserve">
+    <value>Voice(&amp;V)</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Voice" xml:space="preserve">
+    <value>Voice</value>
+  </data>
+  <data name="VoiceChatForm.Label.Speed" xml:space="preserve">
+    <value>Speaking speed(&amp;R)</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Speed" xml:space="preserve">
+    <value>Speaking speed</value>
+  </data>
+  <data name="VoiceChatForm.Speed.Default" xml:space="preserve">
+    <value>Official default</value>
+  </data>
+  <data name="VoiceChatForm.Speed.Faster" xml:space="preserve">
+    <value>Faster</value>
+  </data>
+  <data name="VoiceChatForm.Button.Apply" xml:space="preserve">
+    <value>Apply voice settings(&amp;A)</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Apply" xml:space="preserve">
+    <value>Apply voice settings</value>
+  </data>
+  <data name="VoiceChatForm.Button.Close" xml:space="preserve">
+    <value>Close(&amp;C)</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="VoiceChatForm.Error.NoVoices" xml:space="preserve">
+    <value>This runtime does not provide supported official voices.</value>
+  </data>
+  <data name="VoiceChatForm.Status.SettingsSaved" xml:space="preserve">
+    <value>Voice settings saved.</value>
+  </data>
+  <data name="VoiceChatForm.Error.Save" xml:space="preserve">
+    <value>Voice settings could not be saved.</value>
+  </data>
+  <data name="VoiceChatForm.Status.Connecting" xml:space="preserve">
+    <value>Connecting voice…</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Unmute" xml:space="preserve">
+    <value>Unmute microphone</value>
+  </data>
+  <data name="VoiceChatForm.Error.AudioStopped" xml:space="preserve">
+    <value>The audio engine stopped. Close voice chat and open it again.</value>
+  </data>
+  <data name="VoiceChatForm.Error.Microphone" xml:space="preserve">
+    <value>The microphone is unavailable. Check the device and Windows microphone permission.</value>
+  </data>
+  <data name="VoiceChatForm.Error.Timeout" xml:space="preserve">
+    <value>The voice connection timed out. Please try again.</value>
+  </data>
+  <data name="VoiceChatForm.Preview.Sample" xml:space="preserve">
+    <value>Hello. This is a preview of the selected voice and speaking speed.</value>
+  </data>
+  <data name="VoiceChatForm.Preview.Connecting" xml:space="preserve">
+    <value>Preparing the voice preview. The microphone stays off.</value>
+  </data>
+  <data name="VoiceChatForm.Button.StopPreview" xml:space="preserve">
+    <value>Stop preview(&amp;P)</value>
+  </data>
+  <data name="VoiceChatForm.Button.Preview" xml:space="preserve">
+    <value>Preview(&amp;P)</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.StopPreview" xml:space="preserve">
+    <value>Stop preview</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Preview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="VoiceChatForm.Label.Volume" xml:space="preserve">
+    <value>Voice volume(&amp;L)</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Volume" xml:space="preserve">
+    <value>Voice volume</value>
+  </data>
+  <data name="VoiceChatForm.Volume.Original" xml:space="preserve">
+    <value>Original volume</value>
+  </data>
+  <data name="VoiceChatForm.Volume.Boost" xml:space="preserve">
+    <value>Boost</value>
+  </data>
+  <data name="VoiceChatForm.Volume.StrongBoost" xml:space="preserve">
+    <value>Stronger boost</value>
+  </data>
+  <data name="VoiceChatForm.Error.PreviewSilent" xml:space="preserve">
+    <value>No preview audio was received. Please try again.</value>
+  </data>
+  <data name="VoiceMode.Button.Enable" xml:space="preserve">
+    <value>Enable voice(&amp;J)</value>
+  </data>
+  <data name="VoiceMode.Accessible.Enable" xml:space="preserve">
+    <value>Enable voice</value>
+  </data>
+  <data name="VoiceMode.Button.Disable" xml:space="preserve">
+    <value>Disable voice(&amp;J)</value>
+  </data>
+  <data name="VoiceMode.Accessible.Disable" xml:space="preserve">
+    <value>Disable voice</value>
+  </data>
+  <data name="VoiceMode.Button.Mute" xml:space="preserve">
+    <value>Mute microphone(&amp;M)</value>
+  </data>
+  <data name="VoiceMode.Button.Unmute" xml:space="preserve">
+    <value>Unmute microphone(&amp;M)</value>
+  </data>
+  <data name="VoiceMode.Button.Settings" xml:space="preserve">
+    <value>Voice settings(&amp;V)</value>
+  </data>
+  <data name="VoiceMode.Status.Text" xml:space="preserve">
+    <value>Voice off. Continue in the same conversation using text.</value>
+  </data>
+  <data name="VoiceMode.Status.Active" xml:space="preserve">
+    <value>Voice on. Speak or type here; replies include audio and text.</value>
+  </data>
+  <data name="VoiceSettings.Title" xml:space="preserve">
+    <value>Voice settings</value>
+  </data>
+  <data name="VoiceSettings.Ready" xml:space="preserve">
+    <value>Choose settings, then preview or apply them.</value>
+  </data>
+  <data name="VoiceSettings.PreviewFinished" xml:space="preserve">
+    <value>Preview finished.</value>
+  </data>
+  <data name="VoiceSettings.Hint" xml:space="preserve">
+    <value>Default keeps the official pace and volume. Preview pauses the microphone. You can adjust options while listening; stop and preview again to hear them. Volume affects only this voice.</value>
+  </data>
+  <data name="VoiceSettings.NumberedVoice" xml:space="preserve">
+    <value>Voice {0:00}: {1}</value>
+  </data>
+  <data name="VoiceMode.Error.ModelSync" xml:space="preserve">
+    <value>Voice was stopped because its backend settings could not be synchronized: </value>
+  </data>
+  <data name="VoiceMode.Status.BasicEcho" xml:space="preserve">
+    <value>Voice on. System-audio filtering could not be confirmed. Use headphones or mute the microphone while navigating with screen-reader audio.</value>
   </data>
 </root>

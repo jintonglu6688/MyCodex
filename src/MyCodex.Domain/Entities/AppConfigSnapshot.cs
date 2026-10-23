@@ -218,6 +218,9 @@ namespace MyCodex.Domain.Entities
         [DataMember]
         public bool EnableAutomaticChatReading { get; set; }
 
+        [DataMember(EmitDefaultValue = false)]
+        public VoiceChatSettings VoiceChat { get; set; }
+
         [DataMember]
         public ScreenReaderProviderKind ScreenReaderProvider { get; set; } = ScreenReaderProviderKind.Auto;
 

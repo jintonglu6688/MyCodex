@@ -36,7 +36,7 @@ namespace MyCodex.Application.Tests
                 return Result(Page(cursor ? new object[] { Turn("two", PrivateText) } : new object[] { turn }, cursor ? null : "next"));
             }, threadId, true, CancellationToken.None));
 
-            Assert.That(Phases(log), Is.EqualTo(new[] { "complete-read-fallback", "read-start", "thread-read", "turns-page", "turns-page", "read-complete" }));
+            Assert.That(Phases(log), Is.EqualTo(new[] { "read-start", "thread-read", "turns-page", "turns-page", "read-complete" }));
             Assert.That(log, Has.Some.Contains("Page=1; PageTurns=1; PageItems=2; TotalTurns=1"));
             Assert.That(log, Has.Some.Contains("Page=2; PageTurns=1; PageItems=2; TotalTurns=2"));
             Assert.That(log, Has.Some.Contains("Pages=2; Turns=2"));

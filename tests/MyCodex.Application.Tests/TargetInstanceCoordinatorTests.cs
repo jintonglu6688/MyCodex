@@ -196,6 +196,30 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void VoiceControl_UsesTheVerifiedOwnerPipeAndPreservesConversationBinding()
+        {
+            using (var owner = TargetInstanceCoordinator.Acquire(_channel, "windows", _root))
+            {
+                owner.StartServer(request =>
+                {
+                    Assert.That(request.Operation, Is.EqualTo(TargetInstanceOperation.VoiceControl));
+                    Assert.That(request.VoiceThreadId, Is.EqualTo("exact-thread"));
+                    Assert.That(VoiceControlCommand.Parse(request.VoiceArguments).Enabled, Is.False);
+                    return Task.FromResult(new TargetInstanceReply { Success = true, VoiceThreadId = request.VoiceThreadId, VoiceResult = "enabled=False" });
+                });
+                owner.UpdateStatus(new TargetInstanceStatus { Lifecycle = TargetInstanceLifecycle.Running });
+                var reply = TargetInstanceCoordinator.Send(_channel, "windows", _root, new TargetInstanceRequest
+                {
+                    Operation = TargetInstanceOperation.VoiceControl, VoiceThreadId = "exact-thread",
+                    VoiceArguments = new System.Collections.Generic.Dictionary<string, object> { { "enabled", false } }
+                });
+                Assert.That(reply.Success, Is.True, reply.Error);
+                Assert.That(reply.VoiceThreadId, Is.EqualTo("exact-thread"));
+                Assert.That(reply.VoiceResult, Is.EqualTo("enabled=False"));
+            }
+        }
+
+        [Test]
         public void UnsupportedOperationsAndCrossOperationPayloadsAreRejected()
         {
             Assert.Throws<InvalidDataException>(() => TargetInstanceCoordinator.ValidateRequest(
@@ -208,6 +232,12 @@ namespace MyCodex.Application.Tests
                 new TargetInstanceRequest { Operation = TargetInstanceOperation.ApplyRuntimeSettings }));
             Assert.Throws<InvalidDataException>(() => TargetInstanceCoordinator.ValidateRequest(
                 new TargetInstanceRequest { Operation = TargetInstanceOperation.Activate, WorkspacePath = "bad\0path" }));
+            Assert.Throws<InvalidDataException>(() => TargetInstanceCoordinator.ValidateRequest(
+                new TargetInstanceRequest { Operation = TargetInstanceOperation.Status, VoiceArguments = new System.Collections.Generic.Dictionary<string, object>() }));
+            Assert.Throws<InvalidDataException>(() => TargetInstanceCoordinator.ValidateRequest(
+                new TargetInstanceRequest { Operation = TargetInstanceOperation.VoiceControl }));
+            Assert.Throws<InvalidDataException>(() => TargetInstanceCoordinator.ValidateRequest(
+                new TargetInstanceRequest { Operation = TargetInstanceOperation.VoiceControl, VoiceArguments = new System.Collections.Generic.Dictionary<string, object> { { "enabled", true } } }));
         }
 
         private TargetInstanceReply Send(TargetInstanceOperation operation)

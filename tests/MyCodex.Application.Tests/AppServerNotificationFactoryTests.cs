@@ -10,6 +10,18 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class AppServerNotificationFactoryTests
     {
+        [TestCase("en-US", "Codex is retrying automatically: Model overloaded")]
+        [TestCase("zh-CN", "Codex 正在自动重试：Model overloaded")]
+        public void RetryNotice_IsLocalizedAndKeepsTheOriginalError(string culture, string expected)
+        {
+            WithCulture(culture, () =>
+            {
+                var args = AppServerNotificationFactory.CreateError("thread", "turn", "Model overloaded", "serverOverloaded", true);
+                Assert.That(args.Content, Is.EqualTo(expected));
+                Assert.That(args.EventType, Is.EqualTo("turn_retrying"));
+            });
+        }
+
         [Test]
         public void CreateTurnFailed_UsesFallbackMessageWhenErrorIsMissing()
         {

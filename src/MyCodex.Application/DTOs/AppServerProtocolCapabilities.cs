@@ -59,6 +59,7 @@ namespace MyCodex.Application.DTOs
         public bool SupportsThreadForkLastTurnId { get; set; }
 
         public bool SupportsThreadHistoryPagination { get; set; }
+        public bool SupportsRealtimeTimeline { get; set; }
 
         public bool SupportsSubagentThreadFilters { get; set; }
 

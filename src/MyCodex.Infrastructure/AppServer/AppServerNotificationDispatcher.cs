@@ -91,6 +91,7 @@ namespace MyCodex.Infrastructure.AppServer
                 case "thread/goal/cleared":
                     return AppServerNotificationAction.ThreadGoalCleared;
                 case "thread/settings/updated":
+                case "thread/readState/changed":
                     return AppServerNotificationAction.Ignore;
                 case "turn/started":
                     return AppServerNotificationAction.TurnStarted;

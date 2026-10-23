@@ -55,6 +55,7 @@ namespace MyCodex.Infrastructure.AppServer
                 SupportsThreadForkLastTurnId = IsKnownRuntimeAtLeast(runtimeVersion, 0, 143, 0),
                 // Verified full-item pagination and excludeTurns contract in 0.158.
                 SupportsThreadHistoryPagination = IsKnownRuntimeAtLeast(runtimeVersion, 0, 158, 0),
+                SupportsRealtimeTimeline = IsKnownRuntimeAtLeast(runtimeVersion, 0, 163, 0),
                 SupportsSubagentThreadFilters = IsKnownRuntimeAtLeast(runtimeVersion, 0, 154, 0),
                 SupportsCollabAgentToolCall = IsKnownRuntimeAtLeast(runtimeVersion, 0, 154, 0),
                 SupportsBrowserUseIntegration = false

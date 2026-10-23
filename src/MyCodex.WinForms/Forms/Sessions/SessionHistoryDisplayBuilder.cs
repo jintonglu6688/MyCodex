@@ -187,6 +187,7 @@ namespace MyCodex.WinForms.Forms
                         message.Content,
                         _defaultCategoryResolver(message.Sender));
                     item.ThreadId = message.ThreadId;
+                    item.SourceItemId = message.SourceItemId;
                     item.TurnId = message.TurnId;
                     item.TurnIndex = message.TurnIndex;
                     item.TurnCount = details.TurnCount;
@@ -194,6 +195,7 @@ namespace MyCodex.WinForms.Forms
                 }
             }
 
+            items = VoiceHistoryProjection.Merge(items, details?.RealtimeHistory, _itemFactory);
             if (items.Count == 0)
             {
                 items.Add(CreateSystemItem(UiLocalization.Text("MainForm.Message.NoHistoryMessages", "No history messages.")));

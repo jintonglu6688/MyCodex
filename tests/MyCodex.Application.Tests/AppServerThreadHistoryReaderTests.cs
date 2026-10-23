@@ -30,10 +30,8 @@ namespace MyCodex.Application.Tests
                     calls++;
                     if (method == "thread/read")
                     {
-                        // An empty complete reply is confirmed by paging before it is trusted.
-                        var complete = (bool)parameters["includeTurns"];
-                        Assert.That(complete, Is.EqualTo(calls == 1));
-                        Assert.That(timeout, Is.EqualTo(complete ? AppServerThreadHistoryReader.FullReadTimeoutMs : 60000));
+                        Assert.That(parameters["includeTurns"], Is.False);
+                        Assert.That(timeout, Is.EqualTo(60000));
                         return Result(new Dictionary<string, object> { { "thread", metadata } });
                     }
                     Assert.That(timeout, Is.EqualTo(60000));
@@ -41,7 +39,7 @@ namespace MyCodex.Application.Tests
                     Assert.That(parameters["itemsView"], Is.EqualTo("full"));
                     Assert.That(parameters["sortDirection"], Is.EqualTo("asc"));
                     Assert.That(parameters["limit"], Is.EqualTo(AppServerThreadHistoryReader.PageSize));
-                    if (calls == 3)
+                    if (calls == 2)
                     {
                         Assert.That(parameters.ContainsKey("cursor"), Is.False);
                         return Result(Page(new object[] { first, empty }, "next"));
@@ -53,7 +51,7 @@ namespace MyCodex.Application.Tests
                 var expected = new Dictionary<string, object>(metadata) { ["turns"] = new object[] { first, empty, last } };
                 var mapped = AppServerThreadMapper.BuildThreadDetails(actual, path => @"E:\Repo");
                 var legacy = AppServerThreadMapper.BuildThreadDetails(expected, path => @"E:\Repo");
-                Assert.That(calls, Is.EqualTo(4));
+                Assert.That(calls, Is.EqualTo(3));
                 var serializer = new JavaScriptSerializer();
                 Assert.That(serializer.Serialize(actual), Is.EqualTo(serializer.Serialize(expected)));
                 Assert.That(serializer.Serialize(mapped.Messages), Is.EqualTo(serializer.Serialize(legacy.Messages)));
@@ -107,7 +105,7 @@ namespace MyCodex.Application.Tests
                 {
                     calls++;
                     if (method == "thread/read") return Result(Json("{\"thread\":{\"id\":\"thread\"}}"));
-                    if (calls == 3)
+                    if (calls == 2)
                     {
                         if (failure == "cancel") cts.Cancel();
                         return Result(Page(new object[] { completeTurn }, "next"));
@@ -122,66 +120,51 @@ namespace MyCodex.Application.Tests
                 if (failure == "cancel") Assert.ThrowsAsync<OperationCanceledException>(async () => await read());
                 else if (failure == "transport") Assert.ThrowsAsync<IOException>(async () => await read());
                 else Assert.ThrowsAsync<InvalidDataException>(async () => await read());
-                Assert.That(calls, Is.LessThanOrEqualTo(4));
+                Assert.That(calls, Is.LessThanOrEqualTo(3));
             }
         }
 
         [Test]
-        public async Task CompleteRead_LoadsWholeThreadInOneRequest()
+        public async Task PaginatedRuntime_UsesPagesEvenWhenFullHistoryWouldBeAvailable()
         {
             var thread = Json("{\"id\":\"thread\",\"turns\":[{\"id\":\"one\",\"itemsView\":\"full\",\"items\":[{\"id\":\"a\",\"type\":\"agentMessage\",\"text\":\"Answer\"}]},{\"id\":\"two\",\"items\":[]}]}");
+            var pagedTurn = Json("{\"id\":\"paged\",\"itemsView\":\"full\",\"items\":[]}");
             var calls = new List<string>();
             var actual = await AppServerThreadHistoryReader.ReadAsync((method, args, token, timeout) =>
             {
+                if (method == "thread/read")
+                {
+                    var includeTurns = (bool)((IDictionary<string, object>)args)["includeTurns"];
+                    calls.Add(includeTurns ? "thread/read+turns" : method);
+                    return Result(new Dictionary<string, object> { { "thread", thread } });
+                }
                 calls.Add(method);
-                Assert.That(((IDictionary<string, object>)args)["includeTurns"], Is.True);
-                Assert.That(timeout, Is.EqualTo(AppServerThreadHistoryReader.FullReadTimeoutMs));
-                return Result(new Dictionary<string, object> { { "thread", thread } });
+                return Result(Page(new object[] { pagedTurn }, null));
             }, "thread", true, CancellationToken.None);
 
-            Assert.That(actual, Is.SameAs(thread));
-            Assert.That(calls, Is.EqualTo(new[] { "thread/read" }));
+            Assert.That(calls, Is.EqualTo(new[] { "thread/read", "thread/turns/list" }));
+            Assert.That(AppServerJsonValueReader.GetArray(actual, "turns"), Is.EqualTo(new object[] { pagedTurn }));
         }
 
-        [TestCase("error")]
-        [TestCase("empty")]
-        [TestCase("summary")]
-        [TestCase("not-loaded")]
-        [TestCase("missing-items")]
-        [TestCase("wrong-thread")]
-        public async Task CompleteRead_FallsBackToPagesWhenUnavailableOrIncomplete(string reply)
+        [TestCase("{}")]
+        [TestCase("{\"thread\":{}}")]
+        [TestCase("{\"thread\":{\"id\":\"other\"}}")]
+        public void InvalidMetadata_DoesNotLoadPages(string reply)
         {
-            var turn = Json("{\"id\":\"one\",\"itemsView\":\"full\",\"items\":[{\"id\":\"a\",\"type\":\"agentMessage\",\"text\":\"Paged\"}]}");
             var calls = new List<string>();
-            var actual = await AppServerThreadHistoryReader.ReadAsync((method, args, token, timeout) =>
+            Assert.ThrowsAsync<InvalidDataException>(async () => await AppServerThreadHistoryReader.ReadAsync((method, args, token, timeout) =>
             {
-                var complete = method == "thread/read" && (bool)((IDictionary<string, object>)args)["includeTurns"];
-                calls.Add(complete ? "complete" : method);
-                if (!complete)
-                {
-                    return Result(method == "thread/read"
-                        ? Json("{\"thread\":{\"id\":\"thread\"}}")
-                        : Page(new object[] { turn }, null));
-                }
+                calls.Add(method);
+                return Result(Json(reply));
+            }, "thread", true, CancellationToken.None));
 
-                switch (reply)
-                {
-                    case "error": throw new InvalidOperationException("Full history is unavailable for paginated threads.");
-                    case "empty": return Result(Json("{\"thread\":{\"id\":\"thread\",\"turns\":[]}}"));
-                    case "summary": return Result(Json("{\"thread\":{\"id\":\"thread\",\"turns\":[{\"id\":\"one\",\"itemsView\":\"summary\",\"items\":[]}]}}"));
-                    case "not-loaded": return Result(Json("{\"thread\":{\"id\":\"thread\",\"turns\":[{\"id\":\"one\",\"itemsView\":\"notLoaded\",\"items\":[]}]}}"));
-                    case "missing-items": return Result(Json("{\"thread\":{\"id\":\"thread\",\"turns\":[{\"id\":\"one\"}]}}"));
-                    default: return Result(Json("{\"thread\":{\"id\":\"other\",\"turns\":[{\"id\":\"one\",\"items\":[]}]}}"));
-                }
-            }, "thread", true, CancellationToken.None);
-
-            Assert.That(calls, Is.EqualTo(new[] { "complete", "thread/read", "thread/turns/list" }));
-            Assert.That(AppServerJsonValueReader.GetArray(actual, "turns"), Is.EqualTo(new object[] { turn }));
+            Assert.That(calls, Is.EqualTo(new[] { "thread/read" }));
         }
 
         [TestCase("timeout")]
         [TestCase("cancel")]
-        public void CompleteRead_TimeoutOrCancellationDoesNotStartPaging(string failure)
+        [TestCase("transport")]
+        public void MetadataFailure_DoesNotStartPaging(string failure)
         {
             using (var cts = new CancellationTokenSource())
             {
@@ -195,12 +178,14 @@ namespace MyCodex.Application.Tests
                         throw new OperationCanceledException(cts.Token);
                     }
 
+                    if (failure == "transport") throw new IOException("Disconnected");
                     throw new TimeoutException("App Server request timed out: thread/read");
                 }, "thread", true, cts.Token);
 
                 if (failure == "cancel") Assert.ThrowsAsync<OperationCanceledException>(async () => await read());
+                else if (failure == "transport") Assert.ThrowsAsync<IOException>(async () => await read());
                 else Assert.ThrowsAsync<TimeoutException>(async () => await read());
-                Assert.That(calls, Is.EqualTo(1), "Paging after a timeout would only take longer.");
+                Assert.That(calls, Is.EqualTo(1));
             }
         }
 

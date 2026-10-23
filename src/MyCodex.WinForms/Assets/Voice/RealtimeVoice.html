@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; media-src blob:; connect-src 'none'; style-src 'none'">
+<title></title></head><body aria-hidden="true">
+<audio id="output" autoplay></audio>
+<script>
+(() => {
+    'use strict';
+    let current = null;
+    const output = document.getElementById('output');
+    const post = message => window.chrome.webview.postMessage(message);
+    const alive = session => current === session && !session.stopped;
+    const previewSilenceThreshold = 0.001;
+
+    function disposeSession(session) {
+        if (!session || session.stopped) return;
+        session.stopped = true;
+        clearTimeout(session.disconnectTimer);
+        clearTimeout(session.previewTimeout);
+        clearInterval(session.meter);
+        if (session.recorder?.state === 'recording') session.recorder.stop();
+        try { session.replaySource?.stop(); } catch { }
+        session.stream?.getTracks().forEach(track => track.stop());
+        session.inputContext?.close().catch(() => {});
+        session.outputContext?.close().catch(() => {});
+        session.channel?.close();
+        session.peer?.close();
+        if (current === session) {
+            current = null;
+            output.pause();
+            output.srcObject = null;
+        }
+    }
+
+    function requireSession(id) {
+        if (!current || current.id !== id || current.stopped) throw new Error('Voice session ended.');
+        return current;
+    }
+
+    function signalConnected(session) {
+        if (alive(session) && session.ready && session.peer.connectionState === 'connected' && !session.connected) {
+            session.connected = true;
+            post({ kind: 'connected', sessionId: session.id });
+            if (session.preview) {
+                session.previewTimeout = setTimeout(() => {
+                    if (!alive(session)) return;
+                    if (session.heardAudio) finishPreview(session);
+                    else fail(session, 'No preview audio was received. Please try again.', 'PreviewNoAudio');
+                }, 20000);
+            }
+        }
+    }
+
+    function setVolume(session, gain) {
+        if (!Number.isFinite(gain) || gain < 0) throw new Error('Invalid voice output gain.');
+        session.gain = gain;
+        if (!session.amplifier) return;
+        if (session.playbackMuted) {
+            session.amplifier.gain.cancelScheduledValues(session.outputContext.currentTime);
+            session.amplifier.gain.setValueAtTime(0, session.outputContext.currentTime);
+            setOriginalVolume(session, 0);
+            return;
+        }
+        // The default uses the original media-element output with no dynamics processing.
+        if (gain === 1) {
+            session.amplifier.gain.cancelScheduledValues(session.outputContext.currentTime);
+            session.amplifier.gain.setValueAtTime(0, session.outputContext.currentTime);
+            setOriginalVolume(session, 1);
+        } else {
+            setOriginalVolume(session, 0);
+            session.amplifier.gain.setTargetAtTime(gain, session.outputContext.currentTime, 0.015);
+        }
+    }
+
+    function setOriginalVolume(session, value) {
+        if (session.dryGain) session.dryGain.gain.value = value;
+        else output.volume = value;
+    }
+
+    function attachOutput(session, track) {
+        output.srcObject = new MediaStream([track]);
+        output.play().catch(error => fail(session, error.message));
+        const context = session.outputContext = new AudioContext();
+        context.resume().catch(error => fail(session, error.message));
+        const source = context.createMediaStreamSource(new MediaStream([track]));
+        attachAmplifiedOutput(session, context, source);
+        if (session.preview && session.cacheLimit > 0 && typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+            // Capture only the generated preview track. The microphone is never part of this stream.
+            session.chunks = [];
+            session.recordedBytes = 0;
+            const recorder = session.recorder = new MediaRecorder(new MediaStream([track]), { mimeType: 'audio/webm;codecs=opus' });
+            recorder.ondataavailable = event => {
+                session.recordedBytes += event.data.size;
+                if (session.recordedBytes * 4 / 3 <= session.cacheLimit) session.chunks.push(event.data);
+                else { session.cacheOverflow = true; session.chunks = []; }
+            };
+            recorder.start(500);
+        }
+    }
+
+    function attachAmplifiedOutput(session, context, source) {
+        const meter = context.createAnalyser();
+        meter.fftSize = 2048;
+        session.amplifier = context.createGain();
+        session.amplifier.gain.value = 0;
+        const compressor = context.createDynamicsCompressor();
+        compressor.threshold.value = -3;
+        compressor.knee.value = 3;
+        compressor.ratio.value = 8;
+        compressor.attack.value = 0.003;
+        compressor.release.value = 0.1;
+        const limiter = context.createWaveShaper();
+        limiter.curve = Float32Array.from({ length: 2049 }, (_, i) => Math.max(-0.98, Math.min(0.98, i / 1024 - 1)));
+        limiter.oversample = '4x';
+        source.connect(meter);
+        meter.connect(session.amplifier);
+        session.amplifier.connect(compressor);
+        compressor.connect(limiter);
+        limiter.connect(context.destination);
+        setVolume(session, session.gain);
+        if (session.preview && !session.replaySource) {
+            const values = new Float32Array(meter.fftSize);
+            session.meter = setInterval(() => {
+                if (!alive(session)) return;
+                meter.getFloatTimeDomainData(values);
+                if (values.some(value => Math.abs(value) > previewSilenceThreshold)) {
+                    session.heardAudio = true;
+                    session.lastAudio = performance.now();
+                } else if (session.heardAudio && performance.now() - session.lastAudio > 1500) {
+                    clearInterval(session.meter);
+                    clearTimeout(session.previewTimeout);
+                    finishPreview(session);
+                }
+            }, 100);
+        }
+    }
+
+    async function finishPreview(session) {
+        if (!alive(session) || session.finishing) return;
+        session.finishing = true;
+        let clip = null;
+        try {
+            if (session.recorder) {
+                if (session.recorder.state === 'recording') {
+                    await new Promise(resolve => { session.recorder.addEventListener('stop', resolve, { once: true }); session.recorder.stop(); });
+                }
+                if (!session.cacheOverflow && session.chunks?.length) {
+                    clip = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = () => reject(reader.error);
+                        reader.readAsDataURL(new Blob(session.chunks, { type: 'audio/webm;codecs=opus' }));
+                    });
+                    if (clip.length > session.cacheLimit) clip = null;
+                }
+            }
+        } catch { clip = null; } // A cache failure must not turn a successful preview into an error.
+        if (alive(session)) post({ kind: 'previewComplete', sessionId: session.id, clip });
+    }
+
+    async function replay(id, clip, gain) {
+        if (current) disposeSession(current);
+        const session = { id, stopped: false, preview: true, gain };
+        current = session;
+        try {
+            const context = session.outputContext = new AudioContext();
+            const encoded = clip.substring(clip.indexOf(',') + 1);
+            const data = Uint8Array.from(atob(encoded), character => character.charCodeAt(0));
+            const buffer = await context.decodeAudioData(data.buffer);
+            if (!alive(session)) throw new Error('Voice preview ended.');
+            // The remote track starts before speech. Replay the sample, not its network wait or ending silence.
+            let first = buffer.length, last = 0;
+            for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+                const samples = buffer.getChannelData(channel);
+                const begin = samples.findIndex(value => Math.abs(value) > previewSilenceThreshold);
+                if (begin < 0) continue;
+                first = Math.min(first, begin);
+                for (let frame = samples.length - 1; frame >= begin; frame--) {
+                    if (Math.abs(samples[frame]) > previewSilenceThreshold) { last = Math.max(last, frame); break; }
+                }
+            }
+            const padding = 0.04;
+            const offset = first < buffer.length ? Math.max(0, first / buffer.sampleRate - padding) : 0;
+            const end = first < buffer.length ? Math.min(buffer.duration, last / buffer.sampleRate + padding) : buffer.duration;
+            const source = session.replaySource = context.createBufferSource();
+            source.buffer = buffer;
+            session.dryGain = context.createGain();
+            session.dryGain.gain.value = 0;
+            source.connect(session.dryGain);
+            session.dryGain.connect(context.destination);
+            attachAmplifiedOutput(session, context, source);
+            source.onended = () => finishPreview(session);
+            await context.resume();
+            if (!alive(session)) throw new Error('Voice preview ended.');
+            source.start(0, offset, end - offset);
+        } catch (error) { disposeSession(session); throw error; }
+    }
+
+    function fail(session, message, errorName) {
+        if (!alive(session)) return;
+        post({ kind: 'error', sessionId: session.id, error: message, errorName });
+        disposeSession(session);
+    }
+
+    async function prepare(id, muted, preview, gain, cacheLimit) {
+        if (current) disposeSession(current);
+        const session = { id, stopped: false, stream: null, peer: null, channel: null, preview, gain, cacheLimit };
+        current = session;
+        try {
+            let stream;
+            if (preview) {
+                const context = session.inputContext = new AudioContext();
+                await context.resume();
+                const destination = context.createMediaStreamDestination();
+                const silence = context.createConstantSource();
+                silence.offset.value = 0;
+                silence.connect(destination);
+                silence.start();
+                stream = destination.stream;
+            } else {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        audio: { echoCancellation: { exact: 'all' }, noiseSuppression: true, autoGainControl: true }, video: false
+                    });
+                } catch (error) {
+                    if (error.name !== 'OverconstrainedError' || error.constraint !== 'echoCancellation') throw error;
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false
+                    });
+                }
+            }
+            session.stream = stream;
+            stream.getAudioTracks().forEach(track => { track.enabled = !muted; });
+            if (!alive(session)) {
+                stream.getTracks().forEach(track => track.stop());
+                throw new Error('Voice session ended.');
+            }
+            const peer = session.peer = new RTCPeerConnection();
+            for (const track of stream.getAudioTracks()) peer.addTrack(track, stream);
+            peer.ontrack = event => {
+                if (!alive(session)) return;
+                // Attach the media element: Chromium may otherwise deliver silent Web Audio frames.
+                attachOutput(session, event.track);
+            };
+            peer.onconnectionstatechange = () => {
+                if (!alive(session)) return;
+                signalConnected(session);
+                if (peer.connectionState === 'failed' || peer.connectionState === 'closed') {
+                    fail(session, 'Voice media connection closed.');
+                } else if (peer.connectionState === 'disconnected') {
+                    clearTimeout(session.disconnectTimer);
+                    session.disconnectTimer = setTimeout(() => {
+                        if (alive(session) && peer.connectionState === 'disconnected') fail(session, 'Voice media connection lost.');
+                    }, 5000);
+                } else {
+                    clearTimeout(session.disconnectTimer);
+                }
+            };
+            const channel = session.channel = peer.createDataChannel('oai-events');
+            channel.onmessage = event => {
+                if (!alive(session)) return;
+                let message;
+                try { message = JSON.parse(event.data); } catch { return; }
+                if (message.type === 'session.started') { session.ready = true; signalConnected(session); }
+                if (message.type === 'session.closed') fail(session, 'Voice session closed.');
+                if (message.type === 'error') fail(session, message.error?.message || 'Voice session failed.');
+            };
+            channel.onclose = () => { if (alive(session)) fail(session, 'Voice event channel closed.'); };
+            await peer.setLocalDescription(await peer.createOffer());
+            if (peer.iceGatheringState !== 'complete') {
+                await new Promise((resolve, reject) => {
+                    const timer = setTimeout(() => { peer.removeEventListener('icegatheringstatechange', changed); reject(new Error('Voice connection timed out.')); }, 10000);
+                    function changed() {
+                        if (peer.iceGatheringState === 'complete' || !alive(session)) {
+                            clearTimeout(timer);
+                            peer.removeEventListener('icegatheringstatechange', changed);
+                            resolve();
+                        }
+                    }
+                    peer.addEventListener('icegatheringstatechange', changed);
+                    changed();
+                });
+            }
+            requireSession(id);
+            const settings = stream.getAudioTracks()[0]?.getSettings?.() || {};
+            return { sdp: peer.localDescription.sdp, echoMode: preview ? 'silent' : String(settings.echoCancellation ?? 'unknown') };
+        } catch (error) {
+            disposeSession(session);
+            throw error;
+        }
+    }
+
+    window.chrome.webview.addEventListener('message', async event => {
+        const request = event.data;
+        if (!request || typeof request.id !== 'number') return;
+        try {
+            let result = {};
+            switch (request.method) {
+                case 'prepare': result = await prepare(request.sessionId, request.muted === true, request.preview === true, request.gain ?? 1, request.previewCacheLimit ?? 0); break;
+                case 'replay': await replay(request.sessionId, request.clip, request.gain ?? 1); break;
+                case 'answer':
+                    await requireSession(request.sessionId).peer.setRemoteDescription({ type: 'answer', sdp: request.sdp });
+                    break;
+                case 'mute':
+                    requireSession(request.sessionId).stream.getAudioTracks().forEach(track => { track.enabled = !request.muted; });
+                    break;
+                case 'volume': setVolume(requireSession(request.sessionId), request.gain); break;
+                case 'playbackMute': {
+                    const session = requireSession(request.sessionId);
+                    session.playbackMuted = request.muted === true;
+                    setVolume(session, session.gain);
+                    break;
+                }
+                case 'stop':
+                    if (current && current.id === request.sessionId) disposeSession(current);
+                    break;
+                default: throw new Error('Unknown voice transport operation.');
+            }
+            post({ id: request.id, ok: true, sdp: result.sdp, echoMode: result.echoMode });
+        } catch (error) {
+            post({ id: request.id, ok: false, error: error.message, errorName: error.name });
+        }
+    });
+    window.addEventListener('pagehide', () => disposeSession(current));
+    post({ kind: 'ready' });
+})();
+</script></body></html>

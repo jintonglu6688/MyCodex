@@ -80,7 +80,7 @@ namespace MyCodex.WinForms.Forms
                 try
                 {
                     SetStatus(UiLocalization.Text("MainForm.Status.SettingGoal", "Setting goal..."));
-                    await EnsureSessionThreadCreatedForGoalAsync(session);
+                    await EnsureSessionThreadCreatedAsync(session);
                     var workspace = FindWorkspaceById(session.WorkspaceId);
                     var goal = await _appServerClient.SetThreadGoalAsync(
                         session.ThreadId,
@@ -197,7 +197,7 @@ namespace MyCodex.WinForms.Forms
             }
         }
 
-        private async Task EnsureSessionThreadCreatedForGoalAsync(ChatSession session)
+        private async Task EnsureSessionThreadCreatedAsync(ChatSession session)
         {
             if (session == null || !string.IsNullOrWhiteSpace(session.ThreadId))
             {

@@ -507,6 +507,9 @@
   <data name="AppServerClient.Error.ServerReturnedError" xml:space="preserve">
     <value>App Server 返回了错误。</value>
   </data>
+  <data name="AppServerClient.Turn.Retrying.Template" xml:space="preserve">
+    <value>Codex 正在自动重试：{0}</value>
+  </data>
   <data name="AppServerClient.Error.SkillPathRequired" xml:space="preserve">
     <value>技能路径不能为空。</value>
   </data>
@@ -1663,5 +1666,20 @@
   </data>
   <data name="AppUpdate.Error.InstallerMissing" xml:space="preserve">
     <value>下载的安装包已不可用，请重新下载更新。</value>
+  </data>
+  <data name="VoiceChat.Error.ChatGptRequired" xml:space="preserve">
+    <value>请使用 ChatGPT 登录后再使用官方语音聊天。</value>
+  </data>
+  <data name="VoiceChat.Error.ConnectionFailed" xml:space="preserve">
+    <value>语音连接失败。</value>
+  </data>
+  <data name="VoiceChat.Error.Timeout" xml:space="preserve">
+    <value>语音连接超时，请重试。</value>
+  </data>
+  <data name="VoiceChat.Error.IncompleteTimeline" xml:space="preserve">
+    <value>运行时返回的会话记录不完整，请稍后重试。</value>
+  </data>
+  <data name="VoiceChat.Error.PreviewThread" xml:space="preserve">
+    <value>无法准备语音试听，请稍后重试。</value>
   </data>
 </root>

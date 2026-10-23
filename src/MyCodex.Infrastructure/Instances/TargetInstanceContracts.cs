@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Web.Script.Serialization;
 using MyCodex.Application.DTOs;
 
@@ -12,7 +13,8 @@ namespace MyCodex.Infrastructure.Instances
         PrepareExit,
         AbortExit,
         CommitExit,
-        RemoveTarget
+        RemoveTarget,
+        VoiceControl
     }
 
     public enum TargetExitPreparation
@@ -54,6 +56,8 @@ namespace MyCodex.Infrastructure.Instances
         public TargetInstanceRecord Caller { get; set; }
         public string OperationId { get; set; }
         public string RemovalTargetId { get; set; }
+        public string VoiceThreadId { get; set; }
+        public IDictionary<string, object> VoiceArguments { get; set; }
     }
 
     public sealed class TargetInstanceReply
@@ -64,6 +68,8 @@ namespace MyCodex.Infrastructure.Instances
         public TargetInstanceStatus Status { get; set; }
         public TargetInstanceRecord Instance { get; set; }
         public TargetExitPreparation ExitPreparation { get; set; }
+        public string VoiceThreadId { get; set; }
+        public string VoiceResult { get; set; }
 
         [ScriptIgnore]
         public Action AfterResponse { get; set; }

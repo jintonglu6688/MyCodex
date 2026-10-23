@@ -12,6 +12,8 @@ namespace MyCodex.WinForms.Controls
     public class ChatHistoryItem
     {
         public string ThreadId { get; set; }
+        public string SourceItemId { get; set; }
+        public bool IsVoiceTranscript { get; set; }
 
         public string TurnId { get; set; }
 
