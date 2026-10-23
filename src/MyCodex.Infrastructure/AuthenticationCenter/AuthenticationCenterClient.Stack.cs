@@ -43,14 +43,6 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             return state;
         }
 
-        public async Task<AuthenticationStackState> SetStackDefaultAsync(string providerId, CancellationToken cancellationToken)
-        {
-            var parameters = new Dictionary<string, object> { { "providerId", providerId } };
-            var state = ReadStackState(await _request("stack/default/set", parameters, cancellationToken).ConfigureAwait(false));
-            if (state.DefaultProviderId != providerId) throw new AuthenticationCenterException("operation_unknown");
-            return state;
-        }
-
         public async Task<AuthenticationStackState> AdoptStackCatalogAsync(CancellationToken cancellationToken)
         {
             return ReadStackState(await _request("stack/catalog/adopt", Empty(), cancellationToken).ConfigureAwait(false));

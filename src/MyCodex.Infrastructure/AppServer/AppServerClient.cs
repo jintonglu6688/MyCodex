@@ -688,11 +688,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
         }
 
-        public async Task LogoutAsync()
-        {
-            await _operations.LogoutAsync().ConfigureAwait(false);
-        }
-
         public async Task<AppServerRateLimitsSnapshot> GetRateLimitsAsync()
         {
             EnsureConnected();
@@ -1058,11 +1053,6 @@ namespace MyCodex.Infrastructure.AppServer
                 .ConfigureAwait(false);
         }
 
-        public async Task WriteConfigValueAsync(string keyPath, object value)
-        {
-            await _operations.WriteConfigValueAsync(keyPath, value).ConfigureAwait(false);
-        }
-
         public async Task WriteConfigBatchAsync(IReadOnlyCollection<AppServerConfigWriteEdit> edits, string filePath = null, string expectedVersion = null, bool reloadUserConfig = false)
         {
             await _operations.WriteConfigBatchAsync(edits, filePath, expectedVersion, reloadUserConfig).ConfigureAwait(false);
@@ -1235,16 +1225,6 @@ namespace MyCodex.Infrastructure.AppServer
         public async Task UninstallPluginAsync(string pluginId)
         {
             await _operations.UninstallPluginAsync(pluginId).ConfigureAwait(false);
-        }
-
-        public async Task<AppServerModelProviderCapabilities> ReadModelProviderCapabilitiesAsync()
-        {
-            return await _operations.ReadModelProviderCapabilitiesAsync().ConfigureAwait(false);
-        }
-
-        public async Task<List<AppServerExperimentalFeature>> ListExperimentalFeaturesAsync(uint? limit = null)
-        {
-            return await _operations.ListExperimentalFeaturesAsync(limit).ConfigureAwait(false);
         }
 
         public async Task<AppServerConfigRequirementsSnapshot> ReadConfigRequirementsAsync()
@@ -1536,14 +1516,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return TrySteerTurnCoreAsync(threadId, activeTurnId, inputItems, clientUserMessageId);
-        }
-
-        public async Task<AppServerThreadInjectItemsResult> InjectThreadItemsAsync(
-            string threadId,
-            IReadOnlyCollection<IDictionary<string, object>> items,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return await _threadOperations.InjectThreadItemsAsync(threadId, items, cancellationToken).ConfigureAwait(false);
         }
 
         public Task ApproveGuardianDeniedActionAsync(

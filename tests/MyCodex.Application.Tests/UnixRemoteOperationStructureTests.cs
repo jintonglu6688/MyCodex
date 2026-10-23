@@ -67,15 +67,17 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void FileSystemBridges_UseSharedParsers()
+        public void FileSystemBridges_UseSharedUnixCore()
         {
             var wsl = RepositorySource.ReadSourceFile("WslFileSystemBridge.cs");
             var remote = RepositorySource.ReadSourceFile("RemoteMacFileSystemBridge.cs");
+            var core = RepositorySource.ReadSourceFile("UnixFileSystemBridgeCore.cs");
 
-            Assert.That(wsl, Does.Contain("UnixFileSystemBridgeParsers.ParseDirectoryListing"));
-            Assert.That(remote, Does.Contain("UnixFileSystemBridgeParsers.ParseDirectoryListing"));
-            Assert.That(wsl, Does.Not.Contain("private static IReadOnlyList<RuntimeFileSystemEntrySnapshot> ParseDirectoryListing"));
-            Assert.That(remote, Does.Not.Contain("private static IReadOnlyList<RuntimeFileSystemEntrySnapshot> ParseDirectoryListing"));
+            Assert.That(wsl, Does.Contain("new UnixFileSystemBridgeCore("));
+            Assert.That(remote, Does.Contain("new UnixFileSystemBridgeCore("));
+            Assert.That(core, Does.Contain("UnixFileSystemBridgeParsers.ParseDirectoryListing"));
+            Assert.That(wsl, Does.Not.Contain("UnixFileSystemBridgeParsers"));
+            Assert.That(remote, Does.Not.Contain("UnixFileSystemBridgeParsers"));
         }
     }
 }

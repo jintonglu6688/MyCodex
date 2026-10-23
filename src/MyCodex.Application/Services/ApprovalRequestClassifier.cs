@@ -233,6 +233,16 @@ namespace MyCodex.Application.Services
                     null);
             }
 
+            if (HasGitSideEffectOption(tokens))
+            {
+                return BuildCommandClassification(
+                    ApprovalRequestCategory.CommandGeneric,
+                    ApprovalRequestConfidence.HeuristicCommand,
+                    "run Git operation",
+                    command,
+                    null);
+            }
+
             if (IsAny(subcommand, "status", "diff", "log", "show", "rev-parse", "ls-files", "grep", "remote"))
             {
                 return BuildCommandClassification(
@@ -243,7 +253,7 @@ namespace MyCodex.Application.Services
                     null);
             }
 
-            if (string.Equals(subcommand, "branch", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(subcommand, "branch", StringComparison.OrdinalIgnoreCase) && IsGitBranchListing(tokens))
             {
                 return BuildCommandClassification(
                     ApprovalRequestCategory.GitInspect,
@@ -310,6 +320,45 @@ namespace MyCodex.Application.Services
                 "run Git operation",
                 command,
                 null);
+        }
+
+        // Options that make an otherwise read-only Git command start a program or write a file.
+        private static bool HasGitSideEffectOption(IReadOnlyList<string> tokens)
+        {
+            for (var i = 2; i < tokens.Count; i++)
+            {
+                var token = (tokens[i] ?? string.Empty).Trim();
+                if (string.Equals(token, "--", StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
+                if (token.StartsWith("-O", StringComparison.Ordinal) ||
+                    token.StartsWith("--open-files-in-pager", StringComparison.OrdinalIgnoreCase) ||
+                    token.StartsWith("--output", StringComparison.OrdinalIgnoreCase) ||
+                    token.StartsWith("--ext-diff", StringComparison.OrdinalIgnoreCase) ||
+                    token.StartsWith("--textconv", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // "git branch" only reads when every argument is a listing flag; otherwise it creates, moves or renames branches.
+        private static bool IsGitBranchListing(IReadOnlyList<string> tokens)
+        {
+            for (var i = 2; i < tokens.Count; i++)
+            {
+                if (!IsAny(NormalizeToken(tokens[i]),
+                        "-a", "-r", "-v", "-vv", "-l", "--list", "--all", "--remotes", "--verbose", "--show-current"))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool IsGitRemoteConfigurationChange(string subcommand, IReadOnlyList<string> tokens)
@@ -648,8 +697,11 @@ namespace MyCodex.Application.Services
 
         private static bool IsCompoundCommand(NormalizedCommand command)
         {
+            // The script is rebuilt from argv-style tokens, but cmd.exe parses the raw line itself, so
+            // "x\" & calc & "y" hides the & after re-quoting. Check the raw line under the same shell rules too.
             return command != null &&
-                   IsCompoundCommandText(command.ShellScript ?? command.RawCommand, command.ShellKind);
+                   (IsCompoundCommandText(command.ShellScript ?? command.RawCommand, command.ShellKind) ||
+                    (command.ShellScript != null && IsCompoundCommandText(command.RawCommand, command.ShellKind)));
         }
 
         private static bool IsCompoundCommandText(string text, string shellKind)
@@ -662,6 +714,9 @@ namespace MyCodex.Application.Services
             // cmd.exe does not treat single quotes as quoting; unknown shells are handled the same conservative way.
             var singleQuotesAreQuoting = !string.IsNullOrEmpty(shellKind) &&
                                          !string.Equals(shellKind, "cmd", StringComparison.OrdinalIgnoreCase);
+            // Only POSIX shells escape a double quote with a backslash; PowerShell and cmd.exe end the
+            // string there, so "x\"; calc" runs calc. Unknown shells take the same conservative path.
+            var backslashEscapesQuote = IsPosixShellKind(shellKind);
             var quote = '\0';
             for (var i = SkipLeadingCallOperator(text); i < text.Length; i++)
             {
@@ -678,7 +733,7 @@ namespace MyCodex.Application.Services
 
                 if (quote == '"')
                 {
-                    if (ch == '\\' && i + 1 < text.Length && text[i + 1] == '"')
+                    if (backslashEscapesQuote && ch == '\\' && i + 1 < text.Length && text[i + 1] == '"')
                     {
                         i++;
                         continue;
@@ -810,6 +865,13 @@ namespace MyCodex.Application.Services
             }
 
             return executable;
+        }
+
+        private static bool IsPosixShellKind(string shellKind)
+        {
+            return string.Equals(shellKind, "bash", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(shellKind, "sh", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(shellKind, "zsh", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsExecutable(string token, string expectedName)

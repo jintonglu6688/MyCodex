@@ -11,11 +11,7 @@ namespace MyCodex.Application.Interfaces
 
         Task<AppServerConfigSnapshot> ReadConfigAsync(string workspacePath, bool includeLayers, CancellationToken cancellationToken);
 
-        Task WriteConfigValueAsync(string keyPath, object value);
-
         Task WriteConfigBatchAsync(IReadOnlyCollection<AppServerConfigWriteEdit> edits, string filePath = null, string expectedVersion = null, bool reloadUserConfig = false);
-
-        Task<AppServerModelProviderCapabilities> ReadModelProviderCapabilitiesAsync();
 
         Task<AppServerConfigRequirementsSnapshot> ReadConfigRequirementsAsync();
 

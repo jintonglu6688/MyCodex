@@ -2537,11 +2537,6 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(AppServerTurnSteerResult.NotAttempted(null, "test-double"));
             }
 
-            public override Task<AppServerThreadInjectItemsResult> InjectThreadItemsAsync(string threadId, IReadOnlyCollection<IDictionary<string, object>> items, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return Task.FromResult(new AppServerThreadInjectItemsResult { Succeeded = true });
-            }
-
             public override Task ApproveGuardianDeniedActionAsync(AppServerGuardianDeniedActionApprovalRequest request, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.CompletedTask;
@@ -4658,82 +4653,6 @@ namespace MyCodex.Application.Tests
             Assert.That(SessionStorageOperationPlanner.ShouldIgnoreThreadReadInvalidOperation(ignored), Is.True);
             Assert.That(SessionStorageOperationPlanner.ShouldIgnoreThreadReadInvalidOperation(ignoredByMaterialized), Is.True);
             Assert.That(SessionStorageOperationPlanner.ShouldIgnoreThreadReadInvalidOperation(notIgnored), Is.False);
-        }
-
-        [Test]
-        public void SessionPathResolutionExecutor_ResolveAsyncUsesSummaryAndDetailsFallback()
-        {
-            var summarySession = new ChatSession
-            {
-                ThreadId = "thread-a"
-            };
-            var summaryReadCalls = 0;
-
-            var summaryPath = SessionPathResolutionExecutor.ResolveAsync(
-                summarySession,
-                () => Task.FromResult(new List<AppServerThreadSummary>
-                {
-                    new AppServerThreadSummary { ThreadId = "thread-a", SessionPath = "summary-path.json" }
-                }),
-                threadId =>
-                {
-                    summaryReadCalls++;
-                    return Task.FromResult(new AppServerThreadDetails());
-                }).GetAwaiter().GetResult();
-
-            Assert.That(summaryPath, Is.EqualTo("summary-path.json"));
-            Assert.That(summarySession.SessionPath, Is.EqualTo("summary-path.json"));
-            Assert.That(summaryReadCalls, Is.EqualTo(0));
-
-            var detailSession = new ChatSession
-            {
-                ThreadId = "thread-b"
-            };
-            var detailReadCalls = 0;
-            var detailPath = SessionPathResolutionExecutor.ResolveAsync(
-                detailSession,
-                () => Task.FromResult(new List<AppServerThreadSummary>()),
-                threadId =>
-                {
-                    detailReadCalls++;
-                    return Task.FromResult(new AppServerThreadDetails { SessionPath = "details-path.json" });
-                }).GetAwaiter().GetResult();
-
-            Assert.That(detailPath, Is.EqualTo("details-path.json"));
-            Assert.That(detailSession.SessionPath, Is.EqualTo("details-path.json"));
-            Assert.That(detailReadCalls, Is.EqualTo(1));
-        }
-
-        [Test]
-        public void SessionPathResolutionExecutor_ResolveAsyncHandlesInvalidOperationByKeyword()
-        {
-            var ignoredSession = new ChatSession
-            {
-                ThreadId = "thread-a"
-            };
-
-            var ignoredPath = SessionPathResolutionExecutor.ResolveAsync(
-                ignoredSession,
-                () => Task.FromResult(new List<AppServerThreadSummary>()),
-                threadId => throw new InvalidOperationException("failed to locate rollout for thread"))
-                .GetAwaiter()
-                .GetResult();
-
-            Assert.That(ignoredPath, Is.Null);
-            Assert.That(ignoredSession.SessionPath, Is.Null);
-
-            var rejectedSession = new ChatSession
-            {
-                ThreadId = "thread-b"
-            };
-
-            Assert.Throws<InvalidOperationException>(() =>
-                SessionPathResolutionExecutor.ResolveAsync(
-                    rejectedSession,
-                    () => Task.FromResult(new List<AppServerThreadSummary>()),
-                    threadId => throw new InvalidOperationException("permission denied"))
-                    .GetAwaiter()
-                    .GetResult());
         }
 
         [Test]

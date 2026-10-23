@@ -13,7 +13,6 @@ namespace MyCodex.Infrastructure.Persistence
 {
     internal interface IRuntimeScopedConfigFileStore
     {
-        bool IsRuntimeEndpointStorageAvailableSynchronously(AppConfigSnapshot config);
 
         bool TryGetRuntimeAppStateFilePathForAsyncAccess(AppConfigSnapshot config, out string path);
 
@@ -27,17 +26,12 @@ namespace MyCodex.Infrastructure.Persistence
         void WriteTextFile(AppConfigSnapshot config, string path, string content);
 
         Task WriteTextFileAsync(AppConfigSnapshot config, string path, string content);
-
-        void DeleteFile(AppConfigSnapshot config, string path);
-
-        Task DeleteFileAsync(AppConfigSnapshot config, string path);
     }
 
     internal sealed class RuntimeScopedConfigFileStore : IRuntimeScopedConfigFileStore
     {
         private const int TextFileTimeoutMilliseconds = 20000;
         private const int WriteFileTimeoutMilliseconds = 30000;
-        private const int DeleteFileTimeoutMilliseconds = 20000;
         private const int RemoteReadAttempts = 4;
         private const int RemoteReadRetryDelayMilliseconds = 500;
         private const string MyCodexConfigDirectory = "~/.codex/mycodex";
@@ -78,11 +72,6 @@ namespace MyCodex.Infrastructure.Persistence
             "fi\n" +
             "chmod 600 \"$tmp_file\" 2>/dev/null || true\n" +
             "mv -f \"$tmp_file\" \"$target_file\"";
-
-        private const string DeleteFileScript =
-            "set -eu\n" +
-            "target_file=$(resolve_path \"$1\")\n" +
-            "rm -f \"$target_file\"";
 
         private static readonly string ScriptPrelude =
             "resolve_path() {\n" +
@@ -154,11 +143,6 @@ namespace MyCodex.Infrastructure.Persistence
                 : appStateFilePath;
         }
 
-        public bool IsRuntimeEndpointStorageAvailableSynchronously(AppConfigSnapshot config)
-        {
-            return false;
-        }
-
         public bool TryGetRuntimeModeSettingsFilePathForAsyncAccess(AppConfigSnapshot config, out string path)
         {
             path = null;
@@ -221,24 +205,6 @@ namespace MyCodex.Infrastructure.Persistence
             var byteCount = Encoding.UTF8.GetByteCount(content).ToString(CultureInfo.InvariantCulture);
             var result = await ExecuteAsync(config, WriteTextFileScript, "mycodex-write-runtime-config",
                 WriteFileTimeoutMilliseconds, content, new[] { path, byteCount }).ConfigureAwait(false);
-            if (result.ExitCode != 0)
-            {
-                throw BuildRuntimeCommandException(result);
-            }
-        }
-
-        public void DeleteFile(AppConfigSnapshot config, string path)
-        {
-            var result = Execute(config, DeleteFileScript, "mycodex-delete-runtime-config", DeleteFileTimeoutMilliseconds, path);
-            if (result.ExitCode != 0)
-            {
-                throw BuildRuntimeCommandException(result);
-            }
-        }
-
-        public async Task DeleteFileAsync(AppConfigSnapshot config, string path)
-        {
-            var result = await ExecuteAsync(config, DeleteFileScript, "mycodex-delete-runtime-config", DeleteFileTimeoutMilliseconds, path).ConfigureAwait(false);
             if (result.ExitCode != 0)
             {
                 throw BuildRuntimeCommandException(result);

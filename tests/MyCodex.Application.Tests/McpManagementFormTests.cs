@@ -621,8 +621,6 @@ namespace MyCodex.Application.Tests
                 return ReadConfigAsync(workspacePath, includeLayers);
             }
 
-            public Task WriteConfigValueAsync(string keyPath, object value) { throw new NotSupportedException(); }
-
             public Task WriteConfigBatchAsync(IReadOnlyCollection<AppServerConfigWriteEdit> edits, string filePath = null, string expectedVersion = null, bool reloadUserConfig = false)
             {
                 WriteConfigBatchCallCount++;
@@ -631,8 +629,6 @@ namespace MyCodex.Application.Tests
                 LastReloadUserConfig = reloadUserConfig;
                 return Task.CompletedTask;
             }
-
-            public Task<AppServerModelProviderCapabilities> ReadModelProviderCapabilitiesAsync() { throw new NotSupportedException(); }
 
             public Task<AppServerConfigRequirementsSnapshot> ReadConfigRequirementsAsync() { throw new NotSupportedException(); }
 

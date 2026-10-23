@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using MyCodex.Application.Services;
+using MyCodex.Infrastructure.Persistence;
 
 namespace MyCodex.Infrastructure.Instances
 {
@@ -356,15 +357,7 @@ namespace MyCodex.Infrastructure.Instances
 
         private static void WriteRecord(string path, TargetInstanceRecord record)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
-            try
-            {
-                File.WriteAllText(temporary, Serializer().Serialize(record), new UTF8Encoding(false));
-                if (File.Exists(path)) File.Replace(temporary, path, null);
-                else File.Move(temporary, path);
-            }
-            finally { if (File.Exists(temporary)) File.Delete(temporary); }
+            AtomicFileWriter.WriteText(path, Serializer().Serialize(record));
         }
 
         private static void EnsurePreviousOwnerExited(string path)

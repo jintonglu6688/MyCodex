@@ -283,15 +283,12 @@ namespace MyCodex.Application.Tests
         {
             internal readonly TaskCompletionSource<Tuple<bool, string>> Pending = new TaskCompletionSource<Tuple<bool, string>>();
             internal bool ReadStarted;
-            public bool IsRuntimeEndpointStorageAvailableSynchronously(AppConfigSnapshot config) => false;
             public bool TryGetRuntimeAppStateFilePathForAsyncAccess(AppConfigSnapshot config, out string path) { path = null; return false; }
             public bool TryGetRuntimeModeSettingsFilePathForAsyncAccess(AppConfigSnapshot config, out string path) { path = "mode.json"; return true; }
             public Task<Tuple<bool, string>> ReadTextFileAsync(AppConfigSnapshot config, string path) { ReadStarted = true; return Pending.Task; }
             public bool ReadTextFile(AppConfigSnapshot config, string path, out string content) => throw new NotSupportedException();
             public void WriteTextFile(AppConfigSnapshot config, string path, string content) => throw new NotSupportedException();
             public Task WriteTextFileAsync(AppConfigSnapshot config, string path, string content) => throw new NotSupportedException();
-            public void DeleteFile(AppConfigSnapshot config, string path) => throw new NotSupportedException();
-            public Task DeleteFileAsync(AppConfigSnapshot config, string path) => throw new NotSupportedException();
         }
     }
 }

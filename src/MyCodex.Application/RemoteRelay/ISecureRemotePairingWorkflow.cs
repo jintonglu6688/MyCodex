@@ -19,10 +19,5 @@ namespace MyCodex.Application.RemoteRelay
             RelayHostConfig config,
             VerifiedPairingClaim verifiedClaim,
             CancellationToken cancellationToken);
-
-        Task RetryPendingApprovalAsync(
-            RelayHostConfig config,
-            string claimId,
-            CancellationToken cancellationToken);
     }
 }

@@ -98,11 +98,6 @@ namespace MyCodex.Application.Tests
                 typeof(string),
                 typeof(string));
             AssertHasMethod<IAppServerThreadClient>(
-                nameof(IAppServerThreadClient.InjectThreadItemsAsync),
-                typeof(string),
-                typeof(IReadOnlyCollection<IDictionary<string, object>>),
-                typeof(CancellationToken));
-            AssertHasMethod<IAppServerThreadClient>(
                 nameof(IAppServerThreadClient.ApproveGuardianDeniedActionAsync),
                 typeof(AppServerGuardianDeniedActionApprovalRequest),
                 typeof(CancellationToken));

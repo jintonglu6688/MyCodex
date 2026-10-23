@@ -16,8 +16,6 @@ namespace MyCodex.Application.Interfaces
 
         Task<AppServerLoginCancelResult> CancelLoginAsync(string loginId);
 
-        Task LogoutAsync();
-
         Task<AppServerRateLimitsSnapshot> GetRateLimitsAsync();
 
         Task<AppServerAccountTokenUsageSnapshot> GetAccountTokenUsageAsync(

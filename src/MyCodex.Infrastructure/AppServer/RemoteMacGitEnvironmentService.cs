@@ -132,19 +132,17 @@ namespace MyCodex.Infrastructure.AppServer
             var sshKeys = GetBestOutput(GetProbe(probes, "ssh-keys"));
             var githubSsh = GetBestOutput(GetProbe(probes, "github-ssh"));
 
-            return new GitEnvironmentSnapshot
-            {
-                Runtime = SharedLocalization.Text("GitEnvironmentService.Runtime.RemoteUnixSsh", "Remote Unix SSH"),
-                GitVersion = NormalizeMultilineValue(gitVersion),
-                GitPath = NormalizeMultilineValue(gitPath),
-                GlobalUserName = NormalizeMultilineValue(userName),
-                GlobalUserEmail = NormalizeMultilineValue(userEmail),
-                CredentialHelper = NormalizeMultilineValue(credentialHelper),
-                GitCredentialManager = NormalizeMultilineValue(gcm),
-                SshKeys = NormalizeMultilineValue(sshKeys),
-                GitHubSsh = NormalizeMultilineValue(githubSsh),
-                DetailedOutput = details.ToString()
-            };
+            return UnixGitEnvironmentText.BuildSnapshot(
+                SharedLocalization.Text("GitEnvironmentService.Runtime.RemoteUnixSsh", "Remote Unix SSH"),
+                gitVersion,
+                gitPath,
+                userName,
+                userEmail,
+                credentialHelper,
+                gcm,
+                sshKeys,
+                githubSsh,
+                details);
         }
 
         private static Dictionary<string, RemoteSshCommandExecutionResult> ParseProbeOutput(string output)
@@ -179,7 +177,7 @@ namespace MyCodex.Infrastructure.AppServer
                 result[parts[0]] = new RemoteSshCommandExecutionResult
                 {
                     ExitCode = exitCode,
-                    StandardOutput = DecodeBase64(parts[2]),
+                    StandardOutput = UnixFileSystemBridgeParsers.DecodeBase64Field(parts[2]),
                     StandardError = string.Empty
                 };
             }
@@ -199,31 +197,12 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static void AppendDetails(StringBuilder details, string title, RemoteSshCommandExecutionResult result)
         {
-            details.AppendLine(">> " + title);
-            details.AppendLine("ExitCode: " + result.ExitCode);
-            if (!string.IsNullOrWhiteSpace(result.StandardOutput))
-            {
-                details.AppendLine(result.StandardOutput.TrimEnd());
-            }
-
-            if (!string.IsNullOrWhiteSpace(result.StandardError))
-            {
-                details.AppendLine(result.StandardError.TrimEnd());
-            }
-
-            details.AppendLine();
+            UnixGitEnvironmentText.AppendDetails(details, title, result.ExitCode, result.StandardOutput, result.StandardError);
         }
 
         private static string GetBestOutput(RemoteSshCommandExecutionResult result)
         {
-            if (result == null)
-            {
-                return string.Empty;
-            }
-
-            return string.IsNullOrWhiteSpace(result.StandardOutput)
-                ? result.StandardError ?? string.Empty
-                : result.StandardOutput ?? string.Empty;
+            return result == null ? string.Empty : UnixGitEnvironmentText.GetBestOutput(result.StandardOutput, result.StandardError);
         }
 
         private static string FirstNonEmpty(params string[] values)
@@ -242,30 +221,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return string.Empty;
-        }
-
-        private static string DecodeBase64(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                return string.Empty;
-            }
-
-            try
-            {
-                return Encoding.UTF8.GetString(Convert.FromBase64String(value));
-            }
-            catch (FormatException)
-            {
-                return string.Empty;
-            }
-        }
-
-        private static string NormalizeMultilineValue(string value)
-        {
-            return string.IsNullOrWhiteSpace(value)
-                ? string.Empty
-                : value.Trim();
         }
     }
 }

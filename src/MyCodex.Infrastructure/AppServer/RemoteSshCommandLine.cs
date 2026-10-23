@@ -101,49 +101,6 @@ namespace MyCodex.Infrastructure.AppServer
             return QuoteWindowsArguments(parts);
         }
 
-        public static string BuildReverseForwardArguments(RemoteMacSshConfigSnapshot config, int remotePort, int localPort)
-        {
-            config = config ?? new RemoteMacSshConfigSnapshot();
-            var normalizedRemotePort = NormalizeLoopbackPort(remotePort);
-            var normalizedLocalPort = NormalizeLoopbackPort(localPort);
-            var parts = new List<string>
-            {
-                "-N",
-                "-T",
-                "-o",
-                "StrictHostKeyChecking=accept-new",
-                "-o",
-                "ExitOnForwardFailure=yes",
-                "-o",
-                "ServerAliveInterval=30",
-                "-p",
-                NormalizePort(config.Port).ToString(),
-                "-R",
-                "127.0.0.1:" + normalizedRemotePort + ":127.0.0.1:" + normalizedLocalPort
-            };
-
-            if (config.AuthenticationMode == RemoteSshAuthenticationMode.PrivateKey)
-            {
-                parts.Add("-o");
-                parts.Add("BatchMode=yes");
-                if (!string.IsNullOrWhiteSpace(config.PrivateKeyPath))
-                {
-                    parts.Add("-i");
-                    parts.Add(config.PrivateKeyPath.Trim());
-                }
-            }
-            else
-            {
-                parts.Add("-o");
-                parts.Add("BatchMode=no");
-                parts.Add("-o");
-                parts.Add("PreferredAuthentications=password,keyboard-interactive");
-            }
-
-            parts.Add(BuildUserHost(config));
-            return QuoteWindowsArguments(parts);
-        }
-
         public static string BuildPlinkArguments(RemoteMacSshConfigSnapshot config, string remoteCommand, string passwordFilePath)
         {
             config = config ?? new RemoteMacSshConfigSnapshot();
@@ -231,44 +188,6 @@ namespace MyCodex.Infrastructure.AppServer
                 NormalizePort(config.Port).ToString(),
                 "-L",
                 "localhost:" + normalizedLocalPort + ":localhost:" + normalizedRemotePort
-            };
-
-            if (!string.IsNullOrWhiteSpace(config.UserName))
-            {
-                parts.Add("-l");
-                parts.Add(config.UserName.Trim());
-            }
-
-            if (!string.IsNullOrWhiteSpace(passwordFilePath))
-            {
-                parts.Add("-pwfile");
-                parts.Add(passwordFilePath.Trim());
-            }
-
-            AddPlinkHostKey(parts, config);
-            parts.Add(config.HostName ?? string.Empty);
-            return QuoteWindowsArguments(parts);
-        }
-
-        public static string BuildPlinkReverseForwardArguments(
-            RemoteMacSshConfigSnapshot config,
-            int remotePort,
-            int localPort,
-            string passwordFilePath)
-        {
-            config = config ?? new RemoteMacSshConfigSnapshot();
-            var normalizedRemotePort = NormalizeLoopbackPort(remotePort);
-            var normalizedLocalPort = NormalizeLoopbackPort(localPort);
-            var parts = new List<string>
-            {
-                "-ssh",
-                "-batch",
-                "-N",
-                "-T",
-                "-P",
-                NormalizePort(config.Port).ToString(),
-                "-R",
-                "127.0.0.1:" + normalizedRemotePort + ":127.0.0.1:" + normalizedLocalPort
             };
 
             if (!string.IsNullOrWhiteSpace(config.UserName))

@@ -198,8 +198,6 @@ namespace MyCodex.Application.Tests
                 Snapshot.Origins["model_verbosity"] = new AppServerConfigOrigin { SourceType = "user" };
                 return Task.CompletedTask;
             }
-            public Task WriteConfigValueAsync(string keyPath, object value) => throw new NotSupportedException();
-            public Task<AppServerModelProviderCapabilities> ReadModelProviderCapabilitiesAsync() => throw new NotSupportedException();
             public Task<AppServerConfigRequirementsSnapshot> ReadConfigRequirementsAsync() => throw new NotSupportedException();
             public Task<List<AppServerModelOption>> ListModelsAsync() => throw new NotSupportedException();
             public Task<List<AppServerModelOption>> ListModelsAsync(CancellationToken cancellationToken) => throw new NotSupportedException();

@@ -330,11 +330,6 @@ namespace MyCodex.Application.Tests
                 throw new NotSupportedException();
             }
 
-            public Task LogoutAsync()
-            {
-                throw new NotSupportedException();
-            }
-
             public Task<AppServerRateLimitResetConsumeResult> ConsumeRateLimitResetCreditAsync(
                 string idempotencyKey,
                 CancellationToken cancellationToken = default(CancellationToken))

@@ -25,23 +25,7 @@ namespace MyCodex.Infrastructure.RemoteRelay
                 return legacyBundled;
             }
 
-            var current = new DirectoryInfo(baseDirectory);
-            for (var depth = 0; current != null && depth <= 6; depth++)
-            {
-                var sibling = Path.Combine(
-                    current.FullName,
-                    "MyCodex-relay",
-                    "dist",
-                    "windows-x64",
-                    "mycodex-relay.exe");
-                if (File.Exists(sibling))
-                {
-                    return sibling;
-                }
-
-                current = current.Parent;
-            }
-
+            // Never search parent folders: a writable ancestor such as a drive root would let another user plant the Relay.
             throw new FileNotFoundException("Unable to locate mycodex-relay.exe.");
         }
     }

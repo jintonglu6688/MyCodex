@@ -169,8 +169,10 @@ namespace MyCodex.Application.Tests.SourceGuards
             "InsertSelectedPaths",
 
             // Update installer launch
-            "DeferredUpdateInstallerLauncher.ScheduleAsync",
+            "DeferredUpdateInstallerLauncher",
             "StartUpdateInstallerAndExit",
+            "MYCODEXDEFERRED",
+            "Invoke-DeferredMyCodexUpdate",
 
             // Plugin and skill marketplace services
             "PluginMarketMirrorService",
@@ -211,7 +213,40 @@ namespace MyCodex.Application.Tests.SourceGuards
             "_tryRepairLocalPluginMarketManifests",
 
             // MCP management
-            "ReloadServerConfigAsync"
+            "ReloadServerConfigAsync",
+
+            // App Server client members without callers
+            "InjectThreadItemsAsync",
+            "AppServerContextInjection",
+            "LogoutAsync",
+            "WriteConfigValueAsync",
+            "ReadModelProviderCapabilitiesAsync",
+            "IAppServerExperimentalFeatureClient",
+            "ListExperimentalFeaturesAsync",
+
+            // Plugin market package download
+            "MarketPackageDownloader",
+            "MarketPackageDownloadSpec",
+
+            // Unused service and bridge members
+            "SetStackDefaultAsync",
+            "MarkRunRead",
+            "RetryPendingApprovalAsync",
+            "FindPending",
+            "WriteSkillFilesAsync",
+            "RemoteSkillAgentFileAction",
+            "ReadUncommittedChanges",
+            "GitDiffCommandRunner",
+            "IsRuntimeEndpointStorageAvailableSynchronously",
+            "mycodex-delete-runtime-config",
+            "SessionPathResolutionExecutor",
+            "ReverseForwardArguments",
+            "HandleExternalActivation",
+            "VerifyCustomExecutableAsync",
+            "VerifyRemoteMacCodexAsync",
+            "GetBundledRequiredVersion",
+            "AutoCompactRemainingPercentMigrationRuntimeProfileIds",
+            "ShowProcessingChatMessages"
         };
 
         private static readonly string[] RetiredSourceFileNames =
@@ -236,7 +271,32 @@ namespace MyCodex.Application.Tests.SourceGuards
 
             // Unix remote Git services
             "RemoteMacGitRepositoryService.cs",
-            "WslGitRepositoryService.cs"
+            "WslGitRepositoryService.cs",
+
+            // Update installer launch
+            "DeferredUpdateInstallerLauncher.cs",
+
+            // Plugin market package download
+            "MarketPackageDownloader.cs",
+            "PluginMarketPackageDownloader.cs",
+            "MarketPackageDownloadSpec.cs",
+
+            // App Server client members without callers
+            "AppServerContextInjectionService.cs",
+            "AppServerContextInjectionRequest.cs",
+            "AppServerContextInjectionResult.cs",
+            "AppServerThreadInjectItemsResult.cs",
+            "IAppServerExperimentalFeatureClient.cs",
+            "AppServerExperimentalFeature.cs",
+            "AppServerExperimentalFeatureMapper.cs",
+            "AppServerModelProviderCapabilities.cs",
+            "AppServerModelProviderCapabilitiesMapper.cs",
+
+            // Unused service and bridge members
+            "IGitDiffCommandRunner.cs",
+            "GitDiffCommandRunner.cs",
+            "RemoteSkillAgentFileAction.cs",
+            "SessionPathResolutionExecutor.cs"
         };
 
         private static readonly string[][] RetiredRepositoryFiles =
@@ -244,7 +304,11 @@ namespace MyCodex.Application.Tests.SourceGuards
             // Startup composition and retired stores
             new[] { "tools", "runtime", "node-runtime.sha256" },
             new[] { "tools", "runtime", "node-runtime.version" },
-            new[] { "tools", "runtime", "prepare-node-runtime.ps1" }
+            new[] { "tools", "runtime", "prepare-node-runtime.ps1" },
+
+            // Update installer launch
+            new[] { "tools", "update", "Invoke-DeferredMyCodexUpdate.ps1" },
+            new[] { "tests", "tools", "DeferredUpdateInstaller.Tests.ps1" }
         };
 
         [Test]

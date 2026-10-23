@@ -20,15 +20,6 @@ namespace MyCodex.Infrastructure.AppServer
 
         Task<string> ReadTextFileAsync(RemoteMacSshConfigSnapshot config, string path);
 
-        Task WriteSkillFilesAsync(
-            RemoteMacSshConfigSnapshot config,
-            string skillDirectoryPath,
-            string skillMarkdownText,
-            string openAiAgentText,
-            RemoteSkillAgentFileAction agentFileAction);
-
         Task<WorkspaceGitInfoSnapshot> ReadGitInfoAsync(RemoteMacSshConfigSnapshot config, string workspacePath);
-
-        Task<GitDiffSnapshot> ReadUncommittedChangesAsync(RemoteMacSshConfigSnapshot config, string workspacePath, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

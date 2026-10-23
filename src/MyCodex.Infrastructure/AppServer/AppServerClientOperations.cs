@@ -141,12 +141,6 @@ namespace MyCodex.Infrastructure.AppServer
             };
         }
 
-        public async Task LogoutAsync()
-        {
-            _ensureConnected();
-            await SendRequestAsync("account/logout", new Dictionary<string, object>()).ConfigureAwait(false);
-        }
-
         public async Task<AppServerAccountTokenUsageSnapshot> GetAccountTokenUsageAsync(
             CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -234,23 +228,6 @@ namespace MyCodex.Infrastructure.AppServer
 
             var result = await SendRequestAsync("permissionProfile/list", parameters, cancellationToken).ConfigureAwait(false);
             return AppServerPermissionProfileMapper.BuildListResult(result);
-        }
-
-        public async Task WriteConfigValueAsync(string keyPath, object value)
-        {
-            _ensureConnected();
-
-            if (string.IsNullOrWhiteSpace(keyPath))
-            {
-                throw new ArgumentException(L("AppServerClient.Error.ConfigKeyPathRequired", "Config key path cannot be empty."), nameof(keyPath));
-            }
-
-            await SendRequestAsync("config/value/write", new Dictionary<string, object>
-            {
-                { "keyPath", keyPath },
-                { "mergeStrategy", "replace" },
-                { "value", value }
-            }).ConfigureAwait(false);
         }
 
         public async Task WriteConfigBatchAsync(IReadOnlyCollection<AppServerConfigWriteEdit> edits, string filePath = null, string expectedVersion = null, bool reloadUserConfig = false)
@@ -857,42 +834,6 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 { "pluginId", pluginId.Trim() }
             }).ConfigureAwait(false);
-        }
-
-        public async Task<AppServerModelProviderCapabilities> ReadModelProviderCapabilitiesAsync()
-        {
-            _ensureConnected();
-            EnsureSupported(capabilities => capabilities.SupportsModelProviderCapabilities, "Model provider capabilities");
-
-            var result = await SendRequestAsync("modelProvider/capabilities/read", new Dictionary<string, object>()).ConfigureAwait(false);
-            return AppServerModelProviderCapabilitiesMapper.BuildCapabilities(result);
-        }
-
-        public async Task<List<AppServerExperimentalFeature>> ListExperimentalFeaturesAsync(uint? limit = null)
-        {
-            _ensureConnected();
-            EnsureSupported(capabilities => capabilities.SupportsExperimentalApi, "Experimental features");
-
-            var features = new List<AppServerExperimentalFeature>();
-            string cursor = null;
-            do
-            {
-                var parameters = new Dictionary<string, object>();
-                AddOptionalString(parameters, "cursor", cursor);
-                if (limit.HasValue)
-                {
-                    parameters["limit"] = limit.Value;
-                }
-
-                var result = await SendRequestAsync("experimentalFeature/list", parameters).ConfigureAwait(false);
-                features.AddRange(AppServerExperimentalFeatureMapper.BuildFeatures(result));
-                cursor = AppServerExperimentalFeatureMapper.GetNextCursor(result);
-            }
-            while (!string.IsNullOrWhiteSpace(cursor));
-
-            return features
-                .OrderBy(item => item.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase)
-                .ToList();
         }
 
         public async Task<AppServerConfigRequirementsSnapshot> ReadConfigRequirementsAsync()

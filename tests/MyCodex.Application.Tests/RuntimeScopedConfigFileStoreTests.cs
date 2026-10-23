@@ -67,7 +67,6 @@ namespace MyCodex.Application.Tests
             var store = new RuntimeScopedConfigFileStore(executors, executors, AppStatePath);
             var config = new AppConfigSnapshot { CodexRuntimeSource = source };
 
-            Assert.That(store.IsRuntimeEndpointStorageAvailableSynchronously(config), Is.False);
             Assert.That(store.TryGetRuntimeAppStateFilePathForAsyncAccess(config, out var appStatePath), Is.EqualTo(expected));
             Assert.That(appStatePath, Is.EqualTo(expected ? AppStatePath : null));
             Assert.That(store.TryGetRuntimeModeSettingsFilePathForAsyncAccess(config, out var modeSettingsPath), Is.EqualTo(expected));
@@ -86,9 +85,6 @@ namespace MyCodex.Application.Tests
                 Throws.TypeOf<InvalidOperationException>());
             Assert.That(
                 () => store.WriteTextFile(config, AppStatePath, "{}"),
-                Throws.TypeOf<InvalidOperationException>());
-            Assert.That(
-                () => store.DeleteFile(config, AppStatePath),
                 Throws.TypeOf<InvalidOperationException>());
             Assert.That(executors.WslCallCount, Is.Zero);
             Assert.That(executors.RemoteCallCount, Is.Zero);
@@ -147,22 +143,6 @@ namespace MyCodex.Application.Tests
             Assert.That(executors.Script, Does.Contain("chmod 600 \"$tmp_file\""));
             Assert.That(executors.Script, Does.Contain("mv -f \"$tmp_file\" \"$target_file\""));
             Assert.That(executors.Script, Does.Not.Contain(content));
-        }
-
-        [Test]
-        public void DeleteFile_WslPassesPathAndDeleteContract()
-        {
-            const string path = "~/.codex/mycodex/old state.json";
-            var executors = new CapturingCommandExecutors();
-            var config = new AppConfigSnapshot { CodexRuntimeSource = CodexRuntimeSources.Wsl };
-            var store = new RuntimeScopedConfigFileStore(executors, executors);
-
-            store.DeleteFile(config, path);
-
-            AssertCommand(executors, "mycodex-delete-runtime-config", 20000, path);
-            Assert.That(executors.Script, Does.Contain("target_file=$(resolve_path \"$1\")"));
-            Assert.That(executors.Script, Does.Contain("rm -f \"$target_file\""));
-            Assert.That(executors.Script, Does.Not.Contain(path));
         }
 
         [TestCase(CodexRuntimeSources.RemoteMacSsh, false)]
@@ -296,9 +276,6 @@ namespace MyCodex.Application.Tests
 
             Assert.That(
                 () => store.WriteTextFile(config, AppStatePath, "{}"),
-                Throws.TypeOf<InvalidOperationException>().With.Message.EqualTo("endpoint write failed"));
-            Assert.That(
-                () => store.DeleteFile(config, AppStatePath),
                 Throws.TypeOf<InvalidOperationException>().With.Message.EqualTo("endpoint write failed"));
         }
 

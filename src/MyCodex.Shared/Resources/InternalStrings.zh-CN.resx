@@ -87,12 +87,6 @@
   <data name="CodexRuntime.Error.NoAvailableRuntime" xml:space="preserve">
     <value>未检测到可用的 Codex 运行时。</value>
   </data>
-  <data name="CodexRuntime.Error.ExecutablePathRequired" xml:space="preserve">
-    <value>可执行文件路径不能为空。</value>
-  </data>
-  <data name="CodexRuntime.Error.ExecutableNotFound" xml:space="preserve">
-    <value>未找到 Codex 可执行文件。</value>
-  </data>
   <data name="CodexRuntime.Error.UnableToStartExecutable" xml:space="preserve">
     <value>无法启动 Codex 可执行文件。</value>
   </data>
@@ -1257,18 +1251,6 @@
   </data>
   <data name="GitRepositoryService.Error.ReadWorktreesFailed" xml:space="preserve">
     <value>读取 Git worktree 失败。</value>
-  </data>
-  <data name="GitDiffService.Error.WorkspacePathRequired" xml:space="preserve">
-    <value>工作区路径不能为空。</value>
-  </data>
-  <data name="GitDiffService.Error.WorkspaceNotFound" xml:space="preserve">
-    <value>工作区路径不存在。</value>
-  </data>
-  <data name="GitDiffService.Error.Timeout" xml:space="preserve">
-    <value>Git 差异命令执行超时。</value>
-  </data>
-  <data name="GitDiffService.Error.GitCommandFailed" xml:space="preserve">
-    <value>Git 差异命令执行失败。</value>
   </data>
   <data name="GitEnvironmentService.Runtime.Wsl" xml:space="preserve">
     <value>WSL</value>

@@ -46,31 +46,7 @@ namespace MyCodex.Infrastructure.Persistence
             _appConfigService.EnsureConfigDirectory();
 
             var filePath = _appConfigService.GetConfigFilePath();
-            var tempFilePath = filePath + ".tmp";
-            var backupFilePath = filePath + ".bak";
-
-            try
-            {
-                using (var stream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    _serializer.WriteObject(stream, snapshot);
-                    stream.Flush();
-                }
-
-                if (File.Exists(filePath))
-                {
-                    File.Replace(tempFilePath, filePath, backupFilePath, true);
-                }
-                else
-                {
-                    File.Move(tempFilePath, filePath);
-                }
-            }
-            catch
-            {
-                TryDeleteFile(tempFilePath);
-                throw;
-            }
+            AtomicFileWriter.Write(filePath, stream => _serializer.WriteObject(stream, snapshot), filePath + ".bak");
         }
 
         private AppConfigSnapshot LoadFile(string filePath)
@@ -347,22 +323,6 @@ namespace MyCodex.Infrastructure.Persistence
                 ShellCommand = config.ShellCommand,
                 CodexCommand = config.CodexCommand
             };
-        }
-
-        private static void TryDeleteFile(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
-            {
-                return;
-            }
-
-            try
-            {
-                File.Delete(path);
-            }
-            catch
-            {
-            }
         }
     }
 }

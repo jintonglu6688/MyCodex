@@ -183,6 +183,9 @@ namespace MyCodex.Application.Tests
         [TestCase("git statusx")]
         [TestCase("git status.txt")]
         [TestCase("pwsh.exe -Command \"git status; calc\"")]
+        [TestCase("git status \"x\\\"; calc; \"y\"")]
+        [TestCase("powershell.exe -NoProfile -Command 'git status \"x\\\"; calc; \"y\"'")]
+        [TestCase("cmd.exe /c git status \"x\\\" & calc & \"y\"")]
         public void Evaluate_CommandPrefixRejectsChainedOrLongerCommands(string command)
         {
             var evaluator = new CustomApprovalPolicyEvaluator();
@@ -253,6 +256,41 @@ namespace MyCodex.Application.Tests
 
             Assert.That(result.ShouldAutoApprove, Is.False);
             Assert.That(result.Permission, Is.EqualTo(CustomApprovalPermissionKind.CommandGeneric));
+        }
+
+        [TestCase("git grep -Ocalc foo")]
+        [TestCase("git grep --open-files-in-pager=calc foo")]
+        [TestCase("git diff --output=C:\\Users\\Public\\evil.txt")]
+        [TestCase("git log --output C:\\x.txt")]
+        [TestCase("git diff --ext-diff")]
+        [TestCase("git branch -f main HEAD~3")]
+        [TestCase("git branch -m old new")]
+        [TestCase("git status \"x\\\"; calc; \"y\"")]
+        public void Evaluate_GitInspectPermissionRejectsCommandsThatRunProgramsOrWrite(string command)
+        {
+            var result = new CustomApprovalPolicyEvaluator().Evaluate(
+                ApprovalMode.Custom,
+                Settings(CustomApprovalPermissionKind.GitInspect),
+                ApprovalRequestClassifier.ClassifyCommand(command),
+                AppServerApprovalRequestKind.Command,
+                command);
+
+            Assert.That(result.ShouldAutoApprove, Is.False);
+        }
+
+        [TestCase("git branch")]
+        [TestCase("git branch -a")]
+        [TestCase("git diff -- --output.txt")]
+        public void Evaluate_GitInspectPermissionAllowsReadOnlyCommands(string command)
+        {
+            var result = new CustomApprovalPolicyEvaluator().Evaluate(
+                ApprovalMode.Custom,
+                Settings(CustomApprovalPermissionKind.GitInspect),
+                ApprovalRequestClassifier.ClassifyCommand(command),
+                AppServerApprovalRequestKind.Command,
+                command);
+
+            Assert.That(result.ShouldAutoApprove, Is.True);
         }
 
         [Test]

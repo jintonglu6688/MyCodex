@@ -1228,11 +1228,6 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(Stack);
             }
 
-            public Task<AuthenticationStackState> SetStackDefaultAsync(string providerId, CancellationToken cancellationToken)
-            {
-                throw new NotSupportedException();
-            }
-
             public Task<AuthenticationStackState> AdoptStackCatalogAsync(CancellationToken cancellationToken)
             {
                 throw new NotSupportedException();

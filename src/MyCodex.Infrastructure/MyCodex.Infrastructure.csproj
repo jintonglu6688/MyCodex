@@ -12,8 +12,6 @@
     <ProjectReference Include="..\MyCodex.Application\MyCodex.Application.csproj" />
     <ProjectReference Include="..\MyCodex.Domain\MyCodex.Domain.csproj" />
     <ProjectReference Include="..\MyCodex.Shared\MyCodex.Shared.csproj" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Security" />
     <Reference Include="System.Management" />

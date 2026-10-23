@@ -87,12 +87,6 @@
   <data name="CodexRuntime.Error.NoAvailableRuntime" xml:space="preserve">
     <value>No available Codex runtime was detected.</value>
   </data>
-  <data name="CodexRuntime.Error.ExecutablePathRequired" xml:space="preserve">
-    <value>Executable path cannot be empty.</value>
-  </data>
-  <data name="CodexRuntime.Error.ExecutableNotFound" xml:space="preserve">
-    <value>Codex executable was not found.</value>
-  </data>
   <data name="CodexRuntime.Error.UnableToStartExecutable" xml:space="preserve">
     <value>Unable to start Codex executable.</value>
   </data>
@@ -1257,18 +1251,6 @@ This file is empty.</value>
   </data>
   <data name="GitRepositoryService.Error.ReadWorktreesFailed" xml:space="preserve">
     <value>Failed to read Git worktrees.</value>
-  </data>
-  <data name="GitDiffService.Error.WorkspacePathRequired" xml:space="preserve">
-    <value>Workspace path cannot be empty.</value>
-  </data>
-  <data name="GitDiffService.Error.WorkspaceNotFound" xml:space="preserve">
-    <value>Workspace path does not exist.</value>
-  </data>
-  <data name="GitDiffService.Error.Timeout" xml:space="preserve">
-    <value>Git diff command timed out.</value>
-  </data>
-  <data name="GitDiffService.Error.GitCommandFailed" xml:space="preserve">
-    <value>Git diff command failed.</value>
   </data>
   <data name="GitEnvironmentService.Runtime.Wsl" xml:space="preserve">
     <value>WSL</value>

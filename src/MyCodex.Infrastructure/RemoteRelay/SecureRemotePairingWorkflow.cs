@@ -350,40 +350,6 @@ namespace MyCodex.Infrastructure.RemoteRelay
             Clear(verifiedClaim.VerifiedPlaintext);
         }
 
-        public async Task RetryPendingApprovalAsync(
-            RelayHostConfig config,
-            string claimId,
-            CancellationToken cancellationToken)
-        {
-            var pending = _bindingStore.FindPending(claimId);
-            if (pending == null ||
-                string.IsNullOrWhiteSpace(pending.ApprovalHeader) ||
-                string.IsNullOrWhiteSpace(pending.ApprovalNonce) ||
-                string.IsNullOrWhiteSpace(pending.ApprovalCiphertext))
-            {
-                throw new InvalidOperationException("The prepared pairing approval was not found.");
-            }
-
-            var request = new PairingApprovalRequest
-            {
-                HostId = pending.HostId,
-                ClaimId = pending.ClaimId,
-                DeviceId = pending.DeviceId,
-                DeviceSigningPublicKey = pending.DeviceSigningPublicKey,
-                DeviceAgreementPublicKey = pending.DeviceAgreementPublicKey,
-                DeviceKeyVersion = pending.DeviceKeyVersion,
-                BindingVersion = pending.BindingVersion,
-                ApprovalHeader = pending.ApprovalHeader,
-                ApprovalNonce = pending.ApprovalNonce,
-                ApprovalCiphertext = pending.ApprovalCiphertext
-            };
-            await _relayClient.ApprovePairingClaimAsync(
-                config,
-                request,
-                cancellationToken).ConfigureAwait(false);
-            _bindingStore.Activate(pending.ClaimId, pending.BindingVersion);
-        }
-
         private PairingApprovalRequest BuildApprovalRequest(
             VerifiedPairingClaim verifiedClaim,
             int bindingVersion)

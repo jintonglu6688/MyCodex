@@ -107,31 +107,8 @@ namespace MyCodex.Infrastructure.Persistence
         {
             _appConfigService.EnsureConfigDirectory();
             var filePath = _appConfigService.GetAppStateFilePath();
-            var tempFilePath = filePath + ".tmp";
-            var backupFilePath = filePath + ".bak";
-
-            try
-            {
-                using (var stream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    _serializer.WriteObject(stream, CreateSerializableSnapshot(snapshot));
-                    stream.Flush();
-                }
-
-                if (File.Exists(filePath))
-                {
-                    File.Replace(tempFilePath, filePath, backupFilePath, true);
-                }
-                else
-                {
-                    File.Move(tempFilePath, filePath);
-                }
-            }
-            catch
-            {
-                TryDeleteFile(tempFilePath);
-                throw;
-            }
+            var serializable = CreateSerializableSnapshot(snapshot);
+            AtomicFileWriter.Write(filePath, stream => _serializer.WriteObject(stream, serializable), filePath + ".bak");
         }
 
         private void PruneLocalEndpointStateFile()
@@ -304,22 +281,6 @@ namespace MyCodex.Infrastructure.Persistence
             {
                 _serializer.WriteObject(stream, CreateSerializableSnapshot(snapshot));
                 return Encoding.UTF8.GetString(stream.ToArray());
-            }
-        }
-
-        private static void TryDeleteFile(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
-            {
-                return;
-            }
-
-            try
-            {
-                File.Delete(path);
-            }
-            catch
-            {
             }
         }
 

@@ -100,8 +100,6 @@ var
   WaitResult: LongWord;
 begin
   Result := False;
-  // The deferred update helper already holds this mutex while waiting for Setup.
-  if IsDeferredUpdate() then begin Result := True; Exit; end;
   if (InstallationMutex <> 0) and (InstallationMutexRoot = ExpandConstant('{app}')) then
   begin Result := True; Exit; end;
   ReleaseInstallationReservation();
@@ -122,7 +120,6 @@ var
 begin
   Result := False;
   // Never convert a silent or cancelled normal installation into an implicit forced exit.
-  if IsDeferredUpdate() then Exit;
   if (not IsUninstaller() and WizardSilent()) or (IsUninstaller() and UninstallSilent()) then
   begin
     if ExpandConstant('{param:MYCODEXFORCECLOSE|0}') <> '1' then Exit;
@@ -158,8 +155,7 @@ begin
     SupportsExit := CompareText(Trim(String(Capability)), '1:' + GetSHA256OfFile(ExpandConstant('{app}\MyCodex.exe'))) = 0;
   SetTargetMaintenanceStatus(CustomMessage('PreparingTargetExit'));
   Result := ResourceGuardMessage(2);
-  if IsDeferredUpdate() then Code := 0 // Updater already completed save/exit; the guard below still checks actual exit.
-  else if SupportsExit then
+  if SupportsExit then
   begin
     if not Exec(ExpandConstant('{app}\MyCodex.exe'), '--exit-for-install', '', SW_HIDE, ewWaitUntilTerminated, Code) then Code := 2;
   end

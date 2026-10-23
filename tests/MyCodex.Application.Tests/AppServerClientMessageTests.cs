@@ -1415,44 +1415,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public async Task InjectThreadItemsAsync_SendsThreadInjectItemsRequest()
-        {
-            var client = CreateClient();
-            using (var stream = new MemoryStream())
-            using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
-            {
-                FormTestDriver.SetField(client, "_isConnected", true);
-                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
-                FormTestDriver.SetField(client, "_inputWriter", writer);
-                var item = new Dictionary<string, object>
-                {
-                    { "type", "message" },
-                    { "role", "system" }
-                };
-
-                var task = client.InjectThreadItemsAsync(
-                    "thread-1",
-                    new[] { item },
-                    CancellationToken.None);
-
-                var message = ReadFirstWrittenMessage(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
-                Assert.That(message["method"], Is.EqualTo("thread/inject_items"));
-                var requestId = Convert.ToString(message["id"], CultureInfo.InvariantCulture);
-                var parameters = AppServerJsonValue.GetDictionary(message, "params");
-                Assert.That(parameters["threadId"], Is.EqualTo("thread-1"));
-                var items = (object[])parameters["items"];
-                var injectedItem = (IDictionary<string, object>)items[0];
-                Assert.That(injectedItem["type"], Is.EqualTo("message"));
-                Assert.That(injectedItem["role"], Is.EqualTo("system"));
-
-                CompleteEmptyRequest(client, requestId);
-                var result = await task.ConfigureAwait(false);
-
-                Assert.That(result.Succeeded, Is.True);
-            }
-        }
-
-        [Test]
         public async Task ListPermissionProfilesAsync_SendsOptionalWorkspaceLimitAndCursor()
         {
             var client = CreateClient();

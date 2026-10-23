@@ -208,11 +208,6 @@ namespace MyCodex.WinForms.Forms
             get { return _serverStateLabel.Text; }
         }
 
-        internal void SetDevicesForTests(IEnumerable<RelayDeviceSummary> devices)
-        {
-            BindDevices(devices ?? new RelayDeviceSummary[0]);
-        }
-
         internal void SelectFirstDeviceForTests()
         {
             if (_devicesListView.Items.Count > 0)

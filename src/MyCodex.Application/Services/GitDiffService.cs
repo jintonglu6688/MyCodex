@@ -4,87 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using MyCodex.Application.DTOs;
-using MyCodex.Application.Interfaces;
-using MyCodex.Shared.Localization;
 
 namespace MyCodex.Application.Services
 {
     public sealed class GitDiffService
     {
-        private const int GitCommandTimeoutMilliseconds = 15000;
-
-        private readonly WorkspaceService _workspaceService;
-        private readonly IGitDiffCommandRunner _runner;
-
-        public GitDiffService()
-            : this(null)
-        {
-        }
-
-        public GitDiffService(IGitDiffCommandRunner runner)
-        {
-            _workspaceService = new WorkspaceService();
-            _runner = runner;
-        }
-
-        public GitDiffSnapshot ReadUncommittedChanges(string workspacePath)
-        {
-            if (string.IsNullOrWhiteSpace(workspacePath))
-            {
-                throw new ArgumentException(
-                    SharedLocalization.Text("GitDiffService.Error.WorkspacePathRequired", "Workspace path cannot be empty."),
-                    nameof(workspacePath));
-            }
-
-            var normalizedPath = _workspaceService.NormalizeWorkspacePath(workspacePath);
-            if (!Directory.Exists(normalizedPath))
-            {
-                throw new DirectoryNotFoundException(
-                    SharedLocalization.Text("GitDiffService.Error.WorkspaceNotFound", "The specified workspace does not exist."));
-            }
-
-            if (_runner == null)
-            {
-                throw new InvalidOperationException("A Git diff command runner is required to read workspace changes.");
-            }
-
-            var snapshot = new GitDiffSnapshot
-            {
-                WorkspacePath = normalizedPath
-            };
-
-            var gitInfo = _workspaceService.ReadGitInfo(normalizedPath);
-            snapshot.IsGitRepository = gitInfo != null && gitInfo.IsGitRepository;
-            if (!snapshot.IsGitRepository)
-            {
-                return snapshot;
-            }
-
-            var statusOutput = RunGitCommand(
-                normalizedPath,
-                "status --short -z --untracked-files=all --no-renames");
-            var statusEntries = SplitNullSeparated(statusOutput);
-            for (var i = 0; i < statusEntries.Length; i++)
-            {
-                var entryText = statusEntries[i];
-                if (string.IsNullOrWhiteSpace(entryText) || entryText.Length < 3)
-                {
-                    continue;
-                }
-
-                var entry = ParseStatusEntry(entryText);
-                if (entry == null || string.IsNullOrWhiteSpace(entry.FilePath))
-                {
-                    continue;
-                }
-
-                entry.DiffText = BuildWorkspaceEntryDiff(normalizedPath, entry);
-                PopulateDiffLineCounts(entry);
-                snapshot.Files.Add(entry);
-            }
-
-            return snapshot;
-        }
+        private readonly WorkspaceService _workspaceService = new WorkspaceService();
 
         public GitDiffSnapshot BuildSnapshotFromTurnDiff(
             string workspacePath,
@@ -129,119 +54,6 @@ namespace MyCodex.Application.Services
             }
 
             return snapshot;
-        }
-
-        private static GitDiffFileEntry ParseStatusEntry(string entryText)
-        {
-            if (string.IsNullOrWhiteSpace(entryText) || entryText.Length < 3)
-            {
-                return null;
-            }
-
-            var rawStatus = entryText.Substring(0, 2);
-            var path = entryText.Length > 3
-                ? NormalizeStatusPath(entryText.Substring(3))
-                : string.Empty;
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return null;
-            }
-
-            return new GitDiffFileEntry
-            {
-                FilePath = path,
-                ChangeKind = MapStatusToChangeKind(rawStatus)
-            };
-        }
-
-        private string BuildWorkspaceEntryDiff(string workspacePath, GitDiffFileEntry entry)
-        {
-            if (entry == null || string.IsNullOrWhiteSpace(entry.FilePath))
-            {
-                return string.Empty;
-            }
-
-            if (string.Equals(entry.ChangeKind, "untracked", StringComparison.OrdinalIgnoreCase))
-            {
-                return string.Format(
-                    SharedLocalization.Text(
-                        "GitDiffService.Untracked.Placeholder.Template",
-                        "Untracked file: {0}\r\n\r\nThis file has not been added to Git yet. Open the file to inspect its current content."),
-                    entry.FilePath);
-            }
-
-            var stagedDiff = RunGitCommandAllowFailure(
-                workspacePath,
-                "diff --cached --no-ext-diff --binary -- " + GitCommandLineBuilder.QuoteArgument(entry.FilePath));
-            var unstagedDiff = RunGitCommandAllowFailure(
-                workspacePath,
-                "diff --no-ext-diff --binary -- " + GitCommandLineBuilder.QuoteArgument(entry.FilePath));
-
-            var builder = new StringBuilder();
-            if (!string.IsNullOrWhiteSpace(stagedDiff))
-            {
-                builder.Append(stagedDiff.Trim());
-            }
-
-            if (!string.IsNullOrWhiteSpace(unstagedDiff))
-            {
-                if (builder.Length > 0)
-                {
-                    builder.AppendLine();
-                    builder.AppendLine();
-                }
-
-                builder.Append(unstagedDiff.Trim());
-            }
-
-            return builder.ToString().Trim();
-        }
-
-        private static string[] SplitNullSeparated(string text)
-        {
-            return (text ?? string.Empty)
-                .Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        private static string MapStatusToChangeKind(string rawStatus)
-        {
-            var status = (rawStatus ?? string.Empty).Trim();
-            if (string.Equals(status, "??", StringComparison.Ordinal))
-            {
-                return "untracked";
-            }
-
-            if (status.IndexOf('U') >= 0)
-            {
-                return "unmerged";
-            }
-
-            if (status.IndexOf('D') >= 0)
-            {
-                return "deleted";
-            }
-
-            if (status.IndexOf('A') >= 0)
-            {
-                return "added";
-            }
-
-            if (status.IndexOf('T') >= 0)
-            {
-                return "type_changed";
-            }
-
-            if (status.IndexOf('M') >= 0)
-            {
-                return "modified";
-            }
-
-            return "modified";
-        }
-
-        private static string NormalizeStatusPath(string path)
-        {
-            return NormalizeGitFilePath(path, false);
         }
 
         private static string NormalizePathToken(string value)
@@ -542,38 +354,6 @@ namespace MyCodex.Application.Services
             {
                 result.Add(entry);
             }
-        }
-
-        private string RunGitCommandAllowFailure(string workspacePath, string arguments)
-        {
-            try
-            {
-                return RunGitCommand(workspacePath, arguments);
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
-        private string RunGitCommand(string workspacePath, string arguments)
-        {
-            var result = _runner.Run(workspacePath, arguments, GitCommandTimeoutMilliseconds);
-            if (result == null)
-            {
-                throw new InvalidOperationException(
-                    SharedLocalization.Text("GitDiffService.Error.GitCommandFailed", "Git command failed."));
-            }
-
-            if (!result.Success)
-            {
-                var errorText = string.IsNullOrWhiteSpace(result.StandardError)
-                    ? SharedLocalization.Text("GitDiffService.Error.GitCommandFailed", "Git command failed.")
-                    : result.StandardError.Trim();
-                throw new InvalidOperationException(errorText);
-            }
-
-            return result.StandardOutput ?? string.Empty;
         }
     }
 }

@@ -58,8 +58,6 @@ TargetExitCancelled=EXIT_CANCELLED
 ForceCloseTargets=FORCE_CLOSE_WARNING
 PreparingForceClose=PREPARING_FORCE_CLOSE
 [Code]
-function IsDeferredUpdate(): Boolean;
-begin Result := ExpandConstant('{param:MYCODEXDEFERRED|0}') = '1'; end;
 #include "$repo\tools\installer\InstallationTargets.iss"
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 begin
@@ -95,9 +93,8 @@ function Wait-Until([scriptblock]$Condition, [string]$Message) {
 function Start-Owner([string]$Target, [string]$Executable = $probe, [string]$Channel = 'InstallProbe') {
     Start-Process -FilePath $Executable -ArgumentList @('owner', ('"' + $data + '"'), $Channel, $Target, $Target) -PassThru -WindowStyle Hidden
 }
-function Start-Installer([string]$Name, [switch]$Deferred, [switch]$ForceClose) {
+function Start-Installer([string]$Name, [switch]$ForceClose) {
     $arguments = @('/SP-', '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', ('/DIR="' + $bin + '"'), ('/LOG="' + (Join-Path $work ($Name + '.log')) + '"'))
-    if ($Deferred) { $arguments += '/MYCODEXDEFERRED=1' }
     if ($ForceClose) { $arguments += '/MYCODEXFORCECLOSE=1' }
     Start-Process -FilePath (Join-Path $work 'exit-test.exe') -ArgumentList $arguments -PassThru -WindowStyle Hidden
 }
@@ -148,14 +145,11 @@ try {
     Wait-Until { Test-Path (Join-Path $data 'after-install.ready') } 'Installation did not release its startup lock.'
     if ([IO.File]::ReadAllText($capabilityPath) -ine $capability) { throw 'Installation did not record executable-bound capability.' }
     [IO.File]::WriteAllText((Join-Path $data 'after-install.exit'), 'fixture normal exit')
-    if (!$children[-1].WaitForExit(5000)) { throw 'Fixture cleanup before deferred installation failed.' }
+    if (!$children[-1].WaitForExit(5000)) { throw 'Fixture cleanup after installation failed.' }
     $mutex = [Threading.Mutex]::new($false, $mutexName)
     try {
         if (!$mutex.WaitOne(0)) { throw 'Installation retained mutex ownership.' }
-        try {
-            $installer = Start-Installer 'deferred' -Deferred
-            if (!$installer.WaitForExit(40000) -or $installer.ExitCode -ne 0) { throw 'Deferred installation deadlocked or failed against the updater-owned mutex.' }
-        } finally { $mutex.ReleaseMutex() }
+        $mutex.ReleaseMutex()
     } finally { $mutex.Dispose() }
 
     # Genuine legacy shape: no IPC records, no maintenance CLI, no capability marker.
@@ -267,7 +261,7 @@ try {
     if (!$runtimeResidue.HasExited) { throw 'Force-close did not stop the installation-owned runtime.' }
     foreach ($child in @($nodeChildren[2], $nodeChildren[3], $unrelatedClient)) { if ($child.HasExited) { throw 'Force-close stopped another installation or system runtime.' } }
     if (![IO.File]::ReadAllText((Join-Path $work 'force-confirmed.log')).Contains('Explicit installation force-close: result=0')) { throw 'Force-close was not recorded in Setup log.' }
-    Write-Output ('PASS: production Inno compilation; two-edition real IPC prepare/cancel/commit; no copying or closing on refusal; activation isolation; legacy/downgrade protection; native installer mutex blocks startup and is released; deferred installer retains updater-owned gate. Evidence: ' + $work)
+    Write-Output ('PASS: production Inno compilation; two-edition real IPC prepare/cancel/commit; no copying or closing on refusal; activation isolation; legacy/downgrade protection; native installer mutex blocks startup and is released. Evidence: ' + $work)
     Write-Output 'PASS: explicitly confirmed installer force-close ends a blocked modal client and installation-owned runtime, preserves other installations/runtimes, refuses an unreserved invocation, and copies only after resource release.'
     Write-Output 'PASS: running old-style hidden WinForms targets without an installer entry save and close automatically; refusal blocks copying; unrelated installation stays running.'
     Write-Output 'PASS: two legacy bundled Node processes cleaned only after client save/exit; cancellation preserves them; foreign and system Node stay running.'

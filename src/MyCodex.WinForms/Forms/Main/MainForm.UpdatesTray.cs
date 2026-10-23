@@ -365,27 +365,6 @@ namespace MyCodex.WinForms.Forms
             Hide();
         }
 
-        public void HandleExternalActivation(string[] args)
-        {
-            if (IsDisposed)
-            {
-                return;
-            }
-
-            this.BeginInvokeSafe(async () => await HandleExternalActivationOnUiThreadAsync(args));
-        }
-
-        private async Task HandleExternalActivationOnUiThreadAsync(string[] args)
-        {
-            ShowMainWindowFromTray();
-
-            var options = StartupCommandLineOptions.Parse(args);
-            if (options.HasWorkspacePath)
-            {
-                await LoadCommandLineWorkspaceAsync(options.WorkspacePath);
-            }
-        }
-
         private void ShowMainWindowFromTray()
         {
             if (IsDisposed || _isExitRequested || TryActivateTargetModalWindow()) return;

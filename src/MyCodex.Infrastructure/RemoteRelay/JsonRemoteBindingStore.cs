@@ -7,6 +7,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Web.Script.Serialization;
 using MyCodex.Application.RemoteRelay;
+using MyCodex.Infrastructure.Persistence;
 
 namespace MyCodex.Infrastructure.RemoteRelay
 {
@@ -48,16 +49,6 @@ namespace MyCodex.Infrastructure.RemoteRelay
                     string.Equals(item.TenantId, tenantId, StringComparison.Ordinal) &&
                     string.Equals(item.HostId, hostId, StringComparison.Ordinal) &&
                     string.Equals(item.DeviceId, deviceId, StringComparison.Ordinal));
-            }
-        }
-
-        public RemoteDeviceBinding FindPending(string claimId)
-        {
-            lock (_sync)
-            {
-                return Load().Bindings.FirstOrDefault(item =>
-                    item.State == RemoteBindingState.Pending &&
-                    string.Equals(item.ClaimId, claimId, StringComparison.Ordinal));
             }
         }
 
@@ -248,33 +239,7 @@ namespace MyCodex.Infrastructure.RemoteRelay
 
         private void Save(BindingFile file)
         {
-            var directory = Path.GetDirectoryName(_filePath);
-            Directory.CreateDirectory(directory);
-            var temporary = _filePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
-            try
-            {
-                using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-                {
-                    _serializer.WriteObject(stream, file);
-                    stream.Flush();
-                }
-
-                if (File.Exists(_filePath))
-                {
-                    File.Replace(temporary, _filePath, null);
-                }
-                else
-                {
-                    File.Move(temporary, _filePath);
-                }
-            }
-            finally
-            {
-                if (File.Exists(temporary))
-                {
-                    File.Delete(temporary);
-                }
-            }
+            AtomicFileWriter.Write(_filePath, stream => _serializer.WriteObject(stream, file));
         }
 
         private static BindingFile NewFile()

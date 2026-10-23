@@ -205,14 +205,6 @@ namespace MyCodex.Application.Tests
             {
                 return Task.FromResult(new WorkspaceGitInfoSnapshot());
             }
-
-            public Task<GitDiffSnapshot> ReadUncommittedChangesAsync(
-                WslAppServerConfigSnapshot config,
-                string workspacePath,
-                CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return Task.FromResult(new GitDiffSnapshot());
-            }
         }
 
         private sealed class FakeRemoteFileSystemBridge : IRemoteMacFileSystemBridge
@@ -273,27 +265,9 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(string.Empty);
             }
 
-            public Task WriteSkillFilesAsync(
-                RemoteMacSshConfigSnapshot config,
-                string skillDirectoryPath,
-                string skillMarkdownText,
-                string openAiAgentText,
-                RemoteSkillAgentFileAction agentFileAction)
-            {
-                return Task.CompletedTask;
-            }
-
             public Task<WorkspaceGitInfoSnapshot> ReadGitInfoAsync(RemoteMacSshConfigSnapshot config, string workspacePath)
             {
                 return Task.FromResult(new WorkspaceGitInfoSnapshot());
-            }
-
-            public Task<GitDiffSnapshot> ReadUncommittedChangesAsync(
-                RemoteMacSshConfigSnapshot config,
-                string workspacePath,
-                CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return Task.FromResult(new GitDiffSnapshot());
             }
         }
     }

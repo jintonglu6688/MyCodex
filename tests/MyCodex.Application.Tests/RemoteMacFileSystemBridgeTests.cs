@@ -195,32 +195,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void WriteSkillFilesAsync_PassesSkillTextsAndWriteAction()
-        {
-            var executor = new FakeRemoteSshCommandExecutor
-            {
-                Result = new RemoteSshCommandExecutionResult { ExitCode = 0 }
-            };
-            var bridge = new RemoteMacFileSystemBridge(executor);
-
-            bridge.WriteSkillFilesAsync(
-                new RemoteMacSshConfigSnapshot(),
-                "/Users/tester/.codex/skills/demo",
-                "---\nname: demo\n---",
-                "interface:\n  display_name: Demo",
-                RemoteSkillAgentFileAction.Write).GetAwaiter().GetResult();
-
-            Assert.That(executor.OperationName, Is.EqualTo("mycodex-write-remote-skill-files"));
-            Assert.That(executor.Arguments, Is.EquivalentTo(new[]
-            {
-                "/Users/tester/.codex/skills/demo",
-                "---\nname: demo\n---",
-                "interface:\n  display_name: Demo",
-                "write"
-            }));
-        }
-
-        [Test]
         public void DeleteCodexSessionPathAsync_PassesRemoteSessionPath()
         {
             var executor = new FakeRemoteSshCommandExecutor
@@ -249,33 +223,6 @@ namespace MyCodex.Application.Tests
                 bridge.DeleteCodexSessionPathAsync(new RemoteMacSshConfigSnapshot(), "/tmp/demo.jsonl").GetAwaiter().GetResult());
 
             Assert.That(ex.Message, Does.Contain("Codex"));
-        }
-
-        [Test]
-        public void ReadUncommittedChangesAsync_ReadsStatusAndDiffsInSingleRemoteCommand()
-        {
-            var statusRecord = " M src/app.cs";
-            var diffText = "diff --git a/src/app.cs b/src/app.cs\n+new line\n-old line\n";
-            var executor = new FakeRemoteSshCommandExecutor
-            {
-                Result = new RemoteSshCommandExecutionResult
-                {
-                    ExitCode = 0,
-                    StandardOutput = "file\t" + Encode(statusRecord) + "\t" + Encode(string.Empty) + "\t" + Encode(diffText) + "\n"
-                }
-            };
-            var bridge = new RemoteMacFileSystemBridge(executor);
-
-            var snapshot = bridge.ReadUncommittedChangesAsync(new RemoteMacSshConfigSnapshot(), "/Users/tester/repo").GetAwaiter().GetResult();
-
-            Assert.That(executor.ArgumentsByCall, Has.Count.EqualTo(1));
-            Assert.That(executor.OperationName, Is.EqualTo("mycodex-read-remote-git-status-and-diffs"));
-            Assert.That(snapshot.IsGitRepository, Is.True);
-            Assert.That(snapshot.Files, Has.Count.EqualTo(1));
-            Assert.That(snapshot.Files[0].FilePath, Is.EqualTo("src/app.cs"));
-            Assert.That(snapshot.Files[0].DiffText, Is.EqualTo(diffText.Trim()));
-            Assert.That(snapshot.Files[0].AddedLineCount, Is.EqualTo(1));
-            Assert.That(snapshot.Files[0].DeletedLineCount, Is.EqualTo(1));
         }
 
         [Test]

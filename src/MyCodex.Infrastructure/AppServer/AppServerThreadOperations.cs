@@ -313,35 +313,6 @@ namespace MyCodex.Infrastructure.AppServer
             }, CancellationToken.None, LongRunningRequestTimeoutMs).ConfigureAwait(false);
         }
 
-        public async Task<AppServerThreadInjectItemsResult> InjectThreadItemsAsync(
-            string threadId,
-            IReadOnlyCollection<IDictionary<string, object>> items,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            _ensureConnected();
-            EnsureThreadId(threadId);
-
-            if (items == null || items.Count == 0)
-            {
-                throw new ArgumentException(L("AppServerClient.Error.ValidInputRequired", "At least one valid input item is required."), nameof(items));
-            }
-
-            await SendRequestAsync(
-                "thread/inject_items",
-                new Dictionary<string, object>
-                {
-                    { "threadId", threadId.Trim() },
-                    { "items", items.ToArray() }
-                },
-                cancellationToken)
-                .ConfigureAwait(false);
-
-            return new AppServerThreadInjectItemsResult
-            {
-                Succeeded = true
-            };
-        }
-
         public Task ApproveGuardianDeniedActionAsync(
             AppServerGuardianDeniedActionApprovalRequest request,
             CancellationToken cancellationToken = default(CancellationToken))

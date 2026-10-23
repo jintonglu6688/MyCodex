@@ -102,19 +102,17 @@ namespace MyCodex.Infrastructure.AppServer
             var sshKeys = ReadValue(details, "find ~/.ssh/*.pub", "ssh-keys", 8000, cancellationToken);
             var githubSsh = ReadValue(details, "ssh -T git@github.com", "github-ssh", 8000, cancellationToken);
 
-            return new GitEnvironmentSnapshot
-            {
-                Runtime = SharedLocalization.Text("GitEnvironmentService.Runtime.Wsl", "WSL"),
-                GitVersion = NormalizeMultilineValue(gitVersion),
-                GitPath = NormalizeMultilineValue(gitPath),
-                GlobalUserName = NormalizeMultilineValue(userName),
-                GlobalUserEmail = NormalizeMultilineValue(userEmail),
-                CredentialHelper = NormalizeMultilineValue(credentialHelper),
-                GitCredentialManager = NormalizeMultilineValue(gcm),
-                SshKeys = NormalizeMultilineValue(sshKeys),
-                GitHubSsh = NormalizeMultilineValue(githubSsh),
-                DetailedOutput = details.ToString()
-            };
+            return UnixGitEnvironmentText.BuildSnapshot(
+                SharedLocalization.Text("GitEnvironmentService.Runtime.Wsl", "WSL"),
+                gitVersion,
+                gitPath,
+                userName,
+                userEmail,
+                credentialHelper,
+                gcm,
+                sshKeys,
+                githubSsh,
+                details);
         }
 
         private string ReadFirstAvailable(StringBuilder details, CancellationToken cancellationToken, params CommandProbe[] commands)
@@ -153,38 +151,12 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static void AppendDetails(StringBuilder details, string title, WslCommandExecutionResult result)
         {
-            details.AppendLine(">> " + title);
-            details.AppendLine("ExitCode: " + result.ExitCode);
-            if (!string.IsNullOrWhiteSpace(result.StandardOutput))
-            {
-                details.AppendLine(result.StandardOutput.TrimEnd());
-            }
-
-            if (!string.IsNullOrWhiteSpace(result.StandardError))
-            {
-                details.AppendLine(result.StandardError.TrimEnd());
-            }
-
-            details.AppendLine();
+            UnixGitEnvironmentText.AppendDetails(details, title, result.ExitCode, result.StandardOutput, result.StandardError);
         }
 
         private static string GetBestOutput(WslCommandExecutionResult result)
         {
-            if (result == null)
-            {
-                return string.Empty;
-            }
-
-            return string.IsNullOrWhiteSpace(result.StandardOutput)
-                ? result.StandardError ?? string.Empty
-                : result.StandardOutput ?? string.Empty;
-        }
-
-        private static string NormalizeMultilineValue(string value)
-        {
-            return string.IsNullOrWhiteSpace(value)
-                ? string.Empty
-                : value.Trim();
+            return result == null ? string.Empty : UnixGitEnvironmentText.GetBestOutput(result.StandardOutput, result.StandardError);
         }
 
         private sealed class CommandProbe

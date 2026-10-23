@@ -35,7 +35,7 @@ namespace MyCodex.Infrastructure.Persistence
 
         public void Save(AutomationStateSnapshot snapshot)
         {
-            WithFileLock(() => SaveCore(snapshot, Guid.NewGuid().ToString("N") + ".tmp"));
+            WithFileLock(() => SaveCore(snapshot));
         }
 
         public AutomationStateSnapshot Mutate(Func<AutomationStateSnapshot, AutomationStateSnapshot> mutation)
@@ -54,7 +54,7 @@ namespace MyCodex.Infrastructure.Persistence
                     throw new InvalidOperationException("Automation mutation returned null.");
                 }
 
-                SaveCore(updated, Guid.NewGuid().ToString("N") + ".tmp");
+                SaveCore(updated);
                 return updated;
             });
         }
@@ -70,36 +70,12 @@ namespace MyCodex.Infrastructure.Persistence
                 () => _saveBlocked = true);
         }
 
-        private void SaveCore(AutomationStateSnapshot snapshot, string tempFileNameSuffix)
+        private void SaveCore(AutomationStateSnapshot snapshot)
         {
             ThrowIfSaveBlocked();
             _appConfigService.EnsureConfigDirectory();
-            var tempFilePath = _filePath + "." + tempFileNameSuffix;
-            var backupFilePath = _filePath + ".bak";
             var serializable = Normalize(snapshot);
-
-            try
-            {
-                using (var stream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    _serializer.WriteObject(stream, serializable);
-                    stream.Flush();
-                }
-
-                if (File.Exists(_filePath))
-                {
-                    File.Replace(tempFilePath, _filePath, backupFilePath, true);
-                }
-                else
-                {
-                    File.Move(tempFilePath, _filePath);
-                }
-            }
-            catch
-            {
-                TryDeleteFile(tempFilePath);
-                throw;
-            }
+            AtomicFileWriter.Write(_filePath, stream => _serializer.WriteObject(stream, serializable), _filePath + ".bak");
         }
 
         private T WithFileLock<T>(Func<T> action)
@@ -260,22 +236,6 @@ namespace MyCodex.Infrastructure.Persistence
                 .OrderBy(item => item.StartedAt ?? item.ScheduledFor ?? DateTime.MinValue)
                 .ThenBy(item => item.Id ?? string.Empty, StringComparer.OrdinalIgnoreCase)
                 .ToList();
-        }
-
-        private static void TryDeleteFile(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
-            {
-                return;
-            }
-
-            try
-            {
-                File.Delete(path);
-            }
-            catch
-            {
-            }
         }
     }
 }

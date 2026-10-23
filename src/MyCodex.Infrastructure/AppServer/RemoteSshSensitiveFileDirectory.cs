@@ -39,5 +39,43 @@ namespace MyCodex.Infrastructure.AppServer
 
             return Path.GetFullPath(tempDirectory.Trim());
         }
+
+        internal static int CleanupStaleFiles(string tempDirectory, string searchPattern, TimeSpan maxAge)
+        {
+            var directory = Normalize(tempDirectory);
+            if (!Directory.Exists(directory))
+            {
+                return 0;
+            }
+
+            var deleted = 0;
+            var threshold = DateTime.UtcNow.Subtract(maxAge < TimeSpan.Zero ? TimeSpan.Zero : maxAge);
+            string[] files;
+            try
+            {
+                files = Directory.GetFiles(directory, searchPattern);
+            }
+            catch
+            {
+                return 0;
+            }
+
+            foreach (var path in files)
+            {
+                try
+                {
+                    if (File.GetLastWriteTimeUtc(path) <= threshold)
+                    {
+                        File.Delete(path);
+                        deleted++;
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return deleted;
+        }
     }
 }

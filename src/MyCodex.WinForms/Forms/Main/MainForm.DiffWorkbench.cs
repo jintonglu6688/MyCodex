@@ -19,7 +19,7 @@ namespace MyCodex.WinForms.Forms
     public partial class MainForm
     {
         private readonly GitDiffService _gitDiffService =
-            new GitDiffService(new MyCodex.Infrastructure.Git.GitDiffCommandRunner());
+            new GitDiffService();
         private readonly GitRepositoryService _gitRepositoryService =
             new GitRepositoryService(new MyCodex.Infrastructure.Git.GitCommandRunner());
         private readonly EncodingSafetyService _encodingSafetyService = new EncodingSafetyService();

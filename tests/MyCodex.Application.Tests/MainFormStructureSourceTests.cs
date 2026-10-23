@@ -939,7 +939,6 @@ namespace MyCodex.Application.Tests
         {
             var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
             var runtimeConnectionSource = RepositorySource.ReadSourceFile("MainForm.RuntimeConnection.cs");
-            var traySource = RepositorySource.ReadSourceFile("MainForm.UpdatesTray.cs");
             var workspaceSource = RepositorySource.ReadSourceFile("MainForm.Workspaces.cs");
 
             Assert.That(mainFormSource, Does.Contain("private StartupCommandLineOptions _startupCommandLineOptions;"));
@@ -947,8 +946,6 @@ namespace MyCodex.Application.Tests
             Assert.That(runtimeConnectionSource, Does.Contain("LoadCommandLineWorkspaceAsync"));
             Assert.That(workspaceSource, Does.Contain("createSessionIfNoRestoredSession"));
             Assert.That(workspaceSource, Does.Contain("await CreateNewSessionAsync();"));
-            Assert.That(traySource, Does.Contain("StartupCommandLineOptions.Parse(args)"));
-            Assert.That(traySource, Does.Contain("LoadCommandLineWorkspaceAsync(options.WorkspacePath)"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]

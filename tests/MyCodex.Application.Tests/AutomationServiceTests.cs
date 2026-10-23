@@ -216,59 +216,13 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void MarkRunRead_ClearsUnreadOnly()
-        {
-            var store = new InMemoryAutomationStore();
-            store.Snapshot.Runs.Add(new AutomationRunSnapshot
-            {
-                Id = "run-1",
-                Unread = true,
-                Archived = true,
-                NeedsAttention = true
-            });
-            var service = new AutomationService(store, new AutomationScheduleCalculator());
-
-            service.MarkRunRead("run-1");
-
-            Assert.That(store.Snapshot.Runs[0].Unread, Is.False);
-            Assert.That(store.Snapshot.Runs[0].Archived, Is.True);
-            Assert.That(store.Snapshot.Runs[0].NeedsAttention, Is.True);
-        }
-
-        [Test]
-        public void ArchiveRun_ClearsPendingStateAndKeepsRunInHistory()
-        {
-            var store = new InMemoryAutomationStore();
-            store.Snapshot.Runs.Add(new AutomationRunSnapshot
-            {
-                Id = "run-1",
-                Unread = true,
-                Archived = false,
-                NeedsAttention = true
-            });
-            var service = new AutomationService(store, new AutomationScheduleCalculator());
-
-            service.ArchiveRun("run-1");
-
-            Assert.That(store.Snapshot.Runs[0].Archived, Is.True);
-            Assert.That(store.Snapshot.Runs[0].Unread, Is.False);
-            Assert.That(store.Snapshot.Runs[0].NeedsAttention, Is.False);
-            Assert.That(service.ListRuns(), Has.Count.EqualTo(1));
-            Assert.That(service.ListRuns()[0].Id, Is.EqualTo("run-1"));
-        }
-
-        [Test]
-        public void RunTriageActions_UnknownRunIdThrowsLocalizedError()
+        public void DeleteRun_UnknownRunIdThrowsLocalizedError()
         {
             var service = new AutomationService(new InMemoryAutomationStore(), new AutomationScheduleCalculator());
             var expectedMessage = SharedLocalization.Text("AutomationService.Error.RunNotFound", "Automation run was not found.");
 
-            var markReadException = Assert.Throws<InvalidOperationException>(() => service.MarkRunRead("missing-run"));
-            var archiveException = Assert.Throws<InvalidOperationException>(() => service.ArchiveRun("missing-run"));
             var deleteException = Assert.Throws<InvalidOperationException>(() => service.DeleteRun("missing-run"));
 
-            Assert.That(markReadException.Message, Is.EqualTo(expectedMessage));
-            Assert.That(archiveException.Message, Is.EqualTo(expectedMessage));
             Assert.That(deleteException.Message, Is.EqualTo(expectedMessage));
         }
 

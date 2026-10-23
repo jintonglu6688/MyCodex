@@ -34,46 +34,6 @@ namespace MyCodex.Application.Tests
             Assert.That(UnixFileSystemBridgeParsers.GetValue(values, "origin"), Is.EqualTo("https://example.com/repo.git"));
         }
 
-        [Test]
-        public void ParseStatusEntry_NormalizesStatusAndPath()
-        {
-            var entry = UnixFileSystemBridgeParsers.ParseStatusEntry(" M \"src\\\\app.cs\"");
-
-            Assert.That(entry.FilePath, Is.EqualTo("src/app.cs"));
-            Assert.That(entry.ChangeKind, Is.EqualTo("modified"));
-        }
-
-        [Test]
-        public void BuildDiffTextForStatus_ReturnsUntrackedPlaceholder()
-        {
-            var entry = UnixFileSystemBridgeParsers.ParseStatusEntry("?? notes.txt");
-
-            entry.DiffText = UnixFileSystemBridgeParsers.BuildDiffText(entry, string.Empty, string.Empty);
-
-            Assert.That(entry.DiffText, Does.Contain("Untracked file: notes.txt"));
-        }
-
-        [Test]
-        public void PopulateDiffLineCounts_IgnoresHeaders()
-        {
-            var entry = UnixFileSystemBridgeParsers.ParseStatusEntry(" M src/app.cs");
-            entry.DiffText = "diff --git a/src/app.cs b/src/app.cs\n--- a/src/app.cs\n+++ b/src/app.cs\n@@ -1 +1 @@\n-old\n+new\n";
-            entry.AddedLineCount = 20;
-            entry.DeletedLineCount = 30;
-
-            UnixFileSystemBridgeParsers.PopulateDiffLineCounts(entry);
-            UnixFileSystemBridgeParsers.PopulateDiffLineCounts(entry);
-
-            Assert.That(entry.AddedLineCount, Is.EqualTo(1));
-            Assert.That(entry.DeletedLineCount, Is.EqualTo(1));
-
-            entry.DiffText = string.Empty;
-            UnixFileSystemBridgeParsers.PopulateDiffLineCounts(entry);
-
-            Assert.That(entry.AddedLineCount, Is.Zero);
-            Assert.That(entry.DeletedLineCount, Is.Zero);
-        }
-
         private static string Enc(string value)
         {
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));

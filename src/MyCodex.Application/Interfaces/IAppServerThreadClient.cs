@@ -68,11 +68,6 @@ namespace MyCodex.Application.Interfaces
             string clientUserMessageId,
             string expectedTurnId);
 
-        Task<AppServerThreadInjectItemsResult> InjectThreadItemsAsync(
-            string threadId,
-            IReadOnlyCollection<IDictionary<string, object>> items,
-            CancellationToken cancellationToken = default(CancellationToken));
-
         Task ApproveGuardianDeniedActionAsync(
             AppServerGuardianDeniedActionApprovalRequest request,
             CancellationToken cancellationToken = default(CancellationToken));

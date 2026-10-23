@@ -2348,11 +2348,6 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(new AppServerLoginCancelResult());
             }
 
-            public Task LogoutAsync()
-            {
-                return Task.CompletedTask;
-            }
-
             public Task<AppServerAccountTokenUsageSnapshot> GetAccountTokenUsageAsync(
                 CancellationToken cancellationToken = default(CancellationToken))
             {

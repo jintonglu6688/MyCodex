@@ -144,14 +144,9 @@ begin
     Result := '';
 end;
 
-function IsDeferredUpdate(): Boolean;
-begin
-  Result := not IsUninstaller() and (ExpandConstant('{param:MYCODEXDEFERRED|0}') = '1');
-end;
-
 function CanLaunchInstalledApplication(): Boolean;
 begin
-  Result := AuthenticationInstalled and not IsDeferredUpdate();
+  Result := AuthenticationInstalled;
 end;
 
 #include "InstallationTargets.iss"

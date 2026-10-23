@@ -150,29 +150,6 @@ namespace MyCodex.Application.Services
             });
         }
 
-        public void MarkRunRead(string runId)
-        {
-            _store.Mutate(snapshot =>
-            {
-                snapshot = Normalize(snapshot);
-                FindRun(snapshot, runId).Unread = false;
-                return snapshot;
-            });
-        }
-
-        public void ArchiveRun(string runId)
-        {
-            _store.Mutate(snapshot =>
-            {
-                snapshot = Normalize(snapshot);
-                var run = FindRun(snapshot, runId);
-                run.Archived = true;
-                run.Unread = false;
-                run.NeedsAttention = false;
-                return snapshot;
-            });
-        }
-
         public void DeleteRun(string runId)
         {
             _store.Mutate(snapshot =>

@@ -914,9 +914,7 @@ namespace MyCodex.Application.Tests
 
         private sealed class RecordingAutomationService : IAutomationService
         {
-            public string MarkReadRunId { get; private set; }
 
-            public string ArchiveRunId { get; private set; }
 
             public string DeleteRunId { get; private set; }
 
@@ -953,16 +951,6 @@ namespace MyCodex.Application.Tests
             public void Delete(string automationId)
             {
                 throw new NotSupportedException();
-            }
-
-            public void MarkRunRead(string runId)
-            {
-                MarkReadRunId = runId;
-            }
-
-            public void ArchiveRun(string runId)
-            {
-                ArchiveRunId = runId;
             }
 
             public void DeleteRun(string runId)

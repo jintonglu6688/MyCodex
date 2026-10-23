@@ -120,8 +120,6 @@ namespace MyCodex.Application.Tests
                 FindActiveCalls++;
                 throw new InvalidOperationException("Binding store unavailable.");
             }
-
-            public RemoteDeviceBinding FindPending(string claimId) { throw new NotSupportedException(); }
             public void SavePending(RemoteDeviceBinding binding) { throw new NotSupportedException(); }
             public void Activate(string claimId, int bindingVersion) { throw new NotSupportedException(); }
             public void Revoke(string tenantId, string hostId, string deviceId) { throw new NotSupportedException(); }

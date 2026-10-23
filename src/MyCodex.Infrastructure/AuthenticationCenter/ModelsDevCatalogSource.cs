@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
 using MyCodex.Infrastructure.AppServer;
+using MyCodex.Infrastructure.Persistence;
 
 namespace MyCodex.Infrastructure.AuthenticationCenter
 {
@@ -116,18 +117,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
         private void WriteCache(IDictionary<string, object> slim)
         {
             if (string.IsNullOrEmpty(_cachePath)) return;
-            Directory.CreateDirectory(Path.GetDirectoryName(_cachePath));
-            var temporary = _cachePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
-            try
-            {
-                File.WriteAllText(temporary, AppServerJsonValue.CreateSerializer().Serialize(slim), new UTF8Encoding(false));
-                if (File.Exists(_cachePath)) File.Replace(temporary, _cachePath, null);
-                else File.Move(temporary, _cachePath);
-            }
-            finally
-            {
-                if (File.Exists(temporary)) File.Delete(temporary);
-            }
+            AtomicFileWriter.WriteText(_cachePath, AppServerJsonValue.CreateSerializer().Serialize(slim));
         }
 
         internal static IDictionary<string, object> Parse(string json)

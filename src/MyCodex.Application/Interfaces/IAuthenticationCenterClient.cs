@@ -39,7 +39,6 @@ namespace MyCodex.Application.Interfaces
         Task<AuthenticationStackState> EnterStackAsync(string defaultProviderId, IReadOnlyList<string> memberIds, CancellationToken cancellationToken);
         Task<AuthenticationStackState> ExitStackAsync(CancellationToken cancellationToken);
         Task<AuthenticationStackState> SetStackMemberAsync(string providerId, bool enabled, CancellationToken cancellationToken);
-        Task<AuthenticationStackState> SetStackDefaultAsync(string providerId, CancellationToken cancellationToken);
         Task<AuthenticationStackState> AdoptStackCatalogAsync(CancellationToken cancellationToken);
         Task<AuthenticationStackState> SetStackClassicSubagentsAsync(bool enabled, CancellationToken cancellationToken);
     }

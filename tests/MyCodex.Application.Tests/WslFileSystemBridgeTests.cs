@@ -140,36 +140,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void ReadUncommittedChangesAsync_ParsesStatusAndReadsDiffs()
-        {
-            var executor = new FakeWslCommandExecutor();
-            executor.Results.Enqueue(new WslCommandExecutionResult
-            {
-                ExitCode = 0,
-                StandardOutput = " M src/app.cs\0?? notes.txt\0"
-            });
-            executor.Results.Enqueue(new WslCommandExecutionResult { ExitCode = 0, StandardOutput = string.Empty });
-            executor.Results.Enqueue(new WslCommandExecutionResult
-            {
-                ExitCode = 0,
-                StandardOutput = "diff --git a/src/app.cs b/src/app.cs\n+added\n-removed\n"
-            });
-            var bridge = new WslFileSystemBridge(executor);
-
-            var snapshot = bridge.ReadUncommittedChangesAsync(new WslAppServerConfigSnapshot(), "/home/tester/repo").GetAwaiter().GetResult();
-
-            Assert.That(snapshot.IsGitRepository, Is.True);
-            Assert.That(snapshot.Files, Has.Count.EqualTo(2));
-            Assert.That(snapshot.Files[0].FilePath, Is.EqualTo("src/app.cs"));
-            Assert.That(snapshot.Files[0].ChangeKind, Is.EqualTo("modified"));
-            Assert.That(snapshot.Files[0].AddedLineCount, Is.EqualTo(1));
-            Assert.That(snapshot.Files[0].DeletedLineCount, Is.EqualTo(1));
-            Assert.That(snapshot.Files[1].FilePath, Is.EqualTo("notes.txt"));
-            Assert.That(snapshot.Files[1].ChangeKind, Is.EqualTo("untracked"));
-            Assert.That(executor.ArgumentsByCall[1], Is.EquivalentTo(new[] { "/home/tester/repo", "src/app.cs" }));
-        }
-
-        [Test]
         public void WslGitCommandRunner_PassesWorkspaceAndGitArgumentsSeparately()
         {
             var executor = new FakeWslCommandExecutor

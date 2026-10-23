@@ -18,10 +18,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\tools\update\Invoke-DeferredMyCodexUpdate.ps1">
-      <Link>tools\update\Invoke-DeferredMyCodexUpdate.ps1</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="..\..\tools\installer\Test-MyCodexResourceUsers.ps1">
       <Link>tools\installer\Test-MyCodexResourceUsers.ps1</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

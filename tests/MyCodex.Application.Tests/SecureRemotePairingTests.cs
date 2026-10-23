@@ -256,53 +256,6 @@ namespace MyCodex.Application.Tests
             Assert.That(request.BindingVersion, Is.EqualTo(1));
         }
 
-        [Test]
-        public async Task Approval_RestartRetriesPersistedExactCiphertext()
-        {
-            var vector = SecureRemoteVector.Load();
-            var directory = Path.Combine(
-                TestContext.CurrentContext.WorkDirectory,
-                "pairing-restart-" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(directory);
-            var path = Path.Combine(directory, "bindings.json");
-            var firstRelay = new FakeRelayClient(vector)
-            {
-                FailFirstApproval = true
-            };
-            var firstStore = new JsonRemoteBindingStore(path);
-            var firstWorkflow = CreateVectorWorkflow(firstRelay, firstStore, vector);
-            var verified = firstWorkflow.VerifyClaim(
-                GetActiveInvite(firstWorkflow),
-                VectorOpaqueClaim());
-            var config = CreateConfig(vector);
-
-            Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await firstWorkflow.ApprovePairingClaimAsync(
-                    config,
-                    verified,
-                    CancellationToken.None));
-            var firstRequest = firstRelay.ApprovalRequests.Single();
-
-            var secondRelay = new FakeRelayClient(vector);
-            var secondStore = new JsonRemoteBindingStore(path);
-            var secondWorkflow = CreateWorkflow(secondRelay, secondStore, vector);
-            await secondWorkflow.RetryPendingApprovalAsync(
-                config,
-                verified.Claim.ClaimId,
-                CancellationToken.None);
-
-            var retried = secondRelay.ApprovalRequests.Single();
-            Assert.That(retried.ApprovalHeader, Is.EqualTo(firstRequest.ApprovalHeader));
-            Assert.That(retried.ApprovalNonce, Is.EqualTo(firstRequest.ApprovalNonce));
-            Assert.That(retried.ApprovalCiphertext, Is.EqualTo(firstRequest.ApprovalCiphertext));
-            Assert.That(
-                secondStore.FindActive(
-                    verified.Claim.TenantId,
-                    verified.Claim.HostId,
-                    verified.Claim.DeviceId),
-                Is.Not.Null);
-        }
-
         private static PairingPackage VectorPackage()
         {
             var vector = SecureRemoteVector.Load();
@@ -530,13 +483,6 @@ namespace MyCodex.Application.Tests
             public RemoteDeviceBinding FindActive(string tenantId, string hostId, string deviceId)
             {
                 return Active ? Pending : null;
-            }
-
-            public RemoteDeviceBinding FindPending(string claimId)
-            {
-                return !Active && Pending != null && Pending.ClaimId == claimId
-                    ? Pending
-                    : null;
             }
 
             public void SavePending(RemoteDeviceBinding binding)

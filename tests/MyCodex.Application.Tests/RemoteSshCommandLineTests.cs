@@ -65,25 +65,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void BuildReverseForwardArguments_ForPrivateKey_BindsRemoteLoopback()
-        {
-            var arguments = RemoteSshCommandLine.BuildReverseForwardArguments(new RemoteMacSshConfigSnapshot
-            {
-                HostName = "192.168.50.2",
-                UserName = "tonglujin",
-                Port = 2222,
-                AuthenticationMode = RemoteSshAuthenticationMode.PrivateKey,
-                PrivateKeyPath = @"C:\Users\tester\.ssh\id_ed25519"
-            }, 39442, 38442);
-
-            Assert.That(arguments, Does.Contain("-N -T"));
-            Assert.That(arguments, Does.Contain("-o ExitOnForwardFailure=yes"));
-            Assert.That(arguments, Does.Contain("-R 127.0.0.1:39442:127.0.0.1:38442"));
-            Assert.That(arguments, Does.Contain("-o BatchMode=yes"));
-            Assert.That(arguments, Does.Contain("tonglujin@192.168.50.2"));
-        }
-
-        [Test]
         public void BuildSshArguments_ForPassword_DoesNotEnableOpenSshConnectionSharing()
         {
             var arguments = RemoteSshCommandLine.BuildSshArguments(new RemoteMacSshConfigSnapshot
@@ -163,24 +144,6 @@ namespace MyCodex.Application.Tests
             Assert.That(arguments, Does.Contain("-pwfile C:\\Temp\\pw.txt"));
             Assert.That(arguments, Does.Contain("-hostkey SHA256:abc123"));
             Assert.That(arguments, Does.Contain("192.168.50.2"));
-        }
-
-        [Test]
-        public void BuildPlinkReverseForwardArguments_ForPassword_BindsRemoteLoopback()
-        {
-            var arguments = RemoteSshCommandLine.BuildPlinkReverseForwardArguments(new RemoteMacSshConfigSnapshot
-            {
-                HostName = "192.168.50.2",
-                UserName = "tonglujin",
-                Port = 2222,
-                AuthenticationMode = RemoteSshAuthenticationMode.Password,
-                HostKeyFingerprint = "SHA256:abc123"
-            }, 39442, 38442, @"C:\Temp\pw.txt");
-
-            Assert.That(arguments, Does.Contain("-ssh -batch -N -T"));
-            Assert.That(arguments, Does.Contain("-R 127.0.0.1:39442:127.0.0.1:38442"));
-            Assert.That(arguments, Does.Contain("-pwfile C:\\Temp\\pw.txt"));
-            Assert.That(arguments, Does.Contain("-hostkey SHA256:abc123"));
         }
 
         [Test]

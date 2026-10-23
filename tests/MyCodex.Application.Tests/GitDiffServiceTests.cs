@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using MyCodex.Application.DTOs;
-using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
 using NUnit.Framework;
 
@@ -13,50 +9,6 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public class GitDiffServiceTests
     {
-        [Test]
-        public void ReadUncommittedChanges_PreservesUtf8AndSpacesInFilePath()
-        {
-            var relativePath = Path.Combine("docs", "\u4E2D\u6587 \u7A7A\u683C.txt");
-            var runner = new FakeGitDiffCommandRunner();
-            runner.SetResult(
-                "status --short -z --untracked-files=all --no-renames",
-                "?? " + ToGitQuotedPath(relativePath.Replace('\\', '/')) + "\0");
-            var service = new GitDiffService(runner);
-            var workspaceRoot = CreateTempDirectory();
-            try
-            {
-                Directory.CreateDirectory(Path.Combine(workspaceRoot, ".git"));
-
-                var snapshot = service.ReadUncommittedChanges(workspaceRoot);
-                var entry = snapshot.Files.Single(item =>
-                    string.Equals(item.FilePath, relativePath, StringComparison.OrdinalIgnoreCase));
-
-                Assert.That(snapshot.IsGitRepository, Is.True);
-                Assert.That(entry.ChangeKind, Is.EqualTo("untracked"));
-            }
-            finally
-            {
-                DeleteDirectory(workspaceRoot);
-            }
-        }
-
-        [Test]
-        public void ReadUncommittedChanges_WithoutRunnerThrows()
-        {
-            var service = new GitDiffService();
-            var workspaceRoot = CreateTempDirectory();
-            try
-            {
-                Directory.CreateDirectory(Path.Combine(workspaceRoot, ".git"));
-
-                Assert.Throws<InvalidOperationException>(() => service.ReadUncommittedChanges(workspaceRoot));
-            }
-            finally
-            {
-                DeleteDirectory(workspaceRoot);
-            }
-        }
-
         [Test]
         public void BuildSnapshotFromTurnDiff_ParsesQuotedDiffHeaderPath()
         {
@@ -111,53 +63,6 @@ namespace MyCodex.Application.Tests
 
             builder.Append('"');
             return builder.ToString();
-        }
-
-        private static string CreateTempDirectory()
-        {
-            var path = Path.Combine(Path.GetTempPath(), "MyCodex-GitDiffTests-" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(path);
-            return path;
-        }
-
-        private static void DeleteDirectory(string path)
-        {
-            if (Directory.Exists(path))
-            {
-                Directory.Delete(path, true);
-            }
-        }
-
-        private sealed class FakeGitDiffCommandRunner : IGitDiffCommandRunner
-        {
-            private readonly Dictionary<string, GitCommandResult> _results =
-                new Dictionary<string, GitCommandResult>(StringComparer.Ordinal);
-
-            public void SetResult(string arguments, string standardOutput)
-            {
-                _results[arguments] = new GitCommandResult
-                {
-                    ExitCode = 0,
-                    StandardOutput = standardOutput,
-                    StandardError = string.Empty
-                };
-            }
-
-            public GitCommandResult Run(string workspacePath, string arguments, int timeoutMilliseconds)
-            {
-                GitCommandResult result;
-                if (_results.TryGetValue(arguments, out result))
-                {
-                    return result;
-                }
-
-                return new GitCommandResult
-                {
-                    ExitCode = 0,
-                    StandardOutput = string.Empty,
-                    StandardError = string.Empty
-                };
-            }
         }
     }
 }

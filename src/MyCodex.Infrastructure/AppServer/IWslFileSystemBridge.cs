@@ -19,7 +19,5 @@ namespace MyCodex.Infrastructure.AppServer
         Task DeleteCodexSessionPathAsync(WslAppServerConfigSnapshot config, string sessionPath);
 
         Task<WorkspaceGitInfoSnapshot> ReadGitInfoAsync(WslAppServerConfigSnapshot config, string workspacePath);
-
-        Task<GitDiffSnapshot> ReadUncommittedChangesAsync(WslAppServerConfigSnapshot config, string workspacePath, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

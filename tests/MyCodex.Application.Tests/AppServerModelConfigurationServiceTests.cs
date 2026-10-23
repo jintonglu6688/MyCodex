@@ -159,8 +159,6 @@ namespace MyCodex.Application.Tests
                 if (Version != expectedVersion) { throw new InvalidOperationException("version conflict"); }
                 return Task.CompletedTask;
             }
-            public Task WriteConfigValueAsync(string keyPath, object value) => throw new NotSupportedException();
-            public Task<AppServerModelProviderCapabilities> ReadModelProviderCapabilitiesAsync() => throw new NotSupportedException();
             public Task<AppServerConfigRequirementsSnapshot> ReadConfigRequirementsAsync() => throw new NotSupportedException();
             public Task<AppServerPermissionProfileListResult> ListPermissionProfilesAsync(string workspacePath = null,
                 int? limit = null, string cursor = null, CancellationToken cancellationToken = default(CancellationToken)) => throw new NotSupportedException();

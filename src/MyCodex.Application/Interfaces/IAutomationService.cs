@@ -20,10 +20,6 @@ namespace MyCodex.Application.Interfaces
 
         void Delete(string automationId);
 
-        void MarkRunRead(string runId);
-
-        void ArchiveRun(string runId);
-
         void DeleteRun(string runId);
     }
 }

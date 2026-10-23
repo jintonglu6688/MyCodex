@@ -334,32 +334,7 @@ namespace MyCodex.Infrastructure.Persistence
 
         private static void Write<T>(string path, T value)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            var tempPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
-            try
-            {
-                using (var stream = new FileStream(tempPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-                {
-                    new DataContractJsonSerializer(typeof(T)).WriteObject(stream, value);
-                    stream.Flush(true);
-                }
-
-                if (File.Exists(path))
-                {
-                    File.Replace(tempPath, path, path + ".bak", true);
-                }
-                else
-                {
-                    File.Move(tempPath, path);
-                }
-            }
-            finally
-            {
-                if (File.Exists(tempPath))
-                {
-                    File.Delete(tempPath);
-                }
-            }
+            AtomicFileWriter.Write(path, stream => new DataContractJsonSerializer(typeof(T)).WriteObject(stream, value), path + ".bak");
         }
 
         private T WithLock<T>(Func<T> action)

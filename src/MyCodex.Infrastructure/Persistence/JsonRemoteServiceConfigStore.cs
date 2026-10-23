@@ -2,11 +2,10 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
-using System.Security.Cryptography;
-using System.Text;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
+using MyCodex.Infrastructure.AppServer;
 
 namespace MyCodex.Infrastructure.Persistence
 {
@@ -84,7 +83,6 @@ namespace MyCodex.Infrastructure.Persistence
 
             _appConfigService.EnsureConfigDirectory();
             var filePath = _appConfigService.GetRemoteServiceConfigFilePath();
-            var tempFilePath = filePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
             var value = snapshot ?? new RemoteServiceConfigSnapshot();
             RemoteServiceConfigPlanner.CaptureActiveProfile(value);
             if (value.CreatedAt == default(DateTime))
@@ -93,28 +91,7 @@ namespace MyCodex.Infrastructure.Persistence
             }
 
             value.UpdatedAt = DateTime.UtcNow;
-            try
-            {
-                using (var stream = new FileStream(tempFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-                {
-                    _serializer.WriteObject(stream, value);
-                    stream.Flush();
-                }
-
-                if (File.Exists(filePath))
-                {
-                    File.Replace(tempFilePath, filePath, null);
-                }
-                else
-                {
-                    File.Move(tempFilePath, filePath);
-                }
-            }
-            catch
-            {
-                TryDelete(tempFilePath);
-                throw;
-            }
+            AtomicFileWriter.Write(filePath, stream => _serializer.WriteObject(stream, value));
         }
 
         public void ProtectAccessSecret(RemoteServiceConfigSnapshot snapshot, string accessSecret)
@@ -132,8 +109,7 @@ namespace MyCodex.Infrastructure.Persistence
             }
 
             var trimmed = accessSecret.Trim();
-            var protectedBytes = ProtectedData.Protect(Encoding.UTF8.GetBytes(trimmed), null, DataProtectionScope.CurrentUser);
-            snapshot.EncryptedAccessSecret = Convert.ToBase64String(protectedBytes);
+            snapshot.EncryptedAccessSecret = RemoteSshPasswordProtector.Protect(trimmed);
             snapshot.AccessSecretSuffix = BuildSuffix(trimmed);
         }
 
@@ -144,8 +120,7 @@ namespace MyCodex.Infrastructure.Persistence
                 return null;
             }
 
-            var protectedBytes = Convert.FromBase64String(snapshot.EncryptedAccessSecret);
-            return Encoding.UTF8.GetString(ProtectedData.Unprotect(protectedBytes, null, DataProtectionScope.CurrentUser));
+            return RemoteSshPasswordProtector.Unprotect(snapshot.EncryptedAccessSecret);
         }
 
         public void Clear()

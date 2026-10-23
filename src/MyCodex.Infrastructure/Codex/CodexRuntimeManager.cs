@@ -68,107 +68,6 @@ namespace MyCodex.Infrastructure.Codex
             return launchInfo ?? throw new CodexRuntimeUnavailableException(GetStatus(config));
         }
 
-        public async Task<string> VerifyExecutableAsync(string executablePath, string additionalPathDirectory, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(executablePath))
-            {
-                throw new ArgumentException(
-                    SharedLocalization.Text("CodexRuntime.Error.ExecutablePathRequired", "Executable path cannot be empty."),
-                    nameof(executablePath));
-            }
-
-            if (!File.Exists(executablePath))
-            {
-                throw new FileNotFoundException(
-                    SharedLocalization.Text("CodexRuntime.Error.ExecutableNotFound", "Codex executable was not found."),
-                    executablePath);
-            }
-
-            var verificationProcess = BuildLaunchInfo(executablePath, "--version", additionalPathDirectory);
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = verificationProcess.FileName,
-                Arguments = verificationProcess.Arguments,
-                WorkingDirectory = Path.GetDirectoryName(executablePath) ?? Environment.CurrentDirectory,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8
-            };
-            ApplyEnvironment(startInfo, verificationProcess.EnvironmentVariables);
-
-            try
-            {
-                using (var process = new Process { StartInfo = startInfo })
-                {
-                    try
-                    {
-                        if (!process.Start())
-                        {
-                            throw new InvalidOperationException(
-                                SharedLocalization.Text("CodexRuntime.Error.UnableToStartExecutable", "Unable to start Codex executable."));
-                        }
-                    }
-                    catch (Win32Exception ex)
-                    {
-                        throw new InvalidOperationException(
-                            SharedLocalization.Text("CodexRuntime.Error.UnableToStartExecutable", "Unable to start Codex executable."),
-                            ex);
-                    }
-
-                    var standardOutputTask = process.StandardOutput.ReadToEndAsync();
-                    var standardErrorTask = process.StandardError.ReadToEndAsync();
-
-                    await WaitForExitAsync(process, cancellationToken).ConfigureAwait(false);
-                    var standardOutput = await standardOutputTask.ConfigureAwait(false);
-                    var standardError = await standardErrorTask.ConfigureAwait(false);
-
-                    if (process.ExitCode != 0)
-                    {
-                        var errorMessage = string.IsNullOrWhiteSpace(standardError) ? standardOutput : standardError;
-                        throw new InvalidOperationException(
-                            string.Format(
-                                SharedLocalization.Text("CodexRuntime.Error.VerificationFailed.Template", "Codex verification failed: {0}"),
-                                string.IsNullOrWhiteSpace(errorMessage)
-                                    ? SharedLocalization.Text("Common.Value.UnknownError", "Unknown error")
-                                    : errorMessage.Trim()));
-                    }
-
-                    var version = (standardOutput ?? string.Empty).Trim();
-                    if (string.IsNullOrWhiteSpace(version))
-                    {
-                        version = (standardError ?? string.Empty).Trim();
-                    }
-
-                    return version;
-                }
-            }
-            finally
-            {
-                DeleteSensitiveTempFiles(verificationProcess);
-            }
-        }
-
-        private static void DeleteSensitiveTempFiles(AppServerLaunchInfo launchInfo)
-        {
-            if (launchInfo == null || launchInfo.SensitiveTempFilePaths == null)
-            {
-                return;
-            }
-
-            for (var i = 0; i < launchInfo.SensitiveTempFilePaths.Count; i++)
-            {
-                RemoteSshPasswordFile.TryDelete(launchInfo.SensitiveTempFilePaths[i]);
-            }
-        }
-
-        public Task<string> VerifyCustomExecutableAsync(string executablePath, CancellationToken cancellationToken)
-        {
-            return VerifyExecutableAsync(executablePath, InferAdditionalPathDirectory(executablePath), cancellationToken);
-        }
-
         public Task<string> VerifyWslCodexAsync(WslAppServerConfigSnapshot wslConfig, CancellationToken cancellationToken)
         {
             wslConfig = wslConfig ?? new WslAppServerConfigSnapshot();
@@ -195,11 +94,6 @@ namespace MyCodex.Infrastructure.Codex
                 verificationProcess,
                 Environment.CurrentDirectory,
                 cancellationToken);
-        }
-
-        public Task<string> VerifyRemoteMacCodexAsync(RemoteMacSshConfigSnapshot remoteConfig, CancellationToken cancellationToken)
-        {
-            return VerifyRemoteUnixCodexAsync(remoteConfig, cancellationToken);
         }
 
         public Task<string> VerifyRemoteUnixCodexAsync(RemoteMacSshConfigSnapshot remoteConfig, CancellationToken cancellationToken)
@@ -885,7 +779,7 @@ namespace MyCodex.Infrastructure.Codex
             }
             finally
             {
-                DeleteSensitiveTempFiles(processLaunchInfo);
+                AppServerRuntimeStartupCoordinator.DeleteSensitiveTempFiles(processLaunchInfo);
             }
         }
 

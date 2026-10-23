@@ -71,11 +71,6 @@ namespace MyCodex.WinForms.Forms
             FindText(_lastFindText, true);
         }
 
-        internal void FindPreviousForTests()
-        {
-            FindText(_lastFindText, false);
-        }
-
         internal void ReplaceCurrentForTests()
         {
             ReplaceCurrent(_lastFindText, _lastReplaceText);

@@ -6,7 +6,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MyCodex.Infrastructure.Updates;
 
 namespace MyCodex.Infrastructure.Instances
 {
@@ -46,7 +45,6 @@ namespace MyCodex.Infrastructure.Instances
 
         private static IDisposable ReserveTargetStartup(string channelId)
         {
-            DeferredUpdateInstallerLauncher.ThrowIfUpdatePending();
             var update = AcquireStartupGate(UpdateGateRoute());
             if (update == null) throw new InvalidOperationException("An update is preparing. Retry after it finishes.");
             try

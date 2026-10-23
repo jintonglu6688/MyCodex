@@ -72,8 +72,6 @@ namespace MyCodex.Application.Tests
             var active = new AuthenticationCenterClient("Test", (method, parameters, token) => Reply(State(true, "a", null, Member("a", true))));
             Assert.That(Assert.ThrowsAsync<AuthenticationCenterException>(() =>
                 active.ExitStackAsync(CancellationToken.None)).Code, Is.EqualTo("operation_unknown"));
-            Assert.That(Assert.ThrowsAsync<AuthenticationCenterException>(() =>
-                active.SetStackDefaultAsync("b", CancellationToken.None)).Code, Is.EqualTo("operation_unknown"));
             var incomplete = new AuthenticationCenterClient("Test", (method, parameters, token) =>
                 Reply(new Dictionary<string, object> { { "members", new object[0] } }));
             Assert.That(Assert.ThrowsAsync<AuthenticationCenterException>(() =>

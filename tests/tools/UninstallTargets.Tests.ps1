@@ -33,8 +33,6 @@ Source: "$repo\tools\installer\LegacyTargetExit.cs"; DestDir: "{app}\tools"
 [CustomMessages]
 $($messages -join "`r`n")
 [Code]
-function IsDeferredUpdate(): Boolean;
-begin Result := False; end;
 #include "$repo\tools\installer\InstallationTargets.iss"
 function AuthenticationMaintenance(Action, ScriptPath, StatePath: String): Boolean;
 begin

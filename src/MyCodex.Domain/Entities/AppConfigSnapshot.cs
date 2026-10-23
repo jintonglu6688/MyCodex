@@ -15,7 +15,6 @@ namespace MyCodex.Domain.Entities
         private List<RemoteUnixSshProfileConfigSnapshot> _remoteUnixSshProfiles = new List<RemoteUnixSshProfileConfigSnapshot>();
         private UpdateSettingsSnapshot _updateSettings = new UpdateSettingsSnapshot();
         private CustomApprovalSettingsSnapshot _customApprovalSettings = new CustomApprovalSettingsSnapshot();
-        private List<string> _autoCompactRemainingPercentMigrationRuntimeProfileIds = new List<string>();
         private string _windowsShellPreference = WindowsShellPreferences.Auto;
         private bool? _showActivityThinkingMessages = true;
         private bool? _showActivityPlanMessages = true;
@@ -48,24 +47,6 @@ namespace MyCodex.Domain.Entities
             set { _customApprovalSettings = value ?? new CustomApprovalSettingsSnapshot(); }
         }
 
-        [DataMember]
-        public List<string> AutoCompactRemainingPercentMigrationRuntimeProfileIds
-        {
-            get
-            {
-                if (_autoCompactRemainingPercentMigrationRuntimeProfileIds == null)
-                {
-                    _autoCompactRemainingPercentMigrationRuntimeProfileIds = new List<string>();
-                }
-
-                return _autoCompactRemainingPercentMigrationRuntimeProfileIds;
-            }
-            set
-            {
-                _autoCompactRemainingPercentMigrationRuntimeProfileIds = value ?? new List<string>();
-            }
-        }
-
         [DataMember(Name = "DefaultModelId", EmitDefaultValue = false)]
         private string LegacyDefaultModelId { get; set; }
 
@@ -74,30 +55,6 @@ namespace MyCodex.Domain.Entities
 
         [DataMember]
         public string GitHostingProviderId { get; set; } = DefaultGitHostingProviderId;
-
-        [DataMember]
-        public bool ShowProcessingChatMessages { get; set; }
-
-        [DataMember]
-        public bool ShowReasoningSummaryChatMessages { get; set; }
-
-        [DataMember]
-        public bool ShowCommandChatMessages { get; set; }
-
-        [DataMember]
-        public bool ShowFileChangeChatMessages { get; set; }
-
-        [DataMember]
-        public bool ShowApprovalChatMessages { get; set; }
-
-        [DataMember]
-        public bool ShowAccountChatMessages { get; set; }
-
-        [DataMember]
-        public bool ShowProtocolNoticeChatMessages { get; set; } = true;
-
-        [DataMember]
-        public bool ShowProtocolWarningChatMessages { get; set; } = true;
 
         [DataMember]
         public bool OfficeShowActivityPane { get; set; } = true;

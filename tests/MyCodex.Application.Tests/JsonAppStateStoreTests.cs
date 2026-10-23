@@ -457,11 +457,6 @@ namespace MyCodex.Application.Tests
 
             public string WrittenPath { get; private set; }
 
-            public bool IsRuntimeEndpointStorageAvailableSynchronously(AppConfigSnapshot config)
-            {
-                return UseRuntimeEndpoint;
-            }
-
             public bool TryGetRuntimeAppStateFilePathForAsyncAccess(AppConfigSnapshot config, out string path)
             {
                 path = UseRuntimeEndpoint ? "runtime-app-state.json" : null;
@@ -499,17 +494,6 @@ namespace MyCodex.Application.Tests
             public Task WriteTextFileAsync(AppConfigSnapshot config, string path, string content)
             {
                 WriteTextFile(config, path, content);
-                return Task.CompletedTask;
-            }
-
-            public void DeleteFile(AppConfigSnapshot config, string path)
-            {
-                _content = null;
-            }
-
-            public Task DeleteFileAsync(AppConfigSnapshot config, string path)
-            {
-                DeleteFile(config, path);
                 return Task.CompletedTask;
             }
         }

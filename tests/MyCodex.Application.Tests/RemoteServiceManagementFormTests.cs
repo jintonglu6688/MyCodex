@@ -1443,11 +1443,6 @@ namespace MyCodex.Application.Tests
                     : null;
             }
 
-            public RemoteDeviceBinding FindPending(string claimId)
-            {
-                return null;
-            }
-
             public void SavePending(RemoteDeviceBinding binding)
             {
             }
@@ -1514,14 +1509,6 @@ namespace MyCodex.Application.Tests
             {
                 ApproveCalls++;
                 return Task.CompletedTask;
-            }
-
-            public Task RetryPendingApprovalAsync(
-                RelayHostConfig config,
-                string claimId,
-                CancellationToken cancellationToken)
-            {
-                throw new NotSupportedException();
             }
         }
 

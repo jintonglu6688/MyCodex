@@ -12,11 +12,9 @@ namespace MyCodex.Application.Tests
         public void PluginMarketNetworkDownloads_UseTimeoutWebClient()
         {
             var catalogClient = RepositorySource.ReadSourceFile("PluginMarketCatalogClient.cs");
-            var packageDownloader = RepositorySource.ReadSourceFile("MarketPackageDownloader.cs");
             var timeoutWebClient = RepositorySource.ReadSourceFile("TimeoutWebClient.cs");
 
             Assert.That(catalogClient, Does.Contain("new TimeoutWebClient(TimeSpan.FromSeconds(30))"));
-            Assert.That(packageDownloader, Does.Contain("new TimeoutWebClient(TimeSpan.FromSeconds(60))"));
             Assert.That(timeoutWebClient, Does.Contain("request.Timeout = _timeoutMilliseconds"));
             Assert.That(timeoutWebClient, Does.Contain("httpRequest.ReadWriteTimeout = _timeoutMilliseconds"));
         }

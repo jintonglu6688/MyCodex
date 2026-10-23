@@ -624,22 +624,12 @@ namespace MyCodex.Application.Tests
                 throw new NotSupportedException();
             }
 
-            public Task LogoutAsync()
-            {
-                throw new NotSupportedException();
-            }
-
             public Task<AppServerRateLimitsSnapshot> GetRateLimitsAsync()
             {
                 throw new NotSupportedException();
             }
 
             public Task<AppServerConfigSnapshot> ReadConfigAsync(string workspacePath, bool includeLayers)
-            {
-                throw new NotSupportedException();
-            }
-
-            public Task WriteConfigValueAsync(string keyPath, object value)
             {
                 throw new NotSupportedException();
             }
@@ -695,16 +685,6 @@ namespace MyCodex.Application.Tests
             }
 
             public Task UninstallPluginAsync(string pluginId)
-            {
-                throw new NotSupportedException();
-            }
-
-            public Task<AppServerModelProviderCapabilities> ReadModelProviderCapabilitiesAsync()
-            {
-                throw new NotSupportedException();
-            }
-
-            public Task<List<AppServerExperimentalFeature>> ListExperimentalFeaturesAsync(uint? limit = null)
             {
                 throw new NotSupportedException();
             }
@@ -799,11 +779,6 @@ namespace MyCodex.Application.Tests
             public override Task<AppServerTurnSteerResult> TrySteerTurnAsync(string threadId, IReadOnlyCollection<AppServerUserInputItem> inputItems, string clientUserMessageId = null)
             {
                 return Task.FromResult(AppServerTurnSteerResult.NotAttempted(null, "test-double"));
-            }
-
-            public override Task<AppServerThreadInjectItemsResult> InjectThreadItemsAsync(string threadId, IReadOnlyCollection<IDictionary<string, object>> items, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return Task.FromResult(new AppServerThreadInjectItemsResult { Succeeded = true });
             }
 
             public override Task ApproveGuardianDeniedActionAsync(AppServerGuardianDeniedActionApprovalRequest request, CancellationToken cancellationToken = default(CancellationToken))

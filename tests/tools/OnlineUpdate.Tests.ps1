@@ -62,8 +62,6 @@ TargetExitCancelled=EXIT_CANCELLED
 ForceCloseTargets=FORCE_CLOSE_WARNING
 PreparingForceClose=PREPARING_FORCE_CLOSE
 [Code]
-function IsDeferredUpdate(): Boolean;
-begin Result := False; end;
 #include "$repo\tools\installer\InstallationTargets.iss"
 var AutoStarted: Boolean;
 function PostTestClick(Window: THandle; Message, WParam, LParam: LongWord): Boolean;

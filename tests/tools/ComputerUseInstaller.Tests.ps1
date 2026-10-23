@@ -40,7 +40,7 @@ if ($iss.Contains('function CheckInstallPath(): String;')) {
     Invoke-Expression $function.Extent.Text
     $limit = Get-MaximumInstallRootLength -PackageSourceDir $SourceDir
     $start = $iss.IndexOf('function CheckInstallPath(): String;', [StringComparison]::Ordinal)
-    $end = $iss.IndexOf('function IsDeferredUpdate', $start, [StringComparison]::Ordinal)
+    $end = $iss.IndexOf('function CanLaunchInstalledApplication', $start, [StringComparison]::Ordinal)
     $guard = $iss.Substring($start, $end - $start)
     $check = $iss.IndexOf('Result := CheckInstallPath();')
     if ($check -lt 0 -or $check -gt $iss.IndexOf("ExtractTemporaryFile('Test-MyCodexResourceUsers.ps1')")) { throw 'Path guard must precede all installer maintenance.' }

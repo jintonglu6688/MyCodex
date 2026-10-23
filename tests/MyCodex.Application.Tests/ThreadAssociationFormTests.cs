@@ -192,11 +192,6 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(AppServerTurnSteerResult.NotAttempted(null, "test-double"));
             }
 
-            public override Task<AppServerThreadInjectItemsResult> InjectThreadItemsAsync(string threadId, IReadOnlyCollection<IDictionary<string, object>> items, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return Task.FromResult(new AppServerThreadInjectItemsResult { Succeeded = true });
-            }
-
             public override Task ApproveGuardianDeniedActionAsync(AppServerGuardianDeniedActionApprovalRequest request, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.CompletedTask;

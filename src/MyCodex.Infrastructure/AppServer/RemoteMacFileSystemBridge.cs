@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
-using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
 using MyCodex.Shared.Localization;
 
@@ -16,10 +13,7 @@ namespace MyCodex.Infrastructure.AppServer
         private const int ListDirectoryTimeoutMilliseconds = 15000;
         private const int DeleteTimeoutMilliseconds = 10000;
         private const int TextFileTimeoutMilliseconds = 10000;
-        private const int SkillWriteTimeoutMilliseconds = 15000;
         private const int GitInfoTimeoutMilliseconds = 15000;
-        private const int GitDiffTimeoutMilliseconds = 25000;
-        private const int UnsupportedSessionPathExitCode = 73;
 
         private const string ListDirectoryScript =
             "emulate -L sh 2>/dev/null || true\n" +
@@ -75,63 +69,25 @@ namespace MyCodex.Infrastructure.AppServer
             "  *) exit 73 ;;\n" +
             "esac";
         private const string ReadTextFileScript = "test -f \"$1\" && cat \"$1\"";
-        private const string WriteSkillFilesScript =
-            "set -eu\n" +
-            "skill_dir=${1:-}\n" +
-            "skill_text=${2-}\n" +
-            "agent_text=${3-}\n" +
-            "agent_action=${4:-none}\n" +
-            "if [ -z \"$skill_dir\" ]; then exit 64; fi\n" +
-            "mkdir -p \"$skill_dir\"\n" +
-            "printf '%s' \"$skill_text\" > \"$skill_dir/SKILL.md\"\n" +
-            "agents_dir=\"$skill_dir/agents\"\n" +
-            "agent_file=\"$agents_dir/openai.yaml\"\n" +
-            "case \"$agent_action\" in\n" +
-            "  write) mkdir -p \"$agents_dir\"; printf '%s' \"$agent_text\" > \"$agent_file\" ;;\n" +
-            "  delete) rm -f \"$agent_file\"; rmdir \"$agents_dir\" 2>/dev/null || true ;;\n" +
-            "  none) ;;\n" +
-            "  *) exit 65 ;;\n" +
-            "esac";
-
-        private const string GitStatusAndDiffScript =
-            "workspace_path=${1:-}\n" +
-            "if [ -z \"$workspace_path\" ]; then exit 64; fi\n" +
-            "if ! git -C \"$workspace_path\" rev-parse --is-inside-work-tree >/dev/null 2>&1; then exit 2; fi\n" +
-            "MYCODEX_WORKSPACE=\"$workspace_path\" perl -MMIME::Base64=encode_base64 -e '\n" +
-            "use strict;\n" +
-            "use warnings;\n" +
-            "my $workdir = $ENV{MYCODEX_WORKSPACE} || exit 64;\n" +
-            "sub enc { return encode_base64(defined $_[0] ? $_[0] : q{}, q{}); }\n" +
-            "sub capture {\n" +
-            "  my @cmd = @_;\n" +
-            "  open(my $fh, q{-|}, @cmd) or return q{};\n" +
-            "  local $/;\n" +
-            "  my $out = <$fh>;\n" +
-            "  close($fh);\n" +
-            "  return defined $out ? $out : q{};\n" +
-            "}\n" +
-            "open(my $status_fh, q{-|}, q{git}, q{-C}, $workdir, q{status}, q{--short}, q{-z}, q{--untracked-files=all}, q{--no-renames}) or exit 67;\n" +
-            "local $/ = qq{\\0};\n" +
-            "while (defined(my $record = <$status_fh>)) {\n" +
-            "  chomp $record;\n" +
-            "  next if length($record) < 3;\n" +
-            "  my $raw = substr($record, 0, 2);\n" +
-            "  my $path = length($record) > 3 ? substr($record, 3) : q{};\n" +
-            "  next if $path eq q{};\n" +
-            "  my $staged = q{};\n" +
-            "  my $unstaged = q{};\n" +
-            "  if ($raw !~ /\\?\\?/) {\n" +
-            "    $staged = capture(q{git}, q{-C}, $workdir, q{diff}, q{--cached}, q{--no-ext-diff}, q{--binary}, q{--}, $path);\n" +
-            "    $unstaged = capture(q{git}, q{-C}, $workdir, q{diff}, q{--no-ext-diff}, q{--binary}, q{--}, $path);\n" +
-            "  }\n" +
-            "  print join(qq{\\t}, q{file}, enc($record), enc($staged), enc($unstaged)), qq{\\n};\n" +
-            "}\n" +
-            "close($status_fh);\n" +
-            "my $code = $? >> 8;\n" +
-            "exit $code if $code != 0;\n" +
-            "'";
 
         private readonly IRemoteSshCommandExecutor _executor;
+        private readonly UnixFileSystemBridgeCore _core = new UnixFileSystemBridgeCore(new UnixFileSystemBridgeProfile
+        {
+            TargetLabel = "Remote",
+            CommandFailedMessage = () => SharedLocalization.Text("RemoteMacFileSystemBridge.Error.CommandFailed", "Remote SSH command failed."),
+            ListDirectoryScript = ListDirectoryScript,
+            DeleteCodexSessionScript = DeleteCodexSessionScript,
+            ResolveHomeOperation = "mycodex-resolve-remote-home",
+            TestDirectoryOperation = "mycodex-test-remote-directory",
+            TestFileOperation = "mycodex-test-remote-file",
+            ListDirectoryOperation = "mycodex-list-remote-directory",
+            DeleteCodexSessionOperation = "mycodex-delete-remote-codex-session",
+            ReadGitInfoOperation = "mycodex-read-remote-git-info",
+            ProbeTimeoutMilliseconds = DirectoryExistsTimeoutMilliseconds,
+            ListDirectoryTimeoutMilliseconds = ListDirectoryTimeoutMilliseconds,
+            DeleteTimeoutMilliseconds = DeleteTimeoutMilliseconds,
+            GitInfoTimeoutMilliseconds = GitInfoTimeoutMilliseconds
+        });
 
         public RemoteMacFileSystemBridge()
             : this(new RemoteSshCommandExecutor())
@@ -143,136 +99,29 @@ namespace MyCodex.Infrastructure.AppServer
             _executor = executor ?? throw new ArgumentNullException(nameof(executor));
         }
 
-        public async Task<string> ResolveHomeDirectoryAsync(RemoteMacSshConfigSnapshot config)
+        public Task<string> ResolveHomeDirectoryAsync(RemoteMacSshConfigSnapshot config)
         {
-            var result = await _executor.ExecuteAsync(
-                config,
-                UnixFileSystemBridgeScripts.ResolveHomeDirectoryScript,
-                "mycodex-resolve-remote-home",
-                DirectoryExistsTimeoutMilliseconds).ConfigureAwait(false);
-            if (result.ExitCode != 0)
-            {
-                throw BuildRemoteCommandException(result);
-            }
-
-            var homePath = (result.StandardOutput ?? string.Empty).Trim();
-            if (homePath.IndexOf('\r') >= 0 ||
-                homePath.IndexOf('\n') >= 0 ||
-                !WorkspacePathUtilities.LooksLikeUnixAbsolutePath(homePath))
-            {
-                throw new InvalidOperationException("Remote home directory was not returned as an absolute path.");
-            }
-
-            return WorkspacePathUtilities.NormalizeUnixAbsolutePath(homePath);
+            return _core.ResolveHomeDirectoryAsync(Invoker(config));
         }
 
-        public async Task<bool> DirectoryExistsAsync(RemoteMacSshConfigSnapshot config, string path)
+        public Task<bool> DirectoryExistsAsync(RemoteMacSshConfigSnapshot config, string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return false;
-            }
-
-            var result = await _executor.ExecuteAsync(
-                config,
-                UnixFileSystemBridgeScripts.DirectoryExistsScript,
-                "mycodex-test-remote-directory",
-                DirectoryExistsTimeoutMilliseconds,
-                path.Trim()).ConfigureAwait(false);
-            if (result.ExitCode == 0)
-            {
-                return true;
-            }
-
-            if (result.ExitCode == 1)
-            {
-                return false;
-            }
-
-            throw BuildRemoteCommandException(result);
+            return _core.DirectoryExistsAsync(Invoker(config), path);
         }
 
-        public async Task<bool> FileExistsAsync(RemoteMacSshConfigSnapshot config, string path)
+        public Task<bool> FileExistsAsync(RemoteMacSshConfigSnapshot config, string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return false;
-            }
-
-            var result = await _executor.ExecuteAsync(
-                config,
-                UnixFileSystemBridgeScripts.FileExistsScript,
-                "mycodex-test-remote-file",
-                DirectoryExistsTimeoutMilliseconds,
-                path.Trim()).ConfigureAwait(false);
-            if (result.ExitCode == 0)
-            {
-                return true;
-            }
-
-            if (result.ExitCode == 1)
-            {
-                return false;
-            }
-
-            throw BuildRemoteCommandException(result);
+            return _core.FileExistsAsync(Invoker(config), path);
         }
 
-        public async Task<IReadOnlyList<RuntimeFileSystemEntrySnapshot>> ListDirectoryAsync(RemoteMacSshConfigSnapshot config, string path)
+        public Task<IReadOnlyList<RuntimeFileSystemEntrySnapshot>> ListDirectoryAsync(RemoteMacSshConfigSnapshot config, string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentException("Remote directory path cannot be empty.", nameof(path));
-            }
-
-            var result = await _executor.ExecuteAsync(
-                config,
-                ListDirectoryScript,
-                "mycodex-list-remote-directory",
-                ListDirectoryTimeoutMilliseconds,
-                path.Trim()).ConfigureAwait(false);
-            if (result.ExitCode == 0)
-            {
-                return UnixFileSystemBridgeParsers.ParseDirectoryListing(result.StandardOutput);
-            }
-
-            if (result.ExitCode == 66)
-            {
-                throw new InvalidOperationException("Remote directory was not found.");
-            }
-
-            throw BuildRemoteCommandException(result);
+            return _core.ListDirectoryAsync(Invoker(config), path);
         }
 
-        public async Task DeleteCodexSessionPathAsync(RemoteMacSshConfigSnapshot config, string sessionPath)
+        public Task DeleteCodexSessionPathAsync(RemoteMacSshConfigSnapshot config, string sessionPath)
         {
-            if (string.IsNullOrWhiteSpace(sessionPath))
-            {
-                throw new ArgumentException(
-                    SharedLocalization.Text("AppServerClient.Error.ThreadFilePathRequired", "Thread file path cannot be empty."),
-                    nameof(sessionPath));
-            }
-
-            var result = await _executor.ExecuteAsync(
-                config,
-                DeleteCodexSessionScript,
-                "mycodex-delete-remote-codex-session",
-                DeleteTimeoutMilliseconds,
-                sessionPath.Trim()).ConfigureAwait(false);
-            if (result.ExitCode == 0)
-            {
-                return;
-            }
-
-            if (result.ExitCode == UnsupportedSessionPathExitCode)
-            {
-                throw new InvalidOperationException(
-                    SharedLocalization.Text(
-                        "AppServerClient.Error.ThreadFilePathUnsupported",
-                        "Current thread file path is outside supported Codex state directories and cannot be fully removed."));
-            }
-
-            throw BuildRemoteCommandException(result);
+            return _core.DeleteCodexSessionPathAsync(Invoker(config), sessionPath);
         }
 
         public async Task<string> ReadTextFileAsync(RemoteMacSshConfigSnapshot config, string path)
@@ -282,8 +131,7 @@ namespace MyCodex.Infrastructure.AppServer
                 throw new ArgumentException("Remote file path cannot be empty.", nameof(path));
             }
 
-            var result = await _executor.ExecuteAsync(
-                config,
+            var result = await Invoker(config)(
                 ReadTextFileScript,
                 "mycodex-read-remote-text-file",
                 TextFileTimeoutMilliseconds,
@@ -293,164 +141,17 @@ namespace MyCodex.Infrastructure.AppServer
                 return result.StandardOutput ?? string.Empty;
             }
 
-            throw BuildRemoteCommandException(result);
+            throw _core.BuildCommandException(result);
         }
 
-        public async Task WriteSkillFilesAsync(
-            RemoteMacSshConfigSnapshot config,
-            string skillDirectoryPath,
-            string skillMarkdownText,
-            string openAiAgentText,
-            RemoteSkillAgentFileAction agentFileAction)
+        public Task<WorkspaceGitInfoSnapshot> ReadGitInfoAsync(RemoteMacSshConfigSnapshot config, string workspacePath)
         {
-            if (string.IsNullOrWhiteSpace(skillDirectoryPath))
-            {
-                throw new ArgumentException("Remote skill directory path cannot be empty.", nameof(skillDirectoryPath));
-            }
-
-            var result = await _executor.ExecuteAsync(
-                config,
-                WriteSkillFilesScript,
-                "mycodex-write-remote-skill-files",
-                SkillWriteTimeoutMilliseconds,
-                skillDirectoryPath.Trim(),
-                skillMarkdownText ?? string.Empty,
-                openAiAgentText ?? string.Empty,
-                ToAgentFileActionArgument(agentFileAction)).ConfigureAwait(false);
-            if (result.ExitCode == 0)
-            {
-                return;
-            }
-
-            throw BuildRemoteCommandException(result);
+            return _core.ReadGitInfoAsync(Invoker(config), workspacePath);
         }
 
-        public async Task<WorkspaceGitInfoSnapshot> ReadGitInfoAsync(RemoteMacSshConfigSnapshot config, string workspacePath)
+        private UnixCommandInvoker Invoker(RemoteMacSshConfigSnapshot config)
         {
-            var snapshot = new WorkspaceGitInfoSnapshot();
-            if (string.IsNullOrWhiteSpace(workspacePath))
-            {
-                return snapshot;
-            }
-
-            var result = await _executor.ExecuteAsync(
-                config,
-                UnixFileSystemBridgeScripts.GitInfoScript,
-                "mycodex-read-remote-git-info",
-                GitInfoTimeoutMilliseconds,
-                workspacePath.Trim()).ConfigureAwait(false);
-            if (result.ExitCode != 0)
-            {
-                return snapshot;
-            }
-
-            var values = UnixFileSystemBridgeParsers.ParseKeyValueOutput(result.StandardOutput);
-            snapshot.IsGitRepository = true;
-            snapshot.Branch = UnixFileSystemBridgeParsers.GetValue(values, "branch");
-            snapshot.Sha = UnixFileSystemBridgeParsers.GetValue(values, "sha");
-            snapshot.OriginUrl = UnixFileSystemBridgeParsers.GetValue(values, "origin");
-            return snapshot;
-        }
-
-        public async Task<GitDiffSnapshot> ReadUncommittedChangesAsync(RemoteMacSshConfigSnapshot config, string workspacePath, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            var snapshot = new GitDiffSnapshot
-            {
-                WorkspacePath = workspacePath
-            };
-            cancellationToken.ThrowIfCancellationRequested();
-            if (string.IsNullOrWhiteSpace(workspacePath))
-            {
-                return snapshot;
-            }
-
-            var normalizedWorkspacePath = workspacePath.Trim();
-            var statusResult = await _executor.ExecuteAsync(
-                config,
-                GitStatusAndDiffScript,
-                "mycodex-read-remote-git-status-and-diffs",
-                GitDiffTimeoutMilliseconds,
-                cancellationToken,
-                normalizedWorkspacePath).ConfigureAwait(false);
-            if (statusResult.ExitCode != 0)
-            {
-                return snapshot;
-            }
-
-            snapshot.IsGitRepository = true;
-            foreach (var entry in ParseStatusAndDiffOutput(statusResult.StandardOutput))
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                if (entry == null || string.IsNullOrWhiteSpace(entry.FilePath))
-                {
-                    continue;
-                }
-
-                UnixFileSystemBridgeParsers.PopulateDiffLineCounts(entry);
-                snapshot.Files.Add(entry);
-            }
-
-            return snapshot;
-        }
-
-        private static IReadOnlyList<GitDiffFileEntry> ParseStatusAndDiffOutput(string output)
-        {
-            var entries = new List<GitDiffFileEntry>();
-            if (string.IsNullOrWhiteSpace(output))
-            {
-                return entries;
-            }
-
-            var lines = output.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
-            for (var i = 0; i < lines.Length; i++)
-            {
-                var line = lines[i];
-                if (string.IsNullOrWhiteSpace(line))
-                {
-                    continue;
-                }
-
-                var parts = line.Split(new[] { '\t' }, 4);
-                if (parts.Length < 4 || !string.Equals(parts[0], "file", StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                var entry = UnixFileSystemBridgeParsers.ParseStatusEntry(UnixFileSystemBridgeParsers.DecodeBase64Field(parts[1]));
-                if (entry == null)
-                {
-                    continue;
-                }
-
-                entry.DiffText = UnixFileSystemBridgeParsers.BuildDiffText(
-                    entry,
-                    UnixFileSystemBridgeParsers.DecodeBase64Field(parts[2]),
-                    UnixFileSystemBridgeParsers.DecodeBase64Field(parts[3]));
-                entries.Add(entry);
-            }
-
-            return entries;
-        }
-
-        private static InvalidOperationException BuildRemoteCommandException(RemoteSshCommandExecutionResult result)
-        {
-            var message = result != null && !string.IsNullOrWhiteSpace(result.StandardError)
-                ? result.StandardError.Trim()
-                : SharedLocalization.Text("RemoteMacFileSystemBridge.Error.CommandFailed", "Remote SSH command failed.");
-            return new InvalidOperationException(message);
-        }
-
-        private static string ToAgentFileActionArgument(RemoteSkillAgentFileAction action)
-        {
-            switch (action)
-            {
-                case RemoteSkillAgentFileAction.Write:
-                    return "write";
-                case RemoteSkillAgentFileAction.Delete:
-                    return "delete";
-                default:
-                    return "none";
-            }
+            return UnixCommandInvokers.ForRemote(config, _executor);
         }
     }
 }

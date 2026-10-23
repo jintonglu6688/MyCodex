@@ -58,40 +58,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         public static int CleanupStaleFiles(string tempDirectory, TimeSpan maxAge)
         {
-            var directory = NormalizeDirectory(tempDirectory);
-            if (!Directory.Exists(directory))
-            {
-                return 0;
-            }
-
-            var deleted = 0;
-            var threshold = DateTime.UtcNow.Subtract(maxAge < TimeSpan.Zero ? TimeSpan.Zero : maxAge);
-            string[] files;
-            try
-            {
-                files = Directory.GetFiles(directory, CommandFileSearchPattern);
-            }
-            catch
-            {
-                return 0;
-            }
-
-            foreach (var path in files)
-            {
-                try
-                {
-                    if (File.GetLastWriteTimeUtc(path) <= threshold)
-                    {
-                        File.Delete(path);
-                        deleted++;
-                    }
-                }
-                catch
-                {
-                }
-            }
-
-            return deleted;
+            return RemoteSshSensitiveFileDirectory.CleanupStaleFiles(tempDirectory, CommandFileSearchPattern, maxAge);
         }
 
         private static string BuildOpenSshConfig(RemoteMacSshConfigSnapshot config, string remoteCommand)

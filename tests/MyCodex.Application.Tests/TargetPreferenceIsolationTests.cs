@@ -88,13 +88,9 @@ namespace MyCodex.Application.Tests
                 Content = content;
                 return Task.CompletedTask;
             }
-
-            public bool IsRuntimeEndpointStorageAvailableSynchronously(AppConfigSnapshot config) => true;
             public bool TryGetRuntimeAppStateFilePathForAsyncAccess(AppConfigSnapshot config, out string path) { path = null; return false; }
             public bool ReadTextFile(AppConfigSnapshot config, string path, out string content) { content = null; return false; }
             public void WriteTextFile(AppConfigSnapshot config, string path, string content) => throw new NotSupportedException();
-            public void DeleteFile(AppConfigSnapshot config, string path) => throw new NotSupportedException();
-            public Task DeleteFileAsync(AppConfigSnapshot config, string path) => throw new NotSupportedException();
         }
     }
 }

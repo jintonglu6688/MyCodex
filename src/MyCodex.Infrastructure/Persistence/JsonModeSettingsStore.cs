@@ -79,30 +79,7 @@ namespace MyCodex.Infrastructure.Persistence
 
             _appConfigService.EnsureConfigDirectory();
             var filePath = _appConfigService.GetModeSettingsFilePath();
-            var tempFilePath = filePath + ".tmp";
-            var backupFilePath = filePath + ".bak";
-            try
-            {
-                using (var stream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    _serializer.WriteObject(stream, normalized);
-                    stream.Flush();
-                }
-
-                if (File.Exists(filePath))
-                {
-                    File.Replace(tempFilePath, filePath, backupFilePath, true);
-                }
-                else
-                {
-                    File.Move(tempFilePath, filePath);
-                }
-            }
-            catch
-            {
-                TryDelete(tempFilePath);
-                throw;
-            }
+            AtomicFileWriter.Write(filePath, stream => _serializer.WriteObject(stream, normalized), filePath + ".bak");
         }
 
         private ModeSettingsSnapshot Deserialize(string content)
@@ -134,20 +111,6 @@ namespace MyCodex.Infrastructure.Persistence
                 ? null
                 : snapshot.OfficeRootPath.Trim();
             return snapshot;
-        }
-
-        private static void TryDelete(string path)
-        {
-            try
-            {
-                if (File.Exists(path))
-                {
-                    File.Delete(path);
-                }
-            }
-            catch
-            {
-            }
         }
     }
 }

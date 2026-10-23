@@ -293,11 +293,6 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(new AppServerLoginCancelResult { Status = "canceled" });
             }
 
-            public Task LogoutAsync()
-            {
-                throw new NotSupportedException();
-            }
-
             public Task<AppServerRateLimitsSnapshot> GetRateLimitsAsync()
             {
                 throw new NotSupportedException();

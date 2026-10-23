@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Web.Script.Serialization;
+using MyCodex.Infrastructure.Persistence;
 using MyCodex.Shared.Localization;
 
 namespace MyCodex.Infrastructure.RemoteRelay
@@ -16,11 +17,6 @@ namespace MyCodex.Infrastructure.RemoteRelay
         public int ProcessId { get; set; }
         public string ExecutablePath { get; set; }
         public long StartTimeUtcTicks { get; set; }
-
-        public EmbeddedRelayProcessIdentity ToIdentity()
-        {
-            return new EmbeddedRelayProcessIdentity(ProcessId, ExecutablePath, StartTimeUtcTicks);
-        }
 
         public static SharedRelayProcessRecord Capture(Process process, string expectedExecutablePath = null)
         {
@@ -102,23 +98,7 @@ namespace MyCodex.Infrastructure.RemoteRelay
 
         private static void WriteState(string path, JavaScriptSerializer serializer, SharedRelayState state)
         {
-            var temporary = path + ".tmp";
-            try
-            {
-                using (var stream = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
-                using (var writer = new StreamWriter(stream, new UTF8Encoding(false)))
-                {
-                    writer.Write(serializer.Serialize(state));
-                    writer.Flush();
-                    stream.Flush(true);
-                }
-                if (File.Exists(path)) File.Replace(temporary, path, null);
-                else File.Move(temporary, path);
-            }
-            finally
-            {
-                if (File.Exists(temporary)) File.Delete(temporary);
-            }
+            AtomicFileWriter.WriteText(path, serializer.Serialize(state));
         }
 
         private SharedRelayState ReadState(string path, JavaScriptSerializer serializer)

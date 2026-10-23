@@ -8,8 +8,6 @@ namespace MyCodex.Application.RemoteRelay
 
         RemoteDeviceBinding FindActive(string tenantId, string hostId, string deviceId);
 
-        RemoteDeviceBinding FindPending(string claimId);
-
         void SavePending(RemoteDeviceBinding binding);
 
         void Activate(string claimId, int bindingVersion);

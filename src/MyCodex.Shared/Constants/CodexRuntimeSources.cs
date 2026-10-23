@@ -15,11 +15,6 @@ namespace MyCodex.Shared.Constants
             return string.Equals(source, Bundled, global::System.StringComparison.OrdinalIgnoreCase);
         }
 
-        public static string GetBundledRequiredVersion(string source)
-        {
-            return BundledDefaultVersion;
-        }
-
         public static bool IsRemoteUnixSsh(string source)
         {
             return string.Equals(source, RemoteUnixSsh, global::System.StringComparison.OrdinalIgnoreCase) ||
