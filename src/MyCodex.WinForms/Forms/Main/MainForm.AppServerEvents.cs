@@ -154,6 +154,7 @@ namespace MyCodex.WinForms.Forms
                 ScheduleRealtimeCurrentSessionHistoryReload(e);
             }
 
+            var wasBusy = false;
             if (route == AppServerEventRoute.TurnStarted)
             {
                 MarkThreadBusy(e.ThreadId);
@@ -161,7 +162,7 @@ namespace MyCodex.WinForms.Forms
             }
             else if (AppServerEventRouting.IsTurnTerminal(route))
             {
-                var wasBusy = IsThreadBusy(e.ThreadId);
+                wasBusy = IsThreadBusy(e.ThreadId);
                 ClearThreadBusy(e.ThreadId);
                 RefreshGoalAfterTurnTerminal(e.ThreadId);
                 if (wasBusy && AppServerEventRouting.IsTurnCompleted(route))
@@ -293,7 +294,8 @@ namespace MyCodex.WinForms.Forms
                         return;
                     }
 
-                    var chatItem = AddThreadEventHistoryItem(e, ChatHistoryItemFactory.GetCodexSenderText(), e.Content, ChatHistoryCategory.Conversation);
+                    var category = _voiceChat?.BackendReplyCategory(e.ThreadId, e.MessagePhase) ?? ChatHistoryCategory.Conversation;
+                    var chatItem = AddThreadEventHistoryItem(e, ChatHistoryItemFactory.GetCodexSenderText(), e.Content, category);
                     RegisterExecutablePlanCandidate(e);
                     // The pending-input window announces its companion event; do not read the same question twice.
                     if (!_asyncInputRequests.ContainsSource(e))
@@ -322,13 +324,17 @@ namespace MyCodex.WinForms.Forms
 
             if (AppServerEventRouting.IsErrorDisplayEvent(route))
             {
+                var failureSoundEnabled = IsSoundNotificationEnabled(IsSubAgentCompletionThread(e.ThreadId)
+                    ? GetSubAgentTurnCompletedNotificationMode() : GetTurnCompletedNotificationMode());
                 if (TryHandleCompactionFailed(e))
                 {
+                    TurnFailureNotifier.TryNotify(e, wasBusy, failureSoundEnabled, () => PlayNotificationSound(TurnFailedSoundFileName));
                     return;
                 }
 
                 if (TryHandleUnsupportedFlexServiceTier(e))
                 {
+                    TurnFailureNotifier.TryNotify(e, wasBusy, failureSoundEnabled, () => PlayNotificationSound(TurnFailedSoundFileName));
                     return;
                 }
 
@@ -342,6 +348,7 @@ namespace MyCodex.WinForms.Forms
                     ClearPendingInvalidEncryptedContentRetry(e.ThreadId);
                 }
 
+                TurnFailureNotifier.TryNotify(e, wasBusy, failureSoundEnabled, () => PlayNotificationSound(TurnFailedSoundFileName));
                 if (!ShouldDisplayThreadEvent(e))
                 {
                     return;
@@ -1641,6 +1648,18 @@ namespace MyCodex.WinForms.Forms
                 }
 
                 return _turnCompletedSoundPlayer;
+            }
+
+            if (string.Equals(fileName, TurnFailedSoundFileName, StringComparison.OrdinalIgnoreCase))
+            {
+                if (_turnFailedSoundPlayer == null)
+                {
+                    _turnFailedSoundPlayer = new SoundPlayer(soundPath);
+                    _turnFailedSoundPlayer.Load();
+                    Disposed += (sender, args) => _turnFailedSoundPlayer.Dispose();
+                }
+
+                return _turnFailedSoundPlayer;
             }
 
             if (string.Equals(fileName, SubAgentTurnCompletedSoundFileName, StringComparison.OrdinalIgnoreCase))

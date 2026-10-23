@@ -148,6 +148,8 @@ namespace MyCodex.Infrastructure.AppServer
                 cancellationToken).ConfigureAwait(false);
             var watch = Stopwatch.StartNew();
             var details = AppServerThreadMapper.BuildThreadDetails(thread, _mapServerPathToClient);
+            if (_getProtocolCapabilities()?.SupportsRealtimeTimeline == true)
+                details.RealtimeHistory = await AppServerVoiceContext.ReadAsync(_sendRequestAsync, threadId, null, cancellationToken).ConfigureAwait(false);
             AppServerHistoryLoadTrace.Information("map", threadId, "Turns={0}; Messages={1}; Activities={2}; ElapsedMs={3}",
                 details.TurnCount, details.Messages.Count, details.Activities.Count, watch.ElapsedMilliseconds);
             return details;

@@ -165,6 +165,7 @@ namespace MyCodex.WinForms.Forms
                         }
                         TargetInstanceReply reply;
                         if (request.Operation == TargetInstanceOperation.Status) reply = new TargetInstanceReply { Success = true };
+                        else if (request.Operation == TargetInstanceOperation.VoiceControl) reply = await ExecuteVoiceControlAsync(request);
                         else if (request.Operation == TargetInstanceOperation.Activate)
                         {
                             if (_isPersistenceRecoveryPending)

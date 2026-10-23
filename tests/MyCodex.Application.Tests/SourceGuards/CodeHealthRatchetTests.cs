@@ -16,9 +16,11 @@ namespace MyCodex.Application.Tests.SourceGuards
     [Category(SourceGuardCategory.Placement)]
     public sealed class CodeHealthRatchetTests
     {
-        private const int MainFormPartialNonEmptyLinesCeiling = 22725;
-        private const int MainFormCoreFileNonEmptyLinesCeiling = 2960;
-        private const int MainFormFieldCeiling = 364;
+        // Preserve voice coordination while retaining upstream's removal of unused MainForm code.
+        // Audio, argument validation and presentation policy stay outside MainForm.
+        private const int MainFormPartialNonEmptyLinesCeiling = 22848;
+        private const int MainFormCoreFileNonEmptyLinesCeiling = 2964;
+        private const int MainFormFieldCeiling = 367;
         private const int MethodsOver150LinesCeiling = 13;
         private const int FilesOver1200LinesCeiling = 23;
 

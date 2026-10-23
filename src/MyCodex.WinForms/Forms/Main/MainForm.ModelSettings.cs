@@ -62,6 +62,7 @@ namespace MyCodex.WinForms.Forms
                         }
 
                         RefreshSessionSettingsState();
+                        if (_voiceChat != null && !await _voiceChat.RefreshBackendSettingsAsync(_currentSession?.Id)) return;
                         AddChatHistoryItem(
                             GetStatusSenderText(),
                             string.Format(
@@ -89,6 +90,7 @@ namespace MyCodex.WinForms.Forms
                 session.ReasoningEffort = form.SelectedReasoningEffort;
                 PersistState();
                 RefreshSessionSettingsState();
+                if (_voiceChat != null && !await _voiceChat.RefreshBackendSettingsAsync(session.Id)) return;
 
                 if (_currentSession != null && string.Equals(_currentSession.Id, session.Id, StringComparison.OrdinalIgnoreCase))
                 {

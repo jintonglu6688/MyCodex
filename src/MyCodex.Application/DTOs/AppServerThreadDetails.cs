@@ -17,5 +17,6 @@ namespace MyCodex.Application.DTOs
         public List<AppServerThreadMessage> Messages { get; }
 
         public Dictionary<string, string> TurnStatuses { get; }
+        public RealtimeVoiceContextPage RealtimeHistory { get; set; }
     }
 }

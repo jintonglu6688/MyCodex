@@ -78,6 +78,7 @@ namespace MyCodex.WinForms.Forms
             _stopButton.Text = UiLocalization.Text("MainForm.Button.Stop", "&Stop");
             _stopButton.AccessibleName = UiLocalization.Text("MainForm.Accessible.Stop", "Stop");
             RefreshPendingAsyncInputButton();
+            _voiceChat.RefreshControls();
             _openWorkspaceButton.Text = UiLocalization.Text("MainForm.Button.NewWorkspace", "&Open Workspace");
             _openWorkspaceButton.AccessibleName = UiLocalization.Text("MainForm.Accessible.NewWorkspace", "Open Workspace");
             _newSessionButton.Text = UiLocalization.Text("MainForm.Button.NewSession", "Ne&w Session");
@@ -191,6 +192,7 @@ namespace MyCodex.WinForms.Forms
             UiTheme.ApplyButton(_sendButton, UiGlyph.Send);
             UiTheme.ApplyButton(_stopButton, UiGlyph.Stop);
             UiTheme.ApplyButton(_pendingAsyncInputButton, UiGlyph.Info);
+            UiTheme.ApplyButton(_voiceChat.ToggleButton, UiGlyph.Send);
             UiTheme.ApplyButton(_openWorkspaceButton, UiGlyph.Workspace);
             UiTheme.ApplyButton(_newSessionButton, UiGlyph.NewSession);
         }
@@ -542,7 +544,7 @@ namespace MyCodex.WinForms.Forms
 
             var buttonPanel = new FlowLayoutPanel
             {
-                Dock = DockStyle.Right,
+                Dock = DockStyle.Bottom,
                 AutoSize = true,
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 FlowDirection = FlowDirection.LeftToRight,
@@ -555,6 +557,10 @@ namespace MyCodex.WinForms.Forms
             buttonPanel.Controls.Add(_sendButton);
             buttonPanel.Controls.Add(_stopButton);
             buttonPanel.Controls.Add(_pendingAsyncInputButton);
+            buttonPanel.Controls.Add(_voiceChat.ToggleButton);
+            buttonPanel.Controls.Add(_voiceChat.MuteButton);
+            buttonPanel.Controls.Add(_voiceChat.SettingsButton);
+            buttonPanel.SizeChanged += (sender, args) => UpdateComposePanelHeight();
             _composePanel.Controls.Add(_attachmentPanel);
             _composePanel.Controls.Add(inputPanel);
             _composePanel.Controls.Add(buttonPanel);
@@ -563,6 +569,19 @@ namespace MyCodex.WinForms.Forms
             panel.Controls.Add(_composePanel);
             panel.Controls.Add(infoPanel);
             return panel;
+        }
+
+        private void UpdateComposePanelHeight()
+        {
+            if (_composePanel == null) return;
+            var scaled = _composePanel.IsHandleCreated;
+            var baseHeight = scaled ? UiTheme.Scale(MainFormLayoutPlanner.ComposePanelHeight) : MainFormLayoutPlanner.ComposePanelHeight;
+            var buttonHeight = scaled ? UiTheme.Scale(UiTheme.ButtonHeight) : UiTheme.ButtonHeight;
+            var attachmentHeight = _pendingAttachments.Count == 0 ? 0 :
+                scaled ? UiTheme.Scale(UiTheme.AttachmentPanelHeight) : UiTheme.AttachmentPanelHeight;
+            var actionsHeight = _voiceChat?.ToggleButton.Parent?.Height ?? buttonHeight;
+            var height = baseHeight + Math.Max(0, actionsHeight - buttonHeight) + attachmentHeight;
+            if (_composePanel.Height != height) _composePanel.Height = height;
         }
 
         private Control CreateHeaderPanel()

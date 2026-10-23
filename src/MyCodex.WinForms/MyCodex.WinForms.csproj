@@ -34,6 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Assets\Voice\RealtimeVoice.html">
+      <LogicalName>MyCodex.Voice.Realtime.html</LogicalName>
+    </EmbeddedResource>
     <EmbeddedResource Include="Assets\Donate\wechat-donate.png">
       <LogicalName>MyCodex.WinForms.Resources.Donate.Wechat</LogicalName>
     </EmbeddedResource>
@@ -62,6 +65,10 @@
     </None>
     <None Include="..\..\sound\End of session.wav">
       <Link>sound\End of session.wav</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\sound\Error.wav">
+      <Link>sound\Error.wav</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\sound\Subagent completed.wav">

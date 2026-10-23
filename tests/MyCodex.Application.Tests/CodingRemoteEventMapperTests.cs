@@ -13,7 +13,19 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class CodingRemoteEventMapperTests
     {
+        [Test]
+        public void TryMap_OfficeRetry_StaysRunning()
+        {
+            var session = new ChatSession { Id = "office", ThreadId = "thread", Mode = AppInteractionMode.Office };
+            RemoteRelayEvent result;
+            Assert.That(CodingRemoteEventMapper.TryMap(
+                new AppServerEventArgs("turn_retrying", "retrying", threadId: "thread", turnId: "turn"), session, out result), Is.True);
+            Assert.That(result.EventType, Is.EqualTo(RemoteEventTypes.OfficeSessionUpdated));
+            Assert.That(result.Payload["status"], Is.EqualTo("running"));
+        }
+
         [TestCase("turn_started", RemoteEventTypes.CodingSessionUpdated, "running")]
+        [TestCase("turn_retrying", RemoteEventTypes.CodingSessionUpdated, "running")]
         [TestCase("assistant", RemoteEventTypes.CodingSessionUpdated, "running")]
         [TestCase("turn_completed", RemoteEventTypes.CodingMessageCompleted, "completed")]
         [TestCase("turn_failed", RemoteEventTypes.CodingMessageFailed, "failed")]

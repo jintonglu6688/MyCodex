@@ -19,6 +19,7 @@ namespace MyCodex.Infrastructure.AppServer
         private readonly Dictionary<string, PendingMcpToolCallItem> _mcpToolCalls = new Dictionary<string, PendingMcpToolCallItem>(StringComparer.Ordinal);
         private readonly Dictionary<string, PendingReasoningItem> _reasoningItems = new Dictionary<string, PendingReasoningItem>(StringComparer.Ordinal);
         private readonly HashSet<string> _commandOutputDeltaItemIds = new HashSet<string>(StringComparer.Ordinal);
+        private readonly HashSet<string> _ephemeralThreadIds = new HashSet<string>(StringComparer.Ordinal);
 
         public AppServerNotificationEventProcessor(AppServerNotificationEventContext context)
         {
@@ -36,6 +37,17 @@ namespace MyCodex.Infrastructure.AppServer
             var action = AppServerNotificationDispatcher.Classify(method);
             var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
             var turnId = AppServerJsonValueReader.GetString(parameters, "turnId");
+            bool ephemeral;
+            lock (_syncRoot)
+            {
+                ephemeral = threadId != null && _ephemeralThreadIds.Contains(threadId);
+                if (ephemeral && (method == "thread/closed" || method == "thread/deleted")) _ephemeralThreadIds.Remove(threadId);
+            }
+            if (ephemeral)
+            {
+                if (method == "thread/closed" || method == "thread/deleted") _context.ForgetThreadState(threadId);
+                return;
+            }
 
             switch (action)
             {
@@ -268,6 +280,11 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             _context.RememberLoadedThreadId(threadId);
+            if (AppServerJsonValueReader.GetNullableBool(thread, "ephemeral") == true)
+            {
+                lock (_syncRoot) _ephemeralThreadIds.Add(threadId);
+                return;
+            }
             _context.RaiseEvent(AppServerNotificationFactory.CreateThreadStarted(threadId, AppServerThreadMapper.BuildThreadSummary(thread, _context.MapServerPathToClient)));
         }
 
@@ -986,7 +1003,8 @@ namespace MyCodex.Infrastructure.AppServer
 
                     if (!string.IsNullOrWhiteSpace(finalText))
                     {
-                        _context.RaiseEvent(new AppServerEventArgs("assistant", finalText, threadId, turnId, itemId));
+                        _context.RaiseEvent(new AppServerEventArgs("assistant", finalText, threadId, turnId, itemId,
+                            messagePhase: AppServerJsonValueReader.GetString(item, "phase")));
                     }
                     break;
                 case "plan":
@@ -1182,7 +1200,8 @@ namespace MyCodex.Infrastructure.AppServer
             var reason = AppServerJsonValueReader.GetString(error, "codexErrorInfo");
             var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
             var turnId = AppServerJsonValueReader.GetString(parameters, "turnId");
-            var eventArgs = AppServerNotificationFactory.CreateError(threadId, turnId, errorMessage, reason);
+            var willRetry = AppServerJsonValueReader.GetValue(parameters, "willRetry") is bool retry && retry;
+            var eventArgs = AppServerNotificationFactory.CreateError(threadId, turnId, errorMessage, reason, willRetry);
             Trace.TraceWarning(
                 "App Server error event. ThreadId={0}; TurnId={1}; Message={2}",
                 threadId,

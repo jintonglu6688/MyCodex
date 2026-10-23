@@ -16,6 +16,7 @@ namespace MyCodex.WinForms.Forms
         AppServerDisconnected,
         SummaryOnly,
         TurnStarted,
+        TurnRetrying,
         TurnCompleted,
         TurnInterrupted,
         TurnFailed,
@@ -95,6 +96,8 @@ namespace MyCodex.WinForms.Forms
                     return AppServerEventRoute.SummaryOnly;
                 case "turn_started":
                     return AppServerEventRoute.TurnStarted;
+                case "turn_retrying":
+                    return AppServerEventRoute.TurnRetrying;
                 case "turn_completed":
                     return AppServerEventRoute.TurnCompleted;
                 case "turn_interrupted":
@@ -226,6 +229,7 @@ namespace MyCodex.WinForms.Forms
             switch (route)
             {
                 case AppServerEventRoute.TurnStarted:
+                case AppServerEventRoute.TurnRetrying:
                 case AppServerEventRoute.TurnCompleted:
                 case AppServerEventRoute.TurnInterrupted:
                 case AppServerEventRoute.TurnFailed:

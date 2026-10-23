@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
 using MyCodex.Infrastructure.Persistence;
 
@@ -241,7 +242,7 @@ namespace MyCodex.Infrastructure.Instances
             if (IsExitOperation(request.Operation)) return await DispatchExitAsync(request, handler).ConfigureAwait(false);
             lock (_sync)
             {
-                if (_exitPreparation != null && (request.Operation == TargetInstanceOperation.ApplyRuntimeSettings || request.Operation == TargetInstanceOperation.RemoveTarget))
+                if (_exitPreparation != null && (request.Operation == TargetInstanceOperation.ApplyRuntimeSettings || request.Operation == TargetInstanceOperation.RemoveTarget || request.Operation == TargetInstanceOperation.VoiceControl))
                     return TargetInstanceReply.Failure("This target is preparing to exit. Cancel that operation before changing settings.");
             }
             try { return await handler(request).ConfigureAwait(false) ?? TargetInstanceReply.Failure("The target did not confirm the request."); }
@@ -286,6 +287,17 @@ namespace MyCodex.Infrastructure.Instances
                 throw new InvalidDataException("Only activation accepts a workspace.");
             if ((request.Operation == TargetInstanceOperation.ApplyRuntimeSettings) != (request.RuntimeSettings != null))
                 throw new InvalidDataException("Runtime settings are required only for the settings operation.");
+            if ((request.Operation == TargetInstanceOperation.VoiceControl) != (request.VoiceArguments != null) ||
+                request.Operation != TargetInstanceOperation.VoiceControl && request.VoiceThreadId != null)
+                throw new InvalidDataException("Voice parameters are required only for voice control.");
+            if (request.Operation == TargetInstanceOperation.VoiceControl)
+            {
+                try
+                {
+                    VoiceControlCommand.Parse(request.VoiceArguments).ValidateConversation(request.VoiceThreadId);
+                }
+                catch (ArgumentException ex) { throw new InvalidDataException(ex.Message, ex); }
+            }
             Guid operationId;
             if (IsExitOperation(request.Operation)
                 ? !Guid.TryParseExact(request.OperationId, "N", out operationId)

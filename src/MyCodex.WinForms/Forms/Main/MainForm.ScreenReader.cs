@@ -140,6 +140,7 @@ namespace MyCodex.WinForms.Forms
 
         private void TryAutoReadIncomingMessage(ChatHistoryItem item, string threadId)
         {
+            if (_voiceChat?.IsSpeakingForThread(threadId) == true) return;
             if (item == null ||
                 _appConfigSnapshot == null ||
                 !_appConfigSnapshot.EnableAutomaticChatReading ||

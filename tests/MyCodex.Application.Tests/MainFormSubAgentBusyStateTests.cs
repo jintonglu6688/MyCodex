@@ -9,6 +9,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
+using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Infrastructure.Codex;
 using MyCodex.Infrastructure.Persistence;
@@ -22,6 +23,43 @@ namespace MyCodex.Application.Tests
     [Apartment(ApartmentState.STA)]
     public sealed class MainFormSubAgentBusyStateTests
     {
+        [Test]
+        public void VoiceChatEntry_IsInComposeActionsAndReachableByTab()
+        {
+            WithForm((form, client) =>
+            {
+                System.Windows.Forms.Button voice = null;
+                foreach (var button in FormTestDriver.Descendants<System.Windows.Forms.Button>(form))
+                    if (button.Name == "VoiceChatButton") voice = button;
+                Assert.That(voice, Is.Not.Null, "Voice chat must be available in the input action row.");
+                var send = FormTestDriver.Field<System.Windows.Forms.Button>(form, "_sendButton");
+                var stop = FormTestDriver.Field<System.Windows.Forms.Button>(form, "_stopButton");
+                Assert.That(voice.Parent, Is.SameAs(send.Parent));
+                Assert.That(voice.TabStop, Is.True);
+                Assert.That(voice.TabIndex, Is.GreaterThan(stop.TabIndex));
+                Assert.That(voice.AccessibleName, Is.Not.Null.And.Not.Empty);
+                form.Size = form.MinimumSize;
+                form.PerformLayout();
+                Assert.That(FormTestDriver.Field<System.Windows.Forms.Control>(form, "_inputBox").Width, Is.GreaterThan(0),
+                    "Adding voice chat must leave the input area usable at the minimum window size.");
+                Assert.That(FormTestDriver.Field<System.Windows.Forms.Control>(form, "_inputBox").Height, Is.GreaterThan(0));
+            });
+        }
+
+        [Test]
+        public void RetryNotice_KeepsTheTurnBusyUntilFinalFailure()
+        {
+            WithForm((form, client) =>
+            {
+                FormTestDriver.Field<AppConfigSnapshot>(form, "_appConfigSnapshot").TurnCompletedNotificationMode = NotificationPromptMode.Off;
+                Event(form, client, "turn_started", "parent");
+                Event(form, client, "turn_retrying", "parent");
+                Assert.That(FormTestDriver.Invoke(form, "IsThreadBusy", "parent"), Is.True);
+                Event(form, client, "turn_failed", "parent");
+                Assert.That(FormTestDriver.Invoke(form, "IsThreadBusy", "parent"), Is.False);
+            });
+        }
+
         [TestCase("idle")]
         [TestCase("notLoaded")]
         [TestCase("systemError")]

@@ -435,6 +435,7 @@ namespace MyCodex.Infrastructure.AppServer
                     }
                 }
             }
+            NotifyRealtimeTextInputSubmitted(threadId, inputItems);
         }
 
         public bool HasInterruptibleTurn(string threadId)
@@ -1575,6 +1576,7 @@ namespace MyCodex.Infrastructure.AppServer
                     }
                 }
 
+                NotifyRealtimeTextInputSubmitted(threadId, inputItems);
                 return AppServerTurnSteerResult.AcceptedResult(expectedTurnId, turnId);
             }
             catch (InvalidOperationException ex)
@@ -2106,6 +2108,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             var method = AppServerJsonValueReader.GetString(message, "method");
             var parameters = AppServerJsonValueReader.GetDictionary(message, "params");
+            if (HandleRealtimeVoiceNotification(method, parameters)) return;
             AppServerEventDiagnostics.TraceNotification(method, parameters);
             HandleComputerUseNotification(method, parameters);
             _notificationEventProcessor.HandleNotification(method, parameters);
@@ -2942,25 +2945,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static void AddCollaborationMode(IDictionary<string, object> target, AppServerCollaborationMode collaborationMode)
         {
-            if (target == null ||
-                collaborationMode == null ||
-                string.IsNullOrWhiteSpace(collaborationMode.Mode) ||
-                string.IsNullOrWhiteSpace(collaborationMode.ModelId))
-            {
-                return;
-            }
-
-            var settings = new Dictionary<string, object>
-            {
-                { "model", collaborationMode.ModelId },
-                { "reasoning_effort", string.IsNullOrWhiteSpace(collaborationMode.ReasoningEffort) ? null : collaborationMode.ReasoningEffort },
-                { "developer_instructions", string.IsNullOrWhiteSpace(collaborationMode.DeveloperInstructions) ? null : collaborationMode.DeveloperInstructions }
-            };
-            target["collaborationMode"] = new Dictionary<string, object>
-            {
-                { "mode", collaborationMode.Mode },
-                { "settings", settings }
-            };
+            AppServerCollaborationParameters.AddTo(target, collaborationMode);
         }
 
         private bool IsCurrentConnectionSource(long expectedConnectionEpoch, Process expectedProcess)

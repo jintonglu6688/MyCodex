@@ -26,7 +26,7 @@ namespace MyCodex.WinForms.Forms
             for (var index = optimisticStartIndex; index < localItemArray.Length; index++)
             {
                 var item = localItemArray[index];
-                if (!IsUserConversationItem(item))
+                if (!IsLocalConversationItem(item))
                 {
                     continue;
                 }
@@ -113,15 +113,17 @@ namespace MyCodex.WinForms.Forms
             return counts;
         }
 
-        private static bool IsUserConversationItem(ChatHistoryItem item)
+        private static bool IsLocalConversationItem(ChatHistoryItem item)
         {
             return item != null &&
                    item.Category == ChatHistoryCategory.Conversation &&
-                   ChatHistoryItemFactory.IsUserSender(item.Sender);
+                   (ChatHistoryItemFactory.IsUserSender(item.Sender) ||
+                    (item.IsVoiceTranscript && !string.IsNullOrEmpty(item.SourceItemId)));
         }
 
         private static string BuildSignature(ChatHistoryItem item)
         {
+            if (item.IsVoiceTranscript && !string.IsNullOrEmpty(item.SourceItemId)) return "voice:" + item.SourceItemId;
             return (item.FullText ?? item.DisplayText ?? item.MarkdownText ?? string.Empty).Trim();
         }
     }

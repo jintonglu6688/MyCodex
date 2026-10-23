@@ -322,16 +322,16 @@
     <value>声音</value>
   </data>
 <data name="NotificationSettingsForm.Check.TurnCompletedSound" xml:space="preserve">
-    <value>本轮结束后播放音效(&amp;T)</value>
+    <value>本轮完成或失败后播放音效(&amp;T)</value>
   </data>
 <data name="NotificationSettingsForm.Accessible.TurnCompletedSound" xml:space="preserve">
-    <value>本轮结束后播放音效</value>
+    <value>本轮完成或失败后播放音效</value>
   </data>
 <data name="NotificationSettingsForm.Check.SubAgentTurnCompletedSound" xml:space="preserve">
-    <value>子代理结束后播放音效(&amp;G)</value>
+    <value>子代理完成或失败后播放音效(&amp;G)</value>
   </data>
 <data name="NotificationSettingsForm.Accessible.SubAgentTurnCompletedSound" xml:space="preserve">
-    <value>子代理结束后播放音效</value>
+    <value>子代理完成或失败后播放音效</value>
   </data>
 <data name="NotificationSettingsForm.Check.ApprovalRequestSound" xml:space="preserve">
     <value>收到审批或提问时播放音效(&amp;A)</value>
@@ -13818,5 +13818,149 @@ MyCodex 桌面客户端。</value>
   </data>
   <data name="Aggregation.Status.Working" xml:space="preserve">
     <value>正在应用聚合设置并重启 Codex…</value>
+  </data>
+  <data name="VoiceChatForm.Status.Loading" xml:space="preserve">
+    <value>正在读取官方发音人……</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Mute" xml:space="preserve">
+    <value>麦克风静音</value>
+  </data>
+  <data name="VoiceChatForm.Label.Voice" xml:space="preserve">
+    <value>发音人(&amp;V)</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Voice" xml:space="preserve">
+    <value>发音人</value>
+  </data>
+  <data name="VoiceChatForm.Label.Speed" xml:space="preserve">
+    <value>语速(&amp;R)</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Speed" xml:space="preserve">
+    <value>语速</value>
+  </data>
+  <data name="VoiceChatForm.Speed.Default" xml:space="preserve">
+    <value>官方默认</value>
+  </data>
+  <data name="VoiceChatForm.Speed.Faster" xml:space="preserve">
+    <value>加快</value>
+  </data>
+  <data name="VoiceChatForm.Button.Apply" xml:space="preserve">
+    <value>应用语音设置(&amp;A)</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Apply" xml:space="preserve">
+    <value>应用语音设置</value>
+  </data>
+  <data name="VoiceChatForm.Button.Close" xml:space="preserve">
+    <value>关闭(&amp;C)</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="VoiceChatForm.Error.NoVoices" xml:space="preserve">
+    <value>当前运行时未提供可用的官方发音人。</value>
+  </data>
+  <data name="VoiceChatForm.Status.SettingsSaved" xml:space="preserve">
+    <value>语音设置已保存。</value>
+  </data>
+  <data name="VoiceChatForm.Error.Save" xml:space="preserve">
+    <value>语音设置保存失败。</value>
+  </data>
+  <data name="VoiceChatForm.Status.Connecting" xml:space="preserve">
+    <value>正在连接语音……</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Unmute" xml:space="preserve">
+    <value>取消麦克风静音</value>
+  </data>
+  <data name="VoiceChatForm.Error.AudioStopped" xml:space="preserve">
+    <value>音频引擎已停止，请关闭语音聊天后重新打开。</value>
+  </data>
+  <data name="VoiceChatForm.Error.Microphone" xml:space="preserve">
+    <value>麦克风不可用，请检查设备及 Windows 麦克风权限。</value>
+  </data>
+  <data name="VoiceChatForm.Error.Timeout" xml:space="preserve">
+    <value>语音连接超时，请重试。</value>
+  </data>
+  <data name="VoiceChatForm.Preview.Sample" xml:space="preserve">
+    <value>你好，这是当前发音人和语速的试听。你可以听一下现在的效果。</value>
+  </data>
+  <data name="VoiceChatForm.Preview.Connecting" xml:space="preserve">
+    <value>正在准备试听，麦克风保持关闭。</value>
+  </data>
+  <data name="VoiceChatForm.Button.StopPreview" xml:space="preserve">
+    <value>停止试听(&amp;P)</value>
+  </data>
+  <data name="VoiceChatForm.Button.Preview" xml:space="preserve">
+    <value>试听(&amp;P)</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.StopPreview" xml:space="preserve">
+    <value>停止试听</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Preview" xml:space="preserve">
+    <value>试听</value>
+  </data>
+  <data name="VoiceChatForm.Label.Volume" xml:space="preserve">
+    <value>语音音量(&amp;L)</value>
+  </data>
+  <data name="VoiceChatForm.Accessible.Volume" xml:space="preserve">
+    <value>语音音量</value>
+  </data>
+  <data name="VoiceChatForm.Volume.Original" xml:space="preserve">
+    <value>原音量</value>
+  </data>
+  <data name="VoiceChatForm.Volume.Boost" xml:space="preserve">
+    <value>增强</value>
+  </data>
+  <data name="VoiceChatForm.Volume.StrongBoost" xml:space="preserve">
+    <value>更强</value>
+  </data>
+  <data name="VoiceChatForm.Error.PreviewSilent" xml:space="preserve">
+    <value>未收到试听语音，请重试。</value>
+  </data>
+  <data name="VoiceMode.Button.Enable" xml:space="preserve">
+    <value>开启语音(&amp;J)</value>
+  </data>
+  <data name="VoiceMode.Accessible.Enable" xml:space="preserve">
+    <value>开启语音</value>
+  </data>
+  <data name="VoiceMode.Button.Disable" xml:space="preserve">
+    <value>关闭语音(&amp;J)</value>
+  </data>
+  <data name="VoiceMode.Accessible.Disable" xml:space="preserve">
+    <value>关闭语音</value>
+  </data>
+  <data name="VoiceMode.Button.Mute" xml:space="preserve">
+    <value>麦克风静音(&amp;M)</value>
+  </data>
+  <data name="VoiceMode.Button.Unmute" xml:space="preserve">
+    <value>取消麦克风静音(&amp;M)</value>
+  </data>
+  <data name="VoiceMode.Button.Settings" xml:space="preserve">
+    <value>语音设置(&amp;V)</value>
+  </data>
+  <data name="VoiceMode.Status.Text" xml:space="preserve">
+    <value>语音已关闭，继续在当前会话中使用文字交流。</value>
+  </data>
+  <data name="VoiceMode.Status.Active" xml:space="preserve">
+    <value>语音已开启。可以说话或打字，回答同时提供语音和文字。</value>
+  </data>
+  <data name="VoiceSettings.Title" xml:space="preserve">
+    <value>语音设置</value>
+  </data>
+  <data name="VoiceSettings.Ready" xml:space="preserve">
+    <value>调整后可试听或应用设置。</value>
+  </data>
+  <data name="VoiceSettings.PreviewFinished" xml:space="preserve">
+    <value>试听结束。</value>
+  </data>
+  <data name="VoiceSettings.Hint" xml:space="preserve">
+    <value>默认保持官方语速和原音量。试听时暂停麦克风，选项仍可调整；停止后再次试听新设置。音量只影响官方语音。</value>
+  </data>
+  <data name="VoiceSettings.NumberedVoice" xml:space="preserve">
+    <value>{0:00} 号发音人：{1}</value>
+  </data>
+  <data name="VoiceMode.Error.ModelSync" xml:space="preserve">
+    <value>未能同步语音后台模型，已关闭语音：</value>
+  </data>
+  <data name="VoiceMode.Status.BasicEcho" xml:space="preserve">
+    <value>语音已开启。当前环境未确认支持过滤系统声音；使用读屏外放时，请戴耳机或先静音麦克风。</value>
   </data>
 </root>

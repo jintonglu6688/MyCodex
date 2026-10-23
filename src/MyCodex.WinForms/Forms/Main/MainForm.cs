@@ -62,6 +62,7 @@ namespace MyCodex.WinForms.Forms
         private const string AppServerEventDiagnosticsEnvironmentVariable = "MYCODEX_APP_SERVER_EVENT_DIAGNOSTICS";
         private const string ApprovalSoundFileName = "Approval.wav";
         private const string TurnCompletedSoundFileName = "End of session.wav";
+        private const string TurnFailedSoundFileName = "Error.wav";
         private const string SubAgentTurnCompletedSoundFileName = "Subagent completed.wav";
         private const string MessageSentSoundFileName = "MsgSent.wav";
         private readonly IAppServerClient _appServerClient;
@@ -303,6 +304,7 @@ namespace MyCodex.WinForms.Forms
         private StatusPriority _currentStatusPriority;
         private SoundPlayer _approvalSoundPlayer;
         private SoundPlayer _turnCompletedSoundPlayer;
+        private SoundPlayer _turnFailedSoundPlayer;
         private SoundPlayer _subAgentTurnCompletedSoundPlayer;
         private SoundPlayer _messageSentSoundPlayer;
         private AppServerFileBrowserClipboardState _appServerFileBrowserClipboardState;
@@ -521,6 +523,7 @@ namespace MyCodex.WinForms.Forms
                 5,
                 OnStopButtonClick);
             InitializeAsyncInputUi();
+            InitializeVoiceChatUi();
             _openWorkspaceButton = CreateActionButton(
                 UiLocalization.Text("MainForm.Button.NewWorkspace", "&New Workspace"),
                 UiLocalization.Text("MainForm.Accessible.NewWorkspace", "New Workspace"),
@@ -2956,6 +2959,7 @@ namespace MyCodex.WinForms.Forms
 
         private void RefreshInputState(bool workspaceAvailable)
         {
+            _voiceChat?.SelectConversation(_currentSession?.Id);
             var currentThreadId = _currentSession != null ? _currentSession.ThreadId : null;
             var plan = MainFormInputStatePlanner.Build(
                 workspaceAvailable,

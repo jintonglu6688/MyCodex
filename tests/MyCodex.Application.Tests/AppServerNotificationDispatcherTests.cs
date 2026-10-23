@@ -48,6 +48,7 @@ namespace MyCodex.Application.Tests
         }
 
         [TestCase("thread/settings/updated")]
+        [TestCase("thread/readState/changed")]
         public void Classify_QuietKnownMethod_ReturnsIgnore(string method)
         {
             Assert.That(AppServerNotificationDispatcher.Classify(method), Is.EqualTo(AppServerNotificationAction.Ignore));

@@ -46,7 +46,8 @@ namespace MyCodex.Application.DTOs
             AppServerThreadStatus threadStatus = null,
             AppServerCollaborationActivity collaboration = null,
             AppServerSubAgentActivity subAgentActivity = null,
-            bool isHistorical = false)
+            bool isHistorical = false,
+            string messagePhase = null)
         {
             EventType = eventType;
             Content = content;
@@ -89,10 +90,12 @@ namespace MyCodex.Application.DTOs
             Collaboration = collaboration;
             SubAgentActivity = subAgentActivity;
             IsHistorical = isHistorical;
+            MessagePhase = messagePhase;
             Timestamp = DateTime.Now;
         }
 
         public string EventType { get; }
+        public string MessagePhase { get; }
 
         public string Content { get; }
 

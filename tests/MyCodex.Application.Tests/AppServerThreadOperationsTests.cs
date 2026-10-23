@@ -96,9 +96,8 @@ namespace MyCodex.Application.Tests
                     });
                 });
             Assert.That((await operations.ReadThreadAsync("thread", CancellationToken.None)).ThreadId, Is.EqualTo("thread"));
-            // Paginating runtimes try one complete read first; this reply has no turns, so paging confirms it.
             Assert.That(methods, Is.EqualTo(pagination
-                ? new[] { "thread/read+turns", "thread/read", "thread/turns/list" }
+                ? new[] { "thread/read", "thread/turns/list" }
                 : new[] { "thread/read+turns" }));
         }
 

@@ -411,6 +411,9 @@
   <data name="AppServerClient.Error.ServerReturnedError" xml:space="preserve">
     <value>App Server returned an error.</value>
   </data>
+  <data name="AppServerClient.Turn.Retrying.Template" xml:space="preserve">
+    <value>Codex is retrying automatically: {0}</value>
+  </data>
   <data name="AppServerClient.Account.StatusUpdated" xml:space="preserve">
     <value>Account status updated.</value>
   </data>
@@ -1663,5 +1666,20 @@ This file is empty.</value>
   </data>
   <data name="AppUpdate.Error.InstallerMissing" xml:space="preserve">
     <value>The downloaded installer is unavailable. Download the update again.</value>
+  </data>
+  <data name="VoiceChat.Error.ChatGptRequired" xml:space="preserve">
+    <value>Sign in with ChatGPT to use official voice chat.</value>
+  </data>
+  <data name="VoiceChat.Error.ConnectionFailed" xml:space="preserve">
+    <value>The voice connection failed.</value>
+  </data>
+  <data name="VoiceChat.Error.Timeout" xml:space="preserve">
+    <value>The voice connection timed out. Please try again.</value>
+  </data>
+  <data name="VoiceChat.Error.IncompleteTimeline" xml:space="preserve">
+    <value>The runtime returned an incomplete conversation timeline.</value>
+  </data>
+  <data name="VoiceChat.Error.PreviewThread" xml:space="preserve">
+    <value>The voice preview could not be prepared.</value>
   </data>
 </root>

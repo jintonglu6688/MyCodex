@@ -42,12 +42,17 @@ namespace MyCodex.WinForms
                 Environment.ExitCode = relayHostExitCode;
                 return;
             }
+            var appChannel = AppChannel.Resolve(args);
+            var legacyPaths = new AppConfigService(appDirectoryName: appChannel.AppDataDirectoryName);
+            if (VoiceControlStartup.TryRun(args, appChannel.Id, legacyPaths.GetSharedDataDirectory(), out var voiceControlExitCode))
+            {
+                Environment.ExitCode = voiceControlExitCode;
+                return;
+            }
             System.Windows.Forms.Application.EnableVisualStyles();
             System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
             System.Windows.Forms.Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
 
-            var appChannel = AppChannel.Resolve(args);
-            var legacyPaths = new AppConfigService(appDirectoryName: appChannel.AppDataDirectoryName);
             var catalog = new TargetCatalogStore(legacyPaths, appChannel.AppDataDirectoryName);
             var options = StartupCommandLineOptions.Empty;
             try
