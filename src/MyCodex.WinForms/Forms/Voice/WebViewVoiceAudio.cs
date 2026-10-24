@@ -68,7 +68,7 @@ namespace MyCodex.WinForms.Forms
 
         public bool? SystemEchoCancellationEnabled { get; private set; }
 
-        public Task<string> PrepareAsync(string sessionId, CancellationToken cancellationToken)
+        public Task<string> PrepareAsync(string sessionId, int outputVolumePercent, CancellationToken cancellationToken)
         {
             return OnUiAsync(async () =>
             {
@@ -88,7 +88,7 @@ namespace MyCodex.WinForms.Forms
                 }
 
                 _captureAllowed = true;
-                var response = await RequestAsync("prepare", sessionId, null, cancellationToken);
+                var response = await RequestAsync("prepare", sessionId, new Dictionary<string, object> { { "gain", outputVolumePercent / 100.0 } }, cancellationToken);
                 SystemEchoCancellationEnabled = response.echoMode == "all";
                 return response.sdp;
             });

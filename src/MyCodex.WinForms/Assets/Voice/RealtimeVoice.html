@@ -19,10 +19,12 @@
         session.stream?.getTracks().forEach(track => track.stop());
         session.channel?.close();
         session.peer?.close();
+        session.boost?.close().catch(() => {});
         if (current === session) {
             current = null;
             output.pause();
             output.srcObject = null;
+            output.muted = false;
         }
     }
 
@@ -97,7 +99,8 @@
         });
     }
 
-    async function prepare(id) {
+    async function prepare(id, gain) {
+        if (!Number.isFinite(gain) || gain <= 0 || gain > 2) gain = 1;
         if (current) disposeSession(current);
         const session = { id, stopped: false };
         current = session;
@@ -110,7 +113,18 @@
             for (const track of stream.getAudioTracks()) peer.addTrack(track, stream);
             peer.ontrack = event => {
                 if (!alive(session)) return;
-                output.srcObject = new MediaStream([event.track]);
+                const remote = new MediaStream([event.track]);
+                output.srcObject = remote;
+                // Boosted volume goes through WebAudio; the muted element keeps the remote stream flowing.
+                output.muted = gain !== 1;
+                if (gain !== 1) {
+                    session.boost?.close().catch(() => {});
+                    session.boost = new AudioContext();
+                    const amplifier = session.boost.createGain();
+                    amplifier.gain.value = gain;
+                    session.boost.createMediaStreamSource(remote).connect(amplifier).connect(session.boost.destination);
+                    session.boost.resume().catch(() => {});
+                }
                 output.play().catch(error => fail(session, error.message));
             };
             peer.onconnectionstatechange = () => {
@@ -154,7 +168,7 @@
         try {
             let result = {};
             switch (request.method) {
-                case 'prepare': result = await prepare(request.sessionId); break;
+                case 'prepare': result = await prepare(request.sessionId, request.gain); break;
                 case 'answer':
                     await requireSession(request.sessionId).peer.setRemoteDescription({ type: 'answer', sdp: request.sdp });
                     break;

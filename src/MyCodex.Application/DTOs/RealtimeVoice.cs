@@ -25,6 +25,11 @@ namespace MyCodex.Application.DTOs
 
         public string Voice { get; set; }
 
+        public bool FasterSpeech { get; set; }
+
+        // Local playback only; 100 leaves the official volume unchanged.
+        public int OutputVolumePercent { get; set; } = 100;
+
         // Applied with thread/settings/update so delegated work uses the conversation's model, effort and mode.
         public AppServerCollaborationMode BackendMode { get; set; }
     }

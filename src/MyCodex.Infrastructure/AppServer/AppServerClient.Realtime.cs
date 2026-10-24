@@ -11,6 +11,34 @@ namespace MyCodex.Infrastructure.AppServer
     {
         public event EventHandler<RealtimeVoiceEvent> RealtimeVoiceEventReceived;
 
+        public event EventHandler<RealtimeVoiceEvent> TypedInputSubmitted;
+
+        public Task AppendRealtimeTypedRequestAsync(string threadId, string text, CancellationToken cancellationToken)
+        {
+            EnsureConnected();
+            return new AppServerRealtimeOperations(SendRequestAsync).AppendTypedRequestAsync(threadId, text, cancellationToken);
+        }
+
+        private void NotifyTypedInputSubmitted(string threadId, IEnumerable<AppServerUserInputItem> inputItems)
+        {
+            var observer = TypedInputSubmitted;
+            var text = observer == null ? null : AppServerRealtimeOperations.BuildTypedRequest(inputItems);
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return;
+            }
+
+            // A voice observer must never turn an accepted message into a failed send.
+            try
+            {
+                observer(this, new RealtimeVoiceEvent { ThreadId = threadId, Text = text });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceWarning("Voice typed input observer failed: {0}", ex.GetType().Name);
+            }
+        }
+
         public Task<RealtimeVoiceCatalog> ListRealtimeVoicesAsync(CancellationToken cancellationToken)
         {
             EnsureConnected();

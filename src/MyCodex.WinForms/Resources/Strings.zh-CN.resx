@@ -13824,14 +13824,43 @@ MyCodex 桌面客户端。</value>
   <data name="VoiceChat.Accessible.Start" xml:space="preserve"><value>开启语音</value></data>
   <data name="VoiceChat.Accessible.Stop" xml:space="preserve"><value>关闭语音</value></data>
   <data name="VoiceChat.Status.Connecting" xml:space="preserve"><value>正在连接语音…</value></data>
-  <data name="VoiceChat.Status.Active" xml:space="preserve"><value>语音已开启。按住 F8 说话，松开发送。</value></data>
-  <data name="VoiceChat.Status.BasicEcho" xml:space="preserve"><value>语音已开启。按住 F8 说话，松开发送。系统声音过滤不可用，按住 F8 期间读屏声音可能被收录。</value></data>
   <data name="VoiceChat.Status.Off" xml:space="preserve"><value>语音已关闭，可在当前会话中继续文字输入。</value></data>
   <data name="VoiceChat.Error.NoVoices" xml:space="preserve"><value>当前运行时没有提供官方语音音色。</value></data>
   <data name="VoiceChat.Error.Disconnected" xml:space="preserve"><value>与 Codex 的连接已断开，语音已停止。</value></data>
   <data name="VoiceChat.Error.AudioStopped" xml:space="preserve"><value>语音音频引擎已停止，请重新开启语音。</value></data>
   <data name="VoiceChat.Error.Microphone" xml:space="preserve"><value>麦克风不可用，请检查设备和 Windows 麦克风权限。</value></data>
   <data name="VoiceChat.Error.Timeout" xml:space="preserve"><value>语音连接超时，请重试。</value></data>
-  <data name="VoiceChat.Status.Listening" xml:space="preserve"><value>正在听，松开 F8 发送。</value></data>
-  <data name="VoiceChat.Status.Sent" xml:space="preserve"><value>已发送。再次按住 F8 继续说话。</value></data>
+  <data name="VoiceChat.Status.Active.Hold" xml:space="preserve"><value>语音已开启。按住 {0} 说话，松开发送。</value></data>
+  <data name="VoiceChat.Status.Active.Toggle" xml:space="preserve"><value>语音已开启。按一下 {0} 开始说话，再按一下发送。</value></data>
+  <data name="VoiceChat.Status.BasicEcho" xml:space="preserve"><value>系统声音过滤不可用，说话期间读屏声音可能被收录。</value></data>
+  <data name="VoiceChat.Status.Listening.Hold" xml:space="preserve"><value>正在听，松开 {0} 发送。</value></data>
+  <data name="VoiceChat.Status.Listening.Toggle" xml:space="preserve"><value>正在听，再按一下 {0} 发送。</value></data>
+  <data name="VoiceChat.Status.Sent.Hold" xml:space="preserve"><value>已发送。再次按住 {0} 继续说话。</value></data>
+  <data name="VoiceChat.Status.Sent.Toggle" xml:space="preserve"><value>已发送。按一下 {0} 继续说话。</value></data>
+  <data name="VoiceSettings.Menu" xml:space="preserve"><value>语音设置(&amp;V)...</value></data>
+  <data name="VoiceSettings.Title" xml:space="preserve"><value>语音设置</value></data>
+  <data name="VoiceSettings.Label.TalkKey" xml:space="preserve"><value>说话热键(&amp;K)</value></data>
+  <data name="VoiceSettings.Accessible.TalkKey" xml:space="preserve"><value>说话热键</value></data>
+  <data name="VoiceSettings.Label.TalkMode" xml:space="preserve"><value>说话方式(&amp;M)</value></data>
+  <data name="VoiceSettings.Accessible.TalkMode" xml:space="preserve"><value>说话方式</value></data>
+  <data name="VoiceSettings.TalkMode.Hold" xml:space="preserve"><value>按住说话，松开发送</value></data>
+  <data name="VoiceSettings.TalkMode.Toggle" xml:space="preserve"><value>按一下开始说话，再按一下发送</value></data>
+  <data name="VoiceSettings.Label.Voice" xml:space="preserve"><value>音色(&amp;V)</value></data>
+  <data name="VoiceSettings.Accessible.Voice" xml:space="preserve"><value>音色</value></data>
+  <data name="VoiceSettings.Voice.Default" xml:space="preserve"><value>官方默认</value></data>
+  <data name="VoiceSettings.Label.Pace" xml:space="preserve"><value>语速(&amp;P)</value></data>
+  <data name="VoiceSettings.Accessible.Pace" xml:space="preserve"><value>语速</value></data>
+  <data name="VoiceSettings.Pace.Default" xml:space="preserve"><value>官方默认</value></data>
+  <data name="VoiceSettings.Pace.Faster" xml:space="preserve"><value>稍快</value></data>
+  <data name="VoiceSettings.Label.Volume" xml:space="preserve"><value>回复音量(&amp;L)</value></data>
+  <data name="VoiceSettings.Accessible.Volume" xml:space="preserve"><value>回复音量</value></data>
+  <data name="VoiceSettings.Volume.Original" xml:space="preserve"><value>原始音量</value></data>
+  <data name="VoiceSettings.Hint" xml:space="preserve"><value>说话热键和方式立即生效；音色、语速和音量在下次开启语音时生效。</value></data>
+  <data name="VoiceSettings.Status.Loading" xml:space="preserve"><value>正在读取官方音色…</value></data>
+  <data name="VoiceSettings.Status.VoicesUnavailable" xml:space="preserve"><value>只有当前目标可以使用官方语音时才能读取音色列表。</value></data>
+  <data name="VoiceSettings.Button.Save" xml:space="preserve"><value>保存(&amp;S)</value></data>
+  <data name="VoiceSettings.Accessible.Save" xml:space="preserve"><value>保存</value></data>
+  <data name="VoiceSettings.Button.Cancel" xml:space="preserve"><value>取消(&amp;C)</value></data>
+  <data name="VoiceSettings.Accessible.Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="VoiceSettings.Error.Save" xml:space="preserve"><value>无法保存语音设置。</value></data>
 </root>

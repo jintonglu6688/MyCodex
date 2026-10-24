@@ -435,6 +435,8 @@ namespace MyCodex.Infrastructure.AppServer
                     }
                 }
             }
+
+            NotifyTypedInputSubmitted(threadId, inputItems);
         }
 
         public bool HasInterruptibleTurn(string threadId)
@@ -1575,6 +1577,7 @@ namespace MyCodex.Infrastructure.AppServer
                     }
                 }
 
+                NotifyTypedInputSubmitted(threadId, inputItems);
                 return AppServerTurnSteerResult.AcceptedResult(expectedTurnId, turnId);
             }
             catch (InvalidOperationException ex)

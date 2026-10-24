@@ -15,6 +15,7 @@ namespace MyCodex.Domain.Entities
         private List<RemoteUnixSshProfileConfigSnapshot> _remoteUnixSshProfiles = new List<RemoteUnixSshProfileConfigSnapshot>();
         private UpdateSettingsSnapshot _updateSettings = new UpdateSettingsSnapshot();
         private CustomApprovalSettingsSnapshot _customApprovalSettings = new CustomApprovalSettingsSnapshot();
+        private VoiceChatSettings _voiceChat = new VoiceChatSettings();
         private string _windowsShellPreference = WindowsShellPreferences.Auto;
         private bool? _showActivityThinkingMessages = true;
         private bool? _showActivityPlanMessages = true;
@@ -254,6 +255,21 @@ namespace MyCodex.Domain.Entities
 
         [DataMember]
         public bool SendMessageSoundEnabled { get; set; } = true;
+
+        [DataMember]
+        public VoiceChatSettings VoiceChat
+        {
+            get
+            {
+                if (_voiceChat == null)
+                {
+                    _voiceChat = new VoiceChatSettings();
+                }
+
+                return _voiceChat;
+            }
+            set { _voiceChat = value ?? new VoiceChatSettings(); }
+        }
 
         [DataMember]
         public bool CloseSessionWorkbenchOnEscape { get; set; } = true;

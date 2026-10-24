@@ -1,10 +1,13 @@
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
+using MyCodex.Domain.Entities;
+using MyCodex.Domain.Enums;
 using MyCodex.WinForms.Localization;
 
 namespace MyCodex.WinForms.Forms
@@ -23,6 +26,8 @@ namespace MyCodex.WinForms.Forms
         private readonly IAppServerRealtimeClient _client;
         private readonly IAppServerConnectionClient _connection;
         private readonly Func<Task<VoiceConversationBinding>> _prepare;
+        private readonly Func<VoiceChatSettings> _settings;
+        private readonly Func<VoiceChatSettings, bool> _saveSettings;
         private readonly Action<string> _status;
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         private readonly RealtimeVoiceSession _session;
@@ -31,6 +36,7 @@ namespace MyCodex.WinForms.Forms
         private bool _available;
         private bool _changing;
         private bool _talking;
+        private bool _keyHeld;
         private bool _disposed;
         private int _generation;
 
@@ -41,6 +47,8 @@ namespace MyCodex.WinForms.Forms
             IAppServerConnectionClient connection,
             IRealtimeVoiceAudio audio,
             Func<Task<VoiceConversationBinding>> prepare,
+            Func<VoiceChatSettings> settings,
+            Func<VoiceChatSettings, bool> saveSettings,
             Action<string> status)
         {
             _owner = owner ?? throw new ArgumentNullException(nameof(owner));
@@ -48,6 +56,10 @@ namespace MyCodex.WinForms.Forms
             _client = client;
             _connection = connection;
             _prepare = prepare ?? throw new ArgumentNullException(nameof(prepare));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _saveSettings = saveSettings ?? throw new ArgumentNullException(nameof(saveSettings));
+            SettingsMenuItem = new MenuItem();
+            SettingsMenuItem.Click += (sender, args) => OpenSettings();
             _status = status ?? throw new ArgumentNullException(nameof(status));
             ToggleButton.Name = "VoiceChatButton";
             if (_client != null)
@@ -63,7 +75,7 @@ namespace MyCodex.WinForms.Forms
 
                 _owner.VisibleChanged += OnOwnerVisibilityChanged;
                 _owner.Deactivate += OnOwnerDeactivate;
-                _keyFilter = new PushToTalkKeyFilter(() => Form.ActiveForm == _owner, HandlePushToTalkKey);
+                _keyFilter = new PushToTalkKeyFilter(() => Form.ActiveForm == _owner, () => (Keys)TalkVirtualKey, HandleTalkKey);
                 System.Windows.Forms.Application.AddMessageFilter(_keyFilter);
             }
 
@@ -71,6 +83,8 @@ namespace MyCodex.WinForms.Forms
         }
 
         public Button ToggleButton { get; }
+
+        public MenuItem SettingsMenuItem { get; }
 
         public bool ModeEnabled { get; private set; }
 
@@ -81,29 +95,96 @@ namespace MyCodex.WinForms.Forms
             return ModeEnabled && _binding != null && string.Equals(_binding.Request.ThreadId, threadId, StringComparison.Ordinal);
         }
 
-        // Hold to talk, release to send: the server answers once it hears the silence after release.
-        internal bool HandlePushToTalkKey(bool pressed)
+        private VoiceChatSettings Settings => _settings() ?? new VoiceChatSettings();
+
+        private int TalkVirtualKey => VoiceChatPreferences.NormalizeTalkVirtualKey(Settings.TalkVirtualKey);
+
+        private bool ToggleToTalk => Settings.TalkMode == VoiceTalkMode.Toggle;
+
+        // The talk key opens the microphone; the server answers once it hears the silence after it closes.
+        internal bool HandleTalkKey(bool pressed)
         {
             if (_session == null || _disposed || !ModeEnabled)
             {
                 return false;
             }
 
-            if (pressed == _talking || (pressed && _session.State != VoiceChatState.Active))
+            if (!ToggleToTalk)
+            {
+                return SetTalking(pressed);
+            }
+
+            // Toggle on the first key down only; auto-repeats and the key up are swallowed.
+            var firstPress = pressed && !_keyHeld;
+            _keyHeld = pressed;
+            return firstPress ? SetTalking(!_talking) : true;
+        }
+
+        // Called after the voice settings were saved: the talk key and mode apply right away.
+        internal void SettingsChanged()
+        {
+            _keyHeld = false;
+            if (_talking)
+            {
+                SetTalking(false);
+            }
+            else if (ModeEnabled && _session?.State == VoiceChatState.Active)
+            {
+                ShowActiveHint();
+            }
+        }
+
+        private void OpenSettings()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            Func<CancellationToken, Task<RealtimeVoiceCatalog>> loadVoices = null;
+            if (_client != null && _available)
+            {
+                loadVoices = _client.ListRealtimeVoicesAsync;
+            }
+
+            using (var form = new VoiceSettingsForm(Settings, loadVoices))
+            {
+                if (form.ShowDialog(_owner) != DialogResult.OK || form.Settings == null || _disposed)
+                {
+                    return;
+                }
+
+                if (!_saveSettings(form.Settings))
+                {
+                    ReportError(UiLocalization.Text("VoiceSettings.Error.Save", "Voice settings could not be saved."));
+                    return;
+                }
+            }
+
+            SettingsChanged();
+        }
+
+        private bool SetTalking(bool talking)
+        {
+            if (talking == _talking || (talking && _session.State != VoiceChatState.Active))
             {
                 return true;
             }
 
-            _talking = pressed;
-            _ = SetTalkingAsync(pressed);
+            _talking = talking;
+            _ = SetTalkingAsync(talking);
             return true;
         }
 
         private async Task SetTalkingAsync(bool talking)
         {
             _status(talking
-                ? UiLocalization.Text("VoiceChat.Status.Listening", "Listening. Release F8 to send.")
-                : UiLocalization.Text("VoiceChat.Status.Sent", "Sent. Hold F8 to talk again."));
+                ? TalkText(ToggleToTalk
+                    ? UiLocalization.Text("VoiceChat.Status.Listening.Toggle", "Listening. Press {0} again to send.")
+                    : UiLocalization.Text("VoiceChat.Status.Listening.Hold", "Listening. Release {0} to send."))
+                : TalkText(ToggleToTalk
+                    ? UiLocalization.Text("VoiceChat.Status.Sent.Toggle", "Sent. Press {0} to talk again.")
+                    : UiLocalization.Text("VoiceChat.Status.Sent.Hold", "Sent. Hold {0} to talk again.")));
             try
             {
                 await _session.SetMicrophoneEnabledAsync(talking);
@@ -168,13 +249,16 @@ namespace MyCodex.WinForms.Forms
                 }
 
                 var bound = binding.Request;
+                var settings = Settings;
                 await _session.StartAsync(new RealtimeVoiceStart
                 {
                     ThreadId = bound.ThreadId,
                     WorkspacePath = bound.WorkspacePath,
                     ApprovalMode = bound.ApprovalMode,
                     BackendMode = bound.BackendMode,
-                    Voice = catalog.DefaultVoice
+                    Voice = VoiceChatPreferences.NormalizeVoice(settings.Voice, catalog.Voices) ?? catalog.DefaultVoice,
+                    FasterSpeech = settings.FasterSpeech,
+                    OutputVolumePercent = VoiceChatPreferences.NormalizeOutputVolumePercent(settings.OutputVolumePercent)
                 });
             }
             catch (OperationCanceledException)
@@ -243,6 +327,7 @@ namespace MyCodex.WinForms.Forms
                 if (e.State != VoiceChatState.Active)
                 {
                     _talking = false;
+                    _keyHeld = false;
                 }
 
                 if (e.State == VoiceChatState.Failed)
@@ -256,9 +341,7 @@ namespace MyCodex.WinForms.Forms
                 }
                 else if (e.State == VoiceChatState.Active)
                 {
-                    _status(_session.SystemEchoCancellationEnabled == true
-                        ? UiLocalization.Text("VoiceChat.Status.Active", "Voice on. Hold F8 to talk, release to send.")
-                        : UiLocalization.Text("VoiceChat.Status.BasicEcho", "Voice on. Hold F8 to talk, release to send. System audio filtering is unavailable, so screen reader speech may be picked up while F8 is held."));
+                    ShowActiveHint();
                 }
                 else if (e.State == VoiceChatState.Connecting)
                 {
@@ -298,10 +381,11 @@ namespace MyCodex.WinForms.Forms
 
         private void OnOwnerDeactivate(object sender, EventArgs args)
         {
-            // Switching windows while holding F8 would never deliver its key up here.
+            // The talk key works only in this window, so leaving it must not leave the microphone open.
+            _keyHeld = false;
             if (_talking)
             {
-                HandlePushToTalkKey(false);
+                SetTalking(false);
             }
         }
 
@@ -312,6 +396,7 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
+            SettingsMenuItem.Text = UiLocalization.Text("VoiceSettings.Menu", "&Voice Settings...");
             ToggleButton.Text = ModeEnabled
                 ? UiLocalization.Text("VoiceChat.Button.Stop", "Stop &Voice")
                 : UiLocalization.Text("VoiceChat.Button.Start", "Start &Voice");
@@ -322,6 +407,21 @@ namespace MyCodex.WinForms.Forms
             ToggleButton.Enabled = _session != null &&
                 (ModeEnabled || (_available && !_changing)) &&
                 _session.State != VoiceChatState.Stopping;
+        }
+
+        private void ShowActiveHint()
+        {
+            var hint = TalkText(ToggleToTalk
+                ? UiLocalization.Text("VoiceChat.Status.Active.Toggle", "Voice on. Press {0} to talk, press it again to send.")
+                : UiLocalization.Text("VoiceChat.Status.Active.Hold", "Voice on. Hold {0} to talk, release to send."));
+            _status(_session.SystemEchoCancellationEnabled == true
+                ? hint
+                : hint + " " + UiLocalization.Text("VoiceChat.Status.BasicEcho", "System audio filtering is unavailable, so screen reader speech may be picked up while you talk."));
+        }
+
+        private string TalkText(string template)
+        {
+            return string.Format(CultureInfo.CurrentCulture, template, VoiceChatPreferences.DescribeTalkKey(TalkVirtualKey));
         }
 
         private void ReportError(string message)

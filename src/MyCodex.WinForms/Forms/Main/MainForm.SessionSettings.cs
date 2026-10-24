@@ -87,6 +87,7 @@ namespace MyCodex.WinForms.Forms
             _settingsMenuItem.MenuItems.Add(_defaultModelMenuItem);
             _settingsMenuItem.MenuItems.Add(_defaultPermissionMenuItem);
             _settingsMenuItem.MenuItems.Add(_optionsMenuItem);
+            _settingsMenuItem.MenuItems.Add(_voiceChat.SettingsMenuItem);
             if (_targetsMenuItem == null)
             {
                 _settingsMenuItem.MenuItems.Add(_appServerRuntimeSettingsMenuItem);

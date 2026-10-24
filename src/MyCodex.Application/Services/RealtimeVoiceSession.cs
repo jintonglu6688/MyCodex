@@ -38,6 +38,7 @@ namespace MyCodex.Application.Services
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _audio = audio ?? throw new ArgumentNullException(nameof(audio));
             _client.RealtimeVoiceEventReceived += OnRealtimeEvent;
+            _client.TypedInputSubmitted += OnTypedInput;
             _audio.Failed += OnAudioFailed;
         }
 
@@ -89,7 +90,7 @@ namespace MyCodex.Application.Services
             var token = attempt.Cancellation.Token;
             try
             {
-                request.OfferSdp = await _audio.PrepareAsync(request.SessionId, token).ConfigureAwait(false);
+                request.OfferSdp = await _audio.PrepareAsync(request.SessionId, request.OutputVolumePercent, token).ConfigureAwait(false);
                 token.ThrowIfCancellationRequested();
                 lock (_gate)
                 {
@@ -297,6 +298,35 @@ namespace MyCodex.Application.Services
             }
         }
 
+        private void OnTypedInput(object sender, RealtimeVoiceEvent message)
+        {
+            Attempt attempt;
+            lock (_gate)
+            {
+                attempt = _active;
+                if (_disposed || attempt == null || attempt.StopIssued || State != VoiceChatState.Active ||
+                    message == null || !string.Equals(message.ThreadId, attempt.Request.ThreadId, StringComparison.Ordinal))
+                {
+                    return;
+                }
+            }
+
+            ForwardTypedInputAsync(attempt, message.Text);
+        }
+
+        private async void ForwardTypedInputAsync(Attempt attempt, string text)
+        {
+            try
+            {
+                await _client.AppendRealtimeTypedRequestAsync(attempt.Request.ThreadId, text, attempt.Cancellation.Token).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // The typed message itself was already accepted; voice just will not mention it.
+                System.Diagnostics.Trace.TraceWarning("Voice typed input forwarding failed: {0}", ex.GetType().Name);
+            }
+        }
+
         private void OnAudioFailed(object sender, VoiceAudioEvent message)
         {
             Attempt attempt;
@@ -374,6 +404,7 @@ namespace MyCodex.Application.Services
 
             _disposed = true;
             _client.RealtimeVoiceEventReceived -= OnRealtimeEvent;
+            _client.TypedInputSubmitted -= OnTypedInput;
             _audio.Failed -= OnAudioFailed;
             // Dispose the audio only after the stop finished with it.
             StopAsync().ContinueWith(_ => _audio.Dispose(), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);

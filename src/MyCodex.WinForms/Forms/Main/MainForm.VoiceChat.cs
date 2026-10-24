@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Domain.Entities;
 using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Localization;
 
@@ -22,6 +23,8 @@ namespace MyCodex.WinForms.Forms
                 _appServerClient,
                 realtimeClient == null ? null : new WebViewVoiceAudio(this, Path.Combine(_appConfigService.GetAppDataDirectory(), "voice-browser")),
                 PrepareVoiceConversationAsync,
+                () => _appConfigSnapshot.VoiceChat,
+                SaveVoiceChatSettings,
                 SetStatus);
             _voiceChat.TranscriptReceived += (sender, message) => ShowVoiceTranscript(message);
             Disposed += (sender, args) => _voiceChat.Dispose();
@@ -84,6 +87,19 @@ namespace MyCodex.WinForms.Forms
                     BackendMode = backendMode
                 }
             };
+        }
+
+        private bool SaveVoiceChatSettings(VoiceChatSettings settings)
+        {
+            var previous = _appConfigSnapshot.VoiceChat;
+            _appConfigSnapshot.VoiceChat = settings;
+            var saved = SaveAppConfig();
+            if (!saved)
+            {
+                _appConfigSnapshot.VoiceChat = previous;
+            }
+
+            return saved;
         }
 
         private void ShowVoiceTranscript(RealtimeVoiceEvent message)

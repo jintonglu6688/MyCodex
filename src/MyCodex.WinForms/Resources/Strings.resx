@@ -13869,14 +13869,43 @@ Update now? Choose No to continue using the existing runtime.</value>
   <data name="VoiceChat.Accessible.Start" xml:space="preserve"><value>Start voice</value></data>
   <data name="VoiceChat.Accessible.Stop" xml:space="preserve"><value>Stop voice</value></data>
   <data name="VoiceChat.Status.Connecting" xml:space="preserve"><value>Connecting voice…</value></data>
-  <data name="VoiceChat.Status.Active" xml:space="preserve"><value>Voice on. Hold F8 to talk, release to send.</value></data>
-  <data name="VoiceChat.Status.BasicEcho" xml:space="preserve"><value>Voice on. Hold F8 to talk, release to send. System audio filtering is unavailable, so screen reader speech may be picked up while F8 is held.</value></data>
   <data name="VoiceChat.Status.Off" xml:space="preserve"><value>Voice off. Continue in this conversation by typing.</value></data>
   <data name="VoiceChat.Error.NoVoices" xml:space="preserve"><value>This runtime does not provide official voices.</value></data>
   <data name="VoiceChat.Error.Disconnected" xml:space="preserve"><value>Voice stopped because the connection to Codex was lost.</value></data>
   <data name="VoiceChat.Error.AudioStopped" xml:space="preserve"><value>The voice audio engine stopped. Turn voice on again.</value></data>
   <data name="VoiceChat.Error.Microphone" xml:space="preserve"><value>The microphone is unavailable. Check the device and the Windows microphone permission.</value></data>
   <data name="VoiceChat.Error.Timeout" xml:space="preserve"><value>The voice connection timed out. Please try again.</value></data>
-  <data name="VoiceChat.Status.Listening" xml:space="preserve"><value>Listening. Release F8 to send.</value></data>
-  <data name="VoiceChat.Status.Sent" xml:space="preserve"><value>Sent. Hold F8 to talk again.</value></data>
+  <data name="VoiceChat.Status.Active.Hold" xml:space="preserve"><value>Voice on. Hold {0} to talk, release to send.</value></data>
+  <data name="VoiceChat.Status.Active.Toggle" xml:space="preserve"><value>Voice on. Press {0} to talk, press it again to send.</value></data>
+  <data name="VoiceChat.Status.BasicEcho" xml:space="preserve"><value>System audio filtering is unavailable, so screen reader speech may be picked up while you talk.</value></data>
+  <data name="VoiceChat.Status.Listening.Hold" xml:space="preserve"><value>Listening. Release {0} to send.</value></data>
+  <data name="VoiceChat.Status.Listening.Toggle" xml:space="preserve"><value>Listening. Press {0} again to send.</value></data>
+  <data name="VoiceChat.Status.Sent.Hold" xml:space="preserve"><value>Sent. Hold {0} to talk again.</value></data>
+  <data name="VoiceChat.Status.Sent.Toggle" xml:space="preserve"><value>Sent. Press {0} to talk again.</value></data>
+  <data name="VoiceSettings.Menu" xml:space="preserve"><value>&amp;Voice Settings...</value></data>
+  <data name="VoiceSettings.Title" xml:space="preserve"><value>Voice Settings</value></data>
+  <data name="VoiceSettings.Label.TalkKey" xml:space="preserve"><value>Talk &amp;key</value></data>
+  <data name="VoiceSettings.Accessible.TalkKey" xml:space="preserve"><value>Talk key</value></data>
+  <data name="VoiceSettings.Label.TalkMode" xml:space="preserve"><value>Talk &amp;mode</value></data>
+  <data name="VoiceSettings.Accessible.TalkMode" xml:space="preserve"><value>Talk mode</value></data>
+  <data name="VoiceSettings.TalkMode.Hold" xml:space="preserve"><value>Hold to talk, release to send</value></data>
+  <data name="VoiceSettings.TalkMode.Toggle" xml:space="preserve"><value>Press to talk, press again to send</value></data>
+  <data name="VoiceSettings.Label.Voice" xml:space="preserve"><value>&amp;Voice</value></data>
+  <data name="VoiceSettings.Accessible.Voice" xml:space="preserve"><value>Voice</value></data>
+  <data name="VoiceSettings.Voice.Default" xml:space="preserve"><value>Official default</value></data>
+  <data name="VoiceSettings.Label.Pace" xml:space="preserve"><value>Speaking &amp;pace</value></data>
+  <data name="VoiceSettings.Accessible.Pace" xml:space="preserve"><value>Speaking pace</value></data>
+  <data name="VoiceSettings.Pace.Default" xml:space="preserve"><value>Official default</value></data>
+  <data name="VoiceSettings.Pace.Faster" xml:space="preserve"><value>Slightly faster</value></data>
+  <data name="VoiceSettings.Label.Volume" xml:space="preserve"><value>Reply vo&amp;lume</value></data>
+  <data name="VoiceSettings.Accessible.Volume" xml:space="preserve"><value>Reply volume</value></data>
+  <data name="VoiceSettings.Volume.Original" xml:space="preserve"><value>Original volume</value></data>
+  <data name="VoiceSettings.Hint" xml:space="preserve"><value>The talk key and mode apply right away. Voice, pace and volume apply the next time voice is turned on.</value></data>
+  <data name="VoiceSettings.Status.Loading" xml:space="preserve"><value>Loading official voices…</value></data>
+  <data name="VoiceSettings.Status.VoicesUnavailable" xml:space="preserve"><value>Voices can be listed only while official voice is available on this target.</value></data>
+  <data name="VoiceSettings.Button.Save" xml:space="preserve"><value>&amp;Save</value></data>
+  <data name="VoiceSettings.Accessible.Save" xml:space="preserve"><value>Save</value></data>
+  <data name="VoiceSettings.Button.Cancel" xml:space="preserve"><value>&amp;Cancel</value></data>
+  <data name="VoiceSettings.Accessible.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="VoiceSettings.Error.Save" xml:space="preserve"><value>Voice settings could not be saved.</value></data>
 </root>

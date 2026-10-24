@@ -12,6 +12,9 @@ namespace MyCodex.Infrastructure.AppServer
     internal sealed class AppServerRealtimeOperations
     {
         private const string RealtimeVersion = "v3";
+        // Wording from the reference implementation, which was verified against the live service.
+        private const string FasterSpeechInstruction = "Speak faster than your default speaking pace while remaining clear and natural. Keep the same voice and pitch. Do not shorten answers merely to sound faster.";
+        private const string TypedRequestPrefix = "This request was typed into the existing text composer and is already being handled by the attached Codex agent. Wait for its result, then answer aloud. Do not delegate the same request again. Request: ";
         private readonly AppServerRequestInvoker _send;
 
         public AppServerRealtimeOperations(AppServerRequestInvoker send)
@@ -52,6 +55,11 @@ namespace MyCodex.Infrastructure.AppServer
             await RequireChatGptAsync(cancellationToken).ConfigureAwait(false);
             await UpdateBackendAsync(request, cancellationToken).ConfigureAwait(false);
             var initialItems = await AppServerVoiceContext.ReadInitialItemsAsync(_send, request.ThreadId, cancellationToken).ConfigureAwait(false);
+            if (request.FasterSpeech)
+            {
+                initialItems.Add(new Dictionary<string, object> { { "role", "developer" }, { "text", FasterSpeechInstruction } });
+            }
+
             var parameters = new Dictionary<string, object>
             {
                 { "threadId", request.ThreadId },
@@ -77,6 +85,30 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return _send("thread/realtime/stop", new Dictionary<string, object> { { "threadId", threadId } }, cancellationToken, 6000);
+        }
+
+        public Task AppendTypedRequestAsync(string threadId, string text, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(threadId) || string.IsNullOrWhiteSpace(text))
+            {
+                throw new ArgumentException("A thread and text are required.", nameof(text));
+            }
+
+            return _send("thread/realtime/appendText", new Dictionary<string, object>
+            {
+                { "threadId", threadId },
+                { "role", "user" },
+                { "text", TypedRequestPrefix + AppServerVoiceContext.TakeTail(text.Trim(), AppServerVoiceContext.MaximumContextBytes) }
+            }, cancellationToken, 10000);
+        }
+
+        // Only the text parts of a typed message; attachments stay with the regular turn.
+        public static string BuildTypedRequest(IEnumerable<AppServerUserInputItem> items)
+        {
+            var parts = (items ?? Enumerable.Empty<AppServerUserInputItem>())
+                .Where(item => item != null && string.Equals(item.Type, "text", StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(item.Text))
+                .Select(item => item.Text.Trim());
+            return string.Join("\n", parts);
         }
 
         private Task UpdateBackendAsync(RealtimeVoiceStart request, CancellationToken cancellationToken)

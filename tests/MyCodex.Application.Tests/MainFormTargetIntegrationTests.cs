@@ -205,7 +205,7 @@ namespace MyCodex.Application.Tests
                 var connection = FormTestDriver.Field<MenuItem>(fixture.Form, "_remoteServiceMenuItem");
                 Assert.That(connection.Parent, Is.SameAs(settings));
                 Assert.That(connection.MenuItems.Count, Is.Zero);
-                Assert.That(settings.MenuItems.Count, Is.EqualTo(6));
+                Assert.That(settings.MenuItems.Count, Is.EqualTo(7));
                 Assert.That(connection.Text, Is.EqualTo(UiLocalization.Text("Settings.Menu.RemoteService", "Phone Connection(&R)...")));
 
                 var opened = false;
