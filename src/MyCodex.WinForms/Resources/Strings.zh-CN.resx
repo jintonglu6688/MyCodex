@@ -10951,6 +10951,9 @@ MyCodex 桌面客户端。</value>
   <data name="OptionsForm.Category.ScreenReader" xml:space="preserve">
     <value>朗读</value>
   </data>
+  <data name="OptionsForm.Category.VoiceChat" xml:space="preserve">
+    <value>语音对话</value>
+  </data>
   <data name="OptionsForm.Label.Theme" xml:space="preserve">
     <value>主题</value>
   </data>
@@ -13819,15 +13822,15 @@ MyCodex 桌面客户端。</value>
   <data name="Aggregation.Status.Working" xml:space="preserve">
     <value>正在应用聚合设置并重启 Codex…</value>
   </data>
-  <data name="VoiceChat.Button.Start" xml:space="preserve"><value>开启语音(&amp;V)</value></data>
-  <data name="VoiceChat.Button.Stop" xml:space="preserve"><value>关闭语音(&amp;V)</value></data>
-  <data name="VoiceChat.Accessible.Start" xml:space="preserve"><value>开启语音</value></data>
-  <data name="VoiceChat.Accessible.Stop" xml:space="preserve"><value>关闭语音</value></data>
+  <data name="VoiceChat.Button.Start" xml:space="preserve"><value>开启语音对话(&amp;V)</value></data>
+  <data name="VoiceChat.Button.Stop" xml:space="preserve"><value>关闭语音对话(&amp;V)</value></data>
+  <data name="VoiceChat.Accessible.Start" xml:space="preserve"><value>开启语音对话</value></data>
+  <data name="VoiceChat.Accessible.Stop" xml:space="preserve"><value>关闭语音对话</value></data>
   <data name="VoiceChat.Status.Connecting" xml:space="preserve"><value>正在连接语音…</value></data>
-  <data name="VoiceChat.Status.Off" xml:space="preserve"><value>语音已关闭，可在当前会话中继续文字输入。</value></data>
+  <data name="VoiceChat.Status.Off" xml:space="preserve"><value>语音对话已关闭，可在当前会话中继续文字输入。</value></data>
   <data name="VoiceChat.Error.NoVoices" xml:space="preserve"><value>当前运行时没有提供官方语音音色。</value></data>
   <data name="VoiceChat.Error.Disconnected" xml:space="preserve"><value>与 Codex 的连接已断开，语音已停止。</value></data>
-  <data name="VoiceChat.Error.AudioStopped" xml:space="preserve"><value>语音音频引擎已停止，请重新开启语音。</value></data>
+  <data name="VoiceChat.Error.AudioStopped" xml:space="preserve"><value>语音音频引擎已停止，请重新开启语音对话。</value></data>
   <data name="VoiceChat.Error.Microphone" xml:space="preserve"><value>麦克风不可用，请检查设备和 Windows 麦克风权限。</value></data>
   <data name="VoiceChat.Error.Timeout" xml:space="preserve"><value>语音连接超时，请重试。</value></data>
   <data name="VoiceChat.Status.Active.Hold" xml:space="preserve"><value>语音已开启。按住 {0} 说话，松开发送。</value></data>
@@ -13837,8 +13840,6 @@ MyCodex 桌面客户端。</value>
   <data name="VoiceChat.Status.Listening.Toggle" xml:space="preserve"><value>正在听，再按一下 {0} 发送。</value></data>
   <data name="VoiceChat.Status.Sent.Hold" xml:space="preserve"><value>已发送。再次按住 {0} 继续说话。</value></data>
   <data name="VoiceChat.Status.Sent.Toggle" xml:space="preserve"><value>已发送。按一下 {0} 继续说话。</value></data>
-  <data name="VoiceSettings.Menu" xml:space="preserve"><value>语音设置(&amp;V)...</value></data>
-  <data name="VoiceSettings.Title" xml:space="preserve"><value>语音设置</value></data>
   <data name="VoiceSettings.Label.TalkKey" xml:space="preserve"><value>说话热键(&amp;K)</value></data>
   <data name="VoiceSettings.Accessible.TalkKey" xml:space="preserve"><value>说话热键</value></data>
   <data name="VoiceSettings.Label.TalkMode" xml:space="preserve"><value>说话方式(&amp;M)</value></data>
@@ -13855,12 +13856,15 @@ MyCodex 桌面客户端。</value>
   <data name="VoiceSettings.Label.Volume" xml:space="preserve"><value>回复音量(&amp;L)</value></data>
   <data name="VoiceSettings.Accessible.Volume" xml:space="preserve"><value>回复音量</value></data>
   <data name="VoiceSettings.Volume.Original" xml:space="preserve"><value>原始音量</value></data>
-  <data name="VoiceSettings.Hint" xml:space="preserve"><value>说话热键和方式立即生效；音色、语速和音量在下次开启语音时生效。</value></data>
+  <data name="VoiceSettings.Hint" xml:space="preserve"><value>说话热键和方式在按“确定”后生效；音色、语速和音量在下次开启语音对话时生效；“试听”无需保存即可听到效果。</value></data>
   <data name="VoiceSettings.Status.Loading" xml:space="preserve"><value>正在读取官方音色…</value></data>
   <data name="VoiceSettings.Status.VoicesUnavailable" xml:space="preserve"><value>只有当前目标可以使用官方语音时才能读取音色列表。</value></data>
-  <data name="VoiceSettings.Button.Save" xml:space="preserve"><value>保存(&amp;S)</value></data>
-  <data name="VoiceSettings.Accessible.Save" xml:space="preserve"><value>保存</value></data>
-  <data name="VoiceSettings.Button.Cancel" xml:space="preserve"><value>取消(&amp;C)</value></data>
-  <data name="VoiceSettings.Accessible.Cancel" xml:space="preserve"><value>取消</value></data>
-  <data name="VoiceSettings.Error.Save" xml:space="preserve"><value>无法保存语音设置。</value></data>
+  <data name="VoiceSettings.Button.Preview" xml:space="preserve"><value>试听(&amp;T)</value></data>
+  <data name="VoiceSettings.Accessible.Preview" xml:space="preserve"><value>试听</value></data>
+  <data name="VoiceSettings.Button.StopPreview" xml:space="preserve"><value>停止试听(&amp;T)</value></data>
+  <data name="VoiceSettings.Accessible.StopPreview" xml:space="preserve"><value>停止试听</value></data>
+  <data name="VoiceSettings.Status.Previewing" xml:space="preserve"><value>正在播放试听，麦克风保持关闭。</value></data>
+  <data name="VoiceSettings.Status.PreviewFinished" xml:space="preserve"><value>试听结束。</value></data>
+  <data name="VoiceSettings.Error.PreviewBusy" xml:space="preserve"><value>请先关闭语音对话，再试听音色。</value></data>
+  <data name="VoiceSettings.Preview.Sample" xml:space="preserve"><value>你好，这是所选音色和语速听起来的效果。</value></data>
 </root>

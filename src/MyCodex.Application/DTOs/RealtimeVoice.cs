@@ -32,6 +32,9 @@ namespace MyCodex.Application.DTOs
 
         // Applied with thread/settings/update so delegated work uses the conversation's model, effort and mode.
         public AppServerCollaborationMode BackendMode { get; set; }
+
+        // Set for a voice preview: the microphone stays closed and the voice speaks this sample once.
+        public string PreviewText { get; set; }
     }
 
     public enum RealtimeVoiceEventKind

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
@@ -58,6 +59,7 @@ namespace MyCodex.WinForms.Forms
         private readonly OfficeCliInstallationService _officeCliInstallationService;
         private readonly OfficeCliIntegrationPaths _officeCliPaths;
         private readonly OfficeDirectoryOptionsContext _officeDirectoryOptionsContext;
+        private VoiceChatOptionsPage _voiceChatPage;
         private bool _officeRootRepresentsDefault;
         private bool _isUpdatingOfficeRootPath;
 
@@ -499,6 +501,9 @@ namespace MyCodex.WinForms.Forms
 
         public bool EnableAutomaticChatReading { get; private set; }
 
+        // Null when the Voice Chat tab was not added.
+        public VoiceChatSettings VoiceChat { get; private set; }
+
         internal Func<bool> ValidateSelection { get; set; }
 
         public ScreenReaderProviderKind ScreenReaderProvider { get; private set; }
@@ -572,6 +577,23 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(_tabControl, 0, 1);
             root.Controls.Add(buttonPanel, 0, 2);
             Controls.Add(root);
+        }
+
+        // Voice Chat follows Screen Reader, before the official settings.
+        internal void AddVoiceChatPage(VoiceChatOptionsPage page)
+        {
+            _voiceChatPage = page;
+            AddPage("voiceChat", UiLocalization.Text("OptionsForm.Category.VoiceChat", "Voice Chat"), page);
+            // TabPages.Insert is ignored before the handle exists, so move the later pages behind the new one instead.
+            var later = _tabControl.TabPages.Cast<TabPage>()
+                .Skip(_tabControl.TabPages.IndexOfKey("screenReader") + 1)
+                .Where(tab => tab.Name != "voiceChat")
+                .ToList();
+            foreach (var tab in later)
+            {
+                _tabControl.TabPages.Remove(tab);
+                _tabControl.TabPages.Add(tab);
+            }
         }
 
         private void AddPage(string name, string text, Control content)
@@ -1381,6 +1403,7 @@ namespace MyCodex.WinForms.Forms
             ManualBrowseUseReaderMainChannel = _screenReaderSettingsForm.ManualBrowseUseReaderMainChannel;
             ScreenReaderIndependentChannelName = _screenReaderSettingsForm.ScreenReaderIndependentChannelName;
             CustomApprovalSettings = BuildCustomApprovalSettings();
+            VoiceChat = _voiceChatPage?.ReadSettings();
             if (ValidateSelection != null && !ValidateSelection())
             {
                 return;

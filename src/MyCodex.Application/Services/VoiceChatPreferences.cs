@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using MyCodex.Domain.Entities;
+using MyCodex.Shared.Helpers;
 
 namespace MyCodex.Application.Services
 {
@@ -29,6 +31,18 @@ namespace MyCodex.Application.Services
         public static string DescribeTalkKey(int virtualKey)
         {
             return "F" + (NormalizeTalkVirtualKey(virtualKey) - 0x6F).ToString(CultureInfo.InvariantCulture);
+        }
+
+        // Compares what the settings mean, so a stored out-of-range value equals the default it falls back to.
+        public static bool AreEquivalent(VoiceChatSettings left, VoiceChatSettings right)
+        {
+            left = left ?? new VoiceChatSettings();
+            right = right ?? new VoiceChatSettings();
+            return NormalizeTalkVirtualKey(left.TalkVirtualKey) == NormalizeTalkVirtualKey(right.TalkVirtualKey) &&
+                left.TalkMode == right.TalkMode &&
+                string.Equals(TextValueHelper.TrimToNull(left.Voice), TextValueHelper.TrimToNull(right.Voice), StringComparison.Ordinal) &&
+                left.FasterSpeech == right.FasterSpeech &&
+                NormalizeOutputVolumePercent(left.OutputVolumePercent) == NormalizeOutputVolumePercent(right.OutputVolumePercent);
         }
 
         public static string NormalizeVoice(string voice, IEnumerable<string> available)

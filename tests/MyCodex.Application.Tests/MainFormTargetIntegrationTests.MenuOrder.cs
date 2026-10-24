@@ -25,7 +25,6 @@ namespace MyCodex.Application.Tests
                 {
                     FormTestDriver.Field<MenuItem>(form, "_defaultModelMenuItem"), FormTestDriver.Field<MenuItem>(form, "_defaultPermissionMenuItem"),
                     FormTestDriver.Field<MenuItem>(form, "_optionsMenuItem"),
-                    FormTestDriver.Field<VoiceChatCoordinator>(form, "_voiceChat").SettingsMenuItem,
                     FormTestDriver.Field<MenuItem>(form, withTargetContext ? "_targetsMenuItem" : "_appServerRuntimeSettingsMenuItem"),
                     FormTestDriver.Field<MenuItem>(form, "_extensionsMenuItem"), FormTestDriver.Field<MenuItem>(form, "_remoteServiceMenuItem")
                 }));

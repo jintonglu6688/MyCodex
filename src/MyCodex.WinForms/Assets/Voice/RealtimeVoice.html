@@ -16,6 +16,9 @@
         if (!session || session.stopped) return;
         session.stopped = true;
         clearTimeout(session.disconnectTimer);
+        clearInterval(session.meterTimer);
+        session.meter?.close().catch(() => {});
+        session.silence?.close().catch(() => {});
         session.stream?.getTracks().forEach(track => track.stop());
         session.channel?.close();
         session.peer?.close();
@@ -70,6 +73,37 @@
         playCue(enabled);
     }
 
+    function openSilence(session) {
+        const silence = session.silence = new AudioContext();
+        const destination = silence.createMediaStreamDestination();
+        const source = silence.createConstantSource();
+        source.offset.value = 0;
+        source.connect(destination);
+        source.start();
+        return destination.stream;
+    }
+
+    // A listen-only preview ends once the voice has spoken and then stayed quiet for a moment.
+    function watchForSilence(session, remote) {
+        const meter = session.meter = new AudioContext();
+        const analyser = meter.createAnalyser();
+        meter.createMediaStreamSource(remote).connect(analyser);
+        meter.resume().catch(() => {});
+        const samples = new Float32Array(analyser.fftSize);
+        let lastSound = 0;
+        session.meterTimer = setInterval(() => {
+            if (!alive(session)) return;
+            analyser.getFloatTimeDomainData(samples);
+            const now = performance.now();
+            if (samples.some(value => Math.abs(value) > 0.01)) {
+                lastSound = now;
+            } else if (lastSound && now - lastSound > 1500) {
+                clearInterval(session.meterTimer);
+                post({ kind: 'finished', sessionId: session.id });
+            }
+        }, 100);
+    }
+
     async function openMicrophone() {
         // Prefer system-wide echo cancellation so screen-reader speech is not sent back as user input.
         try {
@@ -99,13 +133,14 @@
         });
     }
 
-    async function prepare(id, gain) {
+    async function prepare(id, gain, listenOnly) {
         if (!Number.isFinite(gain) || gain <= 0 || gain > 2) gain = 1;
         if (current) disposeSession(current);
         const session = { id, stopped: false };
         current = session;
         try {
-            const stream = session.stream = await openMicrophone();
+            // A listen-only preview sends a silent track, keeping the usual two-way offer without the microphone.
+            const stream = session.stream = listenOnly ? openSilence(session) : await openMicrophone();
             // Push-to-talk: the microphone sends silence until the hold key is pressed.
             stream.getAudioTracks().forEach(track => { track.enabled = false; });
             if (!alive(session)) throw new Error('Voice session ended.');
@@ -126,6 +161,7 @@
                     session.boost.resume().catch(() => {});
                 }
                 output.play().catch(error => fail(session, error.message));
+                if (listenOnly && !session.meter) watchForSilence(session, remote);
             };
             peer.onconnectionstatechange = () => {
                 if (!alive(session)) return;
@@ -168,7 +204,7 @@
         try {
             let result = {};
             switch (request.method) {
-                case 'prepare': result = await prepare(request.sessionId, request.gain); break;
+                case 'prepare': result = await prepare(request.sessionId, request.gain, request.listenOnly === true); break;
                 case 'answer':
                     await requireSession(request.sessionId).peer.setRemoteDescription({ type: 'answer', sdp: request.sdp });
                     break;

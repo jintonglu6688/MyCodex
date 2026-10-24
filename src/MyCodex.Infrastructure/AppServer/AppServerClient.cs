@@ -1438,7 +1438,9 @@ namespace MyCodex.Infrastructure.AppServer
 
         public async Task<AppServerThreadDetails> ReadThreadAsync(string threadId, CancellationToken cancellationToken)
         {
-            return await _threadOperations.ReadThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+            var details = await _threadOperations.ReadThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+            await MergeVoiceHistoryAsync(threadId, details, cancellationToken).ConfigureAwait(false);
+            return details;
         }
 
         public async Task ArchiveThreadAsync(string threadId)

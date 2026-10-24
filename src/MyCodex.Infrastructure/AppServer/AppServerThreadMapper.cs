@@ -138,10 +138,13 @@ namespace MyCodex.Infrastructure.AppServer
             switch (itemType)
             {
                 case "userMessage":
-                    var text = ExtractUserMessageText(item);
+                    bool voiceDelegation;
+                    var text = ExtractUserMessageText(item, out voiceDelegation);
                     if (!string.IsNullOrWhiteSpace(text))
                     {
-                        details.Messages.Add(CreateMessage(threadId, turnId, turnIndex, turnItemIndex, item, "User", text));
+                        var message = CreateMessage(threadId, turnId, turnIndex, turnItemIndex, item, "User", text);
+                        message.IsVoiceDelegation = voiceDelegation;
+                        details.Messages.Add(message);
                     }
                     break;
                 case "agentMessage":
@@ -198,6 +201,13 @@ namespace MyCodex.Infrastructure.AppServer
 
         internal static string ExtractUserMessageText(IDictionary<string, object> item)
         {
+            bool voiceDelegation;
+            return ExtractUserMessageText(item, out voiceDelegation);
+        }
+
+        internal static string ExtractUserMessageText(IDictionary<string, object> item, out bool voiceDelegation)
+        {
+            voiceDelegation = false;
             var parts = new List<string>();
             var imageNames = new List<string>();
             var fileNames = new List<string>();
@@ -214,6 +224,13 @@ namespace MyCodex.Infrastructure.AppServer
                 if (string.Equals(contentType, "text", StringComparison.OrdinalIgnoreCase))
                 {
                     var text = AppServerJsonValueReader.GetString(content, "text");
+                    string request;
+                    if (AppServerRealtimeDelegation.TryUnwrap(text, out request))
+                    {
+                        voiceDelegation = true;
+                        text = request;
+                    }
+
                     if (!string.IsNullOrWhiteSpace(text))
                     {
                         parts.Add(text);

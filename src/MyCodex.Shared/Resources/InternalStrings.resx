@@ -1673,6 +1673,9 @@ This file is empty.</value>
   <data name="VoiceChat.Error.ConnectionFailed" xml:space="preserve">
     <value>The voice connection failed.</value>
   </data>
+  <data name="VoiceChat.Error.PreviewThread" xml:space="preserve">
+    <value>The voice preview could not be prepared.</value>
+  </data>
   <data name="VoiceChat.Error.Timeout" xml:space="preserve">
     <value>The voice connection timed out. Please try again.</value>
   </data>

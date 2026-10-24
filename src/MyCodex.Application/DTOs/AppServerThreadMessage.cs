@@ -15,5 +15,7 @@ namespace MyCodex.Application.DTOs
         public string Sender { get; set; }
 
         public string Content { get; set; }
+
+        public bool IsVoiceDelegation { get; set; }
     }
 }

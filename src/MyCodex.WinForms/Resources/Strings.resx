@@ -11012,6 +11012,9 @@ Describe what should be checked before considering work complete.</value>
   <data name="OptionsForm.Category.ScreenReader" xml:space="preserve">
     <value>Screen Reader</value>
   </data>
+  <data name="OptionsForm.Category.VoiceChat" xml:space="preserve">
+    <value>Voice Chat</value>
+  </data>
   <data name="OptionsForm.Label.Theme" xml:space="preserve">
     <value>Theme</value>
   </data>
@@ -13864,15 +13867,15 @@ Update now? Choose No to continue using the existing runtime.</value>
   <data name="Aggregation.Status.Working" xml:space="preserve">
     <value>Applying aggregation and restarting Codex…</value>
   </data>
-  <data name="VoiceChat.Button.Start" xml:space="preserve"><value>Start &amp;Voice</value></data>
-  <data name="VoiceChat.Button.Stop" xml:space="preserve"><value>Stop &amp;Voice</value></data>
-  <data name="VoiceChat.Accessible.Start" xml:space="preserve"><value>Start voice</value></data>
-  <data name="VoiceChat.Accessible.Stop" xml:space="preserve"><value>Stop voice</value></data>
+  <data name="VoiceChat.Button.Start" xml:space="preserve"><value>Start &amp;Voice Chat</value></data>
+  <data name="VoiceChat.Button.Stop" xml:space="preserve"><value>Stop &amp;Voice Chat</value></data>
+  <data name="VoiceChat.Accessible.Start" xml:space="preserve"><value>Start voice chat</value></data>
+  <data name="VoiceChat.Accessible.Stop" xml:space="preserve"><value>Stop voice chat</value></data>
   <data name="VoiceChat.Status.Connecting" xml:space="preserve"><value>Connecting voice…</value></data>
-  <data name="VoiceChat.Status.Off" xml:space="preserve"><value>Voice off. Continue in this conversation by typing.</value></data>
+  <data name="VoiceChat.Status.Off" xml:space="preserve"><value>Voice chat off. Continue in this conversation by typing.</value></data>
   <data name="VoiceChat.Error.NoVoices" xml:space="preserve"><value>This runtime does not provide official voices.</value></data>
   <data name="VoiceChat.Error.Disconnected" xml:space="preserve"><value>Voice stopped because the connection to Codex was lost.</value></data>
-  <data name="VoiceChat.Error.AudioStopped" xml:space="preserve"><value>The voice audio engine stopped. Turn voice on again.</value></data>
+  <data name="VoiceChat.Error.AudioStopped" xml:space="preserve"><value>The voice audio engine stopped. Start voice chat again.</value></data>
   <data name="VoiceChat.Error.Microphone" xml:space="preserve"><value>The microphone is unavailable. Check the device and the Windows microphone permission.</value></data>
   <data name="VoiceChat.Error.Timeout" xml:space="preserve"><value>The voice connection timed out. Please try again.</value></data>
   <data name="VoiceChat.Status.Active.Hold" xml:space="preserve"><value>Voice on. Hold {0} to talk, release to send.</value></data>
@@ -13882,8 +13885,6 @@ Update now? Choose No to continue using the existing runtime.</value>
   <data name="VoiceChat.Status.Listening.Toggle" xml:space="preserve"><value>Listening. Press {0} again to send.</value></data>
   <data name="VoiceChat.Status.Sent.Hold" xml:space="preserve"><value>Sent. Hold {0} to talk again.</value></data>
   <data name="VoiceChat.Status.Sent.Toggle" xml:space="preserve"><value>Sent. Press {0} to talk again.</value></data>
-  <data name="VoiceSettings.Menu" xml:space="preserve"><value>&amp;Voice Settings...</value></data>
-  <data name="VoiceSettings.Title" xml:space="preserve"><value>Voice Settings</value></data>
   <data name="VoiceSettings.Label.TalkKey" xml:space="preserve"><value>Talk &amp;key</value></data>
   <data name="VoiceSettings.Accessible.TalkKey" xml:space="preserve"><value>Talk key</value></data>
   <data name="VoiceSettings.Label.TalkMode" xml:space="preserve"><value>Talk &amp;mode</value></data>
@@ -13900,12 +13901,15 @@ Update now? Choose No to continue using the existing runtime.</value>
   <data name="VoiceSettings.Label.Volume" xml:space="preserve"><value>Reply vo&amp;lume</value></data>
   <data name="VoiceSettings.Accessible.Volume" xml:space="preserve"><value>Reply volume</value></data>
   <data name="VoiceSettings.Volume.Original" xml:space="preserve"><value>Original volume</value></data>
-  <data name="VoiceSettings.Hint" xml:space="preserve"><value>The talk key and mode apply right away. Voice, pace and volume apply the next time voice is turned on.</value></data>
+  <data name="VoiceSettings.Hint" xml:space="preserve"><value>The talk key and mode apply after OK. Voice, pace and volume apply the next time voice chat starts; Try Voice plays them without saving.</value></data>
   <data name="VoiceSettings.Status.Loading" xml:space="preserve"><value>Loading official voices…</value></data>
   <data name="VoiceSettings.Status.VoicesUnavailable" xml:space="preserve"><value>Voices can be listed only while official voice is available on this target.</value></data>
-  <data name="VoiceSettings.Button.Save" xml:space="preserve"><value>&amp;Save</value></data>
-  <data name="VoiceSettings.Accessible.Save" xml:space="preserve"><value>Save</value></data>
-  <data name="VoiceSettings.Button.Cancel" xml:space="preserve"><value>&amp;Cancel</value></data>
-  <data name="VoiceSettings.Accessible.Cancel" xml:space="preserve"><value>Cancel</value></data>
-  <data name="VoiceSettings.Error.Save" xml:space="preserve"><value>Voice settings could not be saved.</value></data>
+  <data name="VoiceSettings.Button.Preview" xml:space="preserve"><value>&amp;Try Voice</value></data>
+  <data name="VoiceSettings.Accessible.Preview" xml:space="preserve"><value>Try voice</value></data>
+  <data name="VoiceSettings.Button.StopPreview" xml:space="preserve"><value>S&amp;top Preview</value></data>
+  <data name="VoiceSettings.Accessible.StopPreview" xml:space="preserve"><value>Stop preview</value></data>
+  <data name="VoiceSettings.Status.Previewing" xml:space="preserve"><value>Playing a preview. The microphone stays off.</value></data>
+  <data name="VoiceSettings.Status.PreviewFinished" xml:space="preserve"><value>Preview finished.</value></data>
+  <data name="VoiceSettings.Error.PreviewBusy" xml:space="preserve"><value>Stop voice chat before trying a voice.</value></data>
+  <data name="VoiceSettings.Preview.Sample" xml:space="preserve"><value>Hello. This is how I sound with the selected voice and speaking pace.</value></data>
 </root>

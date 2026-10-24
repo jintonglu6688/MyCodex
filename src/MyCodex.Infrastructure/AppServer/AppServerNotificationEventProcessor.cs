@@ -19,6 +19,8 @@ namespace MyCodex.Infrastructure.AppServer
         private readonly Dictionary<string, PendingMcpToolCallItem> _mcpToolCalls = new Dictionary<string, PendingMcpToolCallItem>(StringComparer.Ordinal);
         private readonly Dictionary<string, PendingReasoningItem> _reasoningItems = new Dictionary<string, PendingReasoningItem>(StringComparer.Ordinal);
         private readonly HashSet<string> _commandOutputDeltaItemIds = new HashSet<string>(StringComparer.Ordinal);
+        // Temporary threads such as the voice preview never become sessions.
+        private readonly HashSet<string> _ephemeralThreadIds = new HashSet<string>(StringComparer.Ordinal);
 
         public AppServerNotificationEventProcessor(AppServerNotificationEventContext context)
         {
@@ -36,6 +38,22 @@ namespace MyCodex.Infrastructure.AppServer
             var action = AppServerNotificationDispatcher.Classify(method);
             var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
             var turnId = AppServerJsonValueReader.GetString(parameters, "turnId");
+            bool ephemeral;
+            var ended = action == AppServerNotificationAction.ThreadClosed || action == AppServerNotificationAction.ThreadDeleted;
+            lock (_syncRoot)
+            {
+                ephemeral = threadId != null && (ended ? _ephemeralThreadIds.Remove(threadId) : _ephemeralThreadIds.Contains(threadId));
+            }
+
+            if (ephemeral)
+            {
+                if (ended)
+                {
+                    _context.ForgetThreadState(threadId);
+                }
+
+                return;
+            }
 
             switch (action)
             {
@@ -268,6 +286,16 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             _context.RememberLoadedThreadId(threadId);
+            if (AppServerJsonValueReader.GetNullableBool(thread, "ephemeral") == true)
+            {
+                lock (_syncRoot)
+                {
+                    _ephemeralThreadIds.Add(threadId);
+                }
+
+                return;
+            }
+
             _context.RaiseEvent(AppServerNotificationFactory.CreateThreadStarted(threadId, AppServerThreadMapper.BuildThreadSummary(thread, _context.MapServerPathToClient)));
         }
 

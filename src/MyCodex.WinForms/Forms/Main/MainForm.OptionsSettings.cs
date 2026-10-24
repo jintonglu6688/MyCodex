@@ -49,6 +49,7 @@ namespace MyCodex.WinForms.Forms
                 form.SetTargetDisplayName(_fixedTarget == null
                     ? GetCurrentRuntimeDisplayName() : TargetManagerForm.DisplayName(_fixedTarget));
                 form.SetMainWindowHotKeyStateText(GetMainWindowHotKeyStateText());
+                form.AddVoiceChatPage(_voiceChat.CreateOptionsPage(_appServerClient.ProtocolCapabilities?.SupportsRealtimeVoice == true));
                 form.ValidateSelection = () =>
                 {
                     officialSettings = form.HasOfficialCodexSettings && officialSnapshot != null
@@ -87,6 +88,7 @@ namespace MyCodex.WinForms.Forms
                         RefreshSessionList();
                     }
                     UpdateChatHistorySpeechMenuState();
+                    _voiceChat.SettingsChanged();
                     ApplyModeVisibility();
                     if (!string.Equals(previousTheme, GetConfiguredUiThemePreference(), StringComparison.OrdinalIgnoreCase))
                     {
@@ -413,6 +415,12 @@ namespace MyCodex.WinForms.Forms
             if (!AreCustomApprovalSettingsEqual(_appConfigSnapshot.CustomApprovalSettings, form.CustomApprovalSettings))
             {
                 _appConfigSnapshot.CustomApprovalSettings = CloneCustomApprovalSettings(form.CustomApprovalSettings);
+                updated = true;
+            }
+
+            if (form.VoiceChat != null && !VoiceChatPreferences.AreEquivalent(_appConfigSnapshot.VoiceChat, form.VoiceChat))
+            {
+                _appConfigSnapshot.VoiceChat = form.VoiceChat;
                 updated = true;
             }
 

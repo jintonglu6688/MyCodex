@@ -13,11 +13,13 @@ using MyCodex.WinForms.Theming;
 
 namespace MyCodex.WinForms.Forms
 {
-    // Edits the voice preferences of the current target; returns the result in Settings after OK.
-    internal sealed class VoiceSettingsForm : Form
+    // The Voice Chat tab of Options: edits the current target's voice preferences; OK reads them with ReadSettings.
+    internal sealed class VoiceChatOptionsPage : UserControl
     {
         private readonly Func<CancellationToken, Task<RealtimeVoiceCatalog>> _loadVoices;
+        private readonly Func<VoiceChatSettings, CancellationToken, Task> _previewVoice;
         private readonly CancellationTokenSource _closing = new CancellationTokenSource();
+        private CancellationTokenSource _preview;
         private readonly VoiceChatSettings _initial;
         private readonly ComboBox _talkKey;
         private readonly ComboBox _talkMode;
@@ -25,22 +27,21 @@ namespace MyCodex.WinForms.Forms
         private readonly ComboBox _pace;
         private readonly ComboBox _volume;
         private readonly Label _status;
-        private readonly Button _okButton;
-        private readonly Button _cancelButton;
+        private readonly Button _previewButton;
+        private bool _voicesRequested;
 
-        // loadVoices is null when voice is unavailable on this target; the saved voice is then kept as is.
-        internal VoiceSettingsForm(VoiceChatSettings settings, Func<CancellationToken, Task<RealtimeVoiceCatalog>> loadVoices)
+        // loadVoices and previewVoice are null when voice is unavailable on this target; the saved voice is then kept as is.
+        internal VoiceChatOptionsPage(
+            VoiceChatSettings settings,
+            Func<CancellationToken, Task<RealtimeVoiceCatalog>> loadVoices,
+            Func<VoiceChatSettings, CancellationToken, Task> previewVoice)
         {
             _initial = settings ?? new VoiceChatSettings();
             _loadVoices = loadVoices;
-            Text = UiLocalization.Text("VoiceSettings.Title", "Voice Settings");
-            StartPosition = FormStartPosition.CenterParent;
-            MaximizeBox = false;
-            MinimizeBox = false;
-            ShowInTaskbar = false;
-            ClientSize = new Size(560, 330);
-            MinimumSize = new Size(460, 330);
-            UiTheme.ApplyForm(this);
+            _previewVoice = previewVoice;
+            BackColor = UiTheme.WindowBackColor;
+            // Tab never enters a UserControl's children on its own; the page must be a stop that hands focus to its first list.
+            TabStop = true;
 
             _talkKey = UiControlFactory.CreateDropDownList(UiLocalization.Text("VoiceSettings.Accessible.TalkKey", "Talk key"), 1, DockStyle.Fill);
             _talkKey.Name = "VoiceTalkKey";
@@ -74,20 +75,11 @@ namespace MyCodex.WinForms.Forms
             }
 
             _status = UiControlFactory.CreateMutedLabel(string.Empty);
-            _okButton = UiControlFactory.CreateActionButton(
-                UiLocalization.Text("VoiceSettings.Button.Save", "&Save"),
-                UiLocalization.Text("VoiceSettings.Accessible.Save", "Save"),
-                10,
-                112);
-            _cancelButton = UiControlFactory.CreateActionButton(
-                UiLocalization.Text("VoiceSettings.Button.Cancel", "&Cancel"),
-                UiLocalization.Text("VoiceSettings.Accessible.Cancel", "Cancel"),
-                11,
-                112,
-                DialogResult.Cancel);
-            UiTheme.ApplyButton(_okButton, UiGlyph.Ok);
-            UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
-            _okButton.Click += (sender, args) => Accept();
+            _previewButton = UiControlFactory.CreateActionButton(string.Empty, string.Empty, 10, 160);
+            _previewButton.Name = "VoicePreviewButton";
+            _previewButton.Enabled = _previewVoice != null;
+            RefreshPreviewButton();
+            _previewButton.Click += async (sender, args) => await TogglePreviewAsync();
 
             SelectValue(_talkKey, VoiceChatPreferences.NormalizeTalkVirtualKey(_initial.TalkVirtualKey));
             SelectValue(_talkMode, _initial.TalkMode == VoiceTalkMode.Toggle ? VoiceTalkMode.Toggle : VoiceTalkMode.Hold);
@@ -96,13 +88,16 @@ namespace MyCodex.WinForms.Forms
             FillVoices(null);
 
             BuildLayout();
-            AcceptButton = _okButton;
-            CancelButton = _cancelButton;
-            Shown += async (sender, args) => await LoadVoicesAsync();
-            FormClosed += (sender, args) => _closing.Cancel();
+            // The voice list is read only when the tab is first shown, so opening Options stays offline.
+            VisibleChanged += async (sender, args) =>
+            {
+                if (Visible && !_voicesRequested)
+                {
+                    _voicesRequested = true;
+                    await LoadVoicesAsync();
+                }
+            };
         }
-
-        public VoiceChatSettings Settings { get; private set; }
 
         private async Task LoadVoicesAsync()
         {
@@ -122,7 +117,10 @@ namespace MyCodex.WinForms.Forms
                 }
 
                 FillVoices(catalog?.Voices);
-                _status.Text = string.Empty;
+                if (_preview == null)
+                {
+                    _status.Text = string.Empty;
+                }
             }
             catch (OperationCanceledException)
             {
@@ -159,9 +157,9 @@ namespace MyCodex.WinForms.Forms
             SelectValue(_voice, selected);
         }
 
-        private void Accept()
+        internal VoiceChatSettings ReadSettings()
         {
-            Settings = new VoiceChatSettings
+            return new VoiceChatSettings
             {
                 TalkVirtualKey = (int)((Choice)_talkKey.SelectedItem).Value,
                 TalkMode = (VoiceTalkMode)((Choice)_talkMode.SelectedItem).Value,
@@ -169,7 +167,62 @@ namespace MyCodex.WinForms.Forms
                 FasterSpeech = (bool)((Choice)_pace.SelectedItem).Value,
                 OutputVolumePercent = (int)((Choice)_volume.SelectedItem).Value
             };
-            DialogResult = DialogResult.OK;
+        }
+
+        // Plays the selected voice, pace and volume without saving; pressing the button again stops it.
+        internal async Task TogglePreviewAsync()
+        {
+            if (_preview != null)
+            {
+                _preview.Cancel();
+                return;
+            }
+
+            if (_previewVoice == null || _closing.IsCancellationRequested)
+            {
+                return;
+            }
+
+            _preview = CancellationTokenSource.CreateLinkedTokenSource(_closing.Token);
+            _status.Text = UiLocalization.Text("VoiceSettings.Status.Previewing", "Playing a preview. The microphone stays off.");
+            RefreshPreviewButton();
+            string status;
+            try
+            {
+                await _previewVoice(ReadSettings(), _preview.Token);
+                status = _preview.IsCancellationRequested ? string.Empty : UiLocalization.Text("VoiceSettings.Status.PreviewFinished", "Preview finished.");
+            }
+            catch (OperationCanceledException)
+            {
+                status = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                status = ex.Message;
+            }
+            finally
+            {
+                _preview.Dispose();
+                _preview = null;
+            }
+
+            if (!IsDisposed)
+            {
+                _status.Text = status;
+                RefreshPreviewButton();
+            }
+        }
+
+        private void RefreshPreviewButton()
+        {
+            var playing = _preview != null;
+            _previewButton.Text = playing
+                ? UiLocalization.Text("VoiceSettings.Button.StopPreview", "S&top Preview")
+                : UiLocalization.Text("VoiceSettings.Button.Preview", "&Try Voice");
+            _previewButton.AccessibleName = playing
+                ? UiLocalization.Text("VoiceSettings.Accessible.StopPreview", "Stop preview")
+                : UiLocalization.Text("VoiceSettings.Accessible.Preview", "Try voice");
+            UiTheme.ApplyButton(_previewButton, playing ? UiGlyph.Stop : UiGlyph.Send);
         }
 
         private static void SelectValue(ComboBox comboBox, object value)
@@ -189,14 +242,15 @@ namespace MyCodex.WinForms.Forms
         {
             var root = new TableLayoutPanel
             {
-                Dock = DockStyle.Fill,
+                Dock = DockStyle.Top,
+                AutoSize = true,
                 ColumnCount = 2,
                 RowCount = 8,
                 Padding = new Padding(UiTheme.OuterPadding),
                 BackColor = UiTheme.WindowBackColor,
                 TabStop = false
             };
-            root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+            root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 180F));
             root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             for (var i = 0; i < 5; i++)
             {
@@ -204,7 +258,7 @@ namespace MyCodex.WinForms.Forms
             }
 
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
             AddRow(root, 0, UiLocalization.Text("VoiceSettings.Label.TalkKey", "Talk &key"), _talkKey);
@@ -213,22 +267,29 @@ namespace MyCodex.WinForms.Forms
             AddRow(root, 3, UiLocalization.Text("VoiceSettings.Label.Pace", "Speaking &pace"), _pace);
             AddRow(root, 4, UiLocalization.Text("VoiceSettings.Label.Volume", "Reply vo&lume"), _volume);
 
+            var actions = new FlowLayoutPanel
+            {
+                AutoSize = true,
+                Dock = DockStyle.Fill,
+                BackColor = UiTheme.WindowBackColor,
+                Padding = new Padding(0, UiTheme.ControlSpacing, 0, 0),
+                TabStop = false
+            };
+            actions.Controls.Add(_previewButton);
+            root.Controls.Add(actions, 1, 5);
+
             var hint = UiControlFactory.CreateMutedLabel(UiLocalization.Text(
                 "VoiceSettings.Hint",
-                "The talk key and mode apply right away. Voice, pace and volume apply the next time voice is turned on."));
+                "The talk key and mode apply after OK. Voice, pace and volume apply the next time voice chat starts; Try Voice plays them without saving."));
             hint.AutoSize = true;
-            hint.MaximumSize = new Size(520, 0);
+            hint.MaximumSize = new Size(620, 0);
             hint.Padding = new Padding(0, UiTheme.ControlSpacing, 0, 0);
-            root.Controls.Add(hint, 0, 5);
+            root.Controls.Add(hint, 0, 6);
             root.SetColumnSpan(hint, 2);
-            root.Controls.Add(_status, 0, 6);
+            _status.AutoSize = true;
+            _status.MaximumSize = new Size(620, 0);
+            root.Controls.Add(_status, 0, 7);
             root.SetColumnSpan(_status, 2);
-
-            var footer = UiControlFactory.CreateDialogButtonBar(UiTheme.WindowBackColor);
-            footer.Controls.Add(_cancelButton);
-            footer.Controls.Add(_okButton);
-            root.Controls.Add(footer, 0, 7);
-            root.SetColumnSpan(footer, 2);
             Controls.Add(root);
         }
 
@@ -245,8 +306,8 @@ namespace MyCodex.WinForms.Forms
         {
             if (disposing)
             {
+                // Closing Options stops a running preview; the source stays undisposed while that preview unwinds.
                 _closing.Cancel();
-                _closing.Dispose();
             }
 
             base.Dispose(disposing);

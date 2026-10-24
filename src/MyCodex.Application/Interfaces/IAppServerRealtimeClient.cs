@@ -20,6 +20,14 @@ namespace MyCodex.Application.Interfaces
 
         // Tells the live voice about a request typed into the composer so it answers that result aloud.
         Task AppendRealtimeTypedRequestAsync(string threadId, string text, CancellationToken cancellationToken);
+
+        // Asks the live voice to say something without a user turn; the preview uses it for its sample.
+        Task AppendRealtimeSpeechAsync(string threadId, string text, CancellationToken cancellationToken);
+
+        // A temporary thread that never appears as a session; release it after the preview.
+        Task<string> CreateVoicePreviewThreadAsync(CancellationToken cancellationToken);
+
+        Task ReleaseVoicePreviewThreadAsync(string threadId);
     }
 
     public interface IRealtimeVoiceAudio : IDisposable
@@ -28,7 +36,10 @@ namespace MyCodex.Application.Interfaces
 
         event EventHandler<VoiceAudioEvent> Failed;
 
-        Task<string> PrepareAsync(string sessionId, int outputVolumePercent, CancellationToken cancellationToken);
+        // Raised for a listen-only session once the voice has spoken and gone quiet.
+        event EventHandler<VoiceAudioEvent> PlaybackFinished;
+
+        Task<string> PrepareAsync(string sessionId, int outputVolumePercent, bool listenOnly, CancellationToken cancellationToken);
 
         Task ConnectAsync(string sessionId, string answerSdp, CancellationToken cancellationToken);
 

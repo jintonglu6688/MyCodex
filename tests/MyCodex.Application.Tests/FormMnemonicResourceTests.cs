@@ -352,20 +352,20 @@ namespace MyCodex.Application.Tests
             "MainForm.Button.PendingAsyncInput.Template",
             "VoiceChat.Button.Start"
         })]
-        [TestCase("VoiceSettingsForm", new[]
+        [TestCase("OptionsForm.VoiceChat", new[]
         {
             "VoiceSettings.Label.TalkKey",
             "VoiceSettings.Label.TalkMode",
             "VoiceSettings.Label.Voice",
             "VoiceSettings.Label.Pace",
             "VoiceSettings.Label.Volume",
-            "VoiceSettings.Button.Save",
-            "VoiceSettings.Button.Cancel"
+            "VoiceSettings.Button.Preview",
+            "Common.OK",
+            "Common.Cancel"
         })]
         [TestCase("Settings.Menu", new[]
         {
             "Settings.Menu.Options",
-            "VoiceSettings.Menu",
             "Settings.Menu.Targets",
             "Settings.Menu.Extensions",
             "Settings.Menu.RemoteService"

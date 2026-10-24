@@ -68,7 +68,9 @@ namespace MyCodex.WinForms.Forms
 
         public bool? SystemEchoCancellationEnabled { get; private set; }
 
-        public Task<string> PrepareAsync(string sessionId, int outputVolumePercent, CancellationToken cancellationToken)
+        public event EventHandler<VoiceAudioEvent> PlaybackFinished;
+
+        public Task<string> PrepareAsync(string sessionId, int outputVolumePercent, bool listenOnly, CancellationToken cancellationToken)
         {
             return OnUiAsync(async () =>
             {
@@ -87,8 +89,12 @@ namespace MyCodex.WinForms.Forms
                     throw new OperationCanceledException();
                 }
 
-                _captureAllowed = true;
-                var response = await RequestAsync("prepare", sessionId, new Dictionary<string, object> { { "gain", outputVolumePercent / 100.0 } }, cancellationToken);
+                _captureAllowed = !listenOnly;
+                var response = await RequestAsync("prepare", sessionId, new Dictionary<string, object>
+                {
+                    { "gain", outputVolumePercent / 100.0 },
+                    { "listenOnly", listenOnly }
+                }, cancellationToken);
                 SystemEchoCancellationEnabled = response.echoMode == "all";
                 return response.sdp;
             });
@@ -272,7 +278,7 @@ namespace MyCodex.WinForms.Forms
             Failed?.Invoke(this, new VoiceAudioEvent
             {
                 SessionId = _sessionId,
-                Error = UiLocalization.Text("VoiceChat.Error.AudioStopped", "The voice audio engine stopped. Turn voice on again.")
+                Error = UiLocalization.Text("VoiceChat.Error.AudioStopped", "The voice audio engine stopped. Start voice chat again.")
             });
         }
 
@@ -322,6 +328,10 @@ namespace MyCodex.WinForms.Forms
             else if (message.kind == "error")
             {
                 Failed?.Invoke(this, new VoiceAudioEvent { SessionId = _sessionId, Error = message.error });
+            }
+            else if (message.kind == "finished")
+            {
+                PlaybackFinished?.Invoke(this, new VoiceAudioEvent { SessionId = _sessionId });
             }
         }
 

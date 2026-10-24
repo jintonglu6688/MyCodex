@@ -13,6 +13,7 @@ using MyCodex.Domain.Entities;
 using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.WinForms.Forms;
+using MyCodex.WinForms.Localization;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -129,6 +130,84 @@ namespace MyCodex.Application.Tests
                 Is.LessThanOrEqualTo(AppServerVoiceContext.MaximumContextBytes));
             Assert.That((string)items.Last()["text"], Does.EndWith("40"));
             Assert.That(AppServerVoiceContext.BuildInitialItems(Timeline()), Is.Empty);
+        }
+
+        [Test]
+        public void UserMessageText_ShowsOnlyTheRequestOfAVoiceDelegation()
+        {
+            bool delegation;
+            var wrapped = Entry(1, "item", "userMessage",
+                content: "<realtime_delegation>\n  <input>查一下 a &lt; b 的测试</input>\n  <transcript_delta>…</transcript_delta>\n</realtime_delegation>");
+            var plain = Entry(2, "item", "userMessage", content: "<input>not a delegation</input>");
+            var empty = Entry(3, "item", "userMessage", content: "<realtime_delegation><source>transcript_tail_flush</source></realtime_delegation>");
+
+            Assert.That(AppServerThreadMapper.ExtractUserMessageText((IDictionary<string, object>)wrapped["item"], out delegation), Is.EqualTo("查一下 a < b 的测试"));
+            Assert.That(delegation, Is.True);
+            Assert.That(AppServerThreadMapper.ExtractUserMessageText((IDictionary<string, object>)plain["item"], out delegation), Is.EqualTo("<input>not a delegation</input>"));
+            Assert.That(delegation, Is.False);
+            Assert.That(AppServerThreadMapper.ExtractUserMessageText((IDictionary<string, object>)empty["item"]), Is.Null);
+        }
+
+        [Test]
+        public void VoiceHistory_PutsSpokenTurnsBeforeTheirNextTypedMessageAndDropsRepeatedRequests()
+        {
+            var details = new AppServerThreadDetails();
+            details.Messages.Add(new AppServerThreadMessage { SourceItemId = "item-1", Sender = "User", Content = "typed", TurnIndex = 1 });
+            details.Messages.Add(new AppServerThreadMessage { SourceItemId = "item-4", Sender = "User", Content = "run  the tests", IsVoiceDelegation = true, TurnIndex = 2 });
+            details.Messages.Add(new AppServerThreadMessage { SourceItemId = "item-5", Sender = "Codex", Content = "done", TurnIndex = 2 });
+            details.Messages.Add(new AppServerThreadMessage { SourceItemId = "plan-without-timeline-entry", Sender = "Codex", Content = "plan", TurnIndex = 2 });
+
+            AppServerVoiceHistory.Merge("t", details, new[]
+            {
+                Entry(6, "realtime", "transcriptSegment", "assistant", "all green"),
+                Entry(5, "item", "agentMessage", text: "done"),
+                Entry(1, "item", "userMessage", content: "typed"),
+                Entry(2, "realtime", "transcriptSegment", "assistant", "hello"),
+                Entry(3, "realtime", "transcriptSegment", "user", "Run the tests"),
+                Entry(4, "item", "userMessage", content: "run the tests"),
+                Entry(7, "realtime", "realtimeSessionClosed"),
+                Entry(8, "realtime", "transcriptSegment", "system", "ignored")
+            });
+
+            Assert.That(details.Messages.Select(message => message.Sender + ":" + message.Content), Is.EqualTo(new[]
+            {
+                "User:typed", "Codex:hello", "User:Run the tests", "User:run  the tests", "Codex:done", "Codex:plan", "Codex:all green"
+            }), "only an identical spoken request hides the delegated one");
+            Assert.That(details.Messages.Where(message => message.Content == "hello").Single().TurnIndex, Is.Zero, "spoken turns are not rewind anchors");
+
+            var repeated = new AppServerThreadDetails();
+            repeated.Messages.Add(new AppServerThreadMessage { SourceItemId = "item-4", Sender = "User", Content = "run  the tests", IsVoiceDelegation = true });
+            AppServerVoiceHistory.Merge("t", repeated, new[]
+            {
+                Entry(3, "realtime", "transcriptSegment", "user", "run the tests"),
+                Entry(4, "item", "userMessage", content: "run the tests")
+            });
+            Assert.That(repeated.Messages.Select(message => message.Content), Is.EqualTo(new[] { "run the tests" }));
+        }
+
+        [Test]
+        public async Task VoiceHistory_ReadsEveryTimelinePageAndKeepsHistoryWhenTheReadFails()
+        {
+            var cursors = new List<object>();
+            var details = new AppServerThreadDetails();
+            details.Messages.Add(new AppServerThreadMessage { SourceItemId = "item-2", Sender = "User", Content = "typed" });
+            AppServerRequestInvoker send = (method, parameters, token, timeout) =>
+            {
+                var cursor = ((IDictionary<string, object>)parameters).TryGetValue("cursor", out var value) ? value : null;
+                cursors.Add(cursor);
+                var page = cursor == null
+                    ? new Dictionary<string, object> { { "data", new object[] { Entry(2, "item", "userMessage", content: "typed") } }, { "nextCursor", "older" } }
+                    : new Dictionary<string, object> { { "data", new object[] { Entry(1, "realtime", "transcriptSegment", "user", "spoken") } } };
+                return Task.FromResult<IDictionary<string, object>>(page);
+            };
+
+            await AppServerVoiceHistory.MergeAsync(send, "t", details, CancellationToken.None);
+
+            Assert.That(cursors, Is.EqualTo(new object[] { null, "older" }));
+            Assert.That(details.Messages.Select(message => message.Content), Is.EqualTo(new[] { "spoken", "typed" }));
+
+            await AppServerVoiceHistory.MergeAsync((method, parameters, token, timeout) => throw new TimeoutException(), "t", details, CancellationToken.None);
+            Assert.That(details.Messages.Select(message => message.Content), Is.EqualTo(new[] { "spoken", "typed" }));
         }
 
         [Test]
@@ -510,11 +589,20 @@ namespace MyCodex.Application.Tests
 
         [Test]
         [Apartment(ApartmentState.STA)]
-        public void SettingsForm_ShowsSavedChoicesAndReturnsTheSelection()
+        public void OptionsVoiceChatTab_ShowsSavedChoicesAndReturnsTheSelectionOnOk()
         {
             var saved = new VoiceChatSettings { TalkVirtualKey = 0x78, TalkMode = VoiceTalkMode.Toggle, Voice = "marin", FasterSpeech = true, OutputVolumePercent = 200 };
-            using (var form = new VoiceSettingsForm(saved, null))
+            using (var form = new OptionsForm(new AppConfigSnapshot(), null))
             {
+                Assert.That(form.VoiceChat, Is.Null, "Without the tab, Options leaves voice settings alone.");
+                form.AddVoiceChatPage(new VoiceChatOptionsPage(saved, null, null));
+                var tabs = FormTestDriver.Field<TabControl>(form, "_tabControl");
+                Assert.That(tabs.TabPages.IndexOfKey("voiceChat"), Is.EqualTo(tabs.TabPages.IndexOfKey("screenReader") + 1));
+                Assert.That(tabs.TabPages["voiceChat"].Text, Is.EqualTo(UiLocalization.Text("OptionsForm.Category.VoiceChat", "Voice Chat")));
+
+                var preview = FormTestDriver.Descendants<Button>(form).Single(button => button.Name == "VoicePreviewButton");
+                Assert.That(preview.Enabled, Is.False, "Trying a voice needs official voice on this target.");
+                Assert.That(preview.AccessibleName, Is.Not.Empty);
                 var key = FormTestDriver.Descendants<ComboBox>(form).Single(list => list.Name == "VoiceTalkKey");
                 var mode = FormTestDriver.Descendants<ComboBox>(form).Single(list => list.Name == "VoiceTalkMode");
                 var voice = FormTestDriver.Descendants<ComboBox>(form).Single(list => list.Name == "VoiceName");
@@ -526,18 +614,155 @@ namespace MyCodex.Application.Tests
                 Assert.That(key.Text, Is.EqualTo("F9"));
                 Assert.That(voice.Text, Is.EqualTo("marin"), "A saved voice stays selectable before the catalog loads.");
                 Assert.That(volume.Text, Is.EqualTo("200%"));
-                Assert.That(form.MinimumSize.IsEmpty, Is.False);
 
                 key.SelectedIndex = 0;
                 mode.SelectedIndex = 0;
                 voice.SelectedIndex = 0;
-                FormTestDriver.Invoke(form, "Accept");
-                Assert.That(form.Settings.TalkVirtualKey, Is.EqualTo(0x75));
-                Assert.That(form.Settings.TalkMode, Is.EqualTo(VoiceTalkMode.Hold));
-                Assert.That(form.Settings.Voice, Is.Null);
-                Assert.That(form.Settings.FasterSpeech, Is.True);
-                Assert.That(form.Settings.OutputVolumePercent, Is.EqualTo(200));
+                form.ValidateSelection = () => false;
+                FormTestDriver.Invoke(form, "OkButton_Click", form, EventArgs.Empty);
+                Assert.That(form.VoiceChat.TalkVirtualKey, Is.EqualTo(0x75));
+                Assert.That(form.VoiceChat.TalkMode, Is.EqualTo(VoiceTalkMode.Hold));
+                Assert.That(form.VoiceChat.Voice, Is.Null);
+                Assert.That(form.VoiceChat.FasterSpeech, Is.True);
+                Assert.That(form.VoiceChat.OutputVolumePercent, Is.EqualTo(200));
             }
+        }
+
+        [Test]
+        [Apartment(ApartmentState.STA)]
+        public void OptionsVoiceChatTab_TabMovesFromTheTabStripIntoTheLists()
+        {
+            using (var form = new OptionsForm(new AppConfigSnapshot(), null))
+            {
+                form.AddVoiceChatPage(new VoiceChatOptionsPage(new VoiceChatSettings(), null, null));
+                form.ShowInTaskbar = false;
+                form.Show();
+                System.Windows.Forms.Application.DoEvents();
+                var tabs = FormTestDriver.Field<TabControl>(form, "_tabControl");
+                tabs.SelectedTab = tabs.TabPages["voiceChat"];
+                tabs.Focus();
+                var key = FormTestDriver.Descendants<ComboBox>(form).Single(list => list.Name == "VoiceTalkKey");
+                var mode = FormTestDriver.Descendants<ComboBox>(form).Single(list => list.Name == "VoiceTalkMode");
+
+                form.SelectNextControl(tabs, true, true, true, false);
+                Assert.That(key.Focused, Is.True);
+                form.SelectNextControl(key, true, true, true, false);
+                Assert.That(mode.Focused, Is.True);
+            }
+        }
+
+        [Test]
+        public void Preferences_TreatStoredValuesByWhatTheyMean()
+        {
+            Assert.That(VoiceChatPreferences.AreEquivalent(null, new VoiceChatSettings { TalkVirtualKey = 0x77, OutputVolumePercent = 100, Voice = " " }), Is.True);
+            Assert.That(VoiceChatPreferences.AreEquivalent(new VoiceChatSettings { OutputVolumePercent = 130 }, new VoiceChatSettings()), Is.True);
+            Assert.That(VoiceChatPreferences.AreEquivalent(new VoiceChatSettings(), new VoiceChatSettings { TalkMode = VoiceTalkMode.Toggle }), Is.False);
+            Assert.That(VoiceChatPreferences.AreEquivalent(new VoiceChatSettings(), new VoiceChatSettings { Voice = "marin" }), Is.False);
+            Assert.That(VoiceChatPreferences.AreEquivalent(new VoiceChatSettings(), new VoiceChatSettings { FasterSpeech = true }), Is.False);
+        }
+
+        [Test]
+        public async Task Session_PreviewListensOnlySpeaksTheSampleAndEndsWhenPlaybackFinishes()
+        {
+            var client = new VoiceClient();
+            var audio = new Audio();
+            using (var session = new RealtimeVoiceSession(client, audio))
+            {
+                var request = Request();
+                request.PreviewText = "sample";
+                await session.StartAsync(request);
+
+                Assert.That(audio.ListenOnly, Is.True);
+                Assert.That(client.Spoken, Is.EqualTo(new[] { "thread:sample" }));
+                audio.Finish("other");
+                Assert.That(session.State, Is.EqualTo(VoiceChatState.Active));
+
+                audio.Finish(request.SessionId);
+                await session.StopAsync();
+                Assert.That(session.State, Is.EqualTo(VoiceChatState.Idle));
+                Assert.That(client.Stops, Is.EqualTo(1));
+
+                await session.StartAsync(Request());
+                Assert.That(audio.ListenOnly, Is.False);
+                audio.Finish(client.LastRequest.SessionId);
+                Assert.That(session.State, Is.EqualTo(VoiceChatState.Active), "voice chat does not end when the voice goes quiet");
+                await session.StopAsync();
+            }
+        }
+
+        [Test]
+        [Apartment(ApartmentState.STA)]
+        public void Coordinator_OptionsTabOffersVoicesWheneverTheRuntimeSupportsThem()
+        {
+            using (var form = new Form())
+            using (var button = new Button())
+            using (var coordinator = Coordinator(form, button, new VoiceClient(), new Audio(), new VoiceChatSettings(), status => { }))
+            {
+                coordinator.Refresh(null, false);
+                Assert.That(button.Enabled, Is.False, "No usable workspace is selected, so voice chat cannot start.");
+                using (var supported = coordinator.CreateOptionsPage(true))
+                using (var unsupported = coordinator.CreateOptionsPage(false))
+                {
+                    Assert.That(FormTestDriver.Descendants<Button>(supported).Single(item => item.Name == "VoicePreviewButton").Enabled, Is.True);
+                    Assert.That(FormTestDriver.Descendants<Button>(unsupported).Single(item => item.Name == "VoicePreviewButton").Enabled, Is.False);
+                }
+            }
+        }
+
+        [Test]
+        [Apartment(ApartmentState.STA)]
+        public void Coordinator_PreviewUsesATemporaryThreadAndKeepsVoiceChatOff()
+        {
+            var client = new VoiceClient();
+            var audio = new Audio();
+            var statuses = new List<string>();
+            var settings = new VoiceChatSettings { Voice = "marin", FasterSpeech = true, OutputVolumePercent = 150 };
+            using (var form = new Form())
+            using (var button = new Button())
+            using (var coordinator = Coordinator(form, button, client, audio, settings, statuses.Add))
+            {
+                coordinator.Refresh("a", true);
+                var preview = coordinator.PreviewAsync(settings, CancellationToken.None);
+                var timer = System.Diagnostics.Stopwatch.StartNew();
+                while (client.Spoken.Count == 0 && timer.Elapsed < TimeSpan.FromSeconds(10))
+                {
+                    System.Windows.Forms.Application.DoEvents();
+                }
+
+                Assert.That(client.LastRequest.ThreadId, Is.EqualTo("preview-thread"));
+                Assert.That(client.LastRequest.Voice, Is.EqualTo("marin"));
+                Assert.That(client.LastRequest.FasterSpeech, Is.True);
+                Assert.That(audio.OutputVolumePercent, Is.EqualTo(150));
+                Assert.That(button.Enabled, Is.False);
+                Assert.That(coordinator.ModeEnabled, Is.False);
+                Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.PreviewAsync(settings, CancellationToken.None));
+
+                audio.Finish(client.LastRequest.SessionId);
+                Pump(preview);
+                Assert.That(client.ReleasedPreviewThreads, Is.EqualTo(new[] { "preview-thread" }));
+                Assert.That(button.Enabled, Is.True);
+                Assert.That(statuses, Is.Empty, "the preview reports in the settings dialog, not the main status");
+            }
+        }
+
+        [Test]
+        public void Notifications_KeepTemporaryThreadsOutOfTheSessionList()
+        {
+            var events = new List<AppServerEventArgs>();
+            var loaded = new List<string>();
+            var forgotten = new List<string>();
+            var processor = new AppServerNotificationEventProcessor(new AppServerNotificationEventContext(
+                events.Add, loaded.Add, forgotten.Add, (_, __) => { }, _ => { }, path => path, _ => { }));
+
+            processor.HandleNotification("thread/started", AppServerJsonValue.DeserializeDictionary("{\"thread\":{\"id\":\"preview\",\"ephemeral\":true}}"));
+            processor.HandleNotification("thread/status/changed", AppServerJsonValue.DeserializeDictionary("{\"threadId\":\"preview\",\"status\":{\"type\":\"idle\"}}"));
+            processor.HandleNotification("thread/closed", AppServerJsonValue.DeserializeDictionary("{\"threadId\":\"preview\"}"));
+            Assert.That(events, Is.Empty);
+            Assert.That(loaded, Is.EqualTo(new[] { "preview" }));
+            Assert.That(forgotten, Is.EqualTo(new[] { "preview" }));
+
+            processor.HandleNotification("thread/started", AppServerJsonValue.DeserializeDictionary("{\"thread\":{\"id\":\"real\"}}"));
+            Assert.That(events.Select(e => e.ThreadId), Is.EqualTo(new[] { "real" }));
         }
 
         [TestCase(0x0100, Keys.F8, true, true, true)]
@@ -561,7 +786,6 @@ namespace MyCodex.Application.Tests
             return new VoiceChatCoordinator(form, button, client, null, audio,
                 () => Task.FromResult(new VoiceConversationBinding { ConversationId = "a", Request = new RealtimeVoiceStart { ThreadId = "thread" } }),
                 () => settings,
-                value => true,
                 status);
         }
 
@@ -666,6 +890,26 @@ namespace MyCodex.Application.Tests
                 return Task.CompletedTask;
             }
 
+            public readonly List<string> Spoken = new List<string>();
+            public readonly List<string> ReleasedPreviewThreads = new List<string>();
+
+            public Task AppendRealtimeSpeechAsync(string threadId, string text, CancellationToken cancellationToken)
+            {
+                Spoken.Add(threadId + ":" + text);
+                return Task.CompletedTask;
+            }
+
+            public Task<string> CreateVoicePreviewThreadAsync(CancellationToken cancellationToken)
+            {
+                return Task.FromResult("preview-thread");
+            }
+
+            public Task ReleaseVoicePreviewThreadAsync(string threadId)
+            {
+                ReleasedPreviewThreads.Add(threadId);
+                return Task.CompletedTask;
+            }
+
             public void Answer()
             {
                 Emit(new RealtimeVoiceEvent { Kind = RealtimeVoiceEventKind.Started, ThreadId = LastRequest.ThreadId, SessionId = LastRequest.SessionId });
@@ -715,9 +959,19 @@ namespace MyCodex.Application.Tests
                 Failed?.Invoke(this, new VoiceAudioEvent { SessionId = sessionId, Error = error });
             }
 
-            public Task<string> PrepareAsync(string sessionId, int outputVolumePercent, CancellationToken cancellationToken)
+            public event EventHandler<VoiceAudioEvent> PlaybackFinished;
+
+            public bool? ListenOnly;
+
+            public void Finish(string sessionId)
+            {
+                PlaybackFinished?.Invoke(this, new VoiceAudioEvent { SessionId = sessionId });
+            }
+
+            public Task<string> PrepareAsync(string sessionId, int outputVolumePercent, bool listenOnly, CancellationToken cancellationToken)
             {
                 OutputVolumePercent = outputVolumePercent;
+                ListenOnly = listenOnly;
                 return Task.FromResult("offer");
             }
 

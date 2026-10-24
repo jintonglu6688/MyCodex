@@ -13,6 +13,8 @@ namespace MyCodex.Application.Services
         private const int AnswerTimeoutMs = 30000;
         private const int StopRequestTimeoutMs = 6000;
         private const int ClosedDrainTimeoutMs = 1500;
+        // A preview that never goes quiet still ends.
+        internal const int PreviewLimitMs = 30000;
 
         private sealed class Attempt
         {
@@ -40,6 +42,7 @@ namespace MyCodex.Application.Services
             _client.RealtimeVoiceEventReceived += OnRealtimeEvent;
             _client.TypedInputSubmitted += OnTypedInput;
             _audio.Failed += OnAudioFailed;
+            _audio.PlaybackFinished += OnPlaybackFinished;
         }
 
         public event EventHandler<VoiceChatStateEvent> StateChanged;
@@ -90,7 +93,8 @@ namespace MyCodex.Application.Services
             var token = attempt.Cancellation.Token;
             try
             {
-                request.OfferSdp = await _audio.PrepareAsync(request.SessionId, request.OutputVolumePercent, token).ConfigureAwait(false);
+                var preview = request.PreviewText != null;
+                request.OfferSdp = await _audio.PrepareAsync(request.SessionId, request.OutputVolumePercent, preview, token).ConfigureAwait(false);
                 token.ThrowIfCancellationRequested();
                 lock (_gate)
                 {
@@ -110,6 +114,11 @@ namespace MyCodex.Application.Services
                 await _audio.ConnectAsync(request.SessionId, answer, token).ConfigureAwait(false);
                 token.ThrowIfCancellationRequested();
                 Publish(attempt, VoiceChatState.Active);
+                if (preview)
+                {
+                    StopPreviewLaterAsync(attempt);
+                    await _client.AppendRealtimeSpeechAsync(request.ThreadId, request.PreviewText, token).ConfigureAwait(false);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -341,6 +350,32 @@ namespace MyCodex.Application.Services
             }
         }
 
+        private void OnPlaybackFinished(object sender, VoiceAudioEvent message)
+        {
+            Attempt attempt;
+            lock (_gate)
+            {
+                attempt = _active;
+            }
+
+            if (attempt?.Request.PreviewText != null && message != null && string.Equals(message.SessionId, attempt.Request.SessionId, StringComparison.Ordinal))
+            {
+                StopAttemptAsync(attempt, null);
+            }
+        }
+
+        private async void StopPreviewLaterAsync(Attempt attempt)
+        {
+            try
+            {
+                await Task.Delay(PreviewLimitMs, attempt.Cancellation.Token).ConfigureAwait(false);
+                await StopAttemptAsync(attempt, null).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
         private void Publish(Attempt attempt, VoiceChatState state)
         {
             lock (_gate)
@@ -406,6 +441,7 @@ namespace MyCodex.Application.Services
             _client.RealtimeVoiceEventReceived -= OnRealtimeEvent;
             _client.TypedInputSubmitted -= OnTypedInput;
             _audio.Failed -= OnAudioFailed;
+            _audio.PlaybackFinished -= OnPlaybackFinished;
             // Dispose the audio only after the stop finished with it.
             StopAsync().ContinueWith(_ => _audio.Dispose(), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
         }

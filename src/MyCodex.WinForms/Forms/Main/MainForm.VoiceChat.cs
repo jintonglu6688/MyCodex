@@ -24,7 +24,6 @@ namespace MyCodex.WinForms.Forms
                 realtimeClient == null ? null : new WebViewVoiceAudio(this, Path.Combine(_appConfigService.GetAppDataDirectory(), "voice-browser")),
                 PrepareVoiceConversationAsync,
                 () => _appConfigSnapshot.VoiceChat,
-                SaveVoiceChatSettings,
                 SetStatus);
             _voiceChat.TranscriptReceived += (sender, message) => ShowVoiceTranscript(message);
             Disposed += (sender, args) => _voiceChat.Dispose();
@@ -45,7 +44,7 @@ namespace MyCodex.WinForms.Forms
                 return null;
             }
 
-            if (!await EnsureAppServerAvailableForActionAsync(UiLocalization.Text("VoiceChat.Accessible.Start", "Start voice")))
+            if (!await EnsureAppServerAvailableForActionAsync(UiLocalization.Text("VoiceChat.Accessible.Start", "Start voice chat")))
             {
                 return null;
             }
@@ -87,19 +86,6 @@ namespace MyCodex.WinForms.Forms
                     BackendMode = backendMode
                 }
             };
-        }
-
-        private bool SaveVoiceChatSettings(VoiceChatSettings settings)
-        {
-            var previous = _appConfigSnapshot.VoiceChat;
-            _appConfigSnapshot.VoiceChat = settings;
-            var saved = SaveAppConfig();
-            if (!saved)
-            {
-                _appConfigSnapshot.VoiceChat = previous;
-            }
-
-            return saved;
         }
 
         private void ShowVoiceTranscript(RealtimeVoiceEvent message)

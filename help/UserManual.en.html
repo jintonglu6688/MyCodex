@@ -390,6 +390,23 @@
     <p>Use <code>Compact Context</code> from the message-list context menu to summarize a long conversation before continuing. This does not delete the conversation from the session list.</p>
     <p>To put work aside, choose <code>Archive</code> from a workspace or session context menu. Use <code>Restore Archived Threads...</code> from the workspace context menu when you need an archived session again.</p>
 
+    <h3>4.12 Official Voice Chat</h3>
+    <p>Talk instead of typing in the current conversation. Voice comes from Codex official realtime voice: requests that need work are handed to Codex in this conversation, and the voice tells you the result.</p>
+    <ul>
+      <li>Requirements: the local Windows target (WSL and remote SSH targets are not supported yet), sign-in with a ChatGPT account, and Codex runtime 0.163 or later. Otherwise the <code>Start Voice Chat</code> button is unavailable.</li>
+      <li>Choose <code>Start Voice Chat</code> next to the composer. Without a current conversation, a new one is created first. Choose <code>Stop Voice Chat</code> to end. Voice chat also stops when you switch conversations, hide the main window, or lose the connection to Codex.</li>
+      <li>The talk key is <code>F8</code> by default and works only while the main window is in the foreground. By default you hold the key to talk and release it to send; the microphone is open only while you talk, with short tones when it opens and closes.</li>
+      <li>What you say and the voice's replies appear in the message list. Requests you type and send while voice chat is on are also passed to the voice, which answers aloud when the result is ready.</li>
+      <li>Tasks handed to Codex show only the task text in the message list, and are not repeated when they match what you just said. Reopening a conversation that used voice merges the spoken exchange back into its history in time order. A conversation that only chatted, without handing a task to Codex, no longer shows its spoken content after MyCodex restarts.</li>
+      <li>When system echo filtering is unavailable, the status bar says so. Screen reader speech may then be picked up as your words while you talk; pause reading or use headphones.</li>
+    </ul>
+    <p>Open <code>Settings -&gt; Options... -&gt; Voice Chat</code> to adjust:</p>
+    <ul>
+      <li><code>Talk key</code>: F6, F7, F8, F9, F11 or F12. <code>Talk mode</code>: hold to talk and release to send, or press to talk and press again to send. Both apply as soon as you choose <code>OK</code>.</li>
+      <li><code>Voice</code>, <code>Speaking pace</code> (official default or slightly faster) and <code>Reply volume</code> (original, 150% or 200%): apply the next time voice chat starts.</li>
+      <li><code>Try Voice</code>: plays a sample sentence with the current choices without saving, and stops by itself when it finishes; press it again to stop early. The preview keeps the microphone off and leaves no conversation in the session list. It is unavailable while voice chat is on.</li>
+    </ul>
+
     <h2>5. Message List and Search</h2>
     <p>The message list is a plain-text, keyboard-first list for quick browsing, multi-selection, manual screen-reader reading, and user-turn navigation.</p>
     <p>List rows show short previews. Long logs or code may end with an ellipsis in the preview, but the original text is retained: accessible text, copying, manual reading, and the message viewer still use the full content. Press <code>Enter</code> to inspect the whole message. While browsing a selected message, refreshing unchanged content preserves the selection and browsing position.</p>

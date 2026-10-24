@@ -15,6 +15,8 @@ namespace MyCodex.Infrastructure.AppServer
         // Wording from the reference implementation, which was verified against the live service.
         private const string FasterSpeechInstruction = "Speak faster than your default speaking pace while remaining clear and natural. Keep the same voice and pitch. Do not shorten answers merely to sound faster.";
         private const string TypedRequestPrefix = "This request was typed into the existing text composer and is already being handled by the attached Codex agent. Wait for its result, then answer aloud. Do not delegate the same request again. Request: ";
+        private const string PreviewSpeechPrefix = "Say this voice preview once now, then remain silent: ";
+        private const string PreviewInstructions = "This is a temporary voice preview. Never perform work, inspect files, run commands or call tools. No user conversation belongs here.";
         private readonly AppServerRequestInvoker _send;
 
         public AppServerRealtimeOperations(AppServerRequestInvoker send)
@@ -54,7 +56,9 @@ namespace MyCodex.Infrastructure.AppServer
 
             await RequireChatGptAsync(cancellationToken).ConfigureAwait(false);
             await UpdateBackendAsync(request, cancellationToken).ConfigureAwait(false);
-            var initialItems = await AppServerVoiceContext.ReadInitialItemsAsync(_send, request.ThreadId, cancellationToken).ConfigureAwait(false);
+            var initialItems = request.PreviewText != null
+                ? new List<Dictionary<string, object>>()
+                : await AppServerVoiceContext.ReadInitialItemsAsync(_send, request.ThreadId, cancellationToken).ConfigureAwait(false);
             if (request.FasterSpeech)
             {
                 initialItems.Add(new Dictionary<string, object> { { "role", "developer" }, { "text", FasterSpeechInstruction } });
@@ -100,6 +104,30 @@ namespace MyCodex.Infrastructure.AppServer
                 { "role", "user" },
                 { "text", TypedRequestPrefix + AppServerVoiceContext.TakeTail(text.Trim(), AppServerVoiceContext.MaximumContextBytes) }
             }, cancellationToken, 10000);
+        }
+
+        public Task AppendSpeechAsync(string threadId, string text, CancellationToken cancellationToken)
+        {
+            return _send("thread/realtime/appendSpeech", new Dictionary<string, object> { { "threadId", threadId }, { "text", PreviewSpeechPrefix + text } }, cancellationToken, 10000);
+        }
+
+        public async Task<string> CreatePreviewThreadAsync(CancellationToken cancellationToken)
+        {
+            await RequireChatGptAsync(cancellationToken).ConfigureAwait(false);
+            var result = await _send("thread/start", new Dictionary<string, object>
+            {
+                { "ephemeral", true },
+                { "sandbox", "read-only" },
+                { "approvalPolicy", "never" },
+                { "baseInstructions", PreviewInstructions }
+            }, cancellationToken, 30000).ConfigureAwait(false);
+            var id = AppServerJsonValueReader.GetString(AppServerJsonValueReader.GetDictionary(result, "thread"), "id");
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new InvalidOperationException(SharedLocalization.Text("VoiceChat.Error.PreviewThread", "The voice preview could not be prepared."));
+            }
+
+            return id;
         }
 
         // Only the text parts of a typed message; attachments stay with the regular turn.

@@ -27,7 +27,6 @@ namespace MyCodex.WinForms.Forms
         private readonly IAppServerConnectionClient _connection;
         private readonly Func<Task<VoiceConversationBinding>> _prepare;
         private readonly Func<VoiceChatSettings> _settings;
-        private readonly Func<VoiceChatSettings, bool> _saveSettings;
         private readonly Action<string> _status;
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         private readonly RealtimeVoiceSession _session;
@@ -39,6 +38,8 @@ namespace MyCodex.WinForms.Forms
         private bool _keyHeld;
         private bool _disposed;
         private int _generation;
+        // Completes with the preview's error, or null, when the borrowed connection is idle again.
+        private TaskCompletionSource<string> _preview;
 
         internal VoiceChatCoordinator(
             Form owner,
@@ -48,7 +49,6 @@ namespace MyCodex.WinForms.Forms
             IRealtimeVoiceAudio audio,
             Func<Task<VoiceConversationBinding>> prepare,
             Func<VoiceChatSettings> settings,
-            Func<VoiceChatSettings, bool> saveSettings,
             Action<string> status)
         {
             _owner = owner ?? throw new ArgumentNullException(nameof(owner));
@@ -57,9 +57,6 @@ namespace MyCodex.WinForms.Forms
             _connection = connection;
             _prepare = prepare ?? throw new ArgumentNullException(nameof(prepare));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            _saveSettings = saveSettings ?? throw new ArgumentNullException(nameof(saveSettings));
-            SettingsMenuItem = new MenuItem();
-            SettingsMenuItem.Click += (sender, args) => OpenSettings();
             _status = status ?? throw new ArgumentNullException(nameof(status));
             ToggleButton.Name = "VoiceChatButton";
             if (_client != null)
@@ -83,8 +80,6 @@ namespace MyCodex.WinForms.Forms
         }
 
         public Button ToggleButton { get; }
-
-        public MenuItem SettingsMenuItem { get; }
 
         public bool ModeEnabled { get; private set; }
 
@@ -134,34 +129,73 @@ namespace MyCodex.WinForms.Forms
             }
         }
 
-        private void OpenSettings()
+        // The Voice Chat tab of Options. Listing and previewing voices need no workspace or conversation,
+        // so they follow runtime support only, not whether the voice button is usable right now.
+        internal VoiceChatOptionsPage CreateOptionsPage(bool voiceSupported)
         {
-            if (_disposed)
+            var available = _client != null && voiceSupported && !_disposed;
+            return new VoiceChatOptionsPage(
+                Settings,
+                available ? _client.ListRealtimeVoicesAsync : (Func<CancellationToken, Task<RealtimeVoiceCatalog>>)null,
+                available ? PreviewAsync : (Func<VoiceChatSettings, CancellationToken, Task>)null);
+        }
+
+        // The preview borrows the voice connection on a temporary thread, so voice chat must be off meanwhile.
+        internal async Task PreviewAsync(VoiceChatSettings settings, CancellationToken cancellationToken)
+        {
+            if (_session == null || _disposed || ModeEnabled || _changing || _preview != null ||
+                (_session.State != VoiceChatState.Idle && _session.State != VoiceChatState.Failed))
             {
-                return;
+                throw new InvalidOperationException(UiLocalization.Text("VoiceSettings.Error.PreviewBusy", "Stop voice chat before trying a voice."));
             }
 
-            Func<CancellationToken, Task<RealtimeVoiceCatalog>> loadVoices = null;
-            if (_client != null && _available)
+            var finished = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _preview = finished;
+            RefreshControls();
+            string threadId = null;
+            try
             {
-                loadVoices = _client.ListRealtimeVoicesAsync;
-            }
-
-            using (var form = new VoiceSettingsForm(Settings, loadVoices))
-            {
-                if (form.ShowDialog(_owner) != DialogResult.OK || form.Settings == null || _disposed)
+                var catalog = await _client.ListRealtimeVoicesAsync(cancellationToken);
+                if (string.IsNullOrWhiteSpace(catalog?.DefaultVoice))
                 {
-                    return;
+                    throw new InvalidOperationException(UiLocalization.Text("VoiceChat.Error.NoVoices", "This runtime does not provide official voices."));
                 }
 
-                if (!_saveSettings(form.Settings))
+                threadId = await _client.CreateVoicePreviewThreadAsync(cancellationToken);
+                using (cancellationToken.Register(() => _session.StopAsync()))
                 {
-                    ReportError(UiLocalization.Text("VoiceSettings.Error.Save", "Voice settings could not be saved."));
-                    return;
+                    await _session.StartAsync(new RealtimeVoiceStart
+                    {
+                        ThreadId = threadId,
+                        Voice = VoiceChatPreferences.NormalizeVoice(settings?.Voice, catalog.Voices) ?? catalog.DefaultVoice,
+                        FasterSpeech = settings?.FasterSpeech == true,
+                        OutputVolumePercent = VoiceChatPreferences.NormalizeOutputVolumePercent(settings?.OutputVolumePercent ?? 0),
+                        PreviewText = UiLocalization.Text("VoiceSettings.Preview.Sample", "Hello. This is how I sound with the selected voice and speaking pace.")
+                    });
+                    var error = await finished.Task;
+                    if (error != null)
+                    {
+                        throw new InvalidOperationException(error);
+                    }
                 }
             }
+            finally
+            {
+                if (threadId != null)
+                {
+                    try
+                    {
+                        await _client.ReleaseVoicePreviewThreadAsync(threadId);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Trace.TraceWarning("Voice preview thread was not released: {0}", ex.GetType().Name);
+                    }
+                }
 
-            SettingsChanged();
+                _preview = null;
+                RefreshControls();
+            }
         }
 
         private bool SetTalking(bool talking)
@@ -212,7 +246,7 @@ namespace MyCodex.WinForms.Forms
 
         internal async Task StartAsync()
         {
-            if (_session == null || !_available || ModeEnabled || _changing || _disposed || _session.State == VoiceChatState.Stopping)
+            if (_session == null || !_available || ModeEnabled || _changing || _disposed || _preview != null || _session.State == VoiceChatState.Stopping)
             {
                 return;
             }
@@ -294,7 +328,7 @@ namespace MyCodex.WinForms.Forms
             await _session.StopAsync();
             if (wasEnabled && !_disposed)
             {
-                _status(UiLocalization.Text("VoiceChat.Status.Off", "Voice off. Continue in this conversation by typing."));
+                _status(UiLocalization.Text("VoiceChat.Status.Off", "Voice chat off. Continue in this conversation by typing."));
             }
         }
 
@@ -317,13 +351,30 @@ namespace MyCodex.WinForms.Forms
 
         private void OnTranscript(object sender, RealtimeVoiceEvent e)
         {
-            Dispatch(() => TranscriptReceived?.Invoke(this, e));
+            Dispatch(() =>
+            {
+                if (_preview == null)
+                {
+                    TranscriptReceived?.Invoke(this, e);
+                }
+            });
         }
 
         private void OnStateChanged(object sender, VoiceChatStateEvent e)
         {
             Dispatch(() =>
             {
+                if (_preview != null)
+                {
+                    if (e.State == VoiceChatState.Idle || e.State == VoiceChatState.Failed)
+                    {
+                        _preview.TrySetResult(e.State == VoiceChatState.Failed ? e.Error : null);
+                    }
+
+                    RefreshControls();
+                    return;
+                }
+
                 if (e.State != VoiceChatState.Active)
                 {
                     _talking = false;
@@ -396,15 +447,15 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
-            SettingsMenuItem.Text = UiLocalization.Text("VoiceSettings.Menu", "&Voice Settings...");
             ToggleButton.Text = ModeEnabled
-                ? UiLocalization.Text("VoiceChat.Button.Stop", "Stop &Voice")
-                : UiLocalization.Text("VoiceChat.Button.Start", "Start &Voice");
+                ? UiLocalization.Text("VoiceChat.Button.Stop", "Stop &Voice Chat")
+                : UiLocalization.Text("VoiceChat.Button.Start", "Start &Voice Chat");
             ToggleButton.AccessibleName = ModeEnabled
-                ? UiLocalization.Text("VoiceChat.Accessible.Stop", "Stop voice")
-                : UiLocalization.Text("VoiceChat.Accessible.Start", "Start voice");
+                ? UiLocalization.Text("VoiceChat.Accessible.Stop", "Stop voice chat")
+                : UiLocalization.Text("VoiceChat.Accessible.Start", "Start voice chat");
             // While connecting the button stays enabled so the attempt can be cancelled.
             ToggleButton.Enabled = _session != null &&
+                _preview == null &&
                 (ModeEnabled || (_available && !_changing)) &&
                 _session.State != VoiceChatState.Stopping;
         }
@@ -471,6 +522,7 @@ namespace MyCodex.WinForms.Forms
             ModeEnabled = false;
             ++_generation;
             _lifetime.Cancel();
+            _preview?.TrySetCanceled();
             if (_session != null)
             {
                 if (_connection != null)
