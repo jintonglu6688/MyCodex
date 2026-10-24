@@ -1621,52 +1621,14 @@ namespace MyCodex.WinForms.Forms
                 return null;
             }
 
-            if (string.Equals(fileName, ApprovalSoundFileName, StringComparison.OrdinalIgnoreCase))
+            SoundPlayer player;
+            if (!_notificationSoundPlayers.TryGetValue(fileName, out player))
             {
-                if (_approvalSoundPlayer == null)
-                {
-                    _approvalSoundPlayer = new SoundPlayer(soundPath);
-                    _approvalSoundPlayer.Load();
-                }
-
-                return _approvalSoundPlayer;
+                player = new SoundPlayer(soundPath);
+                player.Load();
+                _notificationSoundPlayers[fileName] = player;
             }
 
-            if (string.Equals(fileName, TurnCompletedSoundFileName, StringComparison.OrdinalIgnoreCase))
-            {
-                if (_turnCompletedSoundPlayer == null)
-                {
-                    _turnCompletedSoundPlayer = new SoundPlayer(soundPath);
-                    _turnCompletedSoundPlayer.Load();
-                }
-
-                return _turnCompletedSoundPlayer;
-            }
-
-            if (string.Equals(fileName, SubAgentTurnCompletedSoundFileName, StringComparison.OrdinalIgnoreCase))
-            {
-                if (_subAgentTurnCompletedSoundPlayer == null)
-                {
-                    _subAgentTurnCompletedSoundPlayer = new SoundPlayer(soundPath);
-                    _subAgentTurnCompletedSoundPlayer.Load();
-                }
-
-                return _subAgentTurnCompletedSoundPlayer;
-            }
-
-            if (string.Equals(fileName, MessageSentSoundFileName, StringComparison.OrdinalIgnoreCase))
-            {
-                if (_messageSentSoundPlayer == null)
-                {
-                    _messageSentSoundPlayer = new SoundPlayer(soundPath);
-                    _messageSentSoundPlayer.Load();
-                }
-
-                return _messageSentSoundPlayer;
-            }
-
-            var player = new SoundPlayer(soundPath);
-            player.Load();
             return player;
         }
 

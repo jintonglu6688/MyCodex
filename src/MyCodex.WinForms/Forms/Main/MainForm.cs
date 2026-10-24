@@ -301,10 +301,7 @@ namespace MyCodex.WinForms.Forms
         private Control _lastFocusedControlBeforeTrayHide;
         private DateTime _lastStatusUpdatedAtUtc;
         private StatusPriority _currentStatusPriority;
-        private SoundPlayer _approvalSoundPlayer;
-        private SoundPlayer _turnCompletedSoundPlayer;
-        private SoundPlayer _subAgentTurnCompletedSoundPlayer;
-        private SoundPlayer _messageSentSoundPlayer;
+        private readonly Dictionary<string, SoundPlayer> _notificationSoundPlayers = new Dictionary<string, SoundPlayer>(StringComparer.OrdinalIgnoreCase);
         private AppServerFileBrowserClipboardState _appServerFileBrowserClipboardState;
 
         private enum StatusPriority

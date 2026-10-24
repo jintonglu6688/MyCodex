@@ -16,9 +16,9 @@ namespace MyCodex.Application.Tests.SourceGuards
     [Category(SourceGuardCategory.Placement)]
     public sealed class CodeHealthRatchetTests
     {
-        private const int MainFormPartialNonEmptyLinesCeiling = 22725;
-        private const int MainFormCoreFileNonEmptyLinesCeiling = 2960;
-        private const int MainFormFieldCeiling = 364;
+        private const int MainFormPartialNonEmptyLinesCeiling = 22706;
+        private const int MainFormCoreFileNonEmptyLinesCeiling = 2958;
+        private const int MainFormFieldCeiling = 361;
         private const int MethodsOver150LinesCeiling = 13;
         private const int FilesOver1200LinesCeiling = 23;
 
