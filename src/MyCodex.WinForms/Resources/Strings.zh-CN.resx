@@ -13819,4 +13819,19 @@ MyCodex 桌面客户端。</value>
   <data name="Aggregation.Status.Working" xml:space="preserve">
     <value>正在应用聚合设置并重启 Codex…</value>
   </data>
+  <data name="VoiceChat.Button.Start" xml:space="preserve"><value>开启语音(&amp;V)</value></data>
+  <data name="VoiceChat.Button.Stop" xml:space="preserve"><value>关闭语音(&amp;V)</value></data>
+  <data name="VoiceChat.Accessible.Start" xml:space="preserve"><value>开启语音</value></data>
+  <data name="VoiceChat.Accessible.Stop" xml:space="preserve"><value>关闭语音</value></data>
+  <data name="VoiceChat.Status.Connecting" xml:space="preserve"><value>正在连接语音…</value></data>
+  <data name="VoiceChat.Status.Active" xml:space="preserve"><value>语音已开启。按住 F8 说话，松开发送。</value></data>
+  <data name="VoiceChat.Status.BasicEcho" xml:space="preserve"><value>语音已开启。按住 F8 说话，松开发送。系统声音过滤不可用，按住 F8 期间读屏声音可能被收录。</value></data>
+  <data name="VoiceChat.Status.Off" xml:space="preserve"><value>语音已关闭，可在当前会话中继续文字输入。</value></data>
+  <data name="VoiceChat.Error.NoVoices" xml:space="preserve"><value>当前运行时没有提供官方语音音色。</value></data>
+  <data name="VoiceChat.Error.Disconnected" xml:space="preserve"><value>与 Codex 的连接已断开，语音已停止。</value></data>
+  <data name="VoiceChat.Error.AudioStopped" xml:space="preserve"><value>语音音频引擎已停止，请重新开启语音。</value></data>
+  <data name="VoiceChat.Error.Microphone" xml:space="preserve"><value>麦克风不可用，请检查设备和 Windows 麦克风权限。</value></data>
+  <data name="VoiceChat.Error.Timeout" xml:space="preserve"><value>语音连接超时，请重试。</value></data>
+  <data name="VoiceChat.Status.Listening" xml:space="preserve"><value>正在听，松开 F8 发送。</value></data>
+  <data name="VoiceChat.Status.Sent" xml:space="preserve"><value>已发送。再次按住 F8 继续说话。</value></data>
 </root>

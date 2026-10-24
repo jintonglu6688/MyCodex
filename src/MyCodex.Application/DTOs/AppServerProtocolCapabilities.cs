@@ -60,6 +60,8 @@ namespace MyCodex.Application.DTOs
 
         public bool SupportsThreadHistoryPagination { get; set; }
 
+        public bool SupportsRealtimeVoice { get; set; }
+
         public bool SupportsSubagentThreadFilters { get; set; }
 
         public bool SupportsCollabAgentToolCall { get; set; }

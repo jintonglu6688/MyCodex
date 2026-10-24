@@ -519,6 +519,7 @@ namespace MyCodex.WinForms.Forms
                 5,
                 OnStopButtonClick);
             InitializeAsyncInputUi();
+            InitializeVoiceChatUi();
             _openWorkspaceButton = CreateActionButton(
                 UiLocalization.Text("MainForm.Button.NewWorkspace", "&New Workspace"),
                 UiLocalization.Text("MainForm.Accessible.NewWorkspace", "New Workspace"),
@@ -2970,6 +2971,7 @@ namespace MyCodex.WinForms.Forms
             _pendingAttachmentListBox.Enabled = plan.PendingAttachmentListEnabled;
             RefreshPendingAttachmentState(workspaceAvailable);
             RefreshCommandState(workspaceAvailable);
+            RefreshVoiceChatState(workspaceAvailable);
         }
 
         private void InvalidateSessionHistoryCache(string threadId)

@@ -24,6 +24,7 @@ namespace MyCodex.WinForms.Theming
         Download,
         Delete,
         Ok,
-        Cancel
+        Cancel,
+        Microphone
     }
 }

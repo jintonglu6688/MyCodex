@@ -196,7 +196,7 @@ namespace MyCodex.Infrastructure.AppServer
             };
         }
 
-        private static string ExtractUserMessageText(IDictionary<string, object> item)
+        internal static string ExtractUserMessageText(IDictionary<string, object> item)
         {
             var parts = new List<string>();
             var imageNames = new List<string>();

@@ -34,6 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Assets\Voice\RealtimeVoice.html">
+      <LogicalName>MyCodex.Voice.Realtime.html</LogicalName>
+    </EmbeddedResource>
     <EmbeddedResource Include="Assets\Donate\wechat-donate.png">
       <LogicalName>MyCodex.WinForms.Resources.Donate.Wechat</LogicalName>
     </EmbeddedResource>

@@ -1667,4 +1667,13 @@ This file is empty.</value>
   <data name="AppUpdate.Error.InstallerMissing" xml:space="preserve">
     <value>The downloaded installer is unavailable. Download the update again.</value>
   </data>
+  <data name="VoiceChat.Error.ChatGptRequired" xml:space="preserve">
+    <value>Sign in with ChatGPT to use official voice chat.</value>
+  </data>
+  <data name="VoiceChat.Error.ConnectionFailed" xml:space="preserve">
+    <value>The voice connection failed.</value>
+  </data>
+  <data name="VoiceChat.Error.Timeout" xml:space="preserve">
+    <value>The voice connection timed out. Please try again.</value>
+  </data>
 </root>

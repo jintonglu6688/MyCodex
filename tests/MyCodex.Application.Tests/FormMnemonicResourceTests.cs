@@ -349,7 +349,8 @@ namespace MyCodex.Application.Tests
             "MainForm.Button.Attach",
             "MainForm.Button.Send",
             "MainForm.Button.Stop",
-            "MainForm.Button.PendingAsyncInput.Template"
+            "MainForm.Button.PendingAsyncInput.Template",
+            "VoiceChat.Button.Start"
         })]
         [TestCase("ApprovalRequestForm.DeleteButtons", new[]
         {

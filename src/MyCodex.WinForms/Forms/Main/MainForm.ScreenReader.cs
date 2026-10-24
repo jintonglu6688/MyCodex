@@ -140,7 +140,9 @@ namespace MyCodex.WinForms.Forms
 
         private void TryAutoReadIncomingMessage(ChatHistoryItem item, string threadId)
         {
+            // Voice replies are already spoken; reading them as well would talk over the voice.
             if (item == null ||
+                _voiceChat?.IsSpeakingForThread(threadId) == true ||
                 _appConfigSnapshot == null ||
                 !_appConfigSnapshot.EnableAutomaticChatReading ||
                 _currentSession == null ||

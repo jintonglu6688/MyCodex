@@ -1667,4 +1667,13 @@
   <data name="AppUpdate.Error.InstallerMissing" xml:space="preserve">
     <value>下载的安装包已不可用，请重新下载更新。</value>
   </data>
+  <data name="VoiceChat.Error.ChatGptRequired" xml:space="preserve">
+    <value>官方语音对话需要使用 ChatGPT 账号登录。</value>
+  </data>
+  <data name="VoiceChat.Error.ConnectionFailed" xml:space="preserve">
+    <value>语音连接失败。</value>
+  </data>
+  <data name="VoiceChat.Error.Timeout" xml:space="preserve">
+    <value>语音连接超时，请重试。</value>
+  </data>
 </root>

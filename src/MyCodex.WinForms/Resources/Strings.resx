@@ -13864,4 +13864,19 @@ Update now? Choose No to continue using the existing runtime.</value>
   <data name="Aggregation.Status.Working" xml:space="preserve">
     <value>Applying aggregation and restarting Codex…</value>
   </data>
+  <data name="VoiceChat.Button.Start" xml:space="preserve"><value>Start &amp;Voice</value></data>
+  <data name="VoiceChat.Button.Stop" xml:space="preserve"><value>Stop &amp;Voice</value></data>
+  <data name="VoiceChat.Accessible.Start" xml:space="preserve"><value>Start voice</value></data>
+  <data name="VoiceChat.Accessible.Stop" xml:space="preserve"><value>Stop voice</value></data>
+  <data name="VoiceChat.Status.Connecting" xml:space="preserve"><value>Connecting voice…</value></data>
+  <data name="VoiceChat.Status.Active" xml:space="preserve"><value>Voice on. Hold F8 to talk, release to send.</value></data>
+  <data name="VoiceChat.Status.BasicEcho" xml:space="preserve"><value>Voice on. Hold F8 to talk, release to send. System audio filtering is unavailable, so screen reader speech may be picked up while F8 is held.</value></data>
+  <data name="VoiceChat.Status.Off" xml:space="preserve"><value>Voice off. Continue in this conversation by typing.</value></data>
+  <data name="VoiceChat.Error.NoVoices" xml:space="preserve"><value>This runtime does not provide official voices.</value></data>
+  <data name="VoiceChat.Error.Disconnected" xml:space="preserve"><value>Voice stopped because the connection to Codex was lost.</value></data>
+  <data name="VoiceChat.Error.AudioStopped" xml:space="preserve"><value>The voice audio engine stopped. Turn voice on again.</value></data>
+  <data name="VoiceChat.Error.Microphone" xml:space="preserve"><value>The microphone is unavailable. Check the device and the Windows microphone permission.</value></data>
+  <data name="VoiceChat.Error.Timeout" xml:space="preserve"><value>The voice connection timed out. Please try again.</value></data>
+  <data name="VoiceChat.Status.Listening" xml:space="preserve"><value>Listening. Release F8 to send.</value></data>
+  <data name="VoiceChat.Status.Sent" xml:space="preserve"><value>Sent. Hold F8 to talk again.</value></data>
 </root>

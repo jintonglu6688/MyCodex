@@ -55,6 +55,9 @@ namespace MyCodex.Infrastructure.AppServer
                 SupportsThreadForkLastTurnId = IsKnownRuntimeAtLeast(runtimeVersion, 0, 143, 0),
                 // Verified full-item pagination and excludeTurns contract in 0.158.
                 SupportsThreadHistoryPagination = IsKnownRuntimeAtLeast(runtimeVersion, 0, 158, 0),
+                // Voice uses WebRTC realtime v3 and thread/timeline/list from 0.163; only the local Windows target is supported.
+                SupportsRealtimeVoice = IsKnownRuntimeAtLeast(runtimeVersion, 0, 163, 0) &&
+                    (launchInfo == null || launchInfo.HostPlatform == AppServerHostPlatform.Windows),
                 SupportsSubagentThreadFilters = IsKnownRuntimeAtLeast(runtimeVersion, 0, 154, 0),
                 SupportsCollabAgentToolCall = IsKnownRuntimeAtLeast(runtimeVersion, 0, 154, 0),
                 SupportsBrowserUseIntegration = false

@@ -78,6 +78,7 @@ namespace MyCodex.WinForms.Forms
             _stopButton.Text = UiLocalization.Text("MainForm.Button.Stop", "&Stop");
             _stopButton.AccessibleName = UiLocalization.Text("MainForm.Accessible.Stop", "Stop");
             RefreshPendingAsyncInputButton();
+            _voiceChat.RefreshControls();
             _openWorkspaceButton.Text = UiLocalization.Text("MainForm.Button.NewWorkspace", "&Open Workspace");
             _openWorkspaceButton.AccessibleName = UiLocalization.Text("MainForm.Accessible.NewWorkspace", "Open Workspace");
             _newSessionButton.Text = UiLocalization.Text("MainForm.Button.NewSession", "Ne&w Session");
@@ -191,6 +192,7 @@ namespace MyCodex.WinForms.Forms
             UiTheme.ApplyButton(_sendButton, UiGlyph.Send);
             UiTheme.ApplyButton(_stopButton, UiGlyph.Stop);
             UiTheme.ApplyButton(_pendingAsyncInputButton, UiGlyph.Info);
+            UiTheme.ApplyButton(_voiceChat.ToggleButton, UiGlyph.Microphone);
             UiTheme.ApplyButton(_openWorkspaceButton, UiGlyph.Workspace);
             UiTheme.ApplyButton(_newSessionButton, UiGlyph.NewSession);
         }
@@ -545,7 +547,7 @@ namespace MyCodex.WinForms.Forms
                 Dock = DockStyle.Right,
                 AutoSize = true,
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                FlowDirection = FlowDirection.LeftToRight,
+                FlowDirection = FlowDirection.TopDown,
                 BackColor = UiTheme.PanelBackColor,
                 Padding = new Padding(UiTheme.ControlSpacing, 0, 0, 0),
                 TabStop = false
@@ -555,6 +557,7 @@ namespace MyCodex.WinForms.Forms
             buttonPanel.Controls.Add(_sendButton);
             buttonPanel.Controls.Add(_stopButton);
             buttonPanel.Controls.Add(_pendingAsyncInputButton);
+            buttonPanel.Controls.Add(_voiceChat.ToggleButton);
             _composePanel.Controls.Add(_attachmentPanel);
             _composePanel.Controls.Add(inputPanel);
             _composePanel.Controls.Add(buttonPanel);

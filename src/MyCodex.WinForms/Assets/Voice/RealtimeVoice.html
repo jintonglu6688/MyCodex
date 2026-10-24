@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; media-src blob:; connect-src 'none'; style-src 'none'">
+<title></title></head><body aria-hidden="true">
+<audio id="output" autoplay></audio>
+<script>
+(() => {
+    'use strict';
+    let current = null;
+    let cueContext = null;
+    const output = document.getElementById('output');
+    const post = message => window.chrome.webview.postMessage(message);
+    const alive = session => current === session && !session.stopped;
+
+    function disposeSession(session) {
+        if (!session || session.stopped) return;
+        session.stopped = true;
+        clearTimeout(session.disconnectTimer);
+        session.stream?.getTracks().forEach(track => track.stop());
+        session.channel?.close();
+        session.peer?.close();
+        if (current === session) {
+            current = null;
+            output.pause();
+            output.srcObject = null;
+        }
+    }
+
+    function requireSession(id) {
+        if (!current || current.id !== id || current.stopped) throw new Error('Voice session ended.');
+        return current;
+    }
+
+    function fail(session, message) {
+        if (!alive(session)) return;
+        post({ kind: 'error', sessionId: session.id, error: message });
+        disposeSession(session);
+    }
+
+    function signalConnected(session) {
+        if (alive(session) && session.ready && session.peer.connectionState === 'connected' && !session.connected) {
+            session.connected = true;
+            post({ kind: 'connected', sessionId: session.id });
+        }
+    }
+
+    // Short local tones confirm push-to-talk: rising when listening starts, falling when it ends.
+    function playCue(rising) {
+        try {
+            cueContext = cueContext || new AudioContext();
+            cueContext.resume().catch(() => {});
+            const now = cueContext.currentTime;
+            const tone = cueContext.createOscillator();
+            const envelope = cueContext.createGain();
+            tone.frequency.setValueAtTime(rising ? 660 : 880, now);
+            tone.frequency.linearRampToValueAtTime(rising ? 880 : 660, now + 0.08);
+            envelope.gain.setValueAtTime(0.0001, now);
+            envelope.gain.exponentialRampToValueAtTime(0.2, now + 0.01);
+            envelope.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+            tone.connect(envelope).connect(cueContext.destination);
+            tone.start(now);
+            tone.stop(now + 0.12);
+        } catch { }
+    }
+
+    function setMicrophone(session, enabled) {
+        session.stream.getAudioTracks().forEach(track => { track.enabled = enabled; });
+        playCue(enabled);
+    }
+
+    async function openMicrophone() {
+        // Prefer system-wide echo cancellation so screen-reader speech is not sent back as user input.
+        try {
+            return await navigator.mediaDevices.getUserMedia({
+                audio: { echoCancellation: { exact: 'all' }, noiseSuppression: true, autoGainControl: true }, video: false
+            });
+        } catch (error) {
+            if (error.name !== 'OverconstrainedError' || error.constraint !== 'echoCancellation') throw error;
+            return await navigator.mediaDevices.getUserMedia({
+                audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false
+            });
+        }
+    }
+
+    function waitForIceGathering(peer, session) {
+        if (peer.iceGatheringState === 'complete') return Promise.resolve();
+        return new Promise((resolve, reject) => {
+            const timer = setTimeout(() => { peer.removeEventListener('icegatheringstatechange', changed); reject(new Error('Voice connection timed out.')); }, 10000);
+            function changed() {
+                if (peer.iceGatheringState === 'complete' || !alive(session)) {
+                    clearTimeout(timer);
+                    peer.removeEventListener('icegatheringstatechange', changed);
+                    resolve();
+                }
+            }
+            peer.addEventListener('icegatheringstatechange', changed);
+        });
+    }
+
+    async function prepare(id) {
+        if (current) disposeSession(current);
+        const session = { id, stopped: false };
+        current = session;
+        try {
+            const stream = session.stream = await openMicrophone();
+            // Push-to-talk: the microphone sends silence until the hold key is pressed.
+            stream.getAudioTracks().forEach(track => { track.enabled = false; });
+            if (!alive(session)) throw new Error('Voice session ended.');
+            const peer = session.peer = new RTCPeerConnection();
+            for (const track of stream.getAudioTracks()) peer.addTrack(track, stream);
+            peer.ontrack = event => {
+                if (!alive(session)) return;
+                output.srcObject = new MediaStream([event.track]);
+                output.play().catch(error => fail(session, error.message));
+            };
+            peer.onconnectionstatechange = () => {
+                if (!alive(session)) return;
+                signalConnected(session);
+                if (peer.connectionState === 'failed' || peer.connectionState === 'closed') {
+                    fail(session, 'Voice media connection closed.');
+                } else if (peer.connectionState === 'disconnected') {
+                    clearTimeout(session.disconnectTimer);
+                    session.disconnectTimer = setTimeout(() => {
+                        if (alive(session) && peer.connectionState === 'disconnected') fail(session, 'Voice media connection lost.');
+                    }, 5000);
+                } else {
+                    clearTimeout(session.disconnectTimer);
+                }
+            };
+            const channel = session.channel = peer.createDataChannel('oai-events');
+            channel.onmessage = event => {
+                if (!alive(session)) return;
+                let message;
+                try { message = JSON.parse(event.data); } catch { return; }
+                if (message.type === 'session.started') { session.ready = true; signalConnected(session); }
+                if (message.type === 'session.closed') fail(session, 'Voice session closed.');
+                if (message.type === 'error') fail(session, message.error?.message || 'Voice session failed.');
+            };
+            channel.onclose = () => { if (alive(session)) fail(session, 'Voice event channel closed.'); };
+            await peer.setLocalDescription(await peer.createOffer());
+            await waitForIceGathering(peer, session);
+            requireSession(id);
+            const settings = stream.getAudioTracks()[0]?.getSettings?.() || {};
+            return { sdp: peer.localDescription.sdp, echoMode: String(settings.echoCancellation ?? 'unknown') };
+        } catch (error) {
+            disposeSession(session);
+            throw error;
+        }
+    }
+
+    window.chrome.webview.addEventListener('message', async event => {
+        const request = event.data;
+        if (!request || typeof request.id !== 'number') return;
+        try {
+            let result = {};
+            switch (request.method) {
+                case 'prepare': result = await prepare(request.sessionId); break;
+                case 'answer':
+                    await requireSession(request.sessionId).peer.setRemoteDescription({ type: 'answer', sdp: request.sdp });
+                    break;
+                case 'microphone':
+                    setMicrophone(requireSession(request.sessionId), request.enabled === true);
+                    break;
+                case 'stop':
+                    if (current && current.id === request.sessionId) disposeSession(current);
+                    break;
+                default: throw new Error('Unknown voice transport operation.');
+            }
+            post({ id: request.id, ok: true, sdp: result.sdp, echoMode: result.echoMode });
+        } catch (error) {
+            post({ id: request.id, ok: false, error: error.message, errorName: error.name });
+        }
+    });
+    window.addEventListener('pagehide', () => disposeSession(current));
+    post({ kind: 'ready' });
+})();
+</script></body></html>

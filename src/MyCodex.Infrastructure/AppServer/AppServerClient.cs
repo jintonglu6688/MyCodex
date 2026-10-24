@@ -2106,6 +2106,11 @@ namespace MyCodex.Infrastructure.AppServer
         {
             var method = AppServerJsonValueReader.GetString(message, "method");
             var parameters = AppServerJsonValueReader.GetDictionary(message, "params");
+            if (HandleRealtimeVoiceNotification(method, parameters))
+            {
+                return;
+            }
+
             AppServerEventDiagnostics.TraceNotification(method, parameters);
             HandleComputerUseNotification(method, parameters);
             _notificationEventProcessor.HandleNotification(method, parameters);

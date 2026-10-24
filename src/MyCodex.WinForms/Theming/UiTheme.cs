@@ -724,6 +724,12 @@ namespace MyCodex.WinForms.Theming
                         graphics.DrawLine(checkPen, rect.Left + 7, rect.Bottom - 4, rect.Right - 3, rect.Top + 4);
                     }
                     break;
+                case UiGlyph.Microphone:
+                    graphics.FillEllipse(brush, rect.Left + rect.Width / 2 - 3, rect.Top, 6, rect.Height / 2 + 2);
+                    graphics.DrawArc(pen, rect.Left + 2, rect.Top + 2, rect.Width - 4, rect.Height / 2 + 3, 0, 180);
+                    graphics.DrawLine(pen, rect.Left + rect.Width / 2, rect.Top + rect.Height / 2 + 5, rect.Left + rect.Width / 2, rect.Bottom - 1);
+                    graphics.DrawLine(pen, rect.Left + rect.Width / 2 - 3, rect.Bottom - 1, rect.Left + rect.Width / 2 + 3, rect.Bottom - 1);
+                    break;
                 case UiGlyph.FileChange:
                     graphics.DrawRectangle(pen, rect.Left + 2, rect.Top, rect.Width - 4, rect.Height);
                     graphics.DrawLine(thinPen, rect.Left + 5, rect.Top + 5, rect.Right - 4, rect.Top + 5);
@@ -803,6 +809,7 @@ namespace MyCodex.WinForms.Theming
                     return palette.GlyphGreenColor;
                 case UiGlyph.NewSession:
                 case UiGlyph.User:
+                case UiGlyph.Microphone:
                     return palette.GlyphTealColor;
                 case UiGlyph.Processing:
                 case UiGlyph.Approval:

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
+using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Shared.Constants;
 using NUnit.Framework;
@@ -214,6 +215,21 @@ namespace MyCodex.Application.Tests
                 CreateLaunchInfo(CodexRuntimeSources.System, version),
                 CreateInitializeResult(version == null ? null : "codex/" + version));
             Assert.That(capabilities.SupportsThreadHistoryPagination, Is.EqualTo(expected));
+        }
+
+        [TestCase("0.162.0", AppServerHostPlatform.Windows, false)]
+        [TestCase("0.163.0", AppServerHostPlatform.Windows, true)]
+        [TestCase("0.164.0", AppServerHostPlatform.Wsl, false)]
+        [TestCase("0.164.0", AppServerHostPlatform.RemoteMac, false)]
+        [TestCase(null, AppServerHostPlatform.Windows, false)]
+        public void RealtimeVoice_RequiresVerifiedRuntimeOnTheLocalWindowsTarget(string version, AppServerHostPlatform platform, bool expected)
+        {
+            var launch = CreateLaunchInfo(CodexRuntimeSources.System, version);
+            var capabilities = AppServerProtocolMetadataMapper.BuildProtocolCapabilities(
+                new AppConfigSnapshot { CodexRuntimeSource = CodexRuntimeSources.System },
+                new AppServerLaunchInfo(launch.FileName, launch.Arguments, launch.EnvironmentVariables, platform),
+                CreateInitializeResult(version == null ? null : "codex/" + version));
+            Assert.That(capabilities.SupportsRealtimeVoice, Is.EqualTo(expected));
         }
 
         [Test]
