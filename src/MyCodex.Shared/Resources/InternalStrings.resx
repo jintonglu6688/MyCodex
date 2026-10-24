@@ -408,6 +408,9 @@
   <data name="AppServerClient.Turn.Completed" xml:space="preserve">
     <value>Current turn request completed.</value>
   </data>
+  <data name="AppServerClient.Turn.Retrying.Template" xml:space="preserve">
+    <value>Codex is retrying automatically: {0}</value>
+  </data>
   <data name="AppServerClient.Error.ServerReturnedError" xml:space="preserve">
     <value>App Server returned an error.</value>
   </data>

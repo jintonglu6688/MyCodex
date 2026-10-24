@@ -322,16 +322,16 @@
     <value>声音</value>
   </data>
 <data name="NotificationSettingsForm.Check.TurnCompletedSound" xml:space="preserve">
-    <value>本轮结束后播放音效(&amp;T)</value>
+    <value>本轮完成或失败后播放音效(&amp;T)</value>
   </data>
 <data name="NotificationSettingsForm.Accessible.TurnCompletedSound" xml:space="preserve">
-    <value>本轮结束后播放音效</value>
+    <value>本轮完成或失败后播放音效</value>
   </data>
 <data name="NotificationSettingsForm.Check.SubAgentTurnCompletedSound" xml:space="preserve">
-    <value>子代理结束后播放音效(&amp;G)</value>
+    <value>子代理完成或失败后播放音效(&amp;G)</value>
   </data>
 <data name="NotificationSettingsForm.Accessible.SubAgentTurnCompletedSound" xml:space="preserve">
-    <value>子代理结束后播放音效</value>
+    <value>子代理完成或失败后播放音效</value>
   </data>
 <data name="NotificationSettingsForm.Check.ApprovalRequestSound" xml:space="preserve">
     <value>收到审批或提问时播放音效(&amp;A)</value>

@@ -9,6 +9,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
+using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Infrastructure.Codex;
 using MyCodex.Infrastructure.Persistence;
@@ -22,6 +23,39 @@ namespace MyCodex.Application.Tests
     [Apartment(ApartmentState.STA)]
     public sealed class MainFormSubAgentBusyStateTests
     {
+        [Test]
+        public void RetryNotice_KeepsTheTurnBusyUntilFinalFailure()
+        {
+            WithForm((form, client) =>
+            {
+                FormTestDriver.Field<AppConfigSnapshot>(form, "_appConfigSnapshot").TurnCompletedNotificationMode = NotificationPromptMode.Off;
+                Event(form, client, "turn_started", "parent");
+                Event(form, client, "turn_retrying", "parent");
+                Assert.That(FormTestDriver.Invoke(form, "IsThreadBusy", "parent"), Is.True);
+                Event(form, client, "turn_failed", "parent");
+                Assert.That(FormTestDriver.Invoke(form, "IsThreadBusy", "parent"), Is.False);
+            });
+        }
+
+        [TestCase("turn_failed", NotificationPromptMode.Sound, true)]
+        [TestCase("turn_failed", NotificationPromptMode.Off, false)]
+        [TestCase("turn_interrupted", NotificationPromptMode.Sound, false)]
+        public void FinalFailure_UsesTheFailureSoundOnlyWhenCompletionSoundIsOn(string terminalEvent, NotificationPromptMode mode, bool expected)
+        {
+            WithForm((form, client) =>
+            {
+                FormTestDriver.Field<AppConfigSnapshot>(form, "_appConfigSnapshot").TurnCompletedNotificationMode = mode;
+                Event(form, client, "turn_started", "parent");
+                Event(form, client, terminalEvent, "parent");
+                // Repeated terminal notifications must not replay it once the turn is no longer busy.
+                Event(form, client, terminalEvent, "parent");
+
+                var players = FormTestDriver.Field<Dictionary<string, System.Media.SoundPlayer>>(form, "_notificationSoundPlayers");
+                Assert.That(players.ContainsKey("Error.wav"), Is.EqualTo(expected));
+                Assert.That(players.ContainsKey("End of session.wav"), Is.False);
+            });
+        }
+
         [TestCase("idle")]
         [TestCase("notLoaded")]
         [TestCase("systemError")]

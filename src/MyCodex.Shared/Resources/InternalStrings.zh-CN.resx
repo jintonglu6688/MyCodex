@@ -795,6 +795,9 @@
   <data name="AppServerClient.Turn.Completed" xml:space="preserve">
     <value>当前轮次请求已完成。</value>
   </data>
+  <data name="AppServerClient.Turn.Retrying.Template" xml:space="preserve">
+    <value>Codex 正在自动重试：{0}</value>
+  </data>
   <data name="AppServerClient.Turn.DiffUpdated" xml:space="preserve">
     <value>变更摘要已更新。</value>
   </data>

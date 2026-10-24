@@ -168,6 +168,10 @@ namespace MyCodex.WinForms.Forms
                 {
                     HandleThreadBecameIdleNotification(e);
                 }
+                else if (wasBusy && route == AppServerEventRoute.TurnFailed && !e.IsHistorical)
+                {
+                    HandleThreadTurnFailedNotification(e);
+                }
 
                 if (AppServerEventRouting.IsTurnCompleted(route) ||
                     route == AppServerEventRoute.TurnInterrupted)
@@ -572,6 +576,17 @@ namespace MyCodex.WinForms.Forms
                 isSubAgentTurn ? GetSubAgentTurnCompletedNotificationMode() : GetTurnCompletedNotificationMode(),
                 isSubAgentTurn ? SubAgentTurnCompletedSoundFileName : TurnCompletedSoundFileName,
                 isSubAgentTurn ? "subagent" : "mainline",
+                true);
+        }
+
+        private void HandleThreadTurnFailedNotification(AppServerEventArgs e)
+        {
+            // Failures share the completion sound setting but use their own sound and throttle key.
+            var isSubAgentTurn = IsSubAgentCompletionThread(e.ThreadId);
+            ExecuteNotificationPrompt(
+                isSubAgentTurn ? GetSubAgentTurnCompletedNotificationMode() : GetTurnCompletedNotificationMode(),
+                TurnFailedSoundFileName,
+                isSubAgentTurn ? "subagent-failed" : "mainline-failed",
                 true);
         }
 

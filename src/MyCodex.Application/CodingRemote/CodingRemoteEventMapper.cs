@@ -42,6 +42,7 @@ namespace MyCodex.Application.CodingRemote
             switch ((eventType ?? string.Empty).Trim().ToLowerInvariant())
             {
                 case "turn_started":
+                case "turn_retrying":
                 case "assistant":
                     return mode == AppInteractionMode.Office
                         ? RemoteEventTypes.OfficeSessionUpdated

@@ -69,6 +69,7 @@ namespace MyCodex.WinForms.Forms
                     return AppendTurnSummaryItem(e, e.Content);
                 case "turn_interrupted":
                     return AppendTurnSummaryItem(e, e.Content);
+                case "turn_retrying":
                 case "context_compaction_completed":
                 case "thread_started":
                 case "thread_status_changed":

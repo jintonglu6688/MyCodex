@@ -322,16 +322,16 @@
     <value>Sound</value>
   </data>
 <data name="NotificationSettingsForm.Check.TurnCompletedSound" xml:space="preserve">
-    <value>Play sound when a turn completes(&amp;T)</value>
+    <value>Play sound when a turn completes or fails(&amp;T)</value>
   </data>
 <data name="NotificationSettingsForm.Accessible.TurnCompletedSound" xml:space="preserve">
-    <value>Play sound when a turn completes</value>
+    <value>Play sound when a turn completes or fails</value>
   </data>
 <data name="NotificationSettingsForm.Check.SubAgentTurnCompletedSound" xml:space="preserve">
-    <value>Play sound when a subagent completes(&amp;G)</value>
+    <value>Play sound when a subagent completes or fails(&amp;G)</value>
   </data>
 <data name="NotificationSettingsForm.Accessible.SubAgentTurnCompletedSound" xml:space="preserve">
-    <value>Play sound when a subagent completes</value>
+    <value>Play sound when a subagent completes or fails</value>
   </data>
 <data name="NotificationSettingsForm.Check.ApprovalRequestSound" xml:space="preserve">
     <value>Play sound for approvals and questions(&amp;A)</value>

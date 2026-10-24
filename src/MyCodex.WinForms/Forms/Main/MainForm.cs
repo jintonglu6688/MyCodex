@@ -62,6 +62,7 @@ namespace MyCodex.WinForms.Forms
         private const string AppServerEventDiagnosticsEnvironmentVariable = "MYCODEX_APP_SERVER_EVENT_DIAGNOSTICS";
         private const string ApprovalSoundFileName = "Approval.wav";
         private const string TurnCompletedSoundFileName = "End of session.wav";
+        private const string TurnFailedSoundFileName = "Error.wav";
         private const string SubAgentTurnCompletedSoundFileName = "Subagent completed.wav";
         private const string MessageSentSoundFileName = "MsgSent.wav";
         private readonly IAppServerClient _appServerClient;

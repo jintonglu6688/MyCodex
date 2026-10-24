@@ -855,7 +855,7 @@ namespace MyCodex.Application.Tests
             {
                 var checkBox = FormTestDriver.FindControlOrDefault<CheckBox>(form, UiLocalization.Text(
                     "NotificationSettingsForm.Accessible.SubAgentTurnCompletedSound",
-                    "Play sound when a subagent completes"));
+                    "Play sound when a subagent completes or fails"));
 
                 Assert.That(checkBox, Is.Not.Null);
                 Assert.That(checkBox.TabIndex, Is.EqualTo(1));

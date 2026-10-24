@@ -1182,7 +1182,8 @@ namespace MyCodex.Infrastructure.AppServer
             var reason = AppServerJsonValueReader.GetString(error, "codexErrorInfo");
             var threadId = AppServerJsonValueReader.GetString(parameters, "threadId");
             var turnId = AppServerJsonValueReader.GetString(parameters, "turnId");
-            var eventArgs = AppServerNotificationFactory.CreateError(threadId, turnId, errorMessage, reason);
+            var willRetry = AppServerJsonValueReader.GetNullableBool(parameters, "willRetry") == true;
+            var eventArgs = AppServerNotificationFactory.CreateError(threadId, turnId, errorMessage, reason, willRetry);
             Trace.TraceWarning(
                 "App Server error event. ThreadId={0}; TurnId={1}; Message={2}",
                 threadId,

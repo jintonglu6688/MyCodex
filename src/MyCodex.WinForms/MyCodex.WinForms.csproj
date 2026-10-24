@@ -64,6 +64,10 @@
       <Link>sound\End of session.wav</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\..\sound\Error.wav">
+      <Link>sound\Error.wav</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\..\sound\Subagent completed.wav">
       <Link>sound\Subagent completed.wav</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

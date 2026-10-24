@@ -115,15 +115,26 @@ namespace MyCodex.Infrastructure.AppServer
             string threadId,
             string turnId,
             string errorMessage,
-            string reason = null)
+            string reason = null,
+            bool willRetry = false)
         {
+            var message = ResolveErrorMessage(
+                errorMessage,
+                reason,
+                "AppServerClient.Error.ServerReturnedError",
+                "App Server returned an error.");
+            if (willRetry)
+            {
+                // The runtime keeps the turn alive and retries it; show progress instead of a failure.
+                message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    L("AppServerClient.Turn.Retrying.Template", "Codex is retrying automatically: {0}"),
+                    message);
+            }
+
             return new AppServerEventArgs(
-                "error",
-                ResolveErrorMessage(
-                    errorMessage,
-                    reason,
-                    "AppServerClient.Error.ServerReturnedError",
-                    "App Server returned an error."),
+                willRetry ? "turn_retrying" : "error",
+                message,
                 threadId: threadId,
                 turnId: turnId,
                 reason: reason);

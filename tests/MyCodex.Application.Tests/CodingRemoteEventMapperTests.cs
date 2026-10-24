@@ -14,6 +14,7 @@ namespace MyCodex.Application.Tests
     public sealed class CodingRemoteEventMapperTests
     {
         [TestCase("turn_started", RemoteEventTypes.CodingSessionUpdated, "running")]
+        [TestCase("turn_retrying", RemoteEventTypes.CodingSessionUpdated, "running")]
         [TestCase("assistant", RemoteEventTypes.CodingSessionUpdated, "running")]
         [TestCase("turn_completed", RemoteEventTypes.CodingMessageCompleted, "completed")]
         [TestCase("turn_failed", RemoteEventTypes.CodingMessageFailed, "failed")]

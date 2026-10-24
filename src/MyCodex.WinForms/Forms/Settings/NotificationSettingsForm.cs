@@ -63,12 +63,12 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
             _turnCompletedSoundCheckBox = CreateSoundCheckBox(
-                UiLocalization.Text("NotificationSettingsForm.Check.TurnCompletedSound", "Play sound when a turn completes(&T)"),
-                UiLocalization.Text("NotificationSettingsForm.Accessible.TurnCompletedSound", "Play sound when a turn completes"),
+                UiLocalization.Text("NotificationSettingsForm.Check.TurnCompletedSound", "Play sound when a turn completes or fails(&T)"),
+                UiLocalization.Text("NotificationSettingsForm.Accessible.TurnCompletedSound", "Play sound when a turn completes or fails"),
                 0);
             _subAgentTurnCompletedSoundCheckBox = CreateSoundCheckBox(
-                UiLocalization.Text("NotificationSettingsForm.Check.SubAgentTurnCompletedSound", "Play sound when a subagent completes(&G)"),
-                UiLocalization.Text("NotificationSettingsForm.Accessible.SubAgentTurnCompletedSound", "Play sound when a subagent completes"),
+                UiLocalization.Text("NotificationSettingsForm.Check.SubAgentTurnCompletedSound", "Play sound when a subagent completes or fails(&G)"),
+                UiLocalization.Text("NotificationSettingsForm.Accessible.SubAgentTurnCompletedSound", "Play sound when a subagent completes or fails"),
                 1);
             _approvalRequestSoundCheckBox = CreateSoundCheckBox(
                 UiLocalization.Text("NotificationSettingsForm.Check.ApprovalRequestSound", "Play sound when an approval request appears(&A)"),
