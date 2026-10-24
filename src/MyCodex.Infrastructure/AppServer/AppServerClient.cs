@@ -414,7 +414,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             AddOptionalString(parameters, "model", modelId);
             AddOptionalString(parameters, "effort", reasoningEffort);
-            AddCollaborationMode(parameters, collaborationMode);
+            AppServerCollaborationParameters.AddTo(parameters, collaborationMode);
 
             var result = await SendRequestAsync("turn/start", parameters, LongRunningRequestTimeoutMs).ConfigureAwait(false);
 
@@ -2938,29 +2938,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             target[key] = value;
-        }
-
-        private static void AddCollaborationMode(IDictionary<string, object> target, AppServerCollaborationMode collaborationMode)
-        {
-            if (target == null ||
-                collaborationMode == null ||
-                string.IsNullOrWhiteSpace(collaborationMode.Mode) ||
-                string.IsNullOrWhiteSpace(collaborationMode.ModelId))
-            {
-                return;
-            }
-
-            var settings = new Dictionary<string, object>
-            {
-                { "model", collaborationMode.ModelId },
-                { "reasoning_effort", string.IsNullOrWhiteSpace(collaborationMode.ReasoningEffort) ? null : collaborationMode.ReasoningEffort },
-                { "developer_instructions", string.IsNullOrWhiteSpace(collaborationMode.DeveloperInstructions) ? null : collaborationMode.DeveloperInstructions }
-            };
-            target["collaborationMode"] = new Dictionary<string, object>
-            {
-                { "mode", collaborationMode.Mode },
-                { "settings", settings }
-            };
         }
 
         private bool IsCurrentConnectionSource(long expectedConnectionEpoch, Process expectedProcess)

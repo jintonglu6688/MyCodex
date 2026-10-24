@@ -50,7 +50,7 @@ namespace MyCodex.Application.Tests
             "StartSessionGoalExecutionAsync",
             "ViewSessionGoalAsync",
             "ClearSessionGoalAsync",
-            "EnsureSessionThreadCreatedForGoalAsync",
+            "EnsureSessionThreadCreatedAsync",
             "RefreshSessionGoalAsync",
             "MarkPausedGoalActiveForRunningTurn",
             "RefreshGoalAfterTurnTerminal",

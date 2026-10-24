@@ -1613,7 +1613,7 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void AddCollaborationMode_SerializesOfficialWireShape()
+        public void CollaborationParameters_SerializesOfficialWireShape()
         {
             var parameters = new Dictionary<string, object>();
             var collaborationMode = new AppServerCollaborationMode
@@ -1624,7 +1624,7 @@ namespace MyCodex.Application.Tests
                 DeveloperInstructions = "Office instructions"
             };
 
-            InvokePrivateStaticVoid("AddCollaborationMode", parameters, collaborationMode);
+            AppServerCollaborationParameters.AddTo(parameters, collaborationMode);
 
             Assert.That(parameters.ContainsKey("collaborationMode"), Is.True);
             var wireMode = (IDictionary<string, object>)parameters["collaborationMode"];
@@ -1636,7 +1636,7 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void AddCollaborationMode_UsesNullDeveloperInstructionsForBuiltInModeInstructions()
+        public void CollaborationParameters_UsesNullDeveloperInstructionsForBuiltInModeInstructions()
         {
             var parameters = new Dictionary<string, object>();
             var collaborationMode = new AppServerCollaborationMode
@@ -1647,7 +1647,7 @@ namespace MyCodex.Application.Tests
                 DeveloperInstructions = null
             };
 
-            InvokePrivateStaticVoid("AddCollaborationMode", parameters, collaborationMode);
+            AppServerCollaborationParameters.AddTo(parameters, collaborationMode);
 
             var wireMode = (IDictionary<string, object>)parameters["collaborationMode"];
             var settings = (IDictionary<string, object>)wireMode["settings"];
