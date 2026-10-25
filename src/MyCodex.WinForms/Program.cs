@@ -48,6 +48,7 @@ namespace MyCodex.WinForms
 
             var appChannel = AppChannel.Resolve(args);
             var legacyPaths = new AppConfigService(appDirectoryName: appChannel.AppDataDirectoryName);
+            ConfigureDiagnostics(legacyPaths);
             var catalog = new TargetCatalogStore(legacyPaths, appChannel.AppDataDirectoryName);
             var options = StartupCommandLineOptions.Empty;
             try
@@ -100,15 +101,19 @@ namespace MyCodex.WinForms
             }
             catch (Exception exception)
             {
+                LogStartupFailure(exception);
+                var message = BuildStartupFailureMessage(exception);
+                if (exception is PersistenceRecoveryRequiredException)
+                    MessageBox.Show(message, AppConstants.AppName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 TargetManagerForm.ShowStartup(catalog, appChannel.Id, appChannel.DisplayName,
-                    UiLocalization.Text("Program.Target.StartupFailed", "The target could not be opened. Review it in the target manager.") +
-                    " (" + exception.GetType().Name + ")");
+                    message);
             }
         }
 
         private static void RunTargetWindow(string[] args, AppConfigService appConfigService, AppChannel appChannel,
             TargetCatalogStore catalog, TargetInstanceCoordinator instance, string targetId)
         {
+            ConfigureDiagnostics(appConfigService);
             RemoteSshSensitiveFileDirectory.Configure(appConfigService.GetTempDirectory());
 
             var appConfigStore = new JsonAppConfigStore(appConfigService);
@@ -123,7 +128,6 @@ namespace MyCodex.WinForms
             {
             }
 
-            ConfigureDiagnostics(appConfigService);
             BundledGitRuntime.ConfigureProcessEnvironment();
             System.Windows.Forms.Application.ThreadException += OnThreadException;
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
@@ -210,7 +214,7 @@ namespace MyCodex.WinForms
             return new InternalToolRegistry(new IInternalToolExecutor[0]);
         }
 
-        private static void ConfigureDiagnostics(AppConfigService appConfigService)
+        internal static void ConfigureDiagnostics(AppConfigService appConfigService)
         {
             try
             {
@@ -231,6 +235,33 @@ namespace MyCodex.WinForms
             catch
             {
             }
+        }
+
+        internal static void LogStartupFailure(Exception exception)
+        {
+            try
+            {
+                var recovery = exception as PersistenceRecoveryRequiredException;
+                Trace.TraceError("[Startup] Target startup failed. ExceptionType={0}; Path={1}; Backup={2}; Stack={3}",
+                    exception.GetType().FullName, recovery?.PrimaryPath, recovery?.BackupPath, exception.StackTrace);
+                var cause = exception.GetBaseException();
+                if (!ReferenceEquals(cause, exception))
+                    Trace.TraceError("[Startup] CauseType={0}; Stack={1}", cause.GetType().FullName, cause.StackTrace);
+            }
+            catch
+            {
+            }
+        }
+
+        internal static string BuildStartupFailureMessage(Exception exception)
+        {
+            var recovery = exception as PersistenceRecoveryRequiredException;
+            if (recovery != null)
+                return string.Format(UiLocalization.Text("Program.Target.RecoveryRequired.Template",
+                    "MyCodex could not recover the target's saved data from its backup. The affected files have been kept. Restore them from a valid backup, then restart MyCodex.\n\nAffected file: {0}\nBackup file: {1}"),
+                    recovery.PrimaryPath, recovery.BackupPath);
+            return UiLocalization.Text("Program.Target.StartupFailed", "The target could not be opened. Review it in the target manager.") +
+                " (" + exception.GetType().Name + ")";
         }
 
         private static void OnThreadException(object sender, ThreadExceptionEventArgs e)

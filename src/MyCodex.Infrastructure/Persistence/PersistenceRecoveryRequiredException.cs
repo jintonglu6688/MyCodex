@@ -71,6 +71,7 @@ namespace MyCodex.Infrastructure.Persistence
                 catch (Exception backupError) when (
                     backupError is SerializationException ||
                     backupError is XmlException ||
+                    backupError is InvalidDataException ||
                     backupError is IOException ||
                     backupError is UnauthorizedAccessException)
                 {
