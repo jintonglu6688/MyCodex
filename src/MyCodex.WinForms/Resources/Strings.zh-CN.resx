@@ -13867,4 +13867,10 @@ MyCodex 桌面客户端。</value>
   <data name="VoiceSettings.Status.PreviewFinished" xml:space="preserve"><value>试听结束。</value></data>
   <data name="VoiceSettings.Error.PreviewBusy" xml:space="preserve"><value>请先关闭语音对话，再试听音色。</value></data>
   <data name="VoiceSettings.Preview.Sample" xml:space="preserve"><value>你好，这是所选音色和语速听起来的效果。</value></data>
+  <data name="Program.Target.RecoveryRequired.Template" xml:space="preserve">
+    <value>MyCodex 无法从备份恢复此目标的已保存数据，受影响的文件已保留。请使用有效备份恢复后重新启动 MyCodex。
+
+受影响的文件：{0}
+备份文件：{1}</value>
+  </data>
 </root>

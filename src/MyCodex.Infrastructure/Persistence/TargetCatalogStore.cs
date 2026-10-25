@@ -303,7 +303,11 @@ namespace MyCodex.Infrastructure.Persistence
         {
             // A completed migration must retain the shared service; never regenerate credentials here.
             Read<SharedRelayServiceConfigSnapshot>(Path.Combine(_sharedRoot, "config", "relay-service.json"));
-            var catalog = Read<TargetCatalogSnapshot>(_catalogPath);
+            return Read<TargetCatalogSnapshot>(_catalogPath, ValidateCatalog);
+        }
+
+        private static void ValidateCatalog(TargetCatalogSnapshot catalog)
+        {
             if (catalog.SchemaVersion != 1 || catalog.Targets == null || catalog.Targets.Any(t => t == null) ||
                 catalog.Targets.Count(t => t.Kind == "Windows") != 1 ||
                 catalog.Targets.Any(t => !TargetMigrationPlanner.IsSafeTargetId(t.Id) ||
@@ -323,7 +327,6 @@ namespace MyCodex.Infrastructure.Persistence
                     !string.Equals(target.RuntimeScopeId, "remote-unix|" + target.SshProfileId, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidDataException("The SSH target identity is invalid.");
             }
-            return catalog;
         }
 
         private static TargetProfileSnapshot Find(TargetCatalogSnapshot catalog, string id)
@@ -341,23 +344,42 @@ namespace MyCodex.Infrastructure.Persistence
 
         private void ValidateTargetData(AppConfigService paths, TargetProfileSnapshot target)
         {
-            var config = JsonAppConfigStore.NormalizeSnapshot(Read<AppConfigSnapshot>(paths.GetConfigFilePath()));
+            Read<AppConfigSnapshot>(paths.GetConfigFilePath(), config =>
+            {
+                config = JsonAppConfigStore.NormalizeSnapshot(config);
+                if (!string.Equals(new RuntimeProfileService().GetCurrentRuntimeProfileId(config), target.RuntimeScopeId, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("The target runtime settings do not match its identity.");
+                _planner.Build(target, config);
+            });
             Read<AppStateSnapshot>(paths.GetAppStateFilePath());
             Read<AutomationStateSnapshot>(paths.GetAutomationsFilePath());
-            var identity = Read<TargetRemoteIdentitySnapshot>(paths.GetRemoteServiceConfigFilePath());
-            Guid hostId;
-            if (!Guid.TryParseExact(identity.HostId, "D", out hostId) || identity.HostId != hostId.ToString("D"))
-                throw new InvalidDataException("The target remote identity is invalid.");
-            if (!string.Equals(new RuntimeProfileService().GetCurrentRuntimeProfileId(config), target.RuntimeScopeId, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("The target runtime settings do not match its identity.");
-            _planner.Build(target, config);
+            Read<TargetRemoteIdentitySnapshot>(paths.GetRemoteServiceConfigFilePath(), identity =>
+            {
+                Guid hostId;
+                if (!Guid.TryParseExact(identity.HostId, "D", out hostId) || identity.HostId != hostId.ToString("D"))
+                    throw new InvalidDataException("The target remote identity is invalid.");
+            });
         }
 
-        private T Read<T>(string path) where T : class
+        private T Read<T>(string path, Action<T> validate = null) where T : class
         {
             RejectReparsePath(path);
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
-                return new DataContractJsonSerializer(typeof(T)).ReadObject(stream) as T ?? throw new InvalidDataException("Empty target data.");
+            RejectReparsePath(path + ".bak");
+            return PersistenceFileRecovery.Load(
+                path,
+                path + ".bak",
+                candidate =>
+                {
+                    RejectReparsePath(candidate);
+                    using (var stream = new FileStream(candidate, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
+                    {
+                        var value = new DataContractJsonSerializer(typeof(T)).ReadObject(stream) as T ?? throw new InvalidDataException("Empty target data.");
+                        validate?.Invoke(value);
+                        return value;
+                    }
+                },
+                () => throw new FileNotFoundException("Required target data is missing.", path),
+                () => { }); // Each mutation rereads its required data before writing.
         }
 
         private void WriteAtomic<T>(string path, T value)

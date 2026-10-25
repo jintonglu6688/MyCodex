@@ -13912,4 +13912,10 @@ Update now? Choose No to continue using the existing runtime.</value>
   <data name="VoiceSettings.Status.PreviewFinished" xml:space="preserve"><value>Preview finished.</value></data>
   <data name="VoiceSettings.Error.PreviewBusy" xml:space="preserve"><value>Stop voice chat before trying a voice.</value></data>
   <data name="VoiceSettings.Preview.Sample" xml:space="preserve"><value>Hello. This is how I sound with the selected voice and speaking pace.</value></data>
+  <data name="Program.Target.RecoveryRequired.Template" xml:space="preserve">
+    <value>MyCodex could not recover the target's saved data from its backup. The affected files have been kept. Restore them from a valid backup, then restart MyCodex.
+
+Affected file: {0}
+Backup file: {1}</value>
+  </data>
 </root>
