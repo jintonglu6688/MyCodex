@@ -8,11 +8,11 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 if ([string]::IsNullOrWhiteSpace($DestinationRoot)) { $DestinationRoot = Join-Path $repoRoot 'runtime\auth-core' }
 $destination = [IO.Path]::GetFullPath($DestinationRoot)
-$tag = 'auth-core-v0.3.10'
-$name = 'mycodex-auth-host-0.3.10-x86_64-pc-windows-msvc.zip'
-$archiveSha256 = 'f7462c5d1766f285361b97359ec16c7c6d653f93211d002552eb55740fca64cc'
-$executableSha256 = '5e80bdb4ebaf14748253996bfe5ea88909d129d4a1be6893c8f4a02cf89cc13d'
-$sourceRevision = '18ccacaa411f43d6d98c3a76ef0dd822d3d51e1e'
+$tag = 'auth-core-v0.3.11'
+$name = 'mycodex-auth-host-0.3.11-x86_64-pc-windows-msvc.zip'
+$archiveSha256 = '3601bb2a3ba5fd965d665e39074d4d2e5e0a3457db714a16b984544ddb97fceb'
+$executableSha256 = '4c0d81eca282d84b63a8af0c53b13c0d5f7a674a27fdf27bc604734fc9f581f8'
+$sourceRevision = 'db8aaeb16afd633e6fc2a880a7832ef8c376154f'
 . (Join-Path $PSScriptRoot 'Test-AuthenticationHostPackage.ps1')
 
 if (Test-Path -LiteralPath (Join-Path $destination 'mycodex-auth-host.manifest.json') -PathType Leaf) {
