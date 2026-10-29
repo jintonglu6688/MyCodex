@@ -1010,9 +1010,7 @@ namespace MyCodex.Application.Tests
             CustomApprovalSettingsSnapshot left,
             CustomApprovalSettingsSnapshot right)
         {
-            var method = typeof(MainForm).GetMethod("AreCustomApprovalSettingsEqual", BindingFlags.Static | BindingFlags.NonPublic);
-            Assert.That(method, Is.Not.Null);
-            return (bool)method.Invoke(null, new object[] { left, right });
+            return OptionsSettingsComparer.AreCustomApprovalSettingsEqual(left, right);
         }
     }
 }

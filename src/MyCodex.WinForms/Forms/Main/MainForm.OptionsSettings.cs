@@ -83,21 +83,7 @@ namespace MyCodex.WinForms.Forms
 
                 if (updatedLocalOptions)
                 {
-                    if (previousSessionListDisplayOrder != SessionListDisplayOrder.Normalize(_appConfigSnapshot.SessionListDisplayOrder))
-                    {
-                        RefreshSessionList();
-                    }
-                    UpdateChatHistorySpeechMenuState();
-                    _voiceChat.SettingsChanged();
-                    ApplyModeVisibility();
-                    if (!string.Equals(previousTheme, GetConfiguredUiThemePreference(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        ApplyConfiguredTheme();
-                    }
-                    if (!string.Equals(previousLanguage, GetConfiguredUiLanguagePreference(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        ApplyConfiguredUiLanguage();
-                    }
+                    ApplySavedOptionsAppearance(previousSessionListDisplayOrder, previousTheme, previousLanguage);
                 }
                 var updatedOfficialOptions = false;
                 var updatedModeSettings = false;
@@ -163,6 +149,16 @@ namespace MyCodex.WinForms.Forms
                     await RestartAppServerAfterOfficeCliEnvironmentChangeAsync();
                 }
             }
+        }
+
+        private void ApplySavedOptionsAppearance(string previousOrder, string previousTheme, string previousLanguage)
+        {
+            if (previousOrder != SessionListDisplayOrder.Normalize(_appConfigSnapshot.SessionListDisplayOrder)) RefreshSessionList();
+            UpdateChatHistorySpeechMenuState();
+            _voiceChat.SettingsChanged();
+            ApplyModeVisibility();
+            if (!string.Equals(previousTheme, GetConfiguredUiThemePreference(), StringComparison.OrdinalIgnoreCase)) ApplyConfiguredTheme();
+            if (!string.Equals(previousLanguage, GetConfiguredUiLanguagePreference(), StringComparison.OrdinalIgnoreCase)) ApplyConfiguredUiLanguage();
         }
 
         private async Task<Tuple<bool, bool>> SaveModeSettingsForCurrentRuntimeAsync(
@@ -412,9 +408,9 @@ namespace MyCodex.WinForms.Forms
                 updated = true;
             }
 
-            if (!AreCustomApprovalSettingsEqual(_appConfigSnapshot.CustomApprovalSettings, form.CustomApprovalSettings))
+            if (!OptionsSettingsComparer.AreCustomApprovalSettingsEqual(_appConfigSnapshot.CustomApprovalSettings, form.CustomApprovalSettings))
             {
-                _appConfigSnapshot.CustomApprovalSettings = CloneCustomApprovalSettings(form.CustomApprovalSettings);
+                _appConfigSnapshot.CustomApprovalSettings = OptionsSettingsComparer.CloneCustomApprovalSettings(form.CustomApprovalSettings);
                 updated = true;
             }
 
@@ -425,53 +421,6 @@ namespace MyCodex.WinForms.Forms
             }
 
             return updated;
-        }
-
-        private static bool AreCustomApprovalSettingsEqual(
-            CustomApprovalSettingsSnapshot left,
-            CustomApprovalSettingsSnapshot right)
-        {
-            var leftValues = new HashSet<CustomApprovalPermissionKind>(
-                left == null ? new CustomApprovalPermissionKind[0] : left.EnabledPermissions);
-            var rightValues = new HashSet<CustomApprovalPermissionKind>(
-                right == null ? new CustomApprovalPermissionKind[0] : right.EnabledPermissions);
-            return leftValues.SetEquals(rightValues) &&
-                AreCustomApprovalCommandPrefixesEqual(
-                    left == null ? new string[0] : left.CommandPrefixes,
-                    right == null ? new string[0] : right.CommandPrefixes);
-        }
-
-        private static bool AreCustomApprovalCommandPrefixesEqual(
-            IEnumerable<string> left,
-            IEnumerable<string> right)
-        {
-            var leftPrefixes = HostSettingsPolicy.NormalizeCommandPrefixes(left);
-            var rightPrefixes = HostSettingsPolicy.NormalizeCommandPrefixes(right);
-            if (leftPrefixes.Count != rightPrefixes.Count)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < leftPrefixes.Count; i++)
-            {
-                if (!string.Equals(leftPrefixes[i], rightPrefixes[i], StringComparison.Ordinal))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static CustomApprovalSettingsSnapshot CloneCustomApprovalSettings(CustomApprovalSettingsSnapshot source)
-        {
-            return new CustomApprovalSettingsSnapshot
-            {
-                EnabledPermissions = new List<CustomApprovalPermissionKind>(
-                    source == null ? new CustomApprovalPermissionKind[0] : source.EnabledPermissions),
-                CommandPrefixes = HostSettingsPolicy.NormalizeCommandPrefixes(
-                    source == null ? new string[0] : source.CommandPrefixes).ToList()
-            };
         }
 
         private TextFileOpenPreference BuildTextFileOpenPreference()
