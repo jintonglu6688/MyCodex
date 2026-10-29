@@ -886,7 +886,7 @@ namespace MyCodex.WinForms.Forms
                 string.Format(
                     UiLocalization.Text(
                         "MainForm.Message.RemoteHostKeyTrustConfirm.Template",
-                        "The remote host key changed or was not trusted. Reported host key:\r\n\r\n{0}\r\n\r\nTrust this host key for the selected Remote Unix profile and retry? Only continue if it matches the remote machine you intend to use."),
+                        "The remote host key is not trusted yet. Reported host key:\r\n\r\n{0}\r\n\r\nTrust this host key for the selected Remote Unix profile and retry? Only continue if it matches the remote machine you intend to use."),
                     hostKey),
                 AppConstants.AppName,
                 MessageBoxButtons.YesNo,

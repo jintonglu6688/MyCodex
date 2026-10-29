@@ -39,7 +39,23 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void ShouldPromptForTrust_ForPasswordAuthWithChangedHostKey_ReturnsTrue()
+        public void ShouldPromptForTrust_ForPasswordAuthWithUntrustedHostKey_ReturnsTrue()
+        {
+            const string message = "The new ssh-ed25519 key fingerprint is:\n ssh-ed25519 255 SHA256:newkey";
+            var config = new RemoteMacSshConfigSnapshot
+            {
+                AuthenticationMode = RemoteSshAuthenticationMode.Password
+            };
+
+            string fingerprint;
+            var shouldPrompt = RemoteSshHostKeyTrustPlanner.ShouldPromptForTrust(config, message, out fingerprint);
+
+            Assert.That(shouldPrompt, Is.True);
+            Assert.That(fingerprint, Is.EqualTo("SHA256:newkey"));
+        }
+
+        [Test]
+        public void ShouldPromptForTrust_ForPasswordAuthWithChangedPinnedHostKey_ReturnsFalse()
         {
             const string message = "The new ssh-ed25519 key fingerprint is:\n ssh-ed25519 255 SHA256:newkey";
             var config = new RemoteMacSshConfigSnapshot
@@ -51,8 +67,8 @@ namespace MyCodex.Application.Tests
             string fingerprint;
             var shouldPrompt = RemoteSshHostKeyTrustPlanner.ShouldPromptForTrust(config, message, out fingerprint);
 
-            Assert.That(shouldPrompt, Is.True);
-            Assert.That(fingerprint, Is.EqualTo("SHA256:newkey"));
+            Assert.That(shouldPrompt, Is.False);
+            Assert.That(fingerprint, Is.Null);
         }
 
         [Test]

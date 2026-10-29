@@ -3837,7 +3837,7 @@ MyCodex 桌面客户端。</value>
     <value>打开工作区失败</value>
   </data>
 <data name="MainForm.Message.RemoteHostKeyTrustConfirm.Template" xml:space="preserve">
-    <value>远端主机密钥已变化或尚未被信任。报告的主机密钥为：
+    <value>远端主机密钥尚未被信任。报告的主机密钥为：
 
 {0}
 

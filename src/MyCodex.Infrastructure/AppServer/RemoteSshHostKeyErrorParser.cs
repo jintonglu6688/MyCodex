@@ -51,7 +51,8 @@ namespace MyCodex.Infrastructure.AppServer
                 return false;
             }
 
-            if (string.Equals(config.HostKeyFingerprint, hostKey, StringComparison.Ordinal))
+            // A different key for a pinned host may be an impersonation; replacing the pin must be a deliberate settings edit.
+            if (!string.IsNullOrWhiteSpace(config.HostKeyFingerprint))
             {
                 hostKey = null;
                 return false;

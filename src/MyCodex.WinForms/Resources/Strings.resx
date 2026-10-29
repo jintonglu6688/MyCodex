@@ -3897,7 +3897,7 @@ MyCodex desktop client.</value>
     <value>Open workspace failed</value>
   </data>
 <data name="MainForm.Message.RemoteHostKeyTrustConfirm.Template" xml:space="preserve">
-    <value>The remote host key changed or was not trusted. Reported host key:
+    <value>The remote host key is not trusted yet. Reported host key:
 
 {0}
 
