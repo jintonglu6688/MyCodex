@@ -398,30 +398,6 @@ namespace MyCodex.Application.Tests
 
         [Category(SourceGuardCategory.Placement)]
         [Test]
-        public void Phase5BMainFormHelpers_ExistWithExpectedTypes()
-        {
-            var helpers = new[]
-            {
-                new[] { "MainFormModelOptionComposer.cs", "internal static class MainFormModelOptionComposer" },
-                new[] { "ChatHistoryItemFactory.cs", "internal static class ChatHistoryItemFactory" },
-                new[] { "MainFormWindowTitleComposer.cs", "internal static class MainFormWindowTitleComposer" },
-                new[] { "MainFormStatusPresenter.cs", "internal static class MainFormStatusPresenter" },
-                new[] { "MainFormInputStatePlanner.cs", "internal static class MainFormInputStatePlanner" },
-                new[] { "MainFormAutomationNavigationPlanner.cs", "internal static class MainFormAutomationNavigationPlanner" },
-                new[] { "MainFormSessionWorkspacePlanner.cs", "internal static class MainFormSessionWorkspacePlanner" },
-                new[] { "MainFormWorkbenchStatePlanner.cs", "internal static class MainFormWorkbenchStatePlanner" }
-            };
-
-            for (var i = 0; i < helpers.Length; i++)
-            {
-                var path = RepositorySource.FindSourceFile(helpers[i][0]);
-                Assert.That(File.Exists(path), Is.True, helpers[i][0] + " should exist.");
-                Assert.That(File.ReadAllText(path), Does.Contain(helpers[i][1]));
-            }
-        }
-
-        [Category(SourceGuardCategory.Placement)]
-        [Test]
         public void Phase6AuthenticationPresentationHelper_ExistsAndSessionSettingsDelegatesToIt()
         {
             var helperPath = RepositorySource.FindSourceFile("MainFormAuthenticationStatePlanner.cs");

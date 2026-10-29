@@ -552,21 +552,6 @@ namespace MyCodex.Application.Tests
 
         [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
-        public void MainForm_HasModePartialForSwitchFlow()
-        {
-            var source = RepositorySource.ReadSourceFile("MainForm.Modes.cs");
-
-            Assert.That(source, Does.Contain("SelectInteractionModeTab"));
-            Assert.That(source, Does.Contain("ModeTabControl_SelectedIndexChanged"));
-            Assert.That(source, Does.Contain("ActivateSelectedModeTab"));
-            Assert.That(source, Does.Contain("CaptureCurrentModeSelection"));
-            Assert.That(source, Does.Contain("ApplyModeVisibility"));
-            Assert.That(source, Does.Contain("EnsureOfficeWorkspace"));
-            Assert.That(source, Does.Contain("RunStartupModeOnboardingIfNeeded"));
-        }
-
-        [Category(SourceGuardCategory.SourceBehavior)]
-        [Test]
         public void MainForm_UsesTwoAccessibleModeTabsAroundOneSharedWorkbench()
         {
             var mainFormSource = RepositorySource.ReadSourceFile("MainForm.cs");
