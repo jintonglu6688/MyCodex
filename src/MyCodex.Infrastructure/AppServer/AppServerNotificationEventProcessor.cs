@@ -27,6 +27,21 @@ namespace MyCodex.Infrastructure.AppServer
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
+        /// <summary>Drops buffered streaming items; items of a stopped App Server process never complete.</summary>
+        public void ClearPendingItems()
+        {
+            lock (_syncRoot)
+            {
+                _agentMessageBuffers.Clear();
+                _planItemBuffers.Clear();
+                _commandOutputBuffers.Clear();
+                _fileChangeOutputBuffers.Clear();
+                _mcpToolCalls.Clear();
+                _reasoningItems.Clear();
+                _commandOutputDeltaItemIds.Clear();
+            }
+        }
+
         public void HandleNotification(string method, IDictionary<string, object> parameters)
         {
             if (string.IsNullOrWhiteSpace(method))

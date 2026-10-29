@@ -308,6 +308,7 @@ namespace MyCodex.Infrastructure.AppServer
                 }
 
                 CleanupProcessResources();
+                _notificationEventProcessor.ClearPendingItems();
 
                 for (var i = 0; i < pendingRequests.Count; i++)
                 {
@@ -1872,6 +1873,7 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             CleanupProcessResources();
+            _notificationEventProcessor.ClearPendingItems();
 
             for (var i = 0; i < pendingRequests.Count; i++)
             {
@@ -2349,6 +2351,7 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             CleanupProcessResources(resources);
+            _notificationEventProcessor.ClearPendingItems();
 
             for (var i = 0; i < pendingRequests.Count; i++)
             {

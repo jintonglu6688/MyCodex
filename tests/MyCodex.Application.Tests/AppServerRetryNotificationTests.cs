@@ -43,5 +43,24 @@ namespace MyCodex.Application.Tests
             if (willRetry)
                 Assert.That(AppServerEventRouting.GetFallbackCategory(route), Is.EqualTo(ChatHistoryCategory.Processing));
         }
+
+        [TestCase(false, "partial")]
+        [TestCase(true, null)]
+        public void ClearPendingItems_DropsStreamedTextOfItemsThatNeverCompleted(bool clear, string expectedAssistantText)
+        {
+            var events = new List<AppServerEventArgs>();
+            var processor = new AppServerNotificationEventProcessor(new AppServerNotificationEventContext(
+                events.Add, _ => { }, _ => { }, (_, __) => { }, _ => { }, path => path, _ => { }));
+            processor.HandleNotification("item/agentMessage/delta", AppServerJsonValue.DeserializeDictionary(
+                "{\"threadId\":\"thread-1\",\"turnId\":\"turn-1\",\"itemId\":\"item-1\",\"delta\":\"partial\"}"));
+
+            if (clear)
+                processor.ClearPendingItems();
+            processor.HandleNotification("item/completed", AppServerJsonValue.DeserializeDictionary(
+                "{\"threadId\":\"thread-1\",\"turnId\":\"turn-1\",\"item\":{\"id\":\"item-1\",\"type\":\"agentMessage\",\"text\":\"\"}}"));
+
+            var assistant = events.Find(e => e.EventType == "assistant");
+            Assert.That(assistant?.Content, Is.EqualTo(expectedAssistantText));
+        }
     }
 }
