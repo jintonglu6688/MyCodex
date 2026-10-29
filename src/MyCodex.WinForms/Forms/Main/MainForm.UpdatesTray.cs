@@ -75,7 +75,7 @@ namespace MyCodex.WinForms.Forms
 
         private async Task RunAutomaticUpdateCheckAsync()
         {
-            if (_hasAutomaticUpdateCheckRun)
+            if (_hasAutomaticUpdateCheckRun || !AutomaticUpdateCheckGate.TryClaim(_targetInstance?.InstanceRecord?.ChannelId))
             {
                 return;
             }
