@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using MyCodex.Infrastructure.BrowserUse;
 
 namespace MyCodex.Infrastructure.ComputerUse
 {
@@ -17,10 +18,13 @@ namespace MyCodex.Infrastructure.ComputerUse
                 await _prepare.WaitAsync(token).ConfigureAwait(false);
                 try
                 {
-                    if (_disposed || _components != null) return;
+                    if (_disposed || (_components != null && (!_browserEnabled() || _browserComponents != null))) return;
                     var config = await ReadConfigAsync(null, token).ConfigureAwait(false);
-                    if (!ComputerUseConfigurationPlanner.IsPluginDisabled(config))
+                    var browserRequested = _browserEnabled() && BrowserUseConfigurationPlanner.IsRequested(config, null);
+                    if (_components == null && (!ComputerUseConfigurationPlanner.IsPluginDisabled(config) || browserRequested))
                         await LoadComponentsAsync(token).ConfigureAwait(false);
+                    if (_components != null && browserRequested)
+                        await LoadBrowserComponentsAsync(token).ConfigureAwait(false);
                 }
                 finally { _prepare.Release(); }
             }

@@ -1,6 +1,6 @@
 # Browser Use runtime
 
-MyCodex packages the reviewed external-browser runtime independently of its existing native Computer Use runtime. The browser access host belongs to MyCodex; the browser service and its website, history, upload and download permission checks remain the original runtime files.
+MyCodex packages the reviewed external-browser runtime independently of its [native Computer Use runtime](computer-use-runtime.md). The browser access host belongs to MyCodex; the browser service and its website, history, upload and download permission checks remain the original runtime files.
 
 | Component | Reviewed version |
 |---|---|
@@ -48,6 +48,16 @@ A clean-machine report attempted Windows Settings inspection through `cua_repl/j
 After successful per-thread preparation, MyCodex now adds capability-specific routing through that thread's `developer_instructions` override. Windows desktop interfaces, Settings and browser-internal interfaces use `node_repl` with the existing computer-use skill and `@oai/sky`; external web pages use browser-only `cua_repl`. The instructions preserve existing global/thread instructions, explicit clearing and Office collaboration-mode instructions. They do not enable a denied capability, add desktop access to the browser service, write global configuration or change the original permission/lifecycle checks. Already loaded threads require a runtime reconnect/cold resume to receive changed configuration.
 
 `node tools/diagnostics/Test-BrowserRuntime.mjs --check-tool-routing` reproduces the wrong-tool missing-sky error, then runs the actual pinned `node_repl` and Sky service against a synthetic native host and verifies that ending the turn prevents subsequent executor calls. No real windows are read, screenshots captured or input injected. The loopback-only real CLI fixture also checks that per-thread routing and Office developer instructions both reach the provider request. Related .NET checks passed 386 tests with one filesystem-link fixture skipped, and the Release build completed with zero warnings/errors. The user subsequently confirmed that desktop control worked on the target device and that browser automation still passed regression testing.
+
+### First-send component preparation
+
+After connecting to the Windows App Server, the existing Computer Use background warmup also verifies the browser bundle when browser control is enabled and requested by the effective configuration. Browser-only configurations warm the shared native runtime needed by the host as well. This warmup verifies static package contents without starting the control host, installing plugins, writing execution policy or acquiring desktop/browser access.
+
+Warmup and thread preparation share the same connection-owned browser component cache under the existing preparation semaphore. A failed warmup leaves the cache empty so first use can retry; cancellation discards the verification result. Actual execution still checks current settings, policy and turn ownership. Both Windows bundle validators now use `SHA256Cng`; complete file hashing, size checks, extra-file rejection and path/link validation remain in place, with unchanged manifests and pins.
+
+The first-send diagnosis measured 3103 ms of component preparation in a real application log. In the isolated production-manager fixture, first-thread preparation fell from 3190 ms to 536 ms without prior browser warmup, and to 60 ms after the actual warmup. Complete browser verification fell from approximately 2.9–3.0 seconds to 425–437 ms over all 2392 files. The fixture uses real package files and the owned host, with in-memory configuration RPC replies; these are preparation measurements, not an end-to-end UI/audio benchmark. An immediate send before background warmup finishes can still wait for required verification.
+
+Six deterministic warmup tests cover preverification/reuse, master-switch and plugin disables, failure retry, cancellation and concurrent requests. The related .NET regression selection passed 392 tests with one filesystem-link fixture skipped; the original-runtime browser routing/seven browser checks, 210 native-host checks and the Release build also passed. The user subsequently reported that testing passed; no post-change live audio timing was recorded.
 
 ## Verification
 

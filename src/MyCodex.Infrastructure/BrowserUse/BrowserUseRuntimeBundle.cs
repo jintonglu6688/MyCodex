@@ -140,7 +140,7 @@ namespace MyCodex.Infrastructure.BrowserUse
         private static bool MatchesHash(string path, string expected)
         {
             using (var stream = File.OpenRead(path))
-            using (var hash = SHA256.Create())
+            using (var hash = new SHA256Cng())
                 return string.Equals(BitConverter.ToString(hash.ComputeHash(stream)).Replace("-", ""), expected, StringComparison.OrdinalIgnoreCase);
         }
 

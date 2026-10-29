@@ -12,6 +12,18 @@ namespace MyCodex.Infrastructure.ComputerUse
     {
         private BrowserUseComponents _browserComponents;
 
+        // Warmup and thread preparation both hold _prepare while publishing this cache.
+        private async Task<BrowserUseComponents> LoadBrowserComponentsAsync(CancellationToken token)
+        {
+            if (_browserComponents != null) return _browserComponents;
+            var watch = Stopwatch.StartNew();
+            var components = await Task.Run(() => _loadBrowserComponents(_codexPath), token).ConfigureAwait(false);
+            token.ThrowIfCancellationRequested();
+            _browserComponents = components;
+            Trace.TraceInformation("[BrowserUse] Components verified. ElapsedMs={0}", watch.ElapsedMilliseconds);
+            return components;
+        }
+
         private async Task<IDictionary<string, object>> PrepareBrowserAsync(ComputerUseSessionBinding binding,
             IDictionary<string, object> config, IDictionary<string, object> requirements,
             IDictionary<string, object> overrides, CancellationToken token)
@@ -19,8 +31,7 @@ namespace MyCodex.Infrastructure.ComputerUse
             var allocated = false;
             try
             {
-                if (_browserComponents == null)
-                    _browserComponents = await Task.Run(() => BrowserUseRuntimeBundle.Load(_codexPath), token).ConfigureAwait(false);
+                await LoadBrowserComponentsAsync(token).ConfigureAwait(false);
                 var value = await binding.Host.RequestAsync("allocateBrowser", new Dictionary<string, object>
                 {
                     { "slot", binding.Slot }

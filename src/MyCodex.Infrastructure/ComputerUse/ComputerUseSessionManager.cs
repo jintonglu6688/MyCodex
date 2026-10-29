@@ -45,12 +45,14 @@ namespace MyCodex.Infrastructure.ComputerUse
         private int _preserveAuxiliaryHome;
         private readonly Action<ComputerUseSessionBinding, string, string> _sendControl;
         private readonly Func<bool> _browserEnabled;
+        private readonly Func<string, BrowserUseComponents> _loadBrowserComponents;
 
         public ComputerUseSessionManager(string codexPath, string codexVersion, string codexHome,
             Func<string, IDictionary<string, object>, CancellationToken, Task<IDictionary<string, object>>> send,
             Action<string, string> report,
             Action<ComputerUseSessionBinding, string, string> sendControl = null,
-            Func<bool> browserEnabled = null)
+            Func<bool> browserEnabled = null,
+            Func<string, BrowserUseComponents> browserComponentsLoader = null)
         {
             _codexPath = codexPath;
             _codexVersion = codexVersion;
@@ -64,6 +66,7 @@ namespace MyCodex.Infrastructure.ComputerUse
             };
             _sendControl = sendControl;
             _browserEnabled = browserEnabled ?? (() => true);
+            _loadBrowserComponents = browserComponentsLoader ?? BrowserUseRuntimeBundle.Load;
             _homeRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify),
                 "MyCodex", "computer-use", Guid.NewGuid().ToString("N"));
         }
