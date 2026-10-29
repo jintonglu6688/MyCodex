@@ -60,7 +60,8 @@ namespace MyCodex.Infrastructure.AppServer
                     (launchInfo == null || launchInfo.HostPlatform == AppServerHostPlatform.Windows),
                 SupportsSubagentThreadFilters = IsKnownRuntimeAtLeast(runtimeVersion, 0, 154, 0),
                 SupportsCollabAgentToolCall = IsKnownRuntimeAtLeast(runtimeVersion, 0, 154, 0),
-                SupportsBrowserUseIntegration = false
+                SupportsBrowserUseIntegration = IsKnownRuntimeAtLeast(runtimeVersion, 0, 164, 0) &&
+                    (launchInfo == null || launchInfo.HostPlatform == AppServerHostPlatform.Windows)
             };
         }
 

@@ -168,6 +168,13 @@ try {
     Write-Warning "This Dev build omits Computer Use: $($_.Exception.Message)"
 }
 
+try {
+    & (Join-Path $repoRoot 'tools\runtime\prepare-browser-use-runtime.ps1')
+} catch {
+    if (-not [string]::Equals($Profile, "Dev", [StringComparison]::OrdinalIgnoreCase)) { throw }
+    Write-Warning "This Dev build omits browser automation: $($_.Exception.Message)"
+}
+
 Write-Host "[2/4] Building $Profile..."
 $buildArguments = @(
     "build",

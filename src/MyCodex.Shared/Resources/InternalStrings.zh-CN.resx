@@ -1583,6 +1583,7 @@
   <data name="AppServerClient.McpApproval.Session" xml:space="preserve"><value>本会话允许</value></data>
   <data name="AppServerClient.McpApproval.Always" xml:space="preserve"><value>始终允许此工具</value></data>
   <data name="AppServerClient.McpApproval.AlwaysApp" xml:space="preserve"><value>始终允许此应用</value></data>
+  <data name="AppServerClient.McpApproval.AlwaysSite" xml:space="preserve"><value>始终允许此网站</value></data>
   <data name="ComputerUse.Status.Ready" xml:space="preserve">
     <value>Computer Use 已就绪，可在此本机 Windows 会话中使用。</value>
   </data>
@@ -1678,5 +1679,17 @@
   </data>
   <data name="VoiceChat.Error.Timeout" xml:space="preserve">
     <value>语音连接超时，请重试。</value>
+  </data>
+  <data name="BrowserUse.Status.Disabled" xml:space="preserve">
+    <value>当前插件或功能设置已禁用浏览器自动化。</value>
+  </data>
+  <data name="BrowserUse.Status.Unavailable" xml:space="preserve">
+    <value>无法准备浏览器自动化组件或授权策略，其他桌面工具仍可使用。</value>
+  </data>
+  <data name="BrowserUse.Status.ReconnectRequired" xml:space="preserve">
+    <value>浏览器授权宿主已重新启动，请重新连接运行时并恢复此会话，以建立新的浏览器绑定。</value>
+  </data>
+  <data name="BrowserUse.Status.ConfigConflict" xml:space="preserve">
+    <value>现有浏览器工具配置与 MyCodex 集成冲突，已保留原配置。</value>
   </data>
 </root>

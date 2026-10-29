@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Infrastructure.AppServer;
+using MyCodex.Infrastructure.BrowserUse;
 
 namespace MyCodex.Infrastructure.ComputerUse
 {
@@ -21,6 +22,8 @@ namespace MyCodex.Infrastructure.ComputerUse
         public IDictionary<string, object> TrustOverrides;
         public CancellationTokenSource TurnLifetime;
         public string WrittenPolicy;
+        public BrowserUseAccessBinding BrowserAccess;
+        public bool NativeAvailable = true;
     }
 
     internal sealed partial class ComputerUseSessionManager : IDisposable
@@ -90,8 +93,9 @@ namespace MyCodex.Infrastructure.ComputerUse
                 if (string.IsNullOrWhiteSpace(workspace)) return Unavailable("ConfigurationUnavailable");
                 var overrides = AppServerJsonValue.GetDictionary(parameters, "config");
                 var config = await ReadConfigAsync(workspace, token, overrides).ConfigureAwait(false);
-                if (ComputerUseConfigurationPlanner.IsPluginDisabled(config) ||
-                    ComputerUseConfigurationPlanner.IsPluginDisabled(overrides)) return Unavailable("PluginDisabled");
+                var browserRequested = BrowserUseConfigurationPlanner.IsRequested(config, overrides);
+                if (!browserRequested && (ComputerUseConfigurationPlanner.IsPluginDisabled(config) ||
+                    ComputerUseConfigurationPlanner.IsPluginDisabled(overrides))) return Unavailable("PluginDisabled");
                 var requirements = await ReadRequirementsAsync(token).ConfigureAwait(false);
                 if (_components == null || (_host != null && !_host.IsAlive))
                 {
@@ -102,10 +106,14 @@ namespace MyCodex.Infrastructure.ComputerUse
                 // Validate before starting any host or writing auxiliary policy.
                 var plan = ComputerUseConfigurationPlanner.Plan(config, requirements, overrides, _components,
                     @"\\.\pipe\mycodex-cua-validation", _codexHome);
-                if (!plan.IsAvailable) return Unavailable(plan.DetailCode);
-                stage = "plugin";
-                if (!await _pluginPreparation.EnsureAsync(_bundle, _codexHome, token, true, config).ConfigureAwait(false))
-                    return Unavailable("PluginDisabled");
+                var nativeAvailable = plan.IsAvailable;
+                if (!nativeAvailable && !browserRequested) return Unavailable(plan.DetailCode);
+                if (nativeAvailable)
+                {
+                    stage = "plugin";
+                    nativeAvailable = await _pluginPreparation.EnsureAsync(_bundle, _codexHome, token, true, config).ConfigureAwait(false);
+                    if (!nativeAvailable && !browserRequested) return Unavailable("PluginDisabled");
+                }
                 var helperHome = Path.Combine(_homeRoot, Guid.NewGuid().ToString("N"));
                 if (_disposed) throw new OperationCanceledException(token);
                 if (_host == null || !_host.IsAlive)
@@ -126,13 +134,25 @@ namespace MyCodex.Infrastructure.ComputerUse
                 binding = new ComputerUseSessionBinding
                 {
                     Slot = AppServerJsonValue.GetString(slot, "slot"), Pipe = AppServerJsonValue.GetString(slot, "pipePath"),
-                    HelperHome = helperHome, Workspace = workspace, Host = current, TrustOverrides = overrides
+                    HelperHome = helperHome, Workspace = workspace, Host = current, TrustOverrides = overrides,
+                    NativeAvailable = nativeAvailable
                 };
                 ComputerUsePipeSecurity.Restrict(binding.Pipe);
                 await current.RequestAsync("publish", new Dictionary<string, object> { { "slot", binding.Slot } }, token).ConfigureAwait(false);
-                plan = ComputerUseConfigurationPlanner.Plan(config, requirements, overrides, _components, binding.Pipe, _codexHome);
-                if (!plan.IsAvailable) throw new InvalidOperationException("CUA_CONFIGURATION_CHANGED");
-                parameters["config"] = plan.ConfigOverrides;
+                var configured = overrides;
+                if (nativeAvailable)
+                {
+                    plan = ComputerUseConfigurationPlanner.Plan(config, requirements, overrides, _components, binding.Pipe, _codexHome);
+                    if (!plan.IsAvailable) throw new InvalidOperationException("CUA_CONFIGURATION_CHANGED");
+                    configured = plan.ConfigOverrides;
+                }
+                parameters["config"] = browserRequested ? await PrepareBrowserAsync(binding, config, requirements,
+                    configured, token).ConfigureAwait(false) : configured;
+                if (!nativeAvailable && binding.BrowserAccess == null)
+                {
+                    Abandon(binding);
+                    return Unavailable("BrowserUnavailable");
+                }
                 return binding;
             }
             catch (OperationCanceledException) { Abandon(binding); throw; }
@@ -194,7 +214,8 @@ namespace MyCodex.Infrastructure.ComputerUse
                 if (!string.IsNullOrWhiteSpace(workspace))
                 {
                     var config = await ReadConfigAsync(workspace, token).ConfigureAwait(false);
-                    if (ComputerUseConfigurationPlanner.IsPluginDisabled(config))
+                    if (ComputerUseConfigurationPlanner.IsPluginDisabled(config) &&
+                        !BrowserUseConfigurationPlanner.IsRequested(config, null))
                     {
                         _report("PluginDisabled", thread);
                         return;
@@ -226,6 +247,11 @@ namespace MyCodex.Infrastructure.ComputerUse
             {
                 if (!binding.Host.IsAlive)
                 {
+                    if (binding.BrowserAccess != null)
+                    {
+                        binding.BrowserAccess = null;
+                        _report("BrowserReconnectRequired", thread);
+                    }
                     // Official NativePipeTransport reconnects on the next request after EOF.
                     // Preserve its random address, but create a new slot with no active turn.
                     StopHost(binding.Host);

@@ -2,6 +2,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { createComputerUseHost } from './computer-use-host.mjs';
+import { createBrowserUseControl } from './browser-use-control.mjs';
 
 const write = value => process.stdout.write(JSON.stringify(value) + '\n');
 const runtime = process.env.MYCODEX_CUA_RUNTIME;
@@ -50,11 +51,12 @@ try {
             helperEnv: { CODEX_CLI_PATH: cli, CODEX_HOME: helperHome }
         })
     });
+    const surfaces = createBrowserUseControl({ native: host, emit: write });
     let closing = false;
     async function stop() {
         if (closing) return;
         closing = true;
-        try { await host.shutdown(); process.exit(0); }
+        try { await surfaces.shutdown(); await host.shutdown(); process.exit(0); }
         catch { write({ event: 'fatal', code: 'CUA_CLOSE_TIMEOUT' }); }
     }
     let buffer = '';
@@ -78,7 +80,7 @@ try {
                     !(Number.isSafeInteger(request.id) || typeof request.id === 'string')) throw new Error();
             } catch { write({ error: { code: 'CUA_INVALID_CONTROL' } }); continue; }
             // Do not serialize this queue: an end must cancel a waiting approval/acquisition.
-            host.control(request).then(result => {
+            surfaces.control(request).then(result => {
                 write({ id: request.id, result });
                 if (request.command === 'shutdown') void stop();
             }, failure => {

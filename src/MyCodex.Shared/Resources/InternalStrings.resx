@@ -1583,6 +1583,7 @@ This file is empty.</value>
   <data name="AppServerClient.McpApproval.Session" xml:space="preserve"><value>Allow for this session</value></data>
   <data name="AppServerClient.McpApproval.Always" xml:space="preserve"><value>Always allow this tool</value></data>
   <data name="AppServerClient.McpApproval.AlwaysApp" xml:space="preserve"><value>Always allow this app</value></data>
+  <data name="AppServerClient.McpApproval.AlwaysSite" xml:space="preserve"><value>Always allow this site</value></data>
   <data name="ComputerUse.Status.Ready" xml:space="preserve">
     <value>Computer Use is ready for this local Windows session.</value>
   </data>
@@ -1678,5 +1679,17 @@ This file is empty.</value>
   </data>
   <data name="VoiceChat.Error.Timeout" xml:space="preserve">
     <value>The voice connection timed out. Please try again.</value>
+  </data>
+  <data name="BrowserUse.Status.Disabled" xml:space="preserve">
+    <value>Browser automation is disabled by the current plugin or feature settings.</value>
+  </data>
+  <data name="BrowserUse.Status.Unavailable" xml:space="preserve">
+    <value>Browser automation could not prepare its component package or authorization policy. Other desktop tools remain available.</value>
+  </data>
+  <data name="BrowserUse.Status.ReconnectRequired" xml:space="preserve">
+    <value>The browser authorization host restarted. Reconnect the runtime and resume this session to establish a new browser binding.</value>
+  </data>
+  <data name="BrowserUse.Status.ConfigConflict" xml:space="preserve">
+    <value>An existing browser tool configuration conflicts with MyCodex integration. Your configuration has been preserved.</value>
   </data>
 </root>

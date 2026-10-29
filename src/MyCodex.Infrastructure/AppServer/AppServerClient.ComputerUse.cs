@@ -149,6 +149,10 @@ namespace MyCodex.Infrastructure.AppServer
             switch (code)
             {
                 case "Ready": return SharedLocalization.Text("ComputerUse.Status.Ready", "Computer Use is ready for this local Windows session.");
+                case "BrowserDisabled": return SharedLocalization.Text("BrowserUse.Status.Disabled", "Browser automation is disabled by the current plugin or feature settings.");
+                case "BrowserServerConflict": return SharedLocalization.Text("BrowserUse.Status.ConfigConflict", "An existing browser tool configuration conflicts with MyCodex integration. Your configuration has been preserved.");
+                case "BrowserUnavailable": return SharedLocalization.Text("BrowserUse.Status.Unavailable", "Browser automation could not prepare its component package or authorization policy. Other desktop tools remain available.");
+                case "BrowserReconnectRequired": return SharedLocalization.Text("BrowserUse.Status.ReconnectRequired", "The browser authorization host restarted. Reconnect the runtime and resume this session to establish a new browser binding.");
                 case "PluginDisabled": return SharedLocalization.Text("ComputerUse.Status.PluginDisabled", "Computer Use is unavailable: its plugin is disabled or could not be enabled.");
                 case "PolicyDenied": return SharedLocalization.Text("ComputerUse.Status.PolicyDenied", "Computer Use is disabled by the current policy.");
                 case "PolicyUnsupported": return SharedLocalization.Text("ComputerUse.Status.PolicyUnsupported", "Computer Use is unavailable: the managed policy cannot be safely passed to the local executor.");

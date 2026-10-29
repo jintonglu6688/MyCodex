@@ -25,6 +25,7 @@ namespace MyCodex.Infrastructure.ComputerUse
         private ComputerUseProcessJob _job;
         private readonly Action<string, string> _report;
         private readonly Func<string, string, CancellationToken, Task> _prepareExecution;
+        private readonly Func<string, string, string, CancellationToken, Task<bool>> _prepareBrowser;
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         private int _sequence;
         private int _disposed;
@@ -34,10 +35,12 @@ namespace MyCodex.Infrastructure.ComputerUse
         public bool IsCleanupConfirmed { get { return Volatile.Read(ref _cleanupConfirmed) != 0; } }
 
         public ComputerUseHostProcess(ComputerUseComponents components, string workingDirectory, Action<string, string> report,
-            Func<string, string, CancellationToken, Task> prepareExecution = null)
+            Func<string, string, CancellationToken, Task> prepareExecution = null,
+            Func<string, string, string, CancellationToken, Task<bool>> prepareBrowser = null)
         {
             _report = report;
             _prepareExecution = prepareExecution;
+            _prepareBrowser = prepareBrowser;
             var script = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "computer-use", "main.mjs");
             if (!File.Exists(script)) throw new InvalidOperationException("CUA_HOST_MISSING");
             var start = AppServerProcessLifecycle.BuildStartInfo(components.NodePath,
@@ -129,7 +132,12 @@ namespace MyCodex.Infrastructure.ComputerUse
                     }
                     if (eventName == "prepare")
                     {
-                        HandlePrepareAsync(value).Forget("Computer Use execution preparation");
+                        Task.Run(() => HandlePrepareAsync(value)).Forget("Computer Use execution preparation");
+                        continue;
+                    }
+                    if (eventName == "browserPrepare")
+                    {
+                        Task.Run(() => HandleBrowserPrepareAsync(value)).Forget("Browser execution preparation");
                         continue;
                     }
                     if (eventName == "available")
@@ -294,6 +302,30 @@ namespace MyCodex.Infrastructure.ComputerUse
             try
             {
                 await RequestAsync("prepareResult", new Dictionary<string, object>
+                {
+                    { "requestId", requestId }, { "prepared", prepared }
+                }, _lifetime.Token).ConfigureAwait(false);
+            }
+            catch { Dispose(); }
+        }
+
+        private async Task HandleBrowserPrepareAsync(IDictionary<string, object> message)
+        {
+            var requestId = AppServerJsonValue.GetString(message, "id");
+            if (string.IsNullOrWhiteSpace(requestId)) { Dispose(); return; }
+            var prepared = false;
+            try
+            {
+                if (_prepareBrowser != null)
+                    prepared = await _prepareBrowser(AppServerJsonValue.GetString(message, "thread"),
+                        AppServerJsonValue.GetString(message, "turn"), AppServerJsonValue.GetString(message, "executorId"),
+                        _lifetime.Token).ConfigureAwait(false);
+            }
+            catch { /* A policy read or cancellation must deny authorization. */ }
+            if (Volatile.Read(ref _disposed) != 0) return;
+            try
+            {
+                await RequestAsync("browserPrepareResult", new Dictionary<string, object>
                 {
                     { "requestId", requestId }, { "prepared", prepared }
                 }, _lifetime.Token).ConfigureAwait(false);

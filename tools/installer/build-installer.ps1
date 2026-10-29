@@ -412,6 +412,10 @@ Remove-DirectorySafely -Path (Join-Path $sourceDirFull 'runtime\auth-center') -A
 Remove-RetiredBundledNodeRuntime -PackageSourceDir $sourceDirFull
 Remove-DirectorySafely -Path (Join-Path $sourceDirFull 'runtime\computer-use') -AllowedRoot $sourceDirFull
 Assert-ComputerUseBundle -PackageSourceDir $sourceDirFull
+& (Join-Path $repoRoot 'tools\runtime\prepare-browser-use-runtime.ps1')
+$browserPin = Get-Content -LiteralPath (Join-Path $repoRoot 'tools\runtime\browser-use-bundle.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+& (Join-Path $repoRoot 'tools\runtime\prepare-browser-use-runtime.ps1') `
+    -VerifyRoot (Join-Path $sourceDirFull ('runtime\browser\' + $browserPin.bundleId))
 
 if ([string]::Equals($bundledCodexVersion, "latest", [System.StringComparison]::OrdinalIgnoreCase)) {
     $resolvedBundledCodexVersion = Get-LatestInstalledBundledCodexVersion `

@@ -45,9 +45,7 @@ namespace MyCodex.Infrastructure.AppServer
             });
             if (SupportsPersist(parameters, "always")) question.Options.Add(new AppServerToolUserInputOption
             {
-                Value = "always", Label = IsComputerUseApplication(parameters)
-                    ? SharedLocalization.Text("AppServerClient.McpApproval.AlwaysApp", "Always allow this app")
-                    : SharedLocalization.Text("AppServerClient.McpApproval.Always", "Always allow this tool")
+                Value = "always", Label = PersistentChoiceLabel(parameters)
             });
             return new[] { question };
         }
@@ -83,6 +81,18 @@ namespace MyCodex.Infrastructure.AppServer
             var meta = AppServerJsonValue.GetDictionary(parameters, "_meta");
             return string.Equals(AppServerJsonValue.GetString(meta, "connector_id"), "computer-use", StringComparison.Ordinal)
                 && !string.IsNullOrWhiteSpace(AppServerJsonValue.GetString(AppServerJsonValue.GetDictionary(meta, "tool_params"), "app"));
+        }
+
+        private static string PersistentChoiceLabel(IDictionary<string, object> parameters)
+        {
+            if (IsComputerUseApplication(parameters))
+                return SharedLocalization.Text("AppServerClient.McpApproval.AlwaysApp", "Always allow this app");
+            var meta = AppServerJsonValue.GetDictionary(parameters, "_meta");
+            if (AppServerJsonValue.GetString(meta, "connector_id") == "browser-use" &&
+                (!string.IsNullOrWhiteSpace(AppServerJsonValue.GetString(AppServerJsonValue.GetDictionary(meta, "tool_params"), "origin")) ||
+                    !string.IsNullOrWhiteSpace(AppServerJsonValue.GetString(meta, "origin"))))
+                return SharedLocalization.Text("AppServerClient.McpApproval.AlwaysSite", "Always allow this site");
+            return SharedLocalization.Text("AppServerClient.McpApproval.Always", "Always allow this tool");
         }
 
         private static bool IsAbsentOrFalse(IDictionary<string, object> meta, string key)

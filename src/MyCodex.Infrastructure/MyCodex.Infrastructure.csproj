@@ -22,5 +22,8 @@
     <EmbeddedResource Include="..\..\tools\runtime\computer-use-bundle.json">
       <LogicalName>MyCodex.ComputerUse.BundlePin</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\..\tools\runtime\browser-use-bundle.json">
+      <LogicalName>MyCodex.BrowserUse.BundlePin</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

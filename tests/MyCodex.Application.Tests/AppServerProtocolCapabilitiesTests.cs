@@ -12,6 +12,16 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class AppServerProtocolCapabilitiesTests
     {
+        [TestCase("0.163.0", false)]
+        [TestCase("0.164.0", true)]
+        public void BrowserIntegrationRequiresVerifiedProtocolVersion(string version, bool supported)
+        {
+            var capabilities = AppServerProtocolMetadataMapper.BuildProtocolCapabilities(
+                new AppConfigSnapshot { CodexRuntimeSource = CodexRuntimeSources.Bundled },
+                CreateLaunchInfo(CodexRuntimeSources.Bundled, version), CreateInitializeResult("codex/" + version));
+            Assert.That(capabilities.SupportsBrowserUseIntegration, Is.EqualTo(supported));
+        }
+
         [Test]
         public void BuildProtocolCapabilities_BundledModernRuntime_EnablesModernProtocol()
         {

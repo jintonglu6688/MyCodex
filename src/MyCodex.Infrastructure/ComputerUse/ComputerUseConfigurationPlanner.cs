@@ -126,7 +126,7 @@ namespace MyCodex.Infrastructure.ComputerUse
             if (IsFalse(requirements, "allowBrowserAndComputerUse") ||
                 IsFalse(Child(config, "features"), "computer_use") ||
                 IsFalse(Child(requirements, "featureRequirements"), "computer_use")) return "PolicyDenied";
-            if (requirements != null && (requirements.Any(pair => pair.Value != null && !KnownRequirements.Contains(pair.Key)) ||
+            if (requirements != null && (HasUnknownManagedRequirements(requirements) ||
                 HasMeaningfulValue(Value(requirements, "computerUse")) ||
                 HasMeaningfulValue(Value(requirements, "network")) ||
                 HasMeaningfulValue(Value(requirements, "application")) ||
@@ -135,6 +135,11 @@ namespace MyCodex.Infrastructure.ComputerUse
             // Config and requirements have different schemas. Persistent-grant and locked-desktop
             // requirements cannot be represented by copying their camelCase keys into config.toml.
             return null;
+        }
+
+        internal static bool HasUnknownManagedRequirements(IDictionary<string, object> requirements)
+        {
+            return requirements != null && requirements.Any(pair => pair.Value != null && !KnownRequirements.Contains(pair.Key));
         }
 
         public static bool HasUnsafeDisabledLayers(IDictionary<string, object> response, IDictionary<string, object> threadOverrides)

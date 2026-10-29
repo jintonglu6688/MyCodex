@@ -47,7 +47,8 @@ namespace MyCodex.Infrastructure.ComputerUse
             Directory.CreateDirectory(_homeRoot);
             ComputerUseHostProcess host = null;
             host = new ComputerUseHostProcess(_components, _homeRoot, _report,
-                (thread, turn, token) => PrepareExecutionAsync(host, thread, turn, token));
+                (thread, turn, token) => PrepareExecutionAsync(host, thread, turn, token),
+                (thread, turn, executor, token) => PrepareBrowserExecutionAsync(host, thread, turn, executor, token));
             return host;
         }
 
@@ -61,7 +62,7 @@ namespace MyCodex.Infrastructure.ComputerUse
             }
             lock (binding.Sync)
             {
-                if (binding.Host != host || binding.Turn != turn || binding.TurnLifetime == null)
+                if (!binding.NativeAvailable || binding.Host != host || binding.Turn != turn || binding.TurnLifetime == null)
                     throw new OperationCanceledException(token);
                 turnToken = binding.TurnLifetime.Token;
             }

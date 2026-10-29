@@ -46,4 +46,6 @@ __pycache__/
 /runtime/relay/
 /runtime/computer-use/
 /runtime/cua/
+/runtime/cua-browser/
+/runtime/browser/
 /runtime/git/

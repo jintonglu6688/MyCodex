@@ -11,7 +11,8 @@ namespace MyCodex.Infrastructure.ComputerUse
     {
         public static void Restrict(string pipePath)
         {
-            if (pipePath == null || !pipePath.StartsWith(@"\\.\pipe\mycodex-cua-", StringComparison.Ordinal))
+            if (pipePath == null || (!pipePath.StartsWith(@"\\.\pipe\mycodex-cua-", StringComparison.Ordinal) &&
+                !pipePath.StartsWith(@"\\.\pipe\mycodex-browser-access-", StringComparison.Ordinal)))
                 throw new InvalidOperationException("CUA_INVALID_PIPE");
             var descriptor = new RawSecurityDescriptor("D:P(A;;GA;;;SY)(A;;GA;;;" + WindowsIdentity.GetCurrent().User.Value + ")");
             var acl = new byte[descriptor.DiscretionaryAcl.BinaryLength];
