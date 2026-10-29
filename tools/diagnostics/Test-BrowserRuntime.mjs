@@ -144,6 +144,10 @@ var selectedEdge = await cua.getBrowser({id:'edge'});
 nodeRepl.write({edgeSelected:!!info && selectedEdge.browserId === info.id,
     name:info?.name,family:info?.family,extensionInstanceId:info?.metadata?.extensionInstanceId});`, turnId);
         },
+        async resetBrowser(turnId) {
+            return request('tools/call', { name: 'js_reset', arguments: {},
+                _meta: { 'x-codex-turn-metadata': { session_id: thread, turn_id: turnId, session_context: 'live' } } });
+        },
         async close() {
             if (child.exitCode !== null || !Number.isSafeInteger(child.pid)) { children.delete(child); return; }
             const exit = once(child, 'exit').catch(() => {});
@@ -196,12 +200,21 @@ try {
         assert.match(selectedText, /edgeSelected[^a-z]+true/);
         assert.match(selectedText, /Synthetic Edge/);
         assert.match(selectedText, /synthetic-edge/);
+        const callsBeforeRevocation = backendCalls;
+        await host.remove(slot.executorId);
+        const cleanup = await owned.resetBrowser(turn);
+        assert.notEqual(cleanup.isError, true, 'Browser reset must work after the feature gate is revoked.');
+        for (let i = 0; i < 2; i++) {
+            const sameTurn = await owned.discover(turn);
+            assert.equal(sameTurn.isError, true, 'Revocation plus browser reset must block a previously authorized active turn.');
+            assert.equal(backendCalls, callsBeforeRevocation, 'Revoked calls must not reach the browser.');
+        }
         host.end(slot.executorId, turn);
         const revoked = await owned.discover('runtime-fixture-next-turn');
-        assert.match(JSON.stringify(revoked), /Local browser use is disabled|Cannot verify browser access|BROWSER_ACCESS/);
+        assert.equal(revoked.isError, true);
         assert.equal(authorized, 1, 'A revoked binding must not reach the parent authorizer.');
     } finally { await owned.close(); }
-    console.log('Browser runtime: 4 checks passed (missing host rejected, owned host accepted, Edge selected, ended binding rejected; synthetic backend only).');
+    console.log('Browser runtime: 7 checks passed (missing host, owned host, Edge selection, reset after revocation, two active-turn calls blocked, next turn blocked; synthetic backend only).');
 } finally {
     await Promise.all([...children].map(stopOwnedTree));
     for (const socket of sockets) socket.destroy();

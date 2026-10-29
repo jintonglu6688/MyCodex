@@ -25,5 +25,17 @@
     <EmbeddedResource Include="..\..\tools\runtime\browser-use-bundle.json">
       <LogicalName>MyCodex.BrowserUse.BundlePin</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\..\tools\runtime\browser-extension-host.json">
+      <LogicalName>MyCodex.BrowserUse.ExtensionHostPin</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BrowserUse\PluginAssets\.agents\plugins\marketplace.json">
+      <LogicalName>MyCodex.BrowserUse.PluginMarketplace</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BrowserUse\PluginAssets\plugins\browser-use\.codex-plugin\plugin.json">
+      <LogicalName>MyCodex.BrowserUse.PluginManifest</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BrowserUse\PluginAssets\plugins\browser-use\skills\browser-use\SKILL.md">
+      <LogicalName>MyCodex.BrowserUse.PluginSkill</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

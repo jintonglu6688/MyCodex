@@ -416,6 +416,18 @@ Assert-ComputerUseBundle -PackageSourceDir $sourceDirFull
 $browserPin = Get-Content -LiteralPath (Join-Path $repoRoot 'tools\runtime\browser-use-bundle.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 & (Join-Path $repoRoot 'tools\runtime\prepare-browser-use-runtime.ps1') `
     -VerifyRoot (Join-Path $sourceDirFull ('runtime\browser\' + $browserPin.bundleId))
+& (Join-Path $repoRoot 'tools\runtime\prepare-browser-extension-host.ps1')
+$extensionHostPin = Get-Content -LiteralPath (Join-Path $repoRoot 'tools\runtime\browser-extension-host.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+& (Join-Path $repoRoot 'tools\runtime\prepare-browser-extension-host.ps1') `
+    -VerifyRoot (Join-Path $sourceDirFull ('runtime\browser-host\' + $extensionHostPin.bundleId))
+$browserPluginSource = Join-Path $repoRoot 'src\MyCodex.Infrastructure\BrowserUse\PluginAssets'
+foreach ($relative in @('.agents\plugins\marketplace.json', 'plugins\browser-use\.codex-plugin\plugin.json', 'plugins\browser-use\skills\browser-use\SKILL.md')) {
+    $packaged = Join-Path $sourceDirFull ('browser-use\' + $relative)
+    if (-not (Test-Path -LiteralPath $packaged -PathType Leaf) -or
+        (Get-FileHash -LiteralPath $packaged -Algorithm SHA256).Hash -ne (Get-FileHash -LiteralPath (Join-Path $browserPluginSource $relative) -Algorithm SHA256).Hash) {
+        throw 'Packaged browser plugin is missing or stale. Rebuild before packaging.'
+    }
+}
 
 if ([string]::Equals($bundledCodexVersion, "latest", [System.StringComparison]::OrdinalIgnoreCase)) {
     $resolvedBundledCodexVersion = Get-LatestInstalledBundledCodexVersion `

@@ -7,6 +7,10 @@ namespace MyCodex.Domain.Entities
     [DataContract]
     public class AppConfigSnapshot
     {
+        // Null preserves browser integration configured before the master switch existed.
+        [DataMember(EmitDefaultValue = false)]
+        public bool? BrowserControlEnabled { get; set; }
+
         public const string DefaultGitHostingProviderId = "github";
         private const string LegacyIndependentChannelNameMemberName = "Boy" + "CtrlIndependentChannelName";
 

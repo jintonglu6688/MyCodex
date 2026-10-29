@@ -44,11 +44,13 @@ namespace MyCodex.Infrastructure.ComputerUse
         private bool _disposed;
         private int _preserveAuxiliaryHome;
         private readonly Action<ComputerUseSessionBinding, string, string> _sendControl;
+        private readonly Func<bool> _browserEnabled;
 
         public ComputerUseSessionManager(string codexPath, string codexVersion, string codexHome,
             Func<string, IDictionary<string, object>, CancellationToken, Task<IDictionary<string, object>>> send,
             Action<string, string> report,
-            Action<ComputerUseSessionBinding, string, string> sendControl = null)
+            Action<ComputerUseSessionBinding, string, string> sendControl = null,
+            Func<bool> browserEnabled = null)
         {
             _codexPath = codexPath;
             _codexVersion = codexVersion;
@@ -61,6 +63,7 @@ namespace MyCodex.Infrastructure.ComputerUse
                 report?.Invoke(code, thread);
             };
             _sendControl = sendControl;
+            _browserEnabled = browserEnabled ?? (() => true);
             _homeRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify),
                 "MyCodex", "computer-use", Guid.NewGuid().ToString("N"));
         }
@@ -93,7 +96,12 @@ namespace MyCodex.Infrastructure.ComputerUse
                 if (string.IsNullOrWhiteSpace(workspace)) return Unavailable("ConfigurationUnavailable");
                 var overrides = AppServerJsonValue.GetDictionary(parameters, "config");
                 var config = await ReadConfigAsync(workspace, token, overrides).ConfigureAwait(false);
-                var browserRequested = BrowserUseConfigurationPlanner.IsRequested(config, overrides);
+                if (!_browserEnabled())
+                {
+                    overrides = BrowserUseConfigurationPlanner.SuppressBrowser(overrides);
+                    parameters["config"] = overrides;
+                }
+                var browserRequested = _browserEnabled() && BrowserUseConfigurationPlanner.IsRequested(config, overrides);
                 if (!browserRequested && (ComputerUseConfigurationPlanner.IsPluginDisabled(config) ||
                     ComputerUseConfigurationPlanner.IsPluginDisabled(overrides))) return Unavailable("PluginDisabled");
                 var requirements = await ReadRequirementsAsync(token).ConfigureAwait(false);

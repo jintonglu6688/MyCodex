@@ -11,6 +11,17 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class BrowserUseConfigurationPlannerTests
     {
+        [Test]
+        public void MasterSwitchSuppressesBrowserOnlyAndDoesNotMutateOverrides()
+        {
+            var original = Json("{'mcp_servers':{'cua_repl':{'enabled':true,'command':'custom'},'other':{'enabled':true}},'model':'keep'}");
+            var disabled = BrowserUseConfigurationPlanner.SuppressBrowser(original);
+            var servers = (IDictionary<string, object>)disabled["mcp_servers"];
+            Assert.That(((IDictionary<string, object>)servers["cua_repl"])["enabled"], Is.False);
+            Assert.That(((IDictionary<string, object>)servers["other"])["enabled"], Is.True);
+            Assert.That(disabled["model"], Is.EqualTo("keep"));
+            Assert.That(BrowserUseConfigurationPlanner.IsRequested(original, null), Is.True);
+        }
         private const string Home = @"C:\users\test\.codex";
         private const string Executor = "6a4cb7f4-1625-47d1-b39a-603f026e1d28";
         private const string Pipe = @"\\.\pipe\mycodex-browser-access-6a4cb7f4-1625-47d1-b39a-603f026e1d28";

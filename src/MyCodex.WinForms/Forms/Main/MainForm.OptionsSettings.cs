@@ -50,6 +50,8 @@ namespace MyCodex.WinForms.Forms
                     ? GetCurrentRuntimeDisplayName() : TargetManagerForm.DisplayName(_fixedTarget));
                 form.SetMainWindowHotKeyStateText(GetMainWindowHotKeyStateText());
                 form.AddVoiceChatPage(_voiceChat.CreateOptionsPage(_appServerClient.ProtocolCapabilities?.SupportsRealtimeVoice == true));
+                await AddBrowserControlOptionsAsync(form);
+                var previousBrowserControl = _appConfigSnapshot.BrowserControlEnabled;
                 form.ValidateSelection = () =>
                 {
                     officialSettings = form.HasOfficialCodexSettings && officialSnapshot != null
@@ -148,6 +150,9 @@ namespace MyCodex.WinForms.Forms
                 {
                     await RestartAppServerAfterOfficeCliEnvironmentChangeAsync();
                 }
+                if (form.BrowserControlEnabled.HasValue)
+                    await _browserControlOptions.ApplyAsync(form.BrowserControlEnabled.Value,
+                        previousBrowserControl != form.BrowserControlEnabled);
             }
         }
 
@@ -260,6 +265,12 @@ namespace MyCodex.WinForms.Forms
             if (_appConfigSnapshot == null)
             {
                 _appConfigSnapshot = new AppConfigSnapshot();
+            }
+
+            if (form.BrowserControlEnabled.HasValue && _appConfigSnapshot.BrowserControlEnabled != form.BrowserControlEnabled)
+            {
+                _appConfigSnapshot.BrowserControlEnabled = form.BrowserControlEnabled;
+                updated = true;
             }
 
             if (_appConfigSnapshot.UiFontScalePercent != form.UiFontScalePercent)

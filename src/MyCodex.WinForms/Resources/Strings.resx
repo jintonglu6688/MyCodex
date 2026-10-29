@@ -13918,4 +13918,32 @@ Update now? Choose No to continue using the existing runtime.</value>
 Affected file: {0}
 Backup file: {1}</value>
   </data>
+  <data name="BrowserControl.Title" xml:space="preserve"><value>Browser Control</value></data>
+  <data name="BrowserControl.Enabled" xml:space="preserve"><value>Enable &amp;browser control</value></data>
+  <data name="BrowserControl.Accessible.Enabled" xml:space="preserve"><value>Enable browser control</value></data>
+  <data name="BrowserControl.Unsupported" xml:space="preserve"><value>Browser control requires a local Windows target and Codex 0.164 or newer.</value></data>
+  <data name="BrowserControl.Help" xml:space="preserve"><value>Select OK to save and automatically prepare browser control. Cancel leaves the setting unchanged. Install the extension in each browser you want to use.</value></data>
+  <data name="BrowserControl.BrowserMissing" xml:space="preserve"><value>Browser not installed</value></data>
+  <data name="BrowserControl.BrowserUnknown" xml:space="preserve"><value>Unable to determine whether the browser is installed</value></data>
+  <data name="BrowserControl.ExtensionInstalled" xml:space="preserve"><value>Extension enabled; live connection not checked</value></data>
+  <data name="BrowserControl.ExtensionMissing" xml:space="preserve"><value>Extension not installed</value></data>
+  <data name="BrowserControl.ExtensionNeedsAttention" xml:space="preserve"><value>Extension disabled or status uncertain; check extensions</value></data>
+  <data name="BrowserControl.ProfileEnabled" xml:space="preserve"><value>enabled</value></data>
+  <data name="BrowserControl.ProfileCheck" xml:space="preserve"><value>check extensions</value></data>
+  <data name="BrowserControl.CheckFailed" xml:space="preserve"><value>Unable to check browser settings. Detection will retry automatically.</value></data>
+  <data name="BrowserControl.InstallEdge" xml:space="preserve"><value>Install &amp;Edge extension</value></data>
+  <data name="BrowserControl.ManageEdge" xml:space="preserve"><value>Manage &amp;Edge extension</value></data>
+  <data name="BrowserControl.InstallChrome" xml:space="preserve"><value>Install C&amp;hrome extension</value></data>
+  <data name="BrowserControl.ManageChrome" xml:space="preserve"><value>Manage C&amp;hrome extension</value></data>
+  <data name="BrowserControl.OpenFailed" xml:space="preserve"><value>Unable to open this browser. Check that it is installed.</value></data>
+  <data name="BrowserControl.Pending" xml:space="preserve"><value>Browser control setting saved. Waiting for current work to finish before applying configuration.</value></data>
+  <data name="BrowserControl.Preparing" xml:space="preserve"><value>Preparing browser control and applying the saved setting...</value></data>
+  <data name="BrowserControl.Prepared" xml:space="preserve"><value>Browser control configured. Install or enable the browser extension if needed. If the browser was already open, fully exit and reopen it once.</value></data>
+  <data name="BrowserControl.Disabled" xml:space="preserve"><value>Browser control is off.</value></data>
+  <data name="BrowserControl.SetupFailed" xml:space="preserve"><value>Browser control setup did not finish. Check that the MyCodex installation is complete, the runtime is connected and browser control is permitted by your settings. Open Options &gt; Browser Control and select OK to retry.</value></data>
+  <data name="BrowserControl.StopFailed" xml:space="preserve"><value>Browser control is disabled in settings, but stopping an existing browser operation could not be confirmed. Stop the current browser task. MyCodex will apply the change when current work finishes.</value></data>
+  <data name="BrowserControl.EnabledState" xml:space="preserve"><value>Browser control enabled; local components configured.</value></data>
+  <data name="BrowserControl.NeedsSetup" xml:space="preserve"><value>Select OK to enable browser control and automatically prepare missing components.</value></data>
+  <data name="BrowserControl.CheckEdge" xml:space="preserve"><value>Check / install &amp;Edge extension</value></data>
+  <data name="BrowserControl.CheckChrome" xml:space="preserve"><value>Check / install C&amp;hrome extension</value></data>
 </root>

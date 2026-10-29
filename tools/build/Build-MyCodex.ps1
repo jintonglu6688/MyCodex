@@ -170,6 +170,7 @@ try {
 
 try {
     & (Join-Path $repoRoot 'tools\runtime\prepare-browser-use-runtime.ps1')
+    & (Join-Path $repoRoot 'tools\runtime\prepare-browser-extension-host.ps1')
 } catch {
     if (-not [string]::Equals($Profile, "Dev", [StringComparison]::OrdinalIgnoreCase)) { throw }
     Write-Warning "This Dev build omits browser automation: $($_.Exception.Message)"

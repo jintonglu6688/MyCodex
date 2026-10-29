@@ -48,4 +48,5 @@ __pycache__/
 /runtime/cua/
 /runtime/cua-browser/
 /runtime/browser/
+/runtime/browser-host/
 /runtime/git/

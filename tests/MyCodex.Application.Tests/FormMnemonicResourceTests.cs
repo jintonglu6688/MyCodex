@@ -156,6 +156,18 @@ namespace MyCodex.Application.Tests
             "AuthenticationBootstrapForm.Button.CancelLogin",
             "AuthenticationBootstrapForm.Button.Close"
         })]
+        [TestCase("BrowserControlOptionsPage.Install", new[]
+        {
+            "BrowserControl.Enabled", "BrowserControl.InstallEdge", "BrowserControl.InstallChrome"
+        })]
+        [TestCase("BrowserControlOptionsPage.Manage", new[]
+        {
+            "BrowserControl.Enabled", "BrowserControl.ManageEdge", "BrowserControl.ManageChrome"
+        })]
+        [TestCase("BrowserControlOptionsPage.Check", new[]
+        {
+            "BrowserControl.Enabled", "BrowserControl.CheckEdge", "BrowserControl.CheckChrome"
+        })]
         [TestCase("PluginManagementForm", new[]
         {
             "PluginManagementForm.Button.Refresh",

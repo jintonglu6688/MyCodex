@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Application.Tests.TestSupport;
@@ -14,12 +15,54 @@ namespace MyCodex.Application.Tests
     {
         private const string Executor = "64f1084d-52b5-4054-8597-63fe07ecedbb";
 
+        [Test]
+        public async Task MasterSwitchRejectsExistingBindingWithoutReadingPolicyAndKeepsNativeTurn()
+        {
+            var resets = 0;
+            using (var manager = Create((method, parameters, _) =>
+            {
+                Assert.That(method, Is.EqualTo("mcpServer/tool/call"));
+                Assert.That(parameters["server"], Is.EqualTo("cua_repl"));
+                Assert.That(parameters["tool"], Is.EqualTo("js_reset"));
+                resets++;
+                return Task.FromResult(Json("{}"));
+            }))
+            {
+                FormTestDriver.SetField(manager, "_browserEnabled", (Func<bool>)(() => false));
+                Assert.That(await Authorize(manager, "turn", Executor), Is.False);
+                await manager.RevokeBrowserAsync();
+                var binding = FormTestDriver.Field<Dictionary<string, ComputerUseSessionBinding>>(manager, "_threads")["thread"];
+                Assert.That(binding.BrowserAccess, Is.Null);
+                Assert.That(binding.Turn, Is.EqualTo("turn"));
+                Assert.That(binding.TurnLifetime.IsCancellationRequested, Is.False);
+                Assert.That(resets, Is.EqualTo(1));
+            }
+        }
+
         [TestCase("turn", "foreign", false)]
         [TestCase("old-turn", Executor, false)]
         public async Task ForeignExecutionCannotReadOrAuthorizeCurrentPolicy(string turn, string executor, bool expected)
         {
             using (var manager = Create((_, __, ___) => throw new AssertionException("Foreign execution reached policy.")))
                 Assert.That(await Authorize(manager, turn, executor), Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void RevocationFailureStillStopsOtherBindingsAndKeepsFailedBindingRetryable()
+        {
+            var resets = 0;
+            using (var manager = Create((_, __, ___) => Task.FromResult(Json(++resets == 1 ? "{'isError':true}" : "{}"))))
+            {
+                var threads = FormTestDriver.Field<Dictionary<string, ComputerUseSessionBinding>>(manager, "_threads");
+                threads.Add("second", new ComputerUseSessionBinding
+                {
+                    Thread = "second", Turn = "turn", BrowserAccess = threads["thread"].BrowserAccess,
+                    TurnLifetime = new CancellationTokenSource()
+                });
+                Assert.ThrowsAsync<InvalidOperationException>(async () => await manager.RevokeBrowserAsync());
+                Assert.That(resets, Is.EqualTo(2));
+                Assert.That(threads.Values.Count(binding => binding.BrowserAccess != null), Is.EqualTo(1));
+            }
         }
 
         [TestCase("{}", "{}", true)]

@@ -13873,4 +13873,32 @@ MyCodex 桌面客户端。</value>
 受影响的文件：{0}
 备份文件：{1}</value>
   </data>
+  <data name="BrowserControl.Title" xml:space="preserve"><value>浏览器控制</value></data>
+  <data name="BrowserControl.Enabled" xml:space="preserve"><value>启用浏览器控制(&amp;B)</value></data>
+  <data name="BrowserControl.Accessible.Enabled" xml:space="preserve"><value>启用浏览器控制</value></data>
+  <data name="BrowserControl.Unsupported" xml:space="preserve"><value>浏览器控制需要本地 Windows 目标及 Codex 0.164 或更新版本。</value></data>
+  <data name="BrowserControl.Help" xml:space="preserve"><value>点击确定后保存设置并自动配置浏览器控制；取消不执行安装。请为需要使用的浏览器安装扩展。</value></data>
+  <data name="BrowserControl.BrowserMissing" xml:space="preserve"><value>未检测到浏览器</value></data>
+  <data name="BrowserControl.BrowserUnknown" xml:space="preserve"><value>无法确定浏览器是否已安装</value></data>
+  <data name="BrowserControl.ExtensionInstalled" xml:space="preserve"><value>扩展已启用，尚未验证实际连接</value></data>
+  <data name="BrowserControl.ExtensionMissing" xml:space="preserve"><value>扩展未安装</value></data>
+  <data name="BrowserControl.ExtensionNeedsAttention" xml:space="preserve"><value>扩展已停用或无法确定状态，请检查扩展</value></data>
+  <data name="BrowserControl.ProfileEnabled" xml:space="preserve"><value>已启用</value></data>
+  <data name="BrowserControl.ProfileCheck" xml:space="preserve"><value>需检查扩展</value></data>
+  <data name="BrowserControl.CheckFailed" xml:space="preserve"><value>无法检测浏览器设置，将自动重试。</value></data>
+  <data name="BrowserControl.InstallEdge" xml:space="preserve"><value>安装 Edge 扩展(&amp;E)</value></data>
+  <data name="BrowserControl.ManageEdge" xml:space="preserve"><value>管理 Edge 扩展(&amp;E)</value></data>
+  <data name="BrowserControl.InstallChrome" xml:space="preserve"><value>安装 Chrome 扩展(&amp;H)</value></data>
+  <data name="BrowserControl.ManageChrome" xml:space="preserve"><value>管理 Chrome 扩展(&amp;H)</value></data>
+  <data name="BrowserControl.OpenFailed" xml:space="preserve"><value>无法打开此浏览器，请检查浏览器是否已安装。</value></data>
+  <data name="BrowserControl.Pending" xml:space="preserve"><value>浏览器控制设置已保存，将在当前任务结束后自动应用配置。</value></data>
+  <data name="BrowserControl.Preparing" xml:space="preserve"><value>正在自动配置浏览器控制并应用已保存的设置……</value></data>
+  <data name="BrowserControl.Prepared" xml:space="preserve"><value>浏览器控制已配置。如有需要，请安装或启用浏览器扩展。如果浏览器之前已经打开，请完全退出并重新打开一次。</value></data>
+  <data name="BrowserControl.Disabled" xml:space="preserve"><value>浏览器控制已关闭。</value></data>
+  <data name="BrowserControl.SetupFailed" xml:space="preserve"><value>浏览器控制配置未完成。请检查 MyCodex 安装是否完整、运行时是否已连接，以及相关设置是否允许浏览器控制。打开“选项 → 浏览器控制”并点击确定可重试。</value></data>
+  <data name="BrowserControl.StopFailed" xml:space="preserve"><value>设置中已关闭浏览器控制，但无法确认现有浏览器操作已停止。请停止当前浏览器任务；MyCodex 将在当前任务结束后应用配置。</value></data>
+  <data name="BrowserControl.EnabledState" xml:space="preserve"><value>浏览器控制已启用，本地组件已配置。</value></data>
+  <data name="BrowserControl.NeedsSetup" xml:space="preserve"><value>点击确定后启用浏览器控制，并自动准备缺少的组件。</value></data>
+  <data name="BrowserControl.CheckEdge" xml:space="preserve"><value>检查或安装 Edge 扩展(&amp;E)</value></data>
+  <data name="BrowserControl.CheckChrome" xml:space="preserve"><value>检查或安装 Chrome 扩展(&amp;H)</value></data>
 </root>

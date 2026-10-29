@@ -2266,10 +2266,11 @@ namespace MyCodex.Infrastructure.AppServer
             int timeoutMs = DefaultRequestTimeoutMs,
             long? expectedConnectionEpoch = null)
         {
-            // A managed MCP mutation reloads config while retaining its transition lease.
-            // Only that owner's reload may enter; other writes and callers remain blocked.
+            // Permit only the transition owner's MCP reload or scoped browser setup requests.
+            // Other writes and callers remain blocked throughout preparation.
             using (RequiresAuthenticationGate(method) ? RuntimeOperationGate.Shared.EnterOperation(
-                allowTransitionOwner: string.Equals(method, "config/mcpServer/reload", StringComparison.Ordinal)) : null)
+                allowTransitionOwner: string.Equals(method, "config/mcpServer/reload", StringComparison.Ordinal) ||
+                    AppServerBrowserSetupScope.Allows(this, method, parameters)) : null)
             {
                 try
                 {

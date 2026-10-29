@@ -45,6 +45,7 @@ namespace MyCodex.Infrastructure.ComputerUse
                 {
                     { "slot", binding.Slot }
                 }, token).ConfigureAwait(false);
+                if (!_browserEnabled()) return BrowserUseConfigurationPlanner.SuppressBrowser(overrides);
                 binding.BrowserAccess = access;
                 return plan.ConfigOverrides;
             }
@@ -68,6 +69,7 @@ namespace MyCodex.Infrastructure.ComputerUse
         private async Task<bool> PrepareBrowserExecutionAsync(ComputerUseHostProcess host, string thread,
             string turn, string executor, CancellationToken token)
         {
+            if (!_browserEnabled()) return false;
             ComputerUseSessionBinding binding;
             CancellationToken turnToken;
             lock (_sync)
@@ -93,13 +95,72 @@ namespace MyCodex.Infrastructure.ComputerUse
                     token.ThrowIfCancellationRequested();
                     lock (binding.Sync)
                     {
-                        return plan.IsAvailable && binding.Host == host && binding.Turn == turn &&
+                        return _browserEnabled() && plan.IsAvailable && binding.Host == host && binding.Turn == turn &&
                             binding.TurnLifetime != null && !binding.TurnLifetime.IsCancellationRequested &&
                             binding.BrowserAccess?.ExecutorId == executor;
                     }
                 }
                 finally { _prepare.Release(); }
             }
+        }
+
+        internal async Task RevokeBrowserAsync()
+        {
+            ComputerUseSessionBinding[] bindings;
+            lock (_sync) bindings = new List<ComputerUseSessionBinding>(_threads.Values).ToArray();
+            Exception failure = null;
+            foreach (var binding in bindings)
+            {
+                string turn;
+                BrowserUseAccessBinding access;
+                lock (binding.Sync)
+                {
+                    if (binding.BrowserAccess == null) continue;
+                    access = binding.BrowserAccess;
+                    turn = binding.Turn;
+                }
+                try
+                {
+                    if (binding.Host != null)
+                        await binding.Host.RequestAsync("removeBrowser", new Dictionary<string, object>
+                        {
+                            { "slot", binding.Slot }
+                        }).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // A host that cannot acknowledge revocation must not keep authorizing tools.
+                    StopHost(binding.Host);
+                    _report("BrowserUnavailable", binding.Thread);
+                }
+                if (turn != null)
+                {
+                    try
+                    {
+                        // The upstream service caches permission within a turn. Reset only its browser REPL.
+                        var result = await _send("mcpServer/tool/call", new Dictionary<string, object>
+                        {
+                            { "threadId", binding.Thread }, { "server", "cua_repl" }, { "tool", "js_reset" },
+                            { "arguments", new Dictionary<string, object>() },
+                            { "_meta", new Dictionary<string, object>
+                                {
+                                    { "x-codex-turn-metadata", new Dictionary<string, object>
+                                    {
+                                        { "session_id", binding.Thread }, { "turn_id", turn }, { "session_context", "live" }
+                                    }
+                                    }
+                                }
+                            }
+                        }, CancellationToken.None).ConfigureAwait(false);
+                        if (result.TryGetValue("isError", out var failed) && Equals(failed, true))
+                            throw new InvalidOperationException("BROWSER_REVOCATION_UNCONFIRMED");
+                    }
+                    catch (Exception error) { failure = error; continue; }
+                }
+                lock (binding.Sync)
+                    if (ReferenceEquals(binding.BrowserAccess, access)) binding.BrowserAccess = null;
+            }
+            if (failure != null) throw new InvalidOperationException("BROWSER_REVOCATION_UNCONFIRMED", failure);
         }
     }
 }

@@ -54,6 +54,7 @@ namespace MyCodex.WinForms.Forms
             _connectionStatus = GetConnectionStatusConnectedText();
             _ = CaptureGlobalAuthenticationAfterConnectAsync();
             await EnsureMyCodexOfficialMarketplaceRegisteredAsync();
+            await RestoreBrowserControlAsync();
             if (!await WaitForTargetExitDecisionAsync()) return;
             await RefreshAuthenticationStateAsync(false);
             if (!await WaitForTargetExitDecisionAsync()) return;

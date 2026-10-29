@@ -39,7 +39,8 @@ namespace MyCodex.Infrastructure.AppServer
                 if (_isConnected)
                     _computerUse = new ComputerUseSessionManager(executable, ProtocolCapabilities.RuntimeVersion, codexHome,
                         (method, parameters, token) => SendComputerUseScopedRequestAsync(method, parameters, token, lifetime, epoch),
-                        (code, thread) => ReportComputerUseStatus(code, thread, epoch, lifetime));
+                        (code, thread) => ReportComputerUseStatus(code, thread, epoch, lifetime),
+                        browserEnabled: () => _appConfigStore.Load().BrowserControlEnabled != false);
                 manager = _computerUse;
             }
             if (manager != null) _ = manager.WarmupAsync(lifetime);

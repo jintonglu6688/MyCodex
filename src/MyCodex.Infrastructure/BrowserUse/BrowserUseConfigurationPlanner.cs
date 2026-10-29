@@ -37,6 +37,17 @@ namespace MyCodex.Infrastructure.BrowserUse
 
     internal static class BrowserUseConfigurationPlanner
     {
+        internal static IDictionary<string, object> SuppressBrowser(IDictionary<string, object> overrides)
+        {
+            var result = Clone(overrides);
+            var servers = Clone(Child(result, "mcp_servers"));
+            var browser = Clone(Child(servers, "cua_repl"));
+            browser["enabled"] = false;
+            servers["cua_repl"] = browser;
+            result["mcp_servers"] = servers;
+            return result;
+        }
+
         internal static bool IsRequested(IDictionary<string, object> config, IDictionary<string, object> overrides)
         {
             try
