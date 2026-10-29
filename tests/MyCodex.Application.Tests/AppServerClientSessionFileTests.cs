@@ -23,6 +23,7 @@ namespace MyCodex.Application.Tests
         [Test]
         public void DeleteThreadFileAsync_RejectsWslSessionPath()
         {
+            using (UseCulture("en-US"))
             using (var client = CreateClient())
             {
                 var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -246,12 +247,16 @@ namespace MyCodex.Application.Tests
                 var store = CreateSessionFileStore(defaultCodexHome);
                 var linkedSessionPath = Path.Combine(linkPath, "demo.jsonl");
 
-                var ex = Assert.Throws<InvalidOperationException>(() =>
-                    store.DeleteThreadFileAsync(
-                        linkedSessionPath,
-                        new[] { defaultCodexHome, Path.GetDirectoryName(sessionDirectory) })
-                        .GetAwaiter()
-                        .GetResult());
+                InvalidOperationException ex;
+                using (UseCulture("en-US"))
+                {
+                    ex = Assert.Throws<InvalidOperationException>(() =>
+                        store.DeleteThreadFileAsync(
+                            linkedSessionPath,
+                            new[] { defaultCodexHome, Path.GetDirectoryName(sessionDirectory) })
+                            .GetAwaiter()
+                            .GetResult());
+                }
 
                 Assert.That(ex.Message, Does.Contain("reparse point"));
                 Assert.That(File.Exists(outsideSessionPath), Is.True);
@@ -286,8 +291,12 @@ namespace MyCodex.Application.Tests
                 var store = CreateSessionFileStore(codexHome);
                 var linkedSessionPath = Path.Combine(linkPath, "missing.jsonl");
 
-                var ex = Assert.Throws<InvalidOperationException>(() =>
-                    store.DeleteThreadFileAsync(linkedSessionPath, new[] { codexHome }).GetAwaiter().GetResult());
+                InvalidOperationException ex;
+                using (UseCulture("en-US"))
+                {
+                    ex = Assert.Throws<InvalidOperationException>(() =>
+                        store.DeleteThreadFileAsync(linkedSessionPath, new[] { codexHome }).GetAwaiter().GetResult());
+                }
 
                 Assert.That(ex.Message, Does.Contain("reparse point"));
             }
@@ -331,8 +340,12 @@ namespace MyCodex.Application.Tests
                         Assert.That(TryCreateJunction(linkPath, outsideDirectory), Is.True);
                     });
 
-                var ex = Assert.Throws<InvalidOperationException>(() =>
-                    store.DeleteThreadFileAsync(sessionPath, new[] { codexHome }).GetAwaiter().GetResult());
+                InvalidOperationException ex;
+                using (UseCulture("en-US"))
+                {
+                    ex = Assert.Throws<InvalidOperationException>(() =>
+                        store.DeleteThreadFileAsync(sessionPath, new[] { codexHome }).GetAwaiter().GetResult());
+                }
 
                 Assert.That(ex.Message, Does.Contain("reparse point"));
                 Assert.That(File.ReadAllText(outsideSessionPath), Is.EqualTo("outside"));

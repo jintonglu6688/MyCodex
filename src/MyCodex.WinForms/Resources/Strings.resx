@@ -13946,4 +13946,20 @@ Backup file: {1}</value>
   <data name="BrowserControl.NeedsSetup" xml:space="preserve"><value>Select OK to enable browser control and automatically prepare missing components.</value></data>
   <data name="BrowserControl.CheckEdge" xml:space="preserve"><value>Check / install &amp;Edge extension</value></data>
   <data name="BrowserControl.CheckChrome" xml:space="preserve"><value>Check / install C&amp;hrome extension</value></data>
+  <data name="MainForm.Message.WorkspaceUnavailable" xml:space="preserve"><value>The workspace is unavailable.</value></data>
+  <data name="MainForm.SessionSettings.Chat.UnsupportedFlexServiceTier" xml:space="preserve"><value>The selected target does not support the Flex service tier. Update the target configuration outside MyCodex, then use Target Reload and review the effective settings.</value></data>
+  <data name="MainForm.SessionSettings.Status.UnsupportedFlexServiceTier" xml:space="preserve"><value>Flex service tier is unsupported. Use Target Reload after reviewing target settings.</value></data>
+  <data name="MainForm.Value.UnknownWorkspace" xml:space="preserve"><value>Workspace</value></data>
+  <data name="RemoteServiceManagementForm.Status.ChannelRestartPending" xml:space="preserve"><value>Remaining device channels need reconnection.</value></data>
+  <data name="RemoteServiceManagementForm.Status.DeviceRevokedLocally" xml:space="preserve"><value>Device access was revoked locally.</value></data>
+  <data name="RemoteServiceManagementForm.Status.RefreshPending" xml:space="preserve"><value>The device list may be out of date.</value></data>
+  <data name="RemoteServiceManagementForm.Status.RelayRevokePending" xml:space="preserve"><value>Relay cleanup is pending.</value></data>
+  <data name="SkillsManagementForm.Message.OpenFolderUnavailable" xml:space="preserve"><value>Skill folders are managed through the selected App Server and cannot be opened directly.</value></data>
+  <data name="WslAppServerSettingsForm.Diagnostics.RemoteHostKeyTrusted" xml:space="preserve"><value>Host key trusted. Retrying Remote Unix Codex detection...</value></data>
+  <data name="WslAppServerSettingsForm.Diagnostics.RemotePasswordBackend" xml:space="preserve"><value>Password authentication uses the bundled Plink runtime. Host key trust is detected during remote checks.</value></data>
+  <data name="WslAppServerSettingsForm.Message.RemoteHostKeyTrustConfirm.Template" xml:space="preserve"><value>The remote host key was reported as:
+
+{0}
+
+Trust this host key and retry detection?</value></data>
 </root>

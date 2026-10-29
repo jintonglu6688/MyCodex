@@ -1692,4 +1692,127 @@
   <data name="BrowserUse.Status.ConfigConflict" xml:space="preserve">
     <value>现有浏览器工具配置与 MyCodex 集成冲突，已保留原配置。</value>
   </data>
+  <data name="AppServerClient.Command.TerminalInteraction" xml:space="preserve">
+    <value>命令需要输入。</value>
+  </data>
+  <data name="AppServerClient.Error.ApiKeyRequired" xml:space="preserve">
+    <value>API 密钥不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.FileSystemDestinationPathRequired" xml:space="preserve">
+    <value>文件系统目标路径不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.FileSystemPathRequired" xml:space="preserve">
+    <value>文件系统路径不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.FileSystemSourcePathRequired" xml:space="preserve">
+    <value>文件系统源路径不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.FileSystemWatchIdRequired" xml:space="preserve">
+    <value>文件系统监视 ID 不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.FuzzyFileSearchQueryRequired" xml:space="preserve">
+    <value>文件搜索关键词不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.FuzzyFileSearchRootsRequired" xml:space="preserve">
+    <value>至少需要一个文件搜索根目录。</value>
+  </data>
+  <data name="AppServerClient.Error.LoginIdRequired" xml:space="preserve">
+    <value>登录 ID 不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.PluginMarketplaceNameRequired" xml:space="preserve">
+    <value>插件市场名称不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.RateLimitResetIdempotencyKeyRequired" xml:space="preserve">
+    <value>速率限制重置的幂等键不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.Restarted" xml:space="preserve">
+    <value>Codex App Server 已重新启动。</value>
+  </data>
+  <data name="AppServerClient.Error.RuntimeChanged" xml:space="preserve">
+    <value>Codex App Server 运行时已更改。</value>
+  </data>
+  <data name="AppServerClient.Error.SkillNameRequired" xml:space="preserve">
+    <value>技能名称不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadFilePathContainsReparsePoint" xml:space="preserve">
+    <value>当前线程文件路径包含重解析点，无法安全删除。</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadGoalObjectiveRequired" xml:space="preserve">
+    <value>目标内容不能为空。</value>
+  </data>
+  <data name="AppServerClient.Error.WslThreadFilePathUnsupported" xml:space="preserve">
+    <value>WSL 会话文件不能通过 Windows 文件访问删除。</value>
+  </data>
+  <data name="AppServerClient.ExternalAgentConfig.ImportCompleted" xml:space="preserve">
+    <value>外部智能体配置导入完成。</value>
+  </data>
+  <data name="AppServerClient.FileSystem.Changed" xml:space="preserve">
+    <value>文件系统已变更。</value>
+  </data>
+  <data name="AppServerClient.FuzzyFileSearch.SessionCompleted" xml:space="preserve">
+    <value>文件搜索已完成。</value>
+  </data>
+  <data name="AppServerClient.FuzzyFileSearch.SessionUpdated" xml:space="preserve">
+    <value>文件搜索结果已更新。</value>
+  </data>
+  <data name="AppServerClient.Operation.HandleDynamicToolCall" xml:space="preserve">
+    <value>处理内部工具调用</value>
+  </data>
+  <data name="AppServerClient.Thread.Closed" xml:space="preserve">
+    <value>会话已关闭。</value>
+  </data>
+  <data name="AppServerClient.ThreadGoal.Cleared" xml:space="preserve">
+    <value>目标已清除。</value>
+  </data>
+  <data name="AppServerClient.ThreadGoal.Updated" xml:space="preserve">
+    <value>目标已更新。</value>
+  </data>
+  <data name="AppServerClient.ThreadGoal.Updated.Template" xml:space="preserve">
+    <value>目标已更新：{0}</value>
+  </data>
+  <data name="AppServerClient.WindowsSandbox.SetupCompleted" xml:space="preserve">
+    <value>Windows Sandbox 设置已完成。</value>
+  </data>
+  <data name="AppServerClient.WindowsSandbox.SetupFailed" xml:space="preserve">
+    <value>Windows Sandbox 设置失败。</value>
+  </data>
+  <data name="AppUpdate.Error.AppAssetMissing" xml:space="preserve">
+    <value>更新清单中没有应用安装包文件。</value>
+  </data>
+  <data name="AppUpdate.Error.AppPackageMissing" xml:space="preserve">
+    <value>更新清单中没有应用包信息。</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.ManifestRuntimeMissing.Template" xml:space="preserve">
+    <value>更新清单中没有适用于 {1} 的运行时包 {0}。</value>
+  </data>
+  <data name="PluginMarketCatalogClient.Error.IndexUrlRequired" xml:space="preserve">
+    <value>未配置插件市场索引地址。</value>
+  </data>
+  <data name="PluginMarketCatalogClient.Error.ManifestUrlRequired" xml:space="preserve">
+    <value>插件市场清单地址不能为空。</value>
+  </data>
+  <data name="SessionThreadService.Error.EmptyThreadIdReturned" xml:space="preserve">
+    <value>App Server 未返回有效的线程 ID。</value>
+  </data>
+  <data name="SessionThreadService.Error.ThreadRequiredBeforeSend" xml:space="preserve">
+    <value>发送消息前需要有效的会话线程。</value>
+  </data>
+  <data name="SessionThreadService.Error.WorkspaceUnavailable" xml:space="preserve">
+    <value>当前工作区不可用。</value>
+  </data>
+  <data name="UpdateManifest.Error.AssetBaseUrlMissing" xml:space="preserve">
+    <value>缺少更新文件的基础地址。</value>
+  </data>
+  <data name="UpdateManifest.Error.AssetUrlMissing" xml:space="preserve">
+    <value>缺少更新文件地址。</value>
+  </data>
+  <data name="UpdateManifest.Error.Empty" xml:space="preserve">
+    <value>更新清单为空。</value>
+  </data>
+  <data name="UpdateManifest.Error.Invalid" xml:space="preserve">
+    <value>更新清单无效。</value>
+  </data>
+  <data name="UpdateManifest.Error.ManifestUrlNotConfigured" xml:space="preserve">
+    <value>未配置更新清单地址。</value>
+  </data>
 </root>

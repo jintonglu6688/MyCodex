@@ -13901,4 +13901,20 @@ MyCodex 桌面客户端。</value>
   <data name="BrowserControl.NeedsSetup" xml:space="preserve"><value>点击确定后启用浏览器控制，并自动准备缺少的组件。</value></data>
   <data name="BrowserControl.CheckEdge" xml:space="preserve"><value>检查或安装 Edge 扩展(&amp;E)</value></data>
   <data name="BrowserControl.CheckChrome" xml:space="preserve"><value>检查或安装 Chrome 扩展(&amp;H)</value></data>
+  <data name="MainForm.Message.WorkspaceUnavailable" xml:space="preserve"><value>工作区不可用。</value></data>
+  <data name="MainForm.SessionSettings.Chat.UnsupportedFlexServiceTier" xml:space="preserve"><value>所选目标不支持 Flex 服务层级。请在 MyCodex 之外更新目标配置，然后执行目标重新加载并复查生效设置。</value></data>
+  <data name="MainForm.SessionSettings.Status.UnsupportedFlexServiceTier" xml:space="preserve"><value>不支持 Flex 服务层级。复查目标设置后请执行目标重新加载。</value></data>
+  <data name="MainForm.Value.UnknownWorkspace" xml:space="preserve"><value>工作区</value></data>
+  <data name="RemoteServiceManagementForm.Status.ChannelRestartPending" xml:space="preserve"><value>其余设备通道需要重新连接。</value></data>
+  <data name="RemoteServiceManagementForm.Status.DeviceRevokedLocally" xml:space="preserve"><value>已在本地撤销设备访问。</value></data>
+  <data name="RemoteServiceManagementForm.Status.RefreshPending" xml:space="preserve"><value>设备列表可能不是最新的。</value></data>
+  <data name="RemoteServiceManagementForm.Status.RelayRevokePending" xml:space="preserve"><value>中继清理仍待完成。</value></data>
+  <data name="SkillsManagementForm.Message.OpenFolderUnavailable" xml:space="preserve"><value>技能文件夹由所选 App Server 管理，无法直接打开。</value></data>
+  <data name="WslAppServerSettingsForm.Diagnostics.RemoteHostKeyTrusted" xml:space="preserve"><value>已信任主机密钥，正在重试远端 Unix Codex 检测...</value></data>
+  <data name="WslAppServerSettingsForm.Diagnostics.RemotePasswordBackend" xml:space="preserve"><value>密码认证使用内置的 Plink 运行时。主机密钥信任会在远端检查时检测。</value></data>
+  <data name="WslAppServerSettingsForm.Message.RemoteHostKeyTrustConfirm.Template" xml:space="preserve"><value>远端报告的主机密钥为：
+
+{0}
+
+是否信任此主机密钥并重试检测？</value></data>
 </root>

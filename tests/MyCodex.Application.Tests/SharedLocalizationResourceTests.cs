@@ -12,32 +12,43 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class SharedLocalizationResourceTests
     {
-        private static readonly Regex SharedLocalizationKeyPattern = new Regex(
-            @"SharedLocalization\.Text\(""(?<key>[^""]+)""",
+        // Matches local aliases such as `private static string L(string key, string fallback) { return SharedLocalization.Text(key, fallback); }`.
+        private static readonly Regex LocalizationAliasPattern = new Regex(
+            @"static\s+string\s+(?<alias>\w+)\(\s*string\s+key\s*,\s*string\s+fallback\s*\)\s*(?:\{\s*return|=>)\s*(?<localizer>SharedLocalization|UiLocalization)\.Text\(\s*key\s*,\s*fallback\s*\)",
             RegexOptions.Compiled);
 
         [Category(SourceGuardCategory.Assets)]
         [Test]
         public void SourceSharedLocalizationKeys_ArePresentInEnglishAndChineseResources()
         {
-            var sourceRoot = RepositorySource.GetPath("src");
-            var keys = Directory.GetFiles(sourceRoot, "*.cs", SearchOption.AllDirectories)
-                .Where(path => !IsGeneratedPath(path))
-                .SelectMany(path => SharedLocalizationKeyPattern
-                    .Matches(File.ReadAllText(path))
-                    .Cast<Match>())
-                .Select(match => match.Groups["key"].Value)
-                .Distinct(StringComparer.Ordinal)
-                .OrderBy(key => key, StringComparer.Ordinal)
-                .ToArray();
+            AssertSourceKeysPresent(
+                "SharedLocalization",
+                RepositorySource.GetPath("src", "MyCodex.Shared", "Resources", "InternalStrings.resx"),
+                RepositorySource.GetPath("src", "MyCodex.Shared", "Resources", "InternalStrings.zh-CN.resx"));
+        }
 
-            var englishKeys = LoadResourceKeys("InternalStrings.resx");
-            var chineseKeys = LoadResourceKeys("InternalStrings.zh-CN.resx");
-            var missingEnglish = keys.Where(key => !englishKeys.Contains(key)).ToArray();
-            var missingChinese = keys.Where(key => !chineseKeys.Contains(key)).ToArray();
+        [Category(SourceGuardCategory.Assets)]
+        [Test]
+        public void SourceWinFormsLocalizationKeys_ArePresentInEnglishAndChineseResources()
+        {
+            AssertSourceKeysPresent(
+                "UiLocalization",
+                RepositorySource.GetPath("src", "MyCodex.WinForms", "Resources", "Strings.resx"),
+                RepositorySource.GetPath("src", "MyCodex.WinForms", "Resources", "Strings.zh-CN.resx"));
+        }
 
-            Assert.That(missingEnglish, Is.Empty, "英文共享资源键缺失: " + string.Join(", ", missingEnglish));
-            Assert.That(missingChinese, Is.Empty, "中文共享资源键缺失: " + string.Join(", ", missingChinese));
+        [Test]
+        public void SourceLocalizationKeyScan_FindsAliasAndMultilineCalls()
+        {
+            const string source =
+                "private static string L(string key, string fallback)\n{\n    return SharedLocalization.Text(key, fallback);\n}\n" +
+                "var a = L(\"Alias.Key\", \"Alias\");\n" +
+                "var b = SharedLocalization.Text(\n    \"Multiline.Key\",\n    \"Multiline\");\n" +
+                "var c = UiLocalization.Text(\"Ui.Key\", \"Ui\");\n" +
+                "var d = SharedLocalization.Text(\"Dynamic.\" + name, \"Dynamic\");\n";
+
+            Assert.That(FindLocalizationKeys(source, "SharedLocalization"), Is.EquivalentTo(new[] { "Alias.Key", "Multiline.Key" }));
+            Assert.That(FindLocalizationKeys(source, "UiLocalization"), Is.EquivalentTo(new[] { "Ui.Key" }));
         }
 
         [Test]
@@ -65,6 +76,38 @@ namespace MyCodex.Application.Tests
             Assert.That(missingKeys, Is.Empty, fileName + " 缺少 Custom approval 共享资源键: " + string.Join(", ", missingKeys));
         }
 
+        private static void AssertSourceKeysPresent(string localizer, string englishPath, string chinesePath)
+        {
+            var sourceRoot = RepositorySource.GetPath("src");
+            var keys = Directory.GetFiles(sourceRoot, "*.cs", SearchOption.AllDirectories)
+                .Where(path => !IsGeneratedPath(path))
+                .SelectMany(path => FindLocalizationKeys(File.ReadAllText(path), localizer))
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(key => key, StringComparer.Ordinal)
+                .ToArray();
+
+            var englishKeys = LoadResourceKeysFromPath(englishPath);
+            var chineseKeys = LoadResourceKeysFromPath(chinesePath);
+            var missingEnglish = keys.Where(key => !englishKeys.Contains(key)).ToArray();
+            var missingChinese = keys.Where(key => !chineseKeys.Contains(key)).ToArray();
+
+            Assert.That(missingEnglish, Is.Empty, Path.GetFileName(englishPath) + " 缺少资源键: " + string.Join(", ", missingEnglish));
+            Assert.That(missingChinese, Is.Empty, Path.GetFileName(chinesePath) + " 缺少资源键: " + string.Join(", ", missingChinese));
+        }
+
+        private static IEnumerable<string> FindLocalizationKeys(string source, string localizer)
+        {
+            var callNames = new List<string> { Regex.Escape(localizer) + @"\.Text" };
+            callNames.AddRange(LocalizationAliasPattern.Matches(source)
+                .Cast<Match>()
+                .Where(match => string.Equals(match.Groups["localizer"].Value, localizer, StringComparison.Ordinal))
+                .Select(match => @"(?<![.\w])" + Regex.Escape(match.Groups["alias"].Value)));
+            var callPattern = new Regex(@"(?:" + string.Join("|", callNames) + @")\(\s*""(?<key>[^""]+)""\s*[,)]");
+            return callPattern.Matches(source)
+                .Cast<Match>()
+                .Select(match => match.Groups["key"].Value);
+        }
+
         private static bool IsGeneratedPath(string path)
         {
             var normalized = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
@@ -74,7 +117,11 @@ namespace MyCodex.Application.Tests
 
         private static HashSet<string> LoadResourceKeys(string fileName)
         {
-            var path = RepositorySource.GetPath("src", "MyCodex.Shared", "Resources", fileName);
+            return LoadResourceKeysFromPath(RepositorySource.GetPath("src", "MyCodex.Shared", "Resources", fileName));
+        }
+
+        private static HashSet<string> LoadResourceKeysFromPath(string path)
+        {
             var document = XDocument.Load(path);
             return new HashSet<string>(
                 document.Root

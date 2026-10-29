@@ -1692,4 +1692,127 @@ This file is empty.</value>
   <data name="BrowserUse.Status.ConfigConflict" xml:space="preserve">
     <value>An existing browser tool configuration conflicts with MyCodex integration. Your configuration has been preserved.</value>
   </data>
+  <data name="AppServerClient.Command.TerminalInteraction" xml:space="preserve">
+    <value>Command requires input.</value>
+  </data>
+  <data name="AppServerClient.Error.ApiKeyRequired" xml:space="preserve">
+    <value>API key cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.FileSystemDestinationPathRequired" xml:space="preserve">
+    <value>File system destination path cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.FileSystemPathRequired" xml:space="preserve">
+    <value>File system path cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.FileSystemSourcePathRequired" xml:space="preserve">
+    <value>File system source path cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.FileSystemWatchIdRequired" xml:space="preserve">
+    <value>File system watch ID cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.FuzzyFileSearchQueryRequired" xml:space="preserve">
+    <value>File search query cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.FuzzyFileSearchRootsRequired" xml:space="preserve">
+    <value>At least one file search root is required.</value>
+  </data>
+  <data name="AppServerClient.Error.LoginIdRequired" xml:space="preserve">
+    <value>Login id cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.PluginMarketplaceNameRequired" xml:space="preserve">
+    <value>Plugin marketplace name cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.RateLimitResetIdempotencyKeyRequired" xml:space="preserve">
+    <value>Rate limit reset idempotency key cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.Restarted" xml:space="preserve">
+    <value>Codex App Server restarted.</value>
+  </data>
+  <data name="AppServerClient.Error.RuntimeChanged" xml:space="preserve">
+    <value>Codex App Server runtime changed.</value>
+  </data>
+  <data name="AppServerClient.Error.SkillNameRequired" xml:space="preserve">
+    <value>Skill name cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadFilePathContainsReparsePoint" xml:space="preserve">
+    <value>Current thread file path contains a reparse point and cannot be safely removed.</value>
+  </data>
+  <data name="AppServerClient.Error.ThreadGoalObjectiveRequired" xml:space="preserve">
+    <value>Thread goal objective cannot be empty.</value>
+  </data>
+  <data name="AppServerClient.Error.WslThreadFilePathUnsupported" xml:space="preserve">
+    <value>WSL session files cannot be deleted through Windows file access.</value>
+  </data>
+  <data name="AppServerClient.ExternalAgentConfig.ImportCompleted" xml:space="preserve">
+    <value>External agent configuration import completed.</value>
+  </data>
+  <data name="AppServerClient.FileSystem.Changed" xml:space="preserve">
+    <value>File system changed.</value>
+  </data>
+  <data name="AppServerClient.FuzzyFileSearch.SessionCompleted" xml:space="preserve">
+    <value>File search completed.</value>
+  </data>
+  <data name="AppServerClient.FuzzyFileSearch.SessionUpdated" xml:space="preserve">
+    <value>File search results updated.</value>
+  </data>
+  <data name="AppServerClient.Operation.HandleDynamicToolCall" xml:space="preserve">
+    <value>Handle internal tool call</value>
+  </data>
+  <data name="AppServerClient.Thread.Closed" xml:space="preserve">
+    <value>Session closed.</value>
+  </data>
+  <data name="AppServerClient.ThreadGoal.Cleared" xml:space="preserve">
+    <value>Thread goal cleared.</value>
+  </data>
+  <data name="AppServerClient.ThreadGoal.Updated" xml:space="preserve">
+    <value>Thread goal updated.</value>
+  </data>
+  <data name="AppServerClient.ThreadGoal.Updated.Template" xml:space="preserve">
+    <value>Thread goal updated: {0}</value>
+  </data>
+  <data name="AppServerClient.WindowsSandbox.SetupCompleted" xml:space="preserve">
+    <value>Windows Sandbox setup completed.</value>
+  </data>
+  <data name="AppServerClient.WindowsSandbox.SetupFailed" xml:space="preserve">
+    <value>Windows Sandbox setup failed.</value>
+  </data>
+  <data name="AppUpdate.Error.AppAssetMissing" xml:space="preserve">
+    <value>Update manifest does not include an app installer asset.</value>
+  </data>
+  <data name="AppUpdate.Error.AppPackageMissing" xml:space="preserve">
+    <value>Update manifest does not include an app package.</value>
+  </data>
+  <data name="CodexRuntimeUpdate.Error.ManifestRuntimeMissing.Template" xml:space="preserve">
+    <value>Update manifest does not include runtime package {0} for {1}.</value>
+  </data>
+  <data name="PluginMarketCatalogClient.Error.IndexUrlRequired" xml:space="preserve">
+    <value>Plugin market index URL is not configured.</value>
+  </data>
+  <data name="PluginMarketCatalogClient.Error.ManifestUrlRequired" xml:space="preserve">
+    <value>Plugin market manifest URL cannot be empty.</value>
+  </data>
+  <data name="SessionThreadService.Error.EmptyThreadIdReturned" xml:space="preserve">
+    <value>App Server did not return a valid thread ID.</value>
+  </data>
+  <data name="SessionThreadService.Error.ThreadRequiredBeforeSend" xml:space="preserve">
+    <value>A valid session thread is required before sending a message.</value>
+  </data>
+  <data name="SessionThreadService.Error.WorkspaceUnavailable" xml:space="preserve">
+    <value>Current workspace is unavailable.</value>
+  </data>
+  <data name="UpdateManifest.Error.AssetBaseUrlMissing" xml:space="preserve">
+    <value>Update asset base URL is missing.</value>
+  </data>
+  <data name="UpdateManifest.Error.AssetUrlMissing" xml:space="preserve">
+    <value>Update asset URL is missing.</value>
+  </data>
+  <data name="UpdateManifest.Error.Empty" xml:space="preserve">
+    <value>Update manifest is empty.</value>
+  </data>
+  <data name="UpdateManifest.Error.Invalid" xml:space="preserve">
+    <value>Update manifest is invalid.</value>
+  </data>
+  <data name="UpdateManifest.Error.ManifestUrlNotConfigured" xml:space="preserve">
+    <value>Update manifest URL is not configured.</value>
+  </data>
 </root>
