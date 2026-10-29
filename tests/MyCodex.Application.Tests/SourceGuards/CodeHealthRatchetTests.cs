@@ -37,7 +37,7 @@ namespace MyCodex.Application.Tests.SourceGuards
 
         private static readonly DuplicateHelper[] DuplicateHelpers =
         {
-            new DuplicateHelper("CreateButton", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?Button\s+CreateButton\s*\(", null, 29),
+            new DuplicateHelper("CreateButton", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?Button\s+CreateButton\s*\(", null, 27),
             new DuplicateHelper("CreateLabel", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?Label\s+CreateLabel\s*\(", null, 7),
             new DuplicateHelper("CreateTextBox", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?\w*TextBox\s+CreateTextBox\s*\(", null, 6),
             new DuplicateHelper("CreateComboBox", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?ComboBox\s+CreateComboBox\s*\(", null, 2),

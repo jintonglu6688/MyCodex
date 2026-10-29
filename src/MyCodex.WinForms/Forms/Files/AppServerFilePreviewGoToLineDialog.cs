@@ -39,17 +39,19 @@ namespace MyCodex.WinForms.Forms
                 Width = 120,
                 TabIndex = 0
             };
-            _goToLineButton = CreateButton(
+            _goToLineButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("AppServerFilePreviewForm.Button.GoToLine", "Go To(&G)"),
                 UiLocalization.Text("AppServerFilePreviewForm.Accessible.GoToLine", "Go to line"),
                 1,
-                UiGlyph.Ok);
+                UiTheme.ButtonWidth);
+            UiTheme.ApplyDialogButton(_goToLineButton, UiGlyph.Ok);
             _goToLineButton.Click += (sender, e) => _ownerForm.GoToLineFromDialog((int)_lineNumberBox.Value);
-            _closeButton = CreateButton(
+            _closeButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("AppServerFilePreviewForm.Button.Close", "Close(&C)"),
                 UiLocalization.Text("AppServerFilePreviewForm.Accessible.Close", "Close"),
                 2,
-                UiGlyph.Cancel);
+                UiTheme.ButtonWidth);
+            UiTheme.ApplyDialogButton(_closeButton, UiGlyph.Cancel);
             _closeButton.Click += (sender, e) => Close();
             AcceptButton = _goToLineButton;
             CancelButton = _closeButton;
@@ -117,22 +119,6 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(inputRow, 0, 0);
             root.Controls.Add(buttonRow, 0, 1);
             Controls.Add(root);
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, UiGlyph glyph)
-        {
-            var button = new Button
-            {
-                AccessibleName = accessibleName,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(UiTheme.ControlSpacing, 0, 0, 0),
-                TabIndex = tabIndex,
-                Text = text,
-                UseMnemonic = true,
-                Width = UiTheme.ButtonWidth
-            };
-            UiTheme.ApplyDialogButton(button, glyph);
-            return button;
         }
     }
 }

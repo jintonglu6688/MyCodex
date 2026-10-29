@@ -45,35 +45,40 @@ namespace MyCodex.WinForms.Forms
                 UiLocalization.Text("AppServerFilePreviewForm.Accessible.Replace", "Replace with"),
                 1,
                 _ownerForm.ReplaceTextForTests);
-            _findPreviousButton = CreateButton(
+            _findPreviousButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("AppServerFilePreviewForm.Button.FindPrevious", "Previous(&P)"),
                 UiLocalization.Text("AppServerFilePreviewForm.Accessible.FindPrevious", "Find previous"),
                 2,
-                UiGlyph.Search);
+                UiTheme.ButtonWidth);
+            UiTheme.ApplyDialogButton(_findPreviousButton, UiGlyph.Search);
             _findPreviousButton.Click += (sender, e) => _ownerForm.FindFromDialog(_findTextBox.Text, false);
-            _findNextButton = CreateButton(
+            _findNextButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("AppServerFilePreviewForm.Button.FindNext", "Next(&N)"),
                 UiLocalization.Text("AppServerFilePreviewForm.Accessible.FindNext", "Find next"),
                 3,
-                UiGlyph.Search);
+                UiTheme.ButtonWidth);
+            UiTheme.ApplyDialogButton(_findNextButton, UiGlyph.Search);
             _findNextButton.Click += (sender, e) => _ownerForm.FindFromDialog(_findTextBox.Text, true);
-            _replaceButton = CreateButton(
+            _replaceButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("AppServerFilePreviewForm.Button.Replace", "Replace(&E)"),
                 UiLocalization.Text("AppServerFilePreviewForm.Accessible.ReplaceCurrent", "Replace current"),
                 4,
-                UiGlyph.FileChange);
+                UiTheme.ButtonWidth);
+            UiTheme.ApplyDialogButton(_replaceButton, UiGlyph.FileChange);
             _replaceButton.Click += (sender, e) => _ownerForm.ReplaceCurrentFromDialog(_findTextBox.Text, _replaceTextBox.Text);
-            _replaceAllButton = CreateButton(
+            _replaceAllButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("AppServerFilePreviewForm.Button.ReplaceAll", "Replace All(&A)"),
                 UiLocalization.Text("AppServerFilePreviewForm.Accessible.ReplaceAll", "Replace all"),
                 5,
-                UiGlyph.FileChange);
+                UiTheme.ButtonWidth);
+            UiTheme.ApplyDialogButton(_replaceAllButton, UiGlyph.FileChange);
             _replaceAllButton.Click += (sender, e) => _ownerForm.ReplaceAllFromDialog(_findTextBox.Text, _replaceTextBox.Text);
-            _closeButton = CreateButton(
+            _closeButton = UiControlFactory.CreateActionButton(
                 UiLocalization.Text("AppServerFilePreviewForm.Button.Close", "Close(&C)"),
                 UiLocalization.Text("AppServerFilePreviewForm.Accessible.Close", "Close"),
                 replaceMode ? 6 : 4,
-                UiGlyph.Cancel);
+                UiTheme.ButtonWidth);
+            UiTheme.ApplyDialogButton(_closeButton, UiGlyph.Cancel);
             _closeButton.Click += (sender, e) => Close();
             AcceptButton = _findNextButton;
             CancelButton = _closeButton;
@@ -207,22 +212,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(textBox, false, false);
             return textBox;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, UiGlyph glyph)
-        {
-            var button = new Button
-            {
-                AccessibleName = accessibleName,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(UiTheme.ControlSpacing, 0, 0, 0),
-                TabIndex = tabIndex,
-                Text = text,
-                UseMnemonic = true,
-                Width = UiTheme.ButtonWidth
-            };
-            UiTheme.ApplyDialogButton(button, glyph);
-            return button;
         }
     }
 }
