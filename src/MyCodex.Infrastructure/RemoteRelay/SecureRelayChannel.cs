@@ -138,7 +138,7 @@ namespace MyCodex.Infrastructure.RemoteRelay
             var signature = DecodeExact(hello.Signature, 64);
             try
             {
-                if (FixedTimeEquals(ephemeral, deviceAgreement))
+                if (SecureRemotePairingRules.FixedTimeEquals(ephemeral, deviceAgreement))
                 {
                     throw new FormatException("The session key is invalid.");
                 }
@@ -270,7 +270,7 @@ namespace MyCodex.Infrastructure.RemoteRelay
                 var expectedNonce = CreateNonce(_receiveNoncePrefix, envelope.Sequence);
                 try
                 {
-                    if (!FixedTimeEquals(nonce, expectedNonce))
+                    if (!SecureRemotePairingRules.FixedTimeEquals(nonce, expectedNonce))
                     {
                         throw new CryptographicException("The envelope nonce is invalid.");
                     }
@@ -454,7 +454,7 @@ namespace MyCodex.Infrastructure.RemoteRelay
         private void ValidateConfirmation(SessionConfirmationFrame frame, string role)
         {
             var actual = DecodeExact(frame.Confirmation, 32); var expected = DecodeExact(CreateConfirmation(role), 32);
-            try { if (!FixedTimeEquals(actual, expected)) throw new CryptographicException("The session confirmation is invalid."); }
+            try { if (!SecureRemotePairingRules.FixedTimeEquals(actual, expected)) throw new CryptographicException("The session confirmation is invalid."); }
             finally { Array.Clear(actual, 0, actual.Length); Array.Clear(expected, 0, expected.Length); }
         }
         private void ValidateHelloRoute(SessionHello hello, int keyVersion, int bindingVersion)
@@ -481,7 +481,6 @@ namespace MyCodex.Infrastructure.RemoteRelay
         private static byte[] RandomBytes(int length) { var result=new byte[length]; using(var rng=RandomNumberGenerator.Create()) rng.GetBytes(result); return result; }
         private static string StrictUtf8(byte[] value) { return new UTF8Encoding(false, true).GetString(value); }
         private static long UtcNowMilliseconds() { return new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds(); }
-        private static bool FixedTimeEquals(byte[] a, byte[] b) { if(a==null||b==null||a.Length!=b.Length)return false; var difference=0;for(var i=0;i<a.Length;i++)difference|=a[i]^b[i];return difference==0; }
         private static byte[] Join(byte[] first, byte[] second) { var result=new byte[first.Length+second.Length];Buffer.BlockCopy(first,0,result,0,first.Length);Buffer.BlockCopy(second,0,result,first.Length,second.Length);return result; }
         private async Task ResetForNewHelloAsync(CancellationToken cancellationToken)
         {

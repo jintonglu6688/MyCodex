@@ -34,16 +34,6 @@ namespace MyCodex.Application.Services
             _newId = newId ?? throw new ArgumentNullException(nameof(newId));
         }
 
-        public IReadOnlyList<AutomationDefinitionSnapshot> ListDefinitions()
-        {
-            return Load().Definitions.ToList();
-        }
-
-        public IReadOnlyList<AutomationRunSnapshot> ListRuns()
-        {
-            return Load().Runs.ToList();
-        }
-
         public AutomationDefinitionSnapshot Create(AutomationCreationRequest request)
         {
             ValidateCreate(request);
@@ -158,11 +148,6 @@ namespace MyCodex.Application.Services
                 snapshot.Runs.Remove(FindRun(snapshot, runId));
                 return snapshot;
             });
-        }
-
-        private AutomationStateSnapshot Load()
-        {
-            return Normalize(_store.Load());
         }
 
         private static AutomationStateSnapshot Normalize(AutomationStateSnapshot snapshot)

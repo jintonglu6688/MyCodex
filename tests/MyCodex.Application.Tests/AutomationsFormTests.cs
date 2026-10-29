@@ -918,16 +918,6 @@ namespace MyCodex.Application.Tests
 
             public string DeleteRunId { get; private set; }
 
-            public IReadOnlyList<AutomationDefinitionSnapshot> ListDefinitions()
-            {
-                throw new NotSupportedException();
-            }
-
-            public IReadOnlyList<AutomationRunSnapshot> ListRuns()
-            {
-                throw new NotSupportedException();
-            }
-
             public AutomationDefinitionSnapshot Create(AutomationCreationRequest request)
             {
                 throw new NotSupportedException();

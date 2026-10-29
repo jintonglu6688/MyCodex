@@ -228,7 +228,7 @@ namespace MyCodex.Infrastructure.RemoteRelay
 
                 try
                 {
-                    if (!FixedTimeEquals(actualFingerprint, expectedFingerprint) ||
+                    if (!SecureRemotePairingRules.FixedTimeEquals(actualFingerprint, expectedFingerprint) ||
                         !_crypto.VerifyRawEcdsa(relayPublicKey, challengeTranscript, relaySignature))
                     {
                         throw new InvalidOperationException("The Relay returned an invalid authentication challenge.");
@@ -402,22 +402,6 @@ namespace MyCodex.Infrastructure.RemoteRelay
             }
 
             throw new FormatException("A protocol integer has an invalid JSON type.");
-        }
-
-        private static bool FixedTimeEquals(byte[] left, byte[] right)
-        {
-            if (left == null || right == null || left.Length != right.Length)
-            {
-                return false;
-            }
-
-            var difference = 0;
-            for (var index = 0; index < left.Length; index++)
-            {
-                difference |= left[index] ^ right[index];
-            }
-
-            return difference == 0;
         }
 
         private static byte[] DecodeExact(string value, int length, string errorMessage)
