@@ -117,7 +117,6 @@ namespace MyCodex.Application.Tests
                 store,
                 appServer,
                 new AutomationResultClassifier(),
-                new AutomationCollaborationModePlanner(),
                 () => Now,
                 () => "run-1");
 
@@ -145,7 +144,6 @@ namespace MyCodex.Application.Tests
                 store,
                 appServer,
                 new AutomationResultClassifier(),
-                new AutomationCollaborationModePlanner(),
                 () => Now,
                 () => "run-1");
 
@@ -222,7 +220,6 @@ namespace MyCodex.Application.Tests
                 store,
                 new FakeThreadClient { NextThreadId = "thread-office" },
                 new AutomationResultClassifier(),
-                new AutomationCollaborationModePlanner(),
                 () => Now,
                 () => "run-1")
             {
@@ -390,10 +387,9 @@ namespace MyCodex.Application.Tests
                 store,
                 appServer,
                 new AutomationResultClassifier(),
-                new AutomationScheduleCalculator(),
-                new AutomationInputItemPlanner(path => true),
                 () => Now,
-                () => "run-1");
+                () => "run-1",
+                new AutomationInputItemPlanner(path => true));
 
             await runner.StartAsync(new AutomationRunRequest
             {
@@ -433,10 +429,9 @@ namespace MyCodex.Application.Tests
                 store,
                 appServer,
                 new AutomationResultClassifier(),
-                new AutomationScheduleCalculator(),
-                new AutomationInputItemPlanner(path => false),
                 () => Now,
-                () => "run-1");
+                () => "run-1",
+                new AutomationInputItemPlanner(path => false));
 
             var exception = Assert.ThrowsAsync<InvalidOperationException>(async () => await runner.StartAsync(new AutomationRunRequest
             {

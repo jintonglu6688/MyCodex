@@ -148,8 +148,7 @@ namespace MyCodex.WinForms
             var automationRunner = new AutomationRunner(
                 automationStore,
                 appServerClient,
-                automationResultClassifier,
-                new AutomationCollaborationModePlanner());
+                automationResultClassifier);
             var automationRuntimePlanner = new AutomationRuntimePlanner(automationScheduleCalculator);
             var automationTarget = catalog.GetTarget(targetId);
             var automationScope = new AutomationTargetScopePlanner(automationTarget.RuntimeScopeId, automationTarget.Kind != "Windows");

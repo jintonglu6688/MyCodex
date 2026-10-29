@@ -30,82 +30,19 @@ namespace MyCodex.Application.Services
         public AutomationRunner(
             IAutomationStore store,
             IAppServerThreadClient threadClient,
-            AutomationResultClassifier classifier)
-            : this(store, threadClient, classifier, new AutomationScheduleCalculator(), () => DateTime.Now, () => Guid.NewGuid().ToString("N"))
-        {
-        }
-
-        public AutomationRunner(
-            IAutomationStore store,
-            IAppServerThreadClient threadClient,
             AutomationResultClassifier classifier,
-            Func<DateTime> now,
-            Func<string> newId)
-            : this(store, threadClient, classifier, new AutomationScheduleCalculator(), now, newId)
-        {
-        }
-
-        public AutomationRunner(
-            IAutomationStore store,
-            IAppServerThreadClient threadClient,
-            AutomationResultClassifier classifier,
-            AutomationCollaborationModePlanner collaborationModePlanner)
-            : this(store, threadClient, classifier, new AutomationScheduleCalculator(), new AutomationInputItemPlanner(), collaborationModePlanner, () => DateTime.Now, () => Guid.NewGuid().ToString("N"))
-        {
-        }
-
-        public AutomationRunner(
-            IAutomationStore store,
-            IAppServerThreadClient threadClient,
-            AutomationResultClassifier classifier,
-            AutomationCollaborationModePlanner collaborationModePlanner,
-            Func<DateTime> now,
-            Func<string> newId)
-            : this(store, threadClient, classifier, new AutomationScheduleCalculator(), new AutomationInputItemPlanner(), collaborationModePlanner, now, newId)
-        {
-        }
-
-        public AutomationRunner(
-            IAutomationStore store,
-            IAppServerThreadClient threadClient,
-            AutomationResultClassifier classifier,
-            AutomationScheduleCalculator scheduleCalculator,
-            Func<DateTime> now,
-            Func<string> newId)
-            : this(store, threadClient, classifier, scheduleCalculator, new AutomationInputItemPlanner(), now, newId)
-        {
-        }
-
-        public AutomationRunner(
-            IAutomationStore store,
-            IAppServerThreadClient threadClient,
-            AutomationResultClassifier classifier,
-            AutomationScheduleCalculator scheduleCalculator,
-            AutomationInputItemPlanner inputItemPlanner,
-            Func<DateTime> now,
-            Func<string> newId)
-            : this(store, threadClient, classifier, scheduleCalculator, inputItemPlanner, new AutomationCollaborationModePlanner(), now, newId)
-        {
-        }
-
-        public AutomationRunner(
-            IAutomationStore store,
-            IAppServerThreadClient threadClient,
-            AutomationResultClassifier classifier,
-            AutomationScheduleCalculator scheduleCalculator,
-            AutomationInputItemPlanner inputItemPlanner,
-            AutomationCollaborationModePlanner collaborationModePlanner,
-            Func<DateTime> now,
-            Func<string> newId)
+            Func<DateTime> now = null,
+            Func<string> newId = null,
+            AutomationInputItemPlanner inputItemPlanner = null)
         {
             _store = store ?? throw new ArgumentNullException(nameof(store));
             _threadClient = threadClient ?? throw new ArgumentNullException(nameof(threadClient));
             _classifier = classifier ?? throw new ArgumentNullException(nameof(classifier));
-            _scheduleCalculator = scheduleCalculator ?? throw new ArgumentNullException(nameof(scheduleCalculator));
-            _inputItemPlanner = inputItemPlanner ?? throw new ArgumentNullException(nameof(inputItemPlanner));
-            _collaborationModePlanner = collaborationModePlanner ?? throw new ArgumentNullException(nameof(collaborationModePlanner));
-            _now = now ?? throw new ArgumentNullException(nameof(now));
-            _newId = newId ?? throw new ArgumentNullException(nameof(newId));
+            _scheduleCalculator = new AutomationScheduleCalculator();
+            _inputItemPlanner = inputItemPlanner ?? new AutomationInputItemPlanner();
+            _collaborationModePlanner = new AutomationCollaborationModePlanner();
+            _now = now ?? (() => DateTime.Now);
+            _newId = newId ?? (() => Guid.NewGuid().ToString("N"));
         }
 
         public async Task<AutomationRunSnapshot> StartAsync(AutomationRunRequest request)

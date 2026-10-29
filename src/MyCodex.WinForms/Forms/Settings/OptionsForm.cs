@@ -63,109 +63,17 @@ namespace MyCodex.WinForms.Forms
         private bool _officeRootRepresentsDefault;
         private bool _isUpdatingOfficeRootPath;
 
-        public OptionsForm(AppConfigSnapshot appConfig, AppServerConfigSnapshot officialConfigSnapshot)
-            : this(appConfig, officialConfigSnapshot, null, new OfficeCliInstallationService())
-        {
-        }
-
-        public OptionsForm(
-            AppConfigSnapshot appConfig,
-            AppServerConfigSnapshot officialConfigSnapshot,
-            AppServerPermissionProfileListResult permissionProfiles)
-            : this(appConfig, officialConfigSnapshot, permissionProfiles, new OfficeCliInstallationService())
-        {
-        }
-
         internal OptionsForm(
             AppConfigSnapshot appConfig,
             AppServerConfigSnapshot officialConfigSnapshot,
-            OfficeCliInstallationService officeCliInstallationService)
-            : this(appConfig, officialConfigSnapshot, null, officeCliInstallationService)
-        {
-        }
-
-        internal OptionsForm(
-            AppConfigSnapshot appConfig,
-            AppServerConfigSnapshot officialConfigSnapshot,
-            AppServerPermissionProfileListResult permissionProfiles,
-            OfficeCliInstallationService officeCliInstallationService)
-            : this(appConfig, officialConfigSnapshot, permissionProfiles, null, officeCliInstallationService)
-        {
-        }
-
-        internal OptionsForm(
-            AppConfigSnapshot appConfig,
-            AppServerConfigSnapshot officialConfigSnapshot,
-            AppServerPermissionProfileListResult permissionProfiles,
-            IEnumerable<AppServerModelOption> availableModels)
-            : this(appConfig, officialConfigSnapshot, permissionProfiles, availableModels, new OfficeCliInstallationService())
-        {
-        }
-
-        internal OptionsForm(
-            AppConfigSnapshot appConfig,
-            AppServerConfigSnapshot officialConfigSnapshot,
-            AppServerPermissionProfileListResult permissionProfiles,
-            IEnumerable<AppServerModelOption> availableModels,
-            OfficeCliInstallationService officeCliInstallationService)
-            : this(
-                appConfig,
-                officialConfigSnapshot,
-                permissionProfiles,
-                availableModels,
-                null,
-                new ModeSettingsSnapshot(),
-                officeCliInstallationService)
-        {
-        }
-
-        internal OptionsForm(
-            AppConfigSnapshot appConfig,
-            AppServerConfigSnapshot officialConfigSnapshot,
-            AppServerPermissionProfileListResult permissionProfiles,
-            IEnumerable<AppServerModelOption> availableModels,
-            OfficeDirectoryOptionsContext officeDirectoryOptionsContext)
-            : this(
-                appConfig,
-                officialConfigSnapshot,
-                permissionProfiles,
-                availableModels,
-                officeDirectoryOptionsContext,
-                new ModeSettingsSnapshot(),
-                new OfficeCliInstallationService())
-        {
-        }
-
-        internal OptionsForm(
-            AppConfigSnapshot appConfig,
-            AppServerConfigSnapshot officialConfigSnapshot,
-            AppServerPermissionProfileListResult permissionProfiles,
-            IEnumerable<AppServerModelOption> availableModels,
-            OfficeDirectoryOptionsContext officeDirectoryOptionsContext,
-            ModeSettingsSnapshot modeSettings)
-            : this(
-                appConfig,
-                officialConfigSnapshot,
-                permissionProfiles,
-                availableModels,
-                officeDirectoryOptionsContext,
-                modeSettings,
-                new OfficeCliInstallationService())
-        {
-        }
-
-        private OptionsForm(
-            AppConfigSnapshot appConfig,
-            AppServerConfigSnapshot officialConfigSnapshot,
-            AppServerPermissionProfileListResult permissionProfiles,
-            IEnumerable<AppServerModelOption> availableModels,
-            OfficeDirectoryOptionsContext officeDirectoryOptionsContext,
-            ModeSettingsSnapshot modeSettings,
-            OfficeCliInstallationService officeCliInstallationService)
+            AppServerPermissionProfileListResult permissionProfiles = null,
+            IEnumerable<AppServerModelOption> availableModels = null,
+            OfficeDirectoryOptionsContext officeDirectoryOptionsContext = null,
+            ModeSettingsSnapshot modeSettings = null)
         {
             appConfig = appConfig ?? new AppConfigSnapshot();
             modeSettings = modeSettings ?? new ModeSettingsSnapshot();
-            _officeCliInstallationService = officeCliInstallationService ?? new OfficeCliInstallationService();
+            _officeCliInstallationService = new OfficeCliInstallationService();
             _officeCliPaths = OfficeCliWinFormsPathResolver.BuildPaths();
             _officeDirectoryOptionsContext = officeDirectoryOptionsContext ??
                 CreateLocalOfficeDirectoryOptionsContext(modeSettings);
