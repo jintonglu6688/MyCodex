@@ -107,8 +107,14 @@ namespace MyCodex.Infrastructure.Persistence
         {
             _appConfigService.EnsureConfigDirectory();
             var filePath = _appConfigService.GetAppStateFilePath();
-            var serializable = CreateSerializableSnapshot(snapshot);
-            AtomicFileWriter.Write(filePath, stream => _serializer.WriteObject(stream, serializable), filePath + ".bak");
+            var content = SerializeToString(snapshot);
+            // Endpoint targets prune this file on every load and save; skip the flushed rewrite when nothing changed.
+            if (File.Exists(filePath) && string.Equals(File.ReadAllText(filePath, Encoding.UTF8), content, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            AtomicFileWriter.WriteText(filePath, content, filePath + ".bak");
         }
 
         private void PruneLocalEndpointStateFile()

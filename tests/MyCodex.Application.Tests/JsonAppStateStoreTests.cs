@@ -170,6 +170,32 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void Save_UnchangedLocalStateDoesNotRewriteFile()
+        {
+            var root = CreateTempDirectory();
+            try
+            {
+                var service = new AppConfigService(root);
+                var store = new JsonAppStateStore(service, null, new FakeRuntimeScopedConfigFileStore());
+                var snapshot = CreateSnapshotWithWorkspace("workspace-local", @"C:\code\local");
+                store.Save(snapshot);
+                var path = service.GetAppStateFilePath();
+                var earlier = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                File.SetLastWriteTimeUtc(path, earlier);
+
+                store.Save(snapshot);
+                Assert.That(File.GetLastWriteTimeUtc(path), Is.EqualTo(earlier));
+
+                store.Save(CreateSnapshotWithWorkspace("workspace-other", @"C:\code\other"));
+                Assert.That(File.GetLastWriteTimeUtc(path), Is.GreaterThan(earlier));
+            }
+            finally
+            {
+                DeleteDirectory(root);
+            }
+        }
+
+        [Test]
         public void Load_CorruptPrimaryAndValidBackup_RestoresBackup()
         {
             var root = CreateTempDirectory();
