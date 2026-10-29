@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.Script.Serialization;
+using MyCodex.Application.Capabilities;
 
 namespace MyCodex.Infrastructure.ComputerUse
 {
@@ -17,6 +18,18 @@ namespace MyCodex.Infrastructure.ComputerUse
 
     internal static class ComputerUseConfigurationPlanner
     {
+        internal static IDictionary<string, object> ApplyToolRouting(IDictionary<string, object> config,
+            IDictionary<string, object> overrides, bool nativeAvailable, bool browserAvailable)
+        {
+            if (!nativeAvailable && !browserAvailable) return overrides;
+            var result = Clone(overrides);
+            var current = result.TryGetValue("developer_instructions", out var explicitValue)
+                ? explicitValue : Value(config, "developer_instructions");
+            if (current != null && !(current is string)) return overrides;
+            result["developer_instructions"] = ComputerUseToolRoutingInstructionComposer.Compose(current as string, nativeAvailable, browserAvailable);
+            return result;
+        }
+
         // Unknown managed policy cannot safely be dropped when the helper uses another HOME.
         private static readonly HashSet<string> KnownRequirements = new HashSet<string>(StringComparer.Ordinal)
         {

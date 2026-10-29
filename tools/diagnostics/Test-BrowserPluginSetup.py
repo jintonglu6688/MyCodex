@@ -95,12 +95,20 @@ try:
                       'CUA_REPL_NODE_REPL_PATH': str(runtime / 'bin/node_repl.exe'), 'CUA_REPL_ENABLED_SURFACES': 'browser',
                       'BROWSER_USE_AVAILABLE_BACKENDS': 'chrome', 'BROWSER_USE_TINYSKY_ENABLED': '0',
                       'BROWSER_USE_ACCESS_EXECUTOR_ID': 'owned-metadata-fixture', 'BROWSER_USE_SECURITY_MODE': ''}}
-    started = rpc.request('thread/start', {'cwd': str(run), 'ephemeral': True, 'config': {'mcp_servers': {'cua_repl': server}}})
+    routing_marker = 'MyCodex owned native-tool routing protocol fixture'
+    office_marker = 'MyCodex owned Office-mode protocol fixture'
+    started = rpc.request('thread/start', {'cwd': str(run), 'ephemeral': True,
+        'config': {'developer_instructions': routing_marker, 'mcp_servers': {'cua_repl': server}}})
     assert started['thread']['id']
     result['fresh_browser_enabled_thread_started'] = True
     rpc.request('turn/start', {'threadId': started['thread']['id'],
+                             'collaborationMode': {'mode': 'default', 'settings': {'model': 'owned-model-unused',
+                                 'reasoning_effort': None, 'developer_instructions': office_marker}},
                              'input': [{'type': 'text', 'text': 'Return an owned offline fixture marker only.'}]})
     request = captured.get(timeout=25)
+    developer_messages = json.dumps([item for item in request.get('input', []) if item.get('role') == 'developer'])
+    assert routing_marker in developer_messages and office_marker in developer_messages
+    result['thread_routing_and_office_instructions_preserved'] = True
     names = []
     for item in request.get('tools', []):
         names.append(item.get('name', ''))

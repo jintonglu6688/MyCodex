@@ -10,6 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createBrowserAccessHost } from '../../src/MyCodex.Infrastructure/ComputerUse/Host/browser-access-host.mjs';
+import { createComputerUseHost } from '../../src/MyCodex.Infrastructure/ComputerUse/Host/computer-use-host.mjs';
 
 assert.equal(process.platform, 'win32', 'This integration check requires Windows named pipes.');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -83,8 +84,9 @@ function environment(home, includeAuthorization) {
     return env;
 }
 
-function client(home, includeAuthorization) {
-    const child = spawn(node, [launcher], { cwd: home, env: environment(home, includeAuthorization),
+function client(home, includeAuthorization, desktop = null) {
+    mkdirSync(home, { recursive: true });
+    const child = spawn(desktop?.executable ?? node, desktop ? [] : [launcher], { cwd: home, env: desktop?.env ?? environment(home, includeAuthorization),
         stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
     children.add(child);
     const pending = new Map();
@@ -137,6 +139,9 @@ function client(home, includeAuthorization) {
         async discover(turnId) {
             return execute('await cua.listBrowsers();', turnId);
         },
+        async probeSky(turnId) {
+            return execute("nodeRepl.write(await nodeRepl.rpc('sky', {type:'execute', method:'list_windows', args:[]}));", turnId);
+        },
         async selectEdge(turnId) {
             return execute(`var discovered = await cua.listBrowsers({emit:false});
 var info = discovered.find(browser => browser.family === 'edge');
@@ -173,6 +178,64 @@ async function stopOwnedTree(child) {
     await once(killer, 'exit');
 }
 
+async function verifyToolRouting(browser) {
+    const wrongTool = await browser.probeSky(turn);
+    assert.equal(wrongTool.isError, true);
+    assert.ok(wrongTool.content.some(item => item.text?.includes('Trusted RPC service is not configured: sky')));
+    const pin = JSON.parse(readFileSync(path.join(root, 'tools/runtime/computer-use-bundle.json'), 'utf8'));
+    const bundle = path.join(root, 'runtime/cua', pin.bundleId);
+    assert.equal(createHash('sha256').update(readFileSync(path.join(bundle, 'bundle.json'))).digest('hex'), pin.manifestSha256.toLowerCase());
+    const nativeRoot = path.join(bundle, 'cua_node');
+    const home = path.join(temporary, 'native-home');
+    mkdirSync(home, { recursive: true });
+    let nativeCalls = 0;
+    let nativeHost;
+    nativeHost = createComputerUseHost({
+        emit: event => {
+            if (event.event === 'acquire') void nativeHost.control({ command: 'acquireResult', requestId: event.id, granted: true });
+        },
+        createTransport: () => ({
+            async request(method) {
+                assert.equal(method, 'list_windows', 'The fixture permits no real window observations or input.');
+                nativeCalls++;
+                return [];
+            },
+            async close() {}
+        })
+    });
+    const slot = await nativeHost.control({ command: 'allocate', helperHome: home });
+    const env = {
+        SystemRoot: process.env.SystemRoot, WINDIR: process.env.WINDIR,
+        PATH: `${path.join(nativeRoot, 'bin')};${path.join(process.env.SystemRoot, 'System32')}`,
+        TEMP: home, TMP: home, USERPROFILE: home, APPDATA: home, LOCALAPPDATA: home,
+        CODEX_HOME: home, CODEX_CLI_PATH: codex,
+        NODE_REPL_NODE_PATH: path.join(nativeRoot, 'bin/node.exe'),
+        NODE_REPL_NODE_MODULE_DIRS: path.join(nativeRoot, 'bin/node_modules'),
+        NODE_REPL_TRUSTED_CODE_PATHS: `${home};${path.join(nativeRoot, 'bin/node_modules')}`,
+        NODE_REPL_TRUSTED_SERVICES: JSON.stringify({ sky: '@oai/sky/service' }),
+        SKY_CUA_NATIVE_PIPE: '1', SKY_CUA_NATIVE_PIPE_DIRECTORY: slot.pipePath
+    };
+    let native;
+    try {
+        await nativeHost.control({ command: 'publish', slot: slot.slot });
+        await nativeHost.control({ command: 'bind', slot: slot.slot, thread });
+        await nativeHost.control({ command: 'begin', slot: slot.slot, turn });
+        native = client(home, false, { executable: path.join(nativeRoot, 'bin/node_repl.exe'), env });
+        await native.initialize();
+        const read = await native.probeSky(turn);
+        assert.notEqual(read.isError, true, read.content?.find(item => item.type === 'text')?.text?.slice(0, 300));
+        assert.equal(nativeCalls, 1, 'The actual Sky service must reach only the synthetic executor.');
+        await nativeHost.control({ command: 'end', slot: slot.slot, turn });
+        const ended = await native.probeSky(turn);
+        assert.equal(ended.isError, true);
+        assert.equal(nativeCalls, 1, 'An ended native binding must not reach the executor.');
+        console.log('Tool routing: browser-only cua_repl reproduces missing sky; actual node_repl/Sky reaches the synthetic executor and rejects an ended turn. No real desktop access.');
+    } finally {
+        if (native) await native.close();
+        await nativeHost.shutdown();
+    }
+}
+
 try {
     backend.listen(backendPath);
     await once(backend, 'listening');
@@ -189,6 +252,7 @@ try {
     const owned = client(path.join(temporary, 'owned-home'), true);
     try {
         await owned.initialize();
+        if (process.argv.includes('--check-tool-routing')) await verifyToolRouting(owned);
         const result = await owned.discover(turn);
         assert.notEqual(result.isError, true, 'Upstream browser discovery must succeed.');
         assert.match(JSON.stringify(result), /Synthetic Edge/);

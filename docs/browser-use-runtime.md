@@ -41,6 +41,14 @@ Enable the external-browser plugin in MyCodex's existing plugin management UI an
 
 The official in-app browser (IAB) is not exposed by this external host. Browser internal pages, including the Edge favorites interface, cannot be claimed through the extension; inspect that interface through the supported native accessibility channel. This is distinct from reading bookmarks data through an extension capability.
 
+### Native Computer Use tool routing
+
+A clean-machine report attempted Windows Settings inspection through `cua_repl/js` and received `Trusted RPC service is not configured: sky`. The upstream browser-only runtime reproduces this exact error: its common returned instructions advertise `cua_repl` for all UI, while this host intentionally registers only the browser service there. The desktop `sky` service belongs to the independently authorized `node_repl` server. The missing service in `cua_repl` is not evidence that the native connection needs reinstalling.
+
+After successful per-thread preparation, MyCodex now adds capability-specific routing through that thread's `developer_instructions` override. Windows desktop interfaces, Settings and browser-internal interfaces use `node_repl` with the existing computer-use skill and `@oai/sky`; external web pages use browser-only `cua_repl`. The instructions preserve existing global/thread instructions, explicit clearing and Office collaboration-mode instructions. They do not enable a denied capability, add desktop access to the browser service, write global configuration or change the original permission/lifecycle checks. Already loaded threads require a runtime reconnect/cold resume to receive changed configuration.
+
+`node tools/diagnostics/Test-BrowserRuntime.mjs --check-tool-routing` reproduces the wrong-tool missing-sky error, then runs the actual pinned `node_repl` and Sky service against a synthetic native host and verifies that ending the turn prevents subsequent executor calls. No real windows are read, screenshots captured or input injected. The loopback-only real CLI fixture also checks that per-thread routing and Office developer instructions both reach the provider request. Related .NET checks passed 386 tests with one filesystem-link fixture skipped, and the Release build completed with zero warnings/errors. The user subsequently confirmed that desktop control worked on the target device and that browser automation still passed regression testing.
+
 ## Verification
 
 ### Browser extension setup

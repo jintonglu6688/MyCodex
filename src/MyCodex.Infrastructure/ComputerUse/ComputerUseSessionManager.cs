@@ -161,6 +161,8 @@ namespace MyCodex.Infrastructure.ComputerUse
                     Abandon(binding);
                     return Unavailable("BrowserUnavailable");
                 }
+                parameters["config"] = ComputerUseConfigurationPlanner.ApplyToolRouting(config,
+                    AppServerJsonValue.GetDictionary(parameters, "config"), nativeAvailable, binding.BrowserAccess != null);
                 return binding;
             }
             catch (OperationCanceledException) { Abandon(binding); throw; }
