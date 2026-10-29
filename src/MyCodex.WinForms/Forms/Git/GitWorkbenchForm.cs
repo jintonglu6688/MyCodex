@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -1912,14 +1911,7 @@ namespace MyCodex.WinForms.Forms
                 throw new InvalidOperationException(UiLocalization.Text("GitWorkbenchForm.Message.FileNotFound", "The selected file is not available on disk."));
             }
 
-            var form = new AppServerFilePreviewForm(
-                path,
-                () => Task.FromResult(File.ReadAllText(path, Encoding.UTF8)),
-                data =>
-                {
-                    File.WriteAllBytes(path, data ?? new byte[0]);
-                    return Task.CompletedTask;
-                });
+            var form = AppServerFilePreviewForm.CreateForLocalFile(path);
             form.Shown += async (sender, e) =>
             {
                 await form.LoadAsync().ConfigureAwait(true);

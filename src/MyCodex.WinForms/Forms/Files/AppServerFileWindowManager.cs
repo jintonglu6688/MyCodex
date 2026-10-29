@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
@@ -475,8 +474,7 @@ namespace MyCodex.WinForms.Forms
                 return string.Empty;
             }
 
-            var bytes = Convert.FromBase64String(dataBase64);
-            return Encoding.UTF8.GetString(bytes);
+            return AppServerFilePreviewForm.DecodeEditableText(Convert.FromBase64String(dataBase64));
         }
     }
 

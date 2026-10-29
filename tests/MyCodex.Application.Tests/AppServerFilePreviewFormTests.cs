@@ -42,6 +42,29 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void FromNonUtf8Text_IsReadOnlySoSavingCannotReplaceCharacters()
+        {
+            var gbkBytes = new byte[] { 0xC4, 0xE3, 0xBA, 0xC3 };
+            using (var form = AppServerFilePreviewForm.CreateForTests(
+                @"E:\Repo\gbk.txt",
+                Convert.ToBase64String(gbkBytes),
+                data => Task.CompletedTask))
+            {
+                Assert.That(form.ContentReadOnlyForTests, Is.True);
+                Assert.That(form.ContentTextForTests, Is.EqualTo(UiLocalization.Text("AppServerFilePreviewForm.Message.PreviewUnavailable", "Preview is unavailable for this file.")));
+            }
+        }
+
+        [Test]
+        public void DecodeEditableText_KeepsBomAndRejectsInvalidUtf8()
+        {
+            var withBom = new byte[] { 0xEF, 0xBB, 0xBF, (byte)'a' };
+
+            Assert.That(Encoding.UTF8.GetBytes(AppServerFilePreviewForm.DecodeEditableText(withBom)), Is.EqualTo(withBom));
+            Assert.That(() => AppServerFilePreviewForm.DecodeEditableText(new byte[] { 0xC4, 0xE3 }), Throws.InstanceOf<DecoderFallbackException>());
+        }
+
+        [Test]
         public void Constructor_UsesReusableScintillaEditorControl()
         {
             using (var form = AppServerFilePreviewForm.CreateForTests(

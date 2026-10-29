@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -429,6 +430,7 @@ namespace MyCodex.WinForms.Forms
                 }
 
                 SetContentText(text ?? string.Empty);
+                _canEdit = true;
                 _isDirty = false;
                 _hasExternalChange = false;
                 _statusLabel.Text = UiLocalization.Text("AppServerFilePreviewForm.Status.Reloaded", "File reloaded.");
@@ -440,6 +442,8 @@ namespace MyCodex.WinForms.Forms
                     return;
                 }
 
+                // The editor no longer mirrors the file, so saving it could truncate or overwrite the file.
+                _canEdit = false;
                 _statusLabel.Text = UiLocalization.Text("AppServerFilePreviewForm.Status.ReloadFailed", "Unable to reload file.");
                 MessageBox.Show(this, ex.Message, AppConstants.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
@@ -614,8 +618,7 @@ namespace MyCodex.WinForms.Forms
 
             try
             {
-                var bytes = Convert.FromBase64String(dataBase64);
-                var text = Encoding.UTF8.GetString(bytes);
+                var text = DecodeEditableText(Convert.FromBase64String(dataBase64));
                 if (text.IndexOf('\0') >= 0)
                 {
                     return UnavailableMessage();
@@ -632,6 +635,25 @@ namespace MyCodex.WinForms.Forms
             {
                 return UnavailableMessage();
             }
+        }
+
+        // Strict decoding rejects non-UTF-8 files (such as GBK) instead of saving U+FFFD over them,
+        // and keeps a BOM as U+FEFF so saving writes it back.
+        internal static string DecodeEditableText(byte[] bytes)
+        {
+            return new UTF8Encoding(false, true).GetString(bytes ?? new byte[0]);
+        }
+
+        internal static AppServerFilePreviewForm CreateForLocalFile(string path)
+        {
+            return new AppServerFilePreviewForm(
+                path,
+                () => Task.FromResult(DecodeEditableText(File.ReadAllBytes(path))),
+                data =>
+                {
+                    File.WriteAllBytes(path, data ?? new byte[0]);
+                    return Task.CompletedTask;
+                });
         }
 
         private static string UnavailableMessage()
