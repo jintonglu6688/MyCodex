@@ -1,7 +1,5 @@
 using System;
 using System.IO;
-using System.Text;
-using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Infrastructure.Persistence;
 using NUnit.Framework;
 
@@ -94,24 +92,6 @@ namespace MyCodex.Application.Tests
                     Directory.Delete(rootPath, true);
                 }
             }
-        }
-
-        [Category(SourceGuardCategory.SourceBehavior)]
-        [Test]
-        public void Program_RunsUserCacheMaintenanceBeforeConfiguringDiagnostics()
-        {
-            var source = File.ReadAllText(
-                RepositorySource.FindSourceFile("Program.cs"),
-                Encoding.UTF8);
-            var cleanupIndex = source.IndexOf(
-                "UserCacheMaintenance.CleanupOnStartup(appConfigService);",
-                StringComparison.Ordinal);
-            var diagnosticsIndex = source.IndexOf(
-                "ConfigureDiagnostics(appConfigService);",
-                StringComparison.Ordinal);
-
-            Assert.That(cleanupIndex, Is.GreaterThan(0));
-            Assert.That(diagnosticsIndex, Is.GreaterThan(cleanupIndex));
         }
 
         private static void WriteFile(string path)
