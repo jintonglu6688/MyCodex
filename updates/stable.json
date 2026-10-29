@@ -1,7 +1,7 @@
 {
     "schemaVersion":  "1",
     "channel":  "stable",
-    "generatedAt":  "2026-10-25T09:50:33Z",
+    "generatedAt":  "2026-10-29T09:49:20Z",
     "packageBaseUrl":  "https://api.gitcode.com/api/v5/repos/gcw_SpGZ48lW/mycodex-updates/releases/app-v8.0.5/attach_files/",
     "app":  {
                 "version":  "8.0.5",
@@ -20,14 +20,14 @@
     "runtimes":  [
                      {
                          "source":  "Bundled",
-                         "version":  "0.164.0",
+                         "version":  "0.165.0",
                          "targetTriple":  "x86_64-pc-windows-msvc",
                          "packageFormat":  "npm-tgz",
                          "asset":  {
-                                       "url":  "https://api.gitcode.com/api/v5/repos/gcw_SpGZ48lW/mycodex-updates/releases/runtime-standard-0.164.0/attach_files/codex-0.164.0-win32-x64.tgz/download",
-                                       "fileName":  "codex-0.164.0-win32-x64.tgz",
-                                       "sha256":  "4fbd23473a2fc223396cdd8490d3f658d368438134c12a3f1dac9d1e2041a65b",
-                                       "size":  172854349
+                                       "url":  "https://api.gitcode.com/api/v5/repos/gcw_SpGZ48lW/mycodex-updates/releases/runtime-standard-0.165.0/attach_files/codex-0.165.0-win32-x64.tgz/download",
+                                       "fileName":  "codex-0.165.0-win32-x64.tgz",
+                                       "sha256":  "53ebec84d5a380bbb654a796e695576a4dbd2c228ec9bc02982f2013f261969d",
+                                       "size":  173677955
                                    }
                      }
                  ]
