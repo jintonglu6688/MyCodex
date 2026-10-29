@@ -11,6 +11,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Shared.Constants;
+using MyCodex.Shared.Helpers;
 using MyCodex.Shared.Localization;
 
 namespace MyCodex.Infrastructure.Markets
@@ -130,7 +131,7 @@ namespace MyCodex.Infrastructure.Markets
 
         private static PluginMarketSnapshot ParseMarketSummary(IDictionary<string, object> values, string baseUrl)
         {
-            var interfaceValues = GetDictionary(values, "interface");
+            var interfaceValues = JsonValueReader.GetDictionary(values, "interface");
             return new PluginMarketSnapshot
             {
                 MarketId = FirstNonEmptyString(values, "marketId", "id", "name"),
@@ -146,9 +147,9 @@ namespace MyCodex.Infrastructure.Markets
             string marketId,
             string manifestUrl)
         {
-            var interfaceValues = GetDictionary(values, "interface");
-            var policyValues = GetDictionary(values, "policy");
-            var sourceValues = GetDictionary(values, "source");
+            var interfaceValues = JsonValueReader.GetDictionary(values, "interface");
+            var policyValues = JsonValueReader.GetDictionary(values, "policy");
+            var sourceValues = JsonValueReader.GetDictionary(values, "source");
             return new PluginMarketEntrySnapshot
             {
                 MarketId = marketId,
@@ -183,21 +184,6 @@ namespace MyCodex.Infrastructure.Markets
                     throw new OperationCanceledException(cancellationToken);
                 }
             }
-        }
-
-        private static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source != null && source.TryGetValue(key, out value))
-            {
-                var result = value as IDictionary<string, object>;
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            return new Dictionary<string, object>(StringComparer.Ordinal);
         }
 
         private static IEnumerable GetArray(IDictionary<string, object> source, string key)

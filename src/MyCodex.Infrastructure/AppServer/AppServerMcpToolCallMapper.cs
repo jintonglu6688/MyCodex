@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using MyCodex.Application.DTOs;
+using MyCodex.Shared.Helpers;
 using MyCodex.Shared.Localization;
 
 namespace MyCodex.Infrastructure.AppServer
@@ -12,7 +13,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             var callResult = new AppServerMcpToolCallResult
             {
-                IsError = GetBool(result, "isError")
+                IsError = JsonValueReader.GetBool(result, "isError")
             };
 
             foreach (var item in GetArray(result, "content"))
@@ -97,17 +98,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return builder.ToString();
-        }
-
-        private static bool GetBool(IDictionary<string, object> source, string key)
-        {
-            object value;
-            bool result;
-            return source != null &&
-                   source.TryGetValue(key, out value) &&
-                   value != null &&
-                   bool.TryParse(System.Convert.ToString(value), out result) &&
-                   result;
         }
 
         private static string Serialize(object value)

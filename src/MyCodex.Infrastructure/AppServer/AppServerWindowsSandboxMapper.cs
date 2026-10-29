@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MyCodex.Application.DTOs;
+using MyCodex.Shared.Helpers;
 
 namespace MyCodex.Infrastructure.AppServer
 {
@@ -20,7 +21,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerWindowsSandboxSetupStartResult
             {
-                Started = GetBool(result, "started")
+                Started = JsonValueReader.GetBool(result, "started")
             };
         }
 
@@ -31,7 +32,7 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 RawMode = rawMode,
                 Mode = MapSetupMode(rawMode),
-                Success = GetBool(parameters, "success"),
+                Success = JsonValueReader.GetBool(parameters, "success"),
                 Error = AppServerJsonValueReader.GetString(parameters, "error")
             };
         }
@@ -61,17 +62,6 @@ namespace MyCodex.Infrastructure.AppServer
             return string.Equals(rawMode, "elevated", StringComparison.Ordinal)
                 ? AppServerWindowsSandboxSetupMode.Elevated
                 : AppServerWindowsSandboxSetupMode.Unelevated;
-        }
-
-        private static bool GetBool(IDictionary<string, object> source, string key)
-        {
-            object value;
-            bool result;
-            return source != null &&
-                source.TryGetValue(key, out value) &&
-                value != null &&
-                bool.TryParse(Convert.ToString(value), out result) &&
-                result;
         }
     }
 }

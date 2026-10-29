@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.RemoteRelay;
+using MyCodex.Shared.Helpers;
 
 namespace MyCodex.Application.CodingRemote
 {
@@ -206,7 +207,7 @@ namespace MyCodex.Application.CodingRemote
 
         private async Task<RemoteRelayEvent> DispatchWorkspaceOperationAsync(RemoteRelayCommand command, string action, CancellationToken cancellationToken)
         {
-            var workspaceId = GetString(command.Payload, "workspaceId");
+            var workspaceId = JsonValueReader.GetString(command.Payload, "workspaceId");
             if (string.IsNullOrWhiteSpace(workspaceId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Workspace ID is required.");
@@ -287,7 +288,7 @@ namespace MyCodex.Application.CodingRemote
             string resultEventType,
             CancellationToken cancellationToken)
         {
-            var workspaceId = GetString(command.Payload, "workspaceId");
+            var workspaceId = JsonValueReader.GetString(command.Payload, "workspaceId");
             if (string.IsNullOrWhiteSpace(workspaceId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Workspace ID is required.");
@@ -307,7 +308,7 @@ namespace MyCodex.Application.CodingRemote
             string createdEventType,
             CancellationToken cancellationToken)
         {
-            var workspaceId = GetString(command.Payload, "workspaceId");
+            var workspaceId = JsonValueReader.GetString(command.Payload, "workspaceId");
             if (string.IsNullOrWhiteSpace(workspaceId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Workspace ID is required.");
@@ -317,7 +318,7 @@ namespace MyCodex.Application.CodingRemote
                 new CodingRemoteSessionCreateRequest
                 {
                     WorkspaceId = workspaceId,
-                    Title = GetString(command.Payload, "title")
+                    Title = JsonValueReader.GetString(command.Payload, "title")
                 },
                 cancellationToken).ConfigureAwait(false);
             session = session ?? new CodingRemoteSessionSummary
@@ -369,7 +370,7 @@ namespace MyCodex.Application.CodingRemote
             string resultEventType,
             CancellationToken cancellationToken)
         {
-            var sessionId = GetString(command.Payload, "sessionId");
+            var sessionId = JsonValueReader.GetString(command.Payload, "sessionId");
             if (string.IsNullOrWhiteSpace(sessionId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Session ID is required.");
@@ -377,7 +378,7 @@ namespace MyCodex.Application.CodingRemote
 
             var deleteLocalHistory = GetBool(command.Payload, "deleteLocalHistory");
             var title = string.Equals(action, CodingRemoteSessionActions.Rename, StringComparison.OrdinalIgnoreCase)
-                ? (GetString(command.Payload, "title") ?? string.Empty).Trim()
+                ? (JsonValueReader.GetString(command.Payload, "title") ?? string.Empty).Trim()
                 : null;
             if (string.Equals(action, CodingRemoteSessionActions.Rename, StringComparison.OrdinalIgnoreCase) &&
                 string.IsNullOrWhiteSpace(title))
@@ -484,19 +485,19 @@ namespace MyCodex.Application.CodingRemote
             string action,
             CancellationToken cancellationToken)
         {
-            var sessionId = GetString(command.Payload, "sessionId");
+            var sessionId = JsonValueReader.GetString(command.Payload, "sessionId");
             if (string.IsNullOrWhiteSpace(sessionId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Session ID is required.");
             }
 
-            var mode = GetString(command.Payload, "mode");
+            var mode = JsonValueReader.GetString(command.Payload, "mode");
             if (string.IsNullOrWhiteSpace(mode))
             {
                 mode = CodingRemoteSessionThreadOperationModes.Full;
             }
 
-            var turnId = GetString(command.Payload, "turnId");
+            var turnId = JsonValueReader.GetString(command.Payload, "turnId");
             if (string.Equals(mode, CodingRemoteSessionThreadOperationModes.FromTurn, StringComparison.OrdinalIgnoreCase) &&
                 string.IsNullOrWhiteSpace(turnId))
             {
@@ -520,7 +521,7 @@ namespace MyCodex.Application.CodingRemote
                         Action = action,
                         Mode = mode,
                         TurnId = turnId,
-                        Title = GetString(command.Payload, "title"),
+                        Title = JsonValueReader.GetString(command.Payload, "title"),
                         SwitchToCreatedSession = GetBool(command.Payload, "switchToCreatedSession")
                     },
                     cancellationToken).ConfigureAwait(false);
@@ -603,7 +604,7 @@ namespace MyCodex.Application.CodingRemote
             string resultEventType,
             CancellationToken cancellationToken)
         {
-            var sessionId = GetString(command.Payload, "sessionId");
+            var sessionId = JsonValueReader.GetString(command.Payload, "sessionId");
             if (string.IsNullOrWhiteSpace(sessionId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Session ID is required.");
@@ -620,7 +621,7 @@ namespace MyCodex.Application.CodingRemote
             string resultEventType,
             CancellationToken cancellationToken)
         {
-            var sessionId = GetString(command.Payload, "sessionId");
+            var sessionId = JsonValueReader.GetString(command.Payload, "sessionId");
             if (string.IsNullOrWhiteSpace(sessionId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Session ID is required.");
@@ -631,11 +632,11 @@ namespace MyCodex.Application.CodingRemote
                 {
                     SessionId = sessionId,
                     HasModelId = HasPayloadKey(command.Payload, "modelId"),
-                    ModelId = GetString(command.Payload, "modelId"),
+                    ModelId = JsonValueReader.GetString(command.Payload, "modelId"),
                     HasReasoningEffort = HasPayloadKey(command.Payload, "reasoningEffort"),
-                    ReasoningEffort = GetString(command.Payload, "reasoningEffort"),
+                    ReasoningEffort = JsonValueReader.GetString(command.Payload, "reasoningEffort"),
                     HasApprovalMode = HasPayloadKey(command.Payload, "approvalMode"),
-                    ApprovalMode = GetString(command.Payload, "approvalMode"),
+                    ApprovalMode = JsonValueReader.GetString(command.Payload, "approvalMode"),
                     IsPlanModeEnabled = GetNullableBool(command.Payload, "isPlanModeEnabled")
                 },
                 cancellationToken).ConfigureAwait(false);
@@ -689,15 +690,15 @@ namespace MyCodex.Application.CodingRemote
             string resultEventType,
             CancellationToken cancellationToken)
         {
-            var sessionId = GetString(command.Payload, "sessionId");
+            var sessionId = JsonValueReader.GetString(command.Payload, "sessionId");
             if (string.IsNullOrWhiteSpace(sessionId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Session ID is required.");
             }
 
-            var hasBefore = !string.IsNullOrWhiteSpace(GetString(command.Payload, "beforeCursor"));
-            var hasAfter = !string.IsNullOrWhiteSpace(GetString(command.Payload, "afterCursor"));
-            var hasAnchor = !string.IsNullOrWhiteSpace(GetString(command.Payload, "anchorMessageId"));
+            var hasBefore = !string.IsNullOrWhiteSpace(JsonValueReader.GetString(command.Payload, "beforeCursor"));
+            var hasAfter = !string.IsNullOrWhiteSpace(JsonValueReader.GetString(command.Payload, "afterCursor"));
+            var hasAnchor = !string.IsNullOrWhiteSpace(JsonValueReader.GetString(command.Payload, "anchorMessageId"));
             if ((hasBefore ? 1 : 0) + (hasAfter ? 1 : 0) + (hasAnchor ? 1 : 0) > 1)
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Only one paging target is allowed.");
@@ -709,10 +710,10 @@ namespace MyCodex.Application.CodingRemote
                 new CodingRemoteMessagesListRequest
                 {
                     SessionId = sessionId,
-                    BeforeCursor = GetString(command.Payload, "beforeCursor"),
-                    AfterCursor = GetString(command.Payload, "afterCursor"),
-                    AnchorMessageId = GetString(command.Payload, "anchorMessageId"),
-                    KnownHistoryRevision = GetString(command.Payload, "knownHistoryRevision"),
+                    BeforeCursor = JsonValueReader.GetString(command.Payload, "beforeCursor"),
+                    AfterCursor = JsonValueReader.GetString(command.Payload, "afterCursor"),
+                    AnchorMessageId = JsonValueReader.GetString(command.Payload, "anchorMessageId"),
+                    KnownHistoryRevision = JsonValueReader.GetString(command.Payload, "knownHistoryRevision"),
                     PagingVersion = pagingVersion,
                     Limit = requestedLimit
                 },
@@ -752,8 +753,8 @@ namespace MyCodex.Application.CodingRemote
             string resultEventType,
             CancellationToken cancellationToken)
         {
-            var sessionId = GetString(command.Payload, "sessionId");
-            var messageId = GetString(command.Payload, "messageId");
+            var sessionId = JsonValueReader.GetString(command.Payload, "sessionId");
+            var messageId = JsonValueReader.GetString(command.Payload, "messageId");
             if (string.IsNullOrWhiteSpace(sessionId) || string.IsNullOrWhiteSpace(messageId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Session ID and message ID are required.");
@@ -763,8 +764,8 @@ namespace MyCodex.Application.CodingRemote
             {
                 SessionId = sessionId,
                 MessageId = messageId,
-                ContentVersion = GetString(command.Payload, "contentVersion"),
-                Cursor = GetString(command.Payload, "cursor")
+                ContentVersion = JsonValueReader.GetString(command.Payload, "contentVersion"),
+                Cursor = JsonValueReader.GetString(command.Payload, "cursor")
             }, cancellationToken).ConfigureAwait(false);
             return CreateEvent(command, resultEventType, new Dictionary<string, object>
             {
@@ -792,13 +793,13 @@ namespace MyCodex.Application.CodingRemote
             string acceptedEventType,
             CancellationToken cancellationToken)
         {
-            var sessionId = GetString(command.Payload, "sessionId");
+            var sessionId = JsonValueReader.GetString(command.Payload, "sessionId");
             if (string.IsNullOrWhiteSpace(sessionId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Session ID is required.");
             }
 
-            var text = GetString(command.Payload, "text");
+            var text = JsonValueReader.GetString(command.Payload, "text");
             if (!string.IsNullOrWhiteSpace(text))
             {
                 text = text.Trim();
@@ -903,7 +904,7 @@ namespace MyCodex.Application.CodingRemote
             string resultEventType,
             CancellationToken cancellationToken)
         {
-            var sessionId = GetString(command.Payload, "sessionId");
+            var sessionId = JsonValueReader.GetString(command.Payload, "sessionId");
             if (string.IsNullOrWhiteSpace(sessionId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Session ID is required.");
@@ -936,7 +937,7 @@ namespace MyCodex.Application.CodingRemote
             string resultEventType,
             CancellationToken cancellationToken)
         {
-            var sessionId = GetString(command.Payload, "sessionId");
+            var sessionId = JsonValueReader.GetString(command.Payload, "sessionId");
             if (string.IsNullOrWhiteSpace(sessionId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Session ID is required.");
@@ -957,7 +958,7 @@ namespace MyCodex.Application.CodingRemote
             string resultEventType,
             CancellationToken cancellationToken)
         {
-            var sessionId = GetString(command.Payload, "sessionId");
+            var sessionId = JsonValueReader.GetString(command.Payload, "sessionId");
             if (string.IsNullOrWhiteSpace(sessionId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Session ID is required.");
@@ -977,13 +978,13 @@ namespace MyCodex.Application.CodingRemote
             RemoteRelayCommand command,
             CancellationToken cancellationToken)
         {
-            var requestId = GetString(command.Payload, "requestId");
+            var requestId = JsonValueReader.GetString(command.Payload, "requestId");
             if (string.IsNullOrWhiteSpace(requestId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Approval request ID is required.");
             }
 
-            var decision = GetString(command.Payload, "decision");
+            var decision = JsonValueReader.GetString(command.Payload, "decision");
             if (string.IsNullOrWhiteSpace(decision))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Approval decision is required.");
@@ -1014,7 +1015,7 @@ namespace MyCodex.Application.CodingRemote
 
         private async Task<RemoteRelayEvent> DispatchToolInputRespondAsync(RemoteRelayCommand command, CancellationToken cancellationToken)
         {
-            var requestId = GetString(command.Payload, "requestId");
+            var requestId = JsonValueReader.GetString(command.Payload, "requestId");
             if (string.IsNullOrWhiteSpace(requestId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Tool input request ID is required.");
@@ -1057,7 +1058,7 @@ namespace MyCodex.Application.CodingRemote
 
         private async Task<RemoteRelayEvent> DispatchToolInputCancelAsync(RemoteRelayCommand command, CancellationToken cancellationToken)
         {
-            var requestId = GetString(command.Payload, "requestId");
+            var requestId = JsonValueReader.GetString(command.Payload, "requestId");
             if (string.IsNullOrWhiteSpace(requestId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Tool input request ID is required.");
@@ -1096,13 +1097,13 @@ namespace MyCodex.Application.CodingRemote
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.OperationNotAvailable, "Remote plan execution response is not available.");
             }
 
-            var requestId = GetString(command.Payload, "requestId");
+            var requestId = JsonValueReader.GetString(command.Payload, "requestId");
             if (string.IsNullOrWhiteSpace(requestId))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Plan execution request ID is required.");
             }
 
-            var action = GetString(command.Payload, "action");
+            var action = JsonValueReader.GetString(command.Payload, "action");
             if (!IsPlanExecutionAction(action))
             {
                 return CreateError(command.RequestId, command.OperationId, command.DeviceId, RemoteErrorCodes.InvalidCommand, "Plan execution action is invalid.");
@@ -1112,7 +1113,7 @@ namespace MyCodex.Application.CodingRemote
                 new CodingRemotePlanExecutionResponseRequest
                 {
                     RequestId = requestId,
-                    ThreadId = GetString(command.Payload, "threadId"),
+                    ThreadId = JsonValueReader.GetString(command.Payload, "threadId"),
                     Action = action
                 },
                 cancellationToken).ConfigureAwait(false);
@@ -1439,17 +1440,6 @@ namespace MyCodex.Application.CodingRemote
                 : value.ToUniversalTime().ToString("o");
         }
 
-        private static string GetString(IDictionary<string, object> payload, string key)
-        {
-            object value;
-            if (payload == null || !payload.TryGetValue(key, out value) || value == null)
-            {
-                return null;
-            }
-
-            return value as string ?? Convert.ToString(value);
-        }
-
         private static List<CodingRemoteInputItem> BuildInputItems(IDictionary<string, object> payload, out string error)
         {
             error = null;
@@ -1476,7 +1466,7 @@ namespace MyCodex.Application.CodingRemote
                     return result;
                 }
 
-                var type = (GetString(itemPayload, "type") ?? string.Empty).Trim().ToLowerInvariant();
+                var type = (JsonValueReader.GetString(itemPayload, "type") ?? string.Empty).Trim().ToLowerInvariant();
                 if (string.IsNullOrWhiteSpace(type))
                 {
                     error = "Input item type is required.";
@@ -1489,8 +1479,8 @@ namespace MyCodex.Application.CodingRemote
                     return result;
                 }
 
-                var path = GetString(itemPayload, "path");
-                var itemText = GetString(itemPayload, "text");
+                var path = JsonValueReader.GetString(itemPayload, "path");
+                var itemText = JsonValueReader.GetString(itemPayload, "text");
                 if ((type == "mention" || type == "skill") && string.IsNullOrWhiteSpace(path))
                 {
                     error = "Input item path is required.";
@@ -1506,8 +1496,8 @@ namespace MyCodex.Application.CodingRemote
                 result.Add(new CodingRemoteInputItem
                 {
                     Type = type,
-                    Name = GetString(itemPayload, "name"),
-                    DisplayName = GetString(itemPayload, "displayName"),
+                    Name = JsonValueReader.GetString(itemPayload, "name"),
+                    DisplayName = JsonValueReader.GetString(itemPayload, "displayName"),
                     Path = string.IsNullOrWhiteSpace(path) ? null : path.Trim(),
                     Text = string.IsNullOrWhiteSpace(itemText) ? null : itemText.Trim()
                 });

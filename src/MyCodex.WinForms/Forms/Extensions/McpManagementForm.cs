@@ -9,6 +9,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
 using MyCodex.Shared.Constants;
+using MyCodex.Shared.Helpers;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
 
@@ -1512,13 +1513,13 @@ namespace MyCodex.WinForms.Forms
             var edits = new List<AppServerConfigWriteEdit>();
             var keyPrefix = BuildServerConfigKeyPath(serverName);
 
-            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "enabled"), GetValue(config, "enabled")));
-            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "url"), GetString(config, "url")));
-            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "baseUrl"), GetString(config, "baseUrl")));
-            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "serverUrl"), GetString(config, "serverUrl")));
-            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "endpoint"), GetString(config, "endpoint")));
-            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "command"), GetString(config, "command")));
-            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "cwd"), GetString(config, "cwd")));
+            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "enabled"), JsonValueReader.GetValue(config, "enabled")));
+            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "url"), JsonValueReader.GetString(config, "url")));
+            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "baseUrl"), JsonValueReader.GetString(config, "baseUrl")));
+            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "serverUrl"), JsonValueReader.GetString(config, "serverUrl")));
+            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "endpoint"), JsonValueReader.GetString(config, "endpoint")));
+            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "command"), JsonValueReader.GetString(config, "command")));
+            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "cwd"), JsonValueReader.GetString(config, "cwd")));
             edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "args"), GetArrayValue(config, "args")));
             edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "env"), GetDictionaryValue(config, "env")));
             edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "env_vars"), GetDictionaryValue(config, "env_vars")));
@@ -1628,23 +1629,9 @@ namespace MyCodex.WinForms.Forms
             return value;
         }
 
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            object rawValue;
-            return source != null && source.TryGetValue(key, out rawValue) && rawValue != null
-                ? Convert.ToString(rawValue)
-                : null;
-        }
-
-        private static object GetValue(IDictionary<string, object> source, string key)
-        {
-            object rawValue;
-            return source != null && source.TryGetValue(key, out rawValue) ? rawValue : null;
-        }
-
         private static object GetArrayValue(IDictionary<string, object> source, string key)
         {
-            var rawValue = GetValue(source, key);
+            var rawValue = JsonValueReader.GetValue(source, key);
             if (rawValue == null || rawValue is string)
             {
                 return null;
@@ -1667,7 +1654,7 @@ namespace MyCodex.WinForms.Forms
 
         private static Dictionary<string, object> GetDictionaryValue(IDictionary<string, object> source, string key)
         {
-            return CloneDictionary(GetValue(source, key) as IDictionary<string, object>);
+            return CloneDictionary(JsonValueReader.GetValue(source, key) as IDictionary<string, object>);
         }
     }
 

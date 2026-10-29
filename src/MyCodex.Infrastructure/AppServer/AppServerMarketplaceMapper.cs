@@ -10,7 +10,7 @@ namespace MyCodex.Infrastructure.AppServer
             return new AppServerMarketplaceAddResult
             {
                 MarketplaceName = EmptyIfNull(GetFirstNonEmptyString(result, "marketplaceName", "name")),
-                AlreadyAdded = GetNullableBool(result, "alreadyAdded") ?? false
+                AlreadyAdded = AppServerJsonValueReader.GetNullableBool(result, "alreadyAdded") ?? false
             };
         }
 
@@ -35,9 +35,9 @@ namespace MyCodex.Infrastructure.AppServer
             return new AppServerMarketplaceUpgradeResult
             {
                 MarketplaceName = EmptyIfNull(marketplaceName),
-                Success = GetNullableBool(result, "success") ??
-                          GetNullableBool(result, "updated") ??
-                          GetNullableBool(marketplace, "success") ??
+                Success = AppServerJsonValueReader.GetNullableBool(result, "success") ??
+                          AppServerJsonValueReader.GetNullableBool(result, "updated") ??
+                          AppServerJsonValueReader.GetNullableBool(marketplace, "success") ??
                           string.IsNullOrWhiteSpace(errorMessage),
                 Message = EmptyIfNull(GetFirstNonEmptyString(result, "message", "details", "status") ??
                                       GetFirstNonEmptyString(marketplace, "message", "details", "status") ??
@@ -114,23 +114,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return null;
-        }
-
-        private static bool? GetNullableBool(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                return null;
-            }
-
-            if (value is bool)
-            {
-                return (bool)value;
-            }
-
-            bool parsed;
-            return bool.TryParse(System.Convert.ToString(value), out parsed) ? parsed : (bool?)null;
         }
 
         private static string EmptyIfNull(string value)

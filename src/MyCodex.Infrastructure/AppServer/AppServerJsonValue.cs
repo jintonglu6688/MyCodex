@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.Script.Serialization;
+using MyCodex.Shared.Helpers;
 
 namespace MyCodex.Infrastructure.AppServer
 {
@@ -23,28 +24,12 @@ namespace MyCodex.Infrastructure.AppServer
 
         internal static IDictionary<string, object> GetDictionary(IDictionary<string, object> source, string key)
         {
-            object value;
-            if (source != null && source.TryGetValue(key, out value))
-            {
-                var dictionary = value as IDictionary<string, object>;
-                if (dictionary != null)
-                {
-                    return dictionary;
-                }
-            }
-
-            return new Dictionary<string, object>(StringComparer.Ordinal);
+            return JsonValueReader.GetDictionary(source, key);
         }
 
         internal static string GetString(IDictionary<string, object> source, string key)
         {
-            object value;
-            if (source != null && source.TryGetValue(key, out value) && value != null)
-            {
-                return Convert.ToString(value);
-            }
-
-            return null;
+            return JsonValueReader.GetString(source, key);
         }
     }
 }

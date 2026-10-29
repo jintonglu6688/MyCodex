@@ -10,6 +10,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Services;
 using MyCodex.Domain.Entities;
+using MyCodex.Shared.Helpers;
 using MyCodex.Shared.Localization;
 
 namespace MyCodex.Infrastructure.GitHosting
@@ -77,10 +78,10 @@ namespace MyCodex.Infrastructure.GitHosting
                 IsInstalled = true,
                 IsAuthenticated = true,
                 Version = version,
-                Login = GetString(user, "login") ?? ParseLogin(authOutput),
-                DisplayName = GetString(user, "name"),
-                Email = GetString(user, "email"),
-                ProfileUrl = GetString(user, "html_url"),
+                Login = JsonValueReader.GetString(user, "login") ?? ParseLogin(authOutput),
+                DisplayName = JsonValueReader.GetString(user, "name"),
+                Email = JsonValueReader.GetString(user, "email"),
+                ProfileUrl = JsonValueReader.GetString(user, "html_url"),
                 GitProtocol = ParseValue(authOutput, "Git operations protocol:"),
                 TokenScopes = ParseValue(authOutput, "Token scopes:"),
                 Status = SharedLocalization.Text("GitHubCli.Status.Authenticated", "GitHub CLI is logged in to GitHub."),
@@ -803,8 +804,8 @@ namespace MyCodex.Infrastructure.GitHosting
 
             return new GitHubRepositorySearchResult
             {
-                TotalCount = GetNullableLong(source, "total_count"),
-                IncompleteResults = GetBool(source, "incomplete_results"),
+                TotalCount = JsonValueReader.GetNullableLong(source, "total_count"),
+                IncompleteResults = JsonValueReader.GetBool(source, "incomplete_results"),
                 Items = repositories
             };
         }
@@ -942,31 +943,31 @@ namespace MyCodex.Infrastructure.GitHosting
         {
             return new GitHubRepositoryEntry
             {
-                NameWithOwner = GetString(source, "nameWithOwner") ?? GetString(source, "full_name"),
-                Description = GetString(source, "description"),
-                Visibility = GetString(source, "visibility") ??
-                             (GetBool(source, "private") ? "PRIVATE" : "PUBLIC"),
-                IsPrivate = GetBool(source, "isPrivate") || GetBool(source, "private"),
-                DefaultBranch = GetString(source, "defaultBranch") ?? GetString(source, "default_branch"),
-                UpdatedAt = ParseDate(GetString(source, "updatedAt") ?? GetString(source, "updated_at")),
-                CreatedAt = ParseDate(GetString(source, "createdAt") ?? GetString(source, "created_at")),
-                PushedAt = ParseDate(GetString(source, "pushedAt") ?? GetString(source, "pushed_at")),
-                DiskUsage = GetNullableLong(source, "diskUsage") ?? GetNullableLong(source, "size"),
-                Stars = GetNullableInt(source, "stargazerCount") ?? GetNullableInt(source, "stargazers_count"),
-                Forks = GetNullableInt(source, "forkCount") ?? GetNullableInt(source, "forks_count"),
-                Watchers = GetNestedNullableInt(source, "watchers", "totalCount") ?? GetNullableInt(source, "watchers_count"),
-                HomepageUrl = GetString(source, "homepageUrl") ?? GetString(source, "homepage"),
+                NameWithOwner = JsonValueReader.GetString(source, "nameWithOwner") ?? JsonValueReader.GetString(source, "full_name"),
+                Description = JsonValueReader.GetString(source, "description"),
+                Visibility = JsonValueReader.GetString(source, "visibility") ??
+                             (JsonValueReader.GetBool(source, "private") ? "PRIVATE" : "PUBLIC"),
+                IsPrivate = JsonValueReader.GetBool(source, "isPrivate") || JsonValueReader.GetBool(source, "private"),
+                DefaultBranch = JsonValueReader.GetString(source, "defaultBranch") ?? JsonValueReader.GetString(source, "default_branch"),
+                UpdatedAt = ParseDate(JsonValueReader.GetString(source, "updatedAt") ?? JsonValueReader.GetString(source, "updated_at")),
+                CreatedAt = ParseDate(JsonValueReader.GetString(source, "createdAt") ?? JsonValueReader.GetString(source, "created_at")),
+                PushedAt = ParseDate(JsonValueReader.GetString(source, "pushedAt") ?? JsonValueReader.GetString(source, "pushed_at")),
+                DiskUsage = JsonValueReader.GetNullableLong(source, "diskUsage") ?? JsonValueReader.GetNullableLong(source, "size"),
+                Stars = JsonValueReader.GetNullableInt(source, "stargazerCount") ?? JsonValueReader.GetNullableInt(source, "stargazers_count"),
+                Forks = JsonValueReader.GetNullableInt(source, "forkCount") ?? JsonValueReader.GetNullableInt(source, "forks_count"),
+                Watchers = GetNestedNullableInt(source, "watchers", "totalCount") ?? JsonValueReader.GetNullableInt(source, "watchers_count"),
+                HomepageUrl = JsonValueReader.GetString(source, "homepageUrl") ?? JsonValueReader.GetString(source, "homepage"),
                 License = GetNestedString(source, "licenseInfo", "spdxId") ??
                           GetNestedString(source, "licenseInfo", "name") ??
                           GetNestedString(source, "license", "spdx_id") ??
                           GetNestedString(source, "license", "name") ??
-                          GetString(source, "license"),
-                PrimaryLanguage = GetNestedString(source, "primaryLanguage", "name") ?? GetString(source, "language"),
-                IsArchived = GetBool(source, "isArchived") || GetBool(source, "archived"),
-                IsFork = GetBool(source, "isFork") || GetBool(source, "fork"),
-                HttpsUrl = GetString(source, "html_url") ?? GetString(source, "url"),
-                SshUrl = GetString(source, "sshUrl") ?? GetString(source, "ssh_url"),
-                OpenIssues = GetNullableInt(source, "openIssuesCount") ?? GetNullableInt(source, "open_issues_count"),
+                          JsonValueReader.GetString(source, "license"),
+                PrimaryLanguage = GetNestedString(source, "primaryLanguage", "name") ?? JsonValueReader.GetString(source, "language"),
+                IsArchived = JsonValueReader.GetBool(source, "isArchived") || JsonValueReader.GetBool(source, "archived"),
+                IsFork = JsonValueReader.GetBool(source, "isFork") || JsonValueReader.GetBool(source, "fork"),
+                HttpsUrl = JsonValueReader.GetString(source, "html_url") ?? JsonValueReader.GetString(source, "url"),
+                SshUrl = JsonValueReader.GetString(source, "sshUrl") ?? JsonValueReader.GetString(source, "ssh_url"),
+                OpenIssues = JsonValueReader.GetNullableInt(source, "openIssuesCount") ?? JsonValueReader.GetNullableInt(source, "open_issues_count"),
                 Topics = JoinTopics(source)
             };
         }
@@ -1071,7 +1072,7 @@ namespace MyCodex.Infrastructure.GitHosting
             var topics = source["topics"] as object[];
             if (topics == null)
             {
-                return GetString(source, "topics");
+                return JsonValueReader.GetString(source, "topics");
             }
 
             return string.Join(",", topics.Select(GetObjectText).Where(v => !string.IsNullOrWhiteSpace(v)));
@@ -1081,25 +1082,25 @@ namespace MyCodex.Infrastructure.GitHosting
         {
             return new GitHubRepositoryEntry
             {
-                NameWithOwner = GetString(source, "nameWithOwner"),
-                Description = GetString(source, "description"),
-                Visibility = GetString(source, "visibility"),
-                IsPrivate = GetBool(source, "isPrivate"),
+                NameWithOwner = JsonValueReader.GetString(source, "nameWithOwner"),
+                Description = JsonValueReader.GetString(source, "description"),
+                Visibility = JsonValueReader.GetString(source, "visibility"),
+                IsPrivate = JsonValueReader.GetBool(source, "isPrivate"),
                 DefaultBranch = GetNestedString(source, "defaultBranchRef", "name"),
-                UpdatedAt = ParseDate(GetString(source, "updatedAt")),
-                CreatedAt = ParseDate(GetString(source, "createdAt")),
-                PushedAt = ParseDate(GetString(source, "pushedAt")),
-                DiskUsage = GetNullableLong(source, "diskUsage"),
-                Stars = GetNullableInt(source, "stargazerCount"),
-                Forks = GetNullableInt(source, "forkCount"),
+                UpdatedAt = ParseDate(JsonValueReader.GetString(source, "updatedAt")),
+                CreatedAt = ParseDate(JsonValueReader.GetString(source, "createdAt")),
+                PushedAt = ParseDate(JsonValueReader.GetString(source, "pushedAt")),
+                DiskUsage = JsonValueReader.GetNullableLong(source, "diskUsage"),
+                Stars = JsonValueReader.GetNullableInt(source, "stargazerCount"),
+                Forks = JsonValueReader.GetNullableInt(source, "forkCount"),
                 Watchers = GetNestedNullableInt(source, "watchers", "totalCount"),
-                HomepageUrl = GetString(source, "homepageUrl"),
+                HomepageUrl = JsonValueReader.GetString(source, "homepageUrl"),
                 License = GetNestedString(source, "licenseInfo", "spdxId") ?? GetNestedString(source, "licenseInfo", "name"),
                 PrimaryLanguage = GetNestedString(source, "primaryLanguage", "name"),
-                IsArchived = GetBool(source, "isArchived"),
-                IsFork = GetBool(source, "isFork"),
-                HttpsUrl = GetString(source, "url"),
-                SshUrl = GetString(source, "sshUrl")
+                IsArchived = JsonValueReader.GetBool(source, "isArchived"),
+                IsFork = JsonValueReader.GetBool(source, "isFork"),
+                HttpsUrl = JsonValueReader.GetString(source, "url"),
+                SshUrl = JsonValueReader.GetString(source, "sshUrl")
             };
         }
 
@@ -1116,9 +1117,9 @@ namespace MyCodex.Infrastructure.GitHosting
 
                 entries.Add(new GitHubBranchEntry
                 {
-                    Name = GetString(source, "name"),
+                    Name = JsonValueReader.GetString(source, "name"),
                     CommitSha = GetNestedString(source, "commit", "sha"),
-                    IsProtected = GetBool(source, "protected")
+                    IsProtected = JsonValueReader.GetBool(source, "protected")
                 });
             }
 
@@ -1138,10 +1139,10 @@ namespace MyCodex.Infrastructure.GitHosting
 
                 entries.Add(new GitHubTagEntry
                 {
-                    Name = GetString(source, "name"),
+                    Name = JsonValueReader.GetString(source, "name"),
                     CommitSha = GetNestedString(source, "commit", "sha"),
-                    ZipballUrl = GetString(source, "zipball_url"),
-                    TarballUrl = GetString(source, "tarball_url")
+                    ZipballUrl = JsonValueReader.GetString(source, "zipball_url"),
+                    TarballUrl = JsonValueReader.GetString(source, "tarball_url")
                 });
             }
 
@@ -1161,13 +1162,13 @@ namespace MyCodex.Infrastructure.GitHosting
 
                 entries.Add(new GitHubReleaseEntry
                 {
-                    TagName = GetString(source, "tagName"),
-                    Name = GetString(source, "name"),
-                    IsDraft = GetBool(source, "isDraft"),
-                    IsPrerelease = GetBool(source, "isPrerelease"),
-                    IsLatest = GetBool(source, "isLatest"),
-                    PublishedAt = ParseDate(GetString(source, "publishedAt")),
-                    CreatedAt = ParseDate(GetString(source, "createdAt"))
+                    TagName = JsonValueReader.GetString(source, "tagName"),
+                    Name = JsonValueReader.GetString(source, "name"),
+                    IsDraft = JsonValueReader.GetBool(source, "isDraft"),
+                    IsPrerelease = JsonValueReader.GetBool(source, "isPrerelease"),
+                    IsLatest = JsonValueReader.GetBool(source, "isLatest"),
+                    PublishedAt = ParseDate(JsonValueReader.GetString(source, "publishedAt")),
+                    CreatedAt = ParseDate(JsonValueReader.GetString(source, "createdAt"))
                 });
             }
 
@@ -1179,15 +1180,15 @@ namespace MyCodex.Infrastructure.GitHosting
             var source = Deserialize(json);
             var entry = new GitHubReleaseDetailEntry
             {
-                TagName = GetString(source, "tagName"),
-                Name = GetString(source, "name"),
-                IsDraft = GetBool(source, "isDraft"),
-                IsPrerelease = GetBool(source, "isPrerelease"),
+                TagName = JsonValueReader.GetString(source, "tagName"),
+                Name = JsonValueReader.GetString(source, "name"),
+                IsDraft = JsonValueReader.GetBool(source, "isDraft"),
+                IsPrerelease = JsonValueReader.GetBool(source, "isPrerelease"),
                 Author = GetNestedString(source, "author", "login"),
-                Body = GetString(source, "body"),
-                PublishedAt = ParseDate(GetString(source, "publishedAt")),
-                CreatedAt = ParseDate(GetString(source, "createdAt")),
-                Url = GetString(source, "url")
+                Body = JsonValueReader.GetString(source, "body"),
+                PublishedAt = ParseDate(JsonValueReader.GetString(source, "publishedAt")),
+                CreatedAt = ParseDate(JsonValueReader.GetString(source, "createdAt")),
+                Url = JsonValueReader.GetString(source, "url")
             };
 
             var assets = source.ContainsKey("assets") ? source["assets"] as object[] : null;
@@ -1201,15 +1202,15 @@ namespace MyCodex.Infrastructure.GitHosting
 
                 entry.Assets.Add(new GitHubReleaseAssetEntry
                 {
-                    Name = GetString(asset, "name"),
-                    Label = GetString(asset, "label"),
-                    ContentType = GetString(asset, "contentType"),
-                    Size = GetNullableLong(asset, "size"),
-                    DownloadCount = GetInt(asset, "downloadCount"),
-                    State = GetString(asset, "state"),
-                    CreatedAt = ParseDate(GetString(asset, "createdAt")),
-                    UpdatedAt = ParseDate(GetString(asset, "updatedAt")),
-                    Url = GetString(asset, "url")
+                    Name = JsonValueReader.GetString(asset, "name"),
+                    Label = JsonValueReader.GetString(asset, "label"),
+                    ContentType = JsonValueReader.GetString(asset, "contentType"),
+                    Size = JsonValueReader.GetNullableLong(asset, "size"),
+                    DownloadCount = JsonValueReader.GetInt(asset, "downloadCount"),
+                    State = JsonValueReader.GetString(asset, "state"),
+                    CreatedAt = ParseDate(JsonValueReader.GetString(asset, "createdAt")),
+                    UpdatedAt = ParseDate(JsonValueReader.GetString(asset, "updatedAt")),
+                    Url = JsonValueReader.GetString(asset, "url")
                 });
             }
 
@@ -1229,14 +1230,14 @@ namespace MyCodex.Infrastructure.GitHosting
 
                 entries.Add(new GitHubIssueEntry
                 {
-                    Number = GetInt(source, "number"),
-                    Title = GetString(source, "title"),
-                    State = GetString(source, "state"),
+                    Number = JsonValueReader.GetInt(source, "number"),
+                    Title = JsonValueReader.GetString(source, "title"),
+                    State = JsonValueReader.GetString(source, "state"),
                     Author = GetNestedString(source, "author", "login"),
-                    Comments = GetInt(source, "comments"),
-                    CreatedAt = ParseDate(GetString(source, "createdAt")),
-                    UpdatedAt = ParseDate(GetString(source, "updatedAt")),
-                    Url = GetString(source, "url")
+                    Comments = JsonValueReader.GetInt(source, "comments"),
+                    CreatedAt = ParseDate(JsonValueReader.GetString(source, "createdAt")),
+                    UpdatedAt = ParseDate(JsonValueReader.GetString(source, "updatedAt")),
+                    Url = JsonValueReader.GetString(source, "url")
                 });
             }
 
@@ -1256,19 +1257,19 @@ namespace MyCodex.Infrastructure.GitHosting
 
                 entries.Add(new GitHubPullRequestEntry
                 {
-                    Number = GetInt(source, "number"),
-                    Title = GetString(source, "title"),
-                    State = GetString(source, "state"),
+                    Number = JsonValueReader.GetInt(source, "number"),
+                    Title = JsonValueReader.GetString(source, "title"),
+                    State = JsonValueReader.GetString(source, "state"),
                     Author = GetNestedString(source, "author", "login"),
-                    IsDraft = GetBool(source, "isDraft"),
-                    ReviewDecision = GetString(source, "reviewDecision"),
-                    Comments = GetInt(source, "comments"),
-                    BaseBranch = GetString(source, "baseRefName"),
-                    HeadBranch = GetString(source, "headRefName"),
-                    MergedAt = ParseDate(GetString(source, "mergedAt")),
-                    CreatedAt = ParseDate(GetString(source, "createdAt")),
-                    UpdatedAt = ParseDate(GetString(source, "updatedAt")),
-                    Url = GetString(source, "url")
+                    IsDraft = JsonValueReader.GetBool(source, "isDraft"),
+                    ReviewDecision = JsonValueReader.GetString(source, "reviewDecision"),
+                    Comments = JsonValueReader.GetInt(source, "comments"),
+                    BaseBranch = JsonValueReader.GetString(source, "baseRefName"),
+                    HeadBranch = JsonValueReader.GetString(source, "headRefName"),
+                    MergedAt = ParseDate(JsonValueReader.GetString(source, "mergedAt")),
+                    CreatedAt = ParseDate(JsonValueReader.GetString(source, "createdAt")),
+                    UpdatedAt = ParseDate(JsonValueReader.GetString(source, "updatedAt")),
+                    Url = JsonValueReader.GetString(source, "url")
                 });
             }
 
@@ -1288,10 +1289,10 @@ namespace MyCodex.Infrastructure.GitHosting
 
                 entries.Add(new GitHubContributorEntry
                 {
-                    Login = GetString(source, "login"),
-                    Type = GetString(source, "type"),
-                    Contributions = GetInt(source, "contributions"),
-                    Url = GetString(source, "html_url")
+                    Login = JsonValueReader.GetString(source, "login"),
+                    Type = JsonValueReader.GetString(source, "type"),
+                    Contributions = JsonValueReader.GetInt(source, "contributions"),
+                    Url = JsonValueReader.GetString(source, "html_url")
                 });
             }
 
@@ -1303,14 +1304,14 @@ namespace MyCodex.Infrastructure.GitHosting
             var source = Deserialize(json);
             var entry = new GitHubDiscussionEntry
             {
-                Number = GetInt(source, "number"),
-                Title = GetString(source, "title"),
-                State = GetString(source, "state"),
+                Number = JsonValueReader.GetInt(source, "number"),
+                Title = JsonValueReader.GetString(source, "title"),
+                State = JsonValueReader.GetString(source, "state"),
                 Author = GetNestedString(source, "author", "login"),
-                Body = GetString(source, "body"),
-                CreatedAt = ParseDate(GetString(source, "createdAt")),
-                UpdatedAt = ParseDate(GetString(source, "updatedAt")),
-                Url = GetString(source, "url")
+                Body = JsonValueReader.GetString(source, "body"),
+                CreatedAt = ParseDate(JsonValueReader.GetString(source, "createdAt")),
+                UpdatedAt = ParseDate(JsonValueReader.GetString(source, "updatedAt")),
+                Url = JsonValueReader.GetString(source, "url")
             };
 
             var comments = source.ContainsKey("comments") ? source["comments"] as object[] : null;
@@ -1325,10 +1326,10 @@ namespace MyCodex.Infrastructure.GitHosting
                 entry.Comments.Add(new GitHubDiscussionCommentEntry
                 {
                     Author = GetNestedString(comment, "author", "login"),
-                    Body = GetString(comment, "body"),
-                    CreatedAt = ParseDate(GetString(comment, "createdAt")),
-                    UpdatedAt = ParseDate(GetString(comment, "updatedAt")),
-                    Url = GetString(comment, "url")
+                    Body = JsonValueReader.GetString(comment, "body"),
+                    CreatedAt = ParseDate(JsonValueReader.GetString(comment, "createdAt")),
+                    UpdatedAt = ParseDate(JsonValueReader.GetString(comment, "updatedAt")),
+                    Url = JsonValueReader.GetString(comment, "url")
                 });
             }
 
@@ -1453,16 +1454,6 @@ namespace MyCodex.Infrastructure.GitHosting
             return null;
         }
 
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            if (source == null || string.IsNullOrWhiteSpace(key) || !source.ContainsKey(key))
-            {
-                return null;
-            }
-
-            return source[key] == null ? null : Convert.ToString(source[key]);
-        }
-
         private static string GetNestedString(IDictionary<string, object> source, string key, string nestedKey)
         {
             if (source == null || !source.ContainsKey(key))
@@ -1471,40 +1462,7 @@ namespace MyCodex.Infrastructure.GitHosting
             }
 
             var nested = source[key] as Dictionary<string, object>;
-            return GetString(nested, nestedKey);
-        }
-
-        private static bool GetBool(IDictionary<string, object> source, string key)
-        {
-            if (source == null || string.IsNullOrWhiteSpace(key) || !source.ContainsKey(key) || source[key] == null)
-            {
-                return false;
-            }
-
-            bool value;
-            return bool.TryParse(Convert.ToString(source[key]), out value) && value;
-        }
-
-        private static long? GetNullableLong(IDictionary<string, object> source, string key)
-        {
-            if (source == null || string.IsNullOrWhiteSpace(key) || !source.ContainsKey(key) || source[key] == null)
-            {
-                return null;
-            }
-
-            long value;
-            return long.TryParse(Convert.ToString(source[key]), out value) ? value : (long?)null;
-        }
-
-        private static int? GetNullableInt(IDictionary<string, object> source, string key)
-        {
-            if (source == null || string.IsNullOrWhiteSpace(key) || !source.ContainsKey(key) || source[key] == null)
-            {
-                return null;
-            }
-
-            int value;
-            return int.TryParse(Convert.ToString(source[key]), out value) ? value : (int?)null;
+            return JsonValueReader.GetString(nested, nestedKey);
         }
 
         private static int? GetNestedNullableInt(IDictionary<string, object> source, string key, string nestedKey)
@@ -1515,18 +1473,7 @@ namespace MyCodex.Infrastructure.GitHosting
             }
 
             var nested = source[key] as Dictionary<string, object>;
-            return GetNullableInt(nested, nestedKey);
-        }
-
-        private static int GetInt(IDictionary<string, object> source, string key)
-        {
-            if (source == null || string.IsNullOrWhiteSpace(key) || !source.ContainsKey(key) || source[key] == null)
-            {
-                return 0;
-            }
-
-            int value;
-            return int.TryParse(Convert.ToString(source[key]), out value) ? value : 0;
+            return JsonValueReader.GetNullableInt(nested, nestedKey);
         }
 
         private static int NormalizeLimit(int limit, int defaultLimit, int maxLimit)

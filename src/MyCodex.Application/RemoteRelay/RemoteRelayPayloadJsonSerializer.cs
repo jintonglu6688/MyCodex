@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.Script.Serialization;
+using MyCodex.Shared.Helpers;
 
 namespace MyCodex.Application.RemoteRelay
 {
@@ -44,11 +45,11 @@ namespace MyCodex.Application.RemoteRelay
             }
 
             command.SchemaVersion = GetInt(root, "schemaVersion", 1);
-            command.PayloadType = GetString(root, "payloadType") ?? GetString(root, "type") ?? RemoteRelayPayloadTypes.Command;
-            command.RequestId = GetString(root, "requestId") ?? GetString(root, "commandId");
-            command.CommandType = GetString(root, "commandType") ?? GetString(root, "name");
-            command.DeviceId = GetString(root, "deviceId");
-            command.OperationId = GetString(root, "operationId");
+            command.PayloadType = JsonValueReader.GetString(root, "payloadType") ?? JsonValueReader.GetString(root, "type") ?? RemoteRelayPayloadTypes.Command;
+            command.RequestId = JsonValueReader.GetString(root, "requestId") ?? JsonValueReader.GetString(root, "commandId");
+            command.CommandType = JsonValueReader.GetString(root, "commandType") ?? JsonValueReader.GetString(root, "name");
+            command.DeviceId = JsonValueReader.GetString(root, "deviceId");
+            command.OperationId = JsonValueReader.GetString(root, "operationId");
             command.Payload = GetDictionary(root, "payload");
             if (command.Payload.Count == 0)
             {
@@ -137,10 +138,10 @@ namespace MyCodex.Application.RemoteRelay
             }
 
             remoteEvent.SchemaVersion = GetInt(root, "schemaVersion", 1);
-            remoteEvent.PayloadType = GetString(root, "payloadType") ?? GetString(root, "type") ?? RemoteRelayPayloadTypes.Event;
-            remoteEvent.EventType = GetString(root, "eventType") ?? GetString(root, "name");
-            remoteEvent.RequestId = GetString(root, "requestId") ?? GetString(root, "commandId");
-            remoteEvent.OperationId = GetString(root, "operationId");
+            remoteEvent.PayloadType = JsonValueReader.GetString(root, "payloadType") ?? JsonValueReader.GetString(root, "type") ?? RemoteRelayPayloadTypes.Event;
+            remoteEvent.EventType = JsonValueReader.GetString(root, "eventType") ?? JsonValueReader.GetString(root, "name");
+            remoteEvent.RequestId = JsonValueReader.GetString(root, "requestId") ?? JsonValueReader.GetString(root, "commandId");
+            remoteEvent.OperationId = JsonValueReader.GetString(root, "operationId");
             remoteEvent.Payload = GetDictionary(root, "payload");
             if (remoteEvent.Payload.Count == 0)
             {
@@ -168,17 +169,6 @@ namespace MyCodex.Application.RemoteRelay
         private static JavaScriptSerializer CreateSerializer()
         {
             return new JavaScriptSerializer { MaxJsonLength = MaxBusinessJsonCharacters };
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            object value;
-            if (source == null || !source.TryGetValue(key, out value) || value == null)
-            {
-                return null;
-            }
-
-            return value as string ?? Convert.ToString(value);
         }
 
         private static int GetInt(IDictionary<string, object> source, string key, int defaultValue)

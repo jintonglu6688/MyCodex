@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MyCodex.Application.DTOs;
+using MyCodex.Shared.Helpers;
 
 namespace MyCodex.Infrastructure.AppServer
 {
@@ -27,11 +28,11 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerFileSystemMetadata
             {
-                IsDirectory = GetBool(result, "isDirectory"),
-                IsFile = GetBool(result, "isFile"),
-                IsSymlink = GetBool(result, "isSymlink"),
-                CreatedAtMs = GetLong(result, "createdAtMs"),
-                ModifiedAtMs = GetLong(result, "modifiedAtMs")
+                IsDirectory = JsonValueReader.GetBool(result, "isDirectory"),
+                IsFile = JsonValueReader.GetBool(result, "isFile"),
+                IsSymlink = JsonValueReader.GetBool(result, "isSymlink"),
+                CreatedAtMs = JsonValueReader.GetLong(result, "createdAtMs"),
+                ModifiedAtMs = JsonValueReader.GetLong(result, "modifiedAtMs")
             };
         }
 
@@ -65,8 +66,8 @@ namespace MyCodex.Infrastructure.AppServer
             return new AppServerFileSystemEntry
             {
                 FileName = AppServerJsonValueReader.GetString(source, "fileName"),
-                IsDirectory = GetBool(source, "isDirectory"),
-                IsFile = GetBool(source, "isFile")
+                IsDirectory = JsonValueReader.GetBool(source, "isDirectory"),
+                IsFile = JsonValueReader.GetBool(source, "isFile")
             };
         }
 
@@ -80,29 +81,6 @@ namespace MyCodex.Infrastructure.AppServer
 
             var array = value as IEnumerable<object>;
             return array ?? Enumerable.Empty<object>();
-        }
-
-        private static bool GetBool(IDictionary<string, object> source, string key)
-        {
-            object value;
-            bool result;
-            return source != null &&
-                source.TryGetValue(key, out value) &&
-                value != null &&
-                bool.TryParse(Convert.ToString(value), out result) &&
-                result;
-        }
-
-        private static long GetLong(IDictionary<string, object> source, string key)
-        {
-            object value;
-            long result;
-            return source != null &&
-                source.TryGetValue(key, out value) &&
-                value != null &&
-                long.TryParse(Convert.ToString(value), out result)
-                    ? result
-                    : 0L;
         }
     }
 }

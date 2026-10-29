@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Shared.Constants;
+using MyCodex.Shared.Helpers;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
 
@@ -122,13 +123,13 @@ namespace MyCodex.WinForms.Forms
         private void LoadValues()
         {
             _nameTextBox.Text = _server != null ? (_server.ServerName ?? string.Empty) : string.Empty;
-            _enabledCheckBox.Checked = GetNullableBool(_baseConfig, "enabled") ?? (_server != null ? _server.Enabled : null) ?? true;
+            _enabledCheckBox.Checked = JsonValueReader.GetNullableBool(_baseConfig, "enabled") ?? (_server != null ? _server.Enabled : null) ?? true;
 
-            var url = GetFirstNonEmptyString(_baseConfig, "url", "baseUrl", "serverUrl", "endpoint");
-            var command = GetString(_baseConfig, "command");
-            var arguments = JoinArrayLines(GetValue(_baseConfig, "args"));
-            var workingDirectory = GetString(_baseConfig, "cwd");
-            var environment = BuildEnvironmentLines(GetValue(_baseConfig, "env")) ?? BuildEnvironmentLines(GetValue(_baseConfig, "env_vars"));
+            var url = JsonValueReader.GetFirstNonEmptyString(_baseConfig, "url", "baseUrl", "serverUrl", "endpoint");
+            var command = JsonValueReader.GetString(_baseConfig, "command");
+            var arguments = JoinArrayLines(JsonValueReader.GetValue(_baseConfig, "args"));
+            var workingDirectory = JsonValueReader.GetString(_baseConfig, "cwd");
+            var environment = BuildEnvironmentLines(JsonValueReader.GetValue(_baseConfig, "env")) ?? BuildEnvironmentLines(JsonValueReader.GetValue(_baseConfig, "env_vars"));
 
             _urlTextBox.Text = url ?? string.Empty;
             _commandTextBox.Text = command ?? string.Empty;
@@ -323,7 +324,7 @@ namespace MyCodex.WinForms.Forms
                 }
 
                 config["url"] = url;
-                if (config.ContainsKey("type") && GetString(config, "type") != "sse") config["type"] = "http";
+                if (config.ContainsKey("type") && JsonValueReader.GetString(config, "type") != "sse") config["type"] = "http";
                 RemoveKeys(config, "command", "args", "cwd", "env", "env_vars", "baseUrl", "serverUrl", "endpoint");
             }
             else
@@ -591,56 +592,6 @@ namespace MyCodex.WinForms.Forms
             }
 
             return string.Join(Environment.NewLine, lines.ToArray());
-        }
-
-        private static string GetString(IDictionary<string, object> source, string key)
-        {
-            object rawValue;
-            return source != null && source.TryGetValue(key, out rawValue) && rawValue != null
-                ? Convert.ToString(rawValue)
-                : null;
-        }
-
-        private static object GetValue(IDictionary<string, object> source, string key)
-        {
-            object rawValue;
-            return source != null && source.TryGetValue(key, out rawValue) ? rawValue : null;
-        }
-
-        private static string GetFirstNonEmptyString(IDictionary<string, object> source, params string[] keys)
-        {
-            if (source == null || keys == null)
-            {
-                return null;
-            }
-
-            foreach (var key in keys)
-            {
-                var value = GetString(source, key);
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    return value;
-                }
-            }
-
-            return null;
-        }
-
-        private static bool? GetNullableBool(IDictionary<string, object> source, string key)
-        {
-            object rawValue;
-            if (source == null || !source.TryGetValue(key, out rawValue) || rawValue == null)
-            {
-                return null;
-            }
-
-            if (rawValue is bool)
-            {
-                return (bool)rawValue;
-            }
-
-            bool parsedValue;
-            return bool.TryParse(Convert.ToString(rawValue), out parsedValue) ? parsedValue : (bool?)null;
         }
 
         private static Dictionary<string, object> CloneDictionary(IDictionary<string, object> source)
