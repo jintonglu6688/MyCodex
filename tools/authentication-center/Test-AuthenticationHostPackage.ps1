@@ -12,7 +12,7 @@ function Test-AuthenticationHostPackage {
     if ((Get-Item -LiteralPath $manifestPath).Length -gt 65536) { throw 'Authentication host manifest is too large.' }
     $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
     if ($manifest.schemaVersion -ne 1 -or $manifest.executable -cne 'mycodex-auth-host.exe' -or
-        $manifest.hostVersion -cne '0.3.11' -or $manifest.protocolVersion -ne 3 -or
+        $manifest.hostVersion -cne '0.3.12' -or $manifest.protocolVersion -ne 3 -or
         $manifest.upstreamRevision -cne '85ad4969b3399500baaea9d46b1e08f87aba80e1' -or
         $manifest.target -cne 'x86_64-pc-windows-msvc' -or $manifest.sourceDirty -isnot [bool] -or
         $manifest.sourceRevision -cnotmatch '^[0-9a-f]{40}$' -or $manifest.sha256 -cnotmatch '^[0-9a-f]{64}$') {
@@ -48,7 +48,7 @@ function Test-AuthenticationInstallerReceipt {
     $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json
     if ($receipt.schemaVersion -ne 1 -or $receipt.development -isnot [bool] -or $receipt.development -or
         $receipt.authenticationHost.sourceDirty -isnot [bool] -or $receipt.authenticationHost.sourceDirty -or
-        $receipt.authenticationHost.hostVersion -cne '0.3.11' -or $receipt.authenticationHost.protocolVersion -ne 3 -or
+        $receipt.authenticationHost.hostVersion -cne '0.3.12' -or $receipt.authenticationHost.protocolVersion -ne 3 -or
         $receipt.authenticationHost.target -cne 'x86_64-pc-windows-msvc' -or
         $receipt.authenticationHost.upstreamRevision -cne '85ad4969b3399500baaea9d46b1e08f87aba80e1' -or
         $receipt.authenticationHost.sourceRevision -cnotmatch '^[0-9a-f]{40}$' -or

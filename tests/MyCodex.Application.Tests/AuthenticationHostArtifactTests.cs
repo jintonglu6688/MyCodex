@@ -31,7 +31,7 @@ namespace MyCodex.Application.Tests
             }
             _manifest = new Dictionary<string, object>
             {
-                { "schemaVersion", 1 }, { "hostVersion", "0.3.11" }, { "protocolVersion", 3 },
+                { "schemaVersion", 1 }, { "hostVersion", "0.3.12" }, { "protocolVersion", 3 },
                 { "upstreamRevision", "85ad4969b3399500baaea9d46b1e08f87aba80e1" },
                 { "sourceRevision", new string('a', 40) }, { "sourceDirty", false },
                 { "target", "x86_64-pc-windows-msvc" }, { "executable", "mycodex-auth-host.exe" }, { "sha256", hash }
@@ -154,7 +154,7 @@ namespace MyCodex.Application.Tests
             _manifest["executable"] = "mycodex-auth-host";
             var serializer = new JavaScriptSerializer();
             var hash = (string)_manifest["sha256"];
-            _manifest["hostVersion"] = "0.3.11";
+            _manifest["hostVersion"] = "0.3.12";
             _manifest["protocolVersion"] = 3;
             _manifest["upstreamRevision"] = "85ad4969b3399500baaea9d46b1e08f87aba80e1";
             var text = serializer.Serialize(_manifest);

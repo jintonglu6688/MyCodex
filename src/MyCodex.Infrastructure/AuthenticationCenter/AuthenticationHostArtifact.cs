@@ -12,10 +12,11 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
     {
         internal const string ManifestFileName = "mycodex-auth-host.manifest.json";
         private const int ProtocolVersion = 3;
-        private const string HostVersion = "0.3.11";
+        private const string HostVersion = "0.3.12";
         private const string UpstreamRevision = "85ad4969b3399500baaea9d46b1e08f87aba80e1";
-        // Earlier releases may only be replaced: 0.2.x (protocol 2, 3.x upstream)
-        // 0.3.0-0.3.2 (protocol 3, v4.0.5 upstream) and 0.3.3-0.3.11 (v4.0.7 upstream).
+        // Earlier releases may only be replaced: 0.2.x (protocol 2, 3.x upstream),
+        // 0.3.0-0.3.2 (protocol 3, v4.0.5 upstream), 0.3.3-0.3.10 (v4.0.7 upstream),
+        // and 0.3.11, whose upstream matches the current one.
         private static readonly KeyValuePair<int, string>[] UpdatableIdentities =
         {
             new KeyValuePair<int, string>(2, "e0f70019b2758f5b6b9a04dd60e4689481a0c0ac"),
