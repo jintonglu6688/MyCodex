@@ -10,6 +10,7 @@
     <MyCodexTestBuildOutputRoot>$(MSBuildThisFileDirectory)bin\ProjectReferences\</MyCodexTestBuildOutputRoot>
     <BaseOutputPath>$(MSBuildThisFileDirectory)bin\</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)$(Configuration)\</OutputPath>
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory)MyCodex.Application.Tests.runsettings</RunSettingsFilePath>
   </PropertyGroup>
 
   <ItemGroup>

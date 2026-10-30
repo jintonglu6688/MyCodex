@@ -47,42 +47,44 @@ namespace MyCodex.Application.Tests.SourceGuards
             new DuplicateHelper("Localization alias L", @"^\s+(?:private|internal)\s+static\s+string\s+L\s*\(", null, 19)
         };
 
+        // Every test reads the same measurement, so the source tree is scanned once per run.
+        private static readonly Lazy<SourceMetrics> Measured = new Lazy<SourceMetrics>(SourceMetrics.Measure);
+
         [Test]
         public void MainForm_DoesNotGrow()
         {
-            var partials = RepositorySource.FindSourceFiles("MyCodex.WinForms", "MainForm*.cs")
-                .Where(path => MainFormPartialFileName.IsMatch(Path.GetFileName(path)))
-                .ToArray();
-            var core = RepositorySource.FindSourceFile("MainForm.cs");
+            var metrics = Measured.Value;
 
             Assert.Multiple(() =>
             {
-                Assert.That(partials.Sum(CountNonEmptyLines), Is.AtMost(MainFormPartialNonEmptyLinesCeiling), "MainForm partial non-empty lines");
-                Assert.That(CountNonEmptyLines(core), Is.AtMost(MainFormCoreFileNonEmptyLinesCeiling), "MainForm.cs non-empty lines");
-                Assert.That(partials.Sum(CountFields), Is.AtMost(MainFormFieldCeiling), "MainForm fields");
+                Assert.That(metrics.MainFormPartialNonEmptyLines, Is.AtMost(MainFormPartialNonEmptyLinesCeiling), "MainForm partial non-empty lines");
+                Assert.That(metrics.MainFormCoreFileNonEmptyLines, Is.AtMost(MainFormCoreFileNonEmptyLinesCeiling), "MainForm.cs non-empty lines");
+                Assert.That(metrics.MainFormFields, Is.AtMost(MainFormFieldCeiling), "MainForm fields");
             });
         }
 
         [Test]
         public void LongMethodsAndLargeFiles_DoNotIncrease()
         {
-            var files = RepositorySource.FindAllSourceFiles();
+            var metrics = Measured.Value;
 
             Assert.Multiple(() =>
             {
-                Assert.That(files.Sum(path => CountLongMembers(path, LongMethodLineLimit)), Is.AtMost(MethodsOver150LinesCeiling), "Methods over 150 lines");
-                Assert.That(files.Count(path => File.ReadAllLines(path).Length > LargeFileLineLimit), Is.AtMost(FilesOver1200LinesCeiling), "Files over 1200 lines");
+                Assert.That(metrics.MethodsOver150Lines, Is.AtMost(MethodsOver150LinesCeiling), "Methods over 150 lines");
+                Assert.That(metrics.FilesOver1200Lines, Is.AtMost(FilesOver1200LinesCeiling), "Files over 1200 lines");
             });
         }
 
         [Test]
         public void DuplicateHelperCopies_DoNotIncrease()
         {
+            var metrics = Measured.Value;
+
             Assert.Multiple(() =>
             {
                 foreach (var helper in DuplicateHelpers)
                 {
-                    Assert.That(CountDeclaringFiles(helper), Is.AtMost(helper.Ceiling), helper.Name + " copies");
+                    Assert.That(metrics.DuplicateCopies[helper.Name], Is.AtMost(helper.Ceiling), helper.Name + " copies");
                 }
             });
         }
@@ -90,38 +92,34 @@ namespace MyCodex.Application.Tests.SourceGuards
         [Test]
         public void Metrics_AreReported()
         {
-            var partials = RepositorySource.FindSourceFiles("MyCodex.WinForms", "MainForm*.cs")
-                .Where(path => MainFormPartialFileName.IsMatch(Path.GetFileName(path)))
-                .ToArray();
-            var files = RepositorySource.FindAllSourceFiles();
+            var metrics = Measured.Value;
             var lines = new List<string>
             {
-                "MainForm partial non-empty lines: " + partials.Sum(CountNonEmptyLines),
-                "MainForm.cs non-empty lines: " + CountNonEmptyLines(RepositorySource.FindSourceFile("MainForm.cs")),
-                "MainForm fields: " + partials.Sum(CountFields),
-                "Methods over 150 lines: " + files.Sum(path => CountLongMembers(path, LongMethodLineLimit)),
-                "Files over 1200 lines: " + files.Count(path => File.ReadAllLines(path).Length > LargeFileLineLimit)
+                "MainForm partial non-empty lines: " + metrics.MainFormPartialNonEmptyLines,
+                "MainForm.cs non-empty lines: " + metrics.MainFormCoreFileNonEmptyLines,
+                "MainForm fields: " + metrics.MainFormFields,
+                "Methods over 150 lines: " + metrics.MethodsOver150Lines,
+                "Files over 1200 lines: " + metrics.FilesOver1200Lines
             };
-            lines.AddRange(DuplicateHelpers.Select(helper => helper.Name + " copies: " + CountDeclaringFiles(helper)));
+            lines.AddRange(DuplicateHelpers.Select(helper => helper.Name + " copies: " + metrics.DuplicateCopies[helper.Name]));
             TestContext.Out.WriteLine(string.Join(Environment.NewLine, lines));
 
-            Assert.That(partials, Is.Not.Empty);
+            Assert.That(metrics.MainFormPartialCount, Is.GreaterThan(0));
         }
 
         /// <summary>Counts non-empty lines other than using directives, so moving a type to another namespace is not growth.</summary>
-        private static int CountNonEmptyLines(string path)
+        private static int CountNonEmptyLines(string[] lines)
         {
-            return File.ReadLines(path).Count(line => line.Trim().Length > 0 && !UsingDirective.IsMatch(line));
+            return lines.Count(line => line.Trim().Length > 0 && !UsingDirective.IsMatch(line));
         }
 
-        private static int CountFields(string path)
+        private static int CountFields(string[] lines)
         {
-            return File.ReadLines(path).Count(line => FieldDeclaration.IsMatch(line));
+            return lines.Count(line => FieldDeclaration.IsMatch(line));
         }
 
-        private static int CountLongMembers(string path, int lineLimit)
+        private static int CountLongMembers(string[] lines, int lineLimit)
         {
-            var lines = File.ReadAllLines(path);
             var count = 0;
             for (var i = 0; i + 1 < lines.Length; i++)
             {
@@ -145,12 +143,69 @@ namespace MyCodex.Application.Tests.SourceGuards
             return count;
         }
 
-        private static int CountDeclaringFiles(DuplicateHelper helper)
+        private sealed class SourceMetrics
         {
-            var files = helper.ProjectName == null
-                ? RepositorySource.FindAllSourceFiles()
-                : RepositorySource.FindSourceFiles(helper.ProjectName, "*.cs");
-            return files.Count(path => helper.Declaration.IsMatch(File.ReadAllText(path)));
+            public int MainFormPartialCount { get; private set; }
+
+            public int MainFormPartialNonEmptyLines { get; private set; }
+
+            public int MainFormCoreFileNonEmptyLines { get; private set; }
+
+            public int MainFormFields { get; private set; }
+
+            public int MethodsOver150Lines { get; private set; }
+
+            public int FilesOver1200Lines { get; private set; }
+
+            public Dictionary<string, int> DuplicateCopies { get; } = new Dictionary<string, int>(StringComparer.Ordinal);
+
+            public static SourceMetrics Measure()
+            {
+                var metrics = new SourceMetrics();
+                foreach (var helper in DuplicateHelpers)
+                {
+                    metrics.DuplicateCopies.Add(helper.Name, 0);
+                }
+
+                var mainFormPartials = new HashSet<string>(
+                    RepositorySource.FindSourceFiles("MyCodex.WinForms", "MainForm*.cs")
+                        .Where(path => MainFormPartialFileName.IsMatch(Path.GetFileName(path))),
+                    StringComparer.OrdinalIgnoreCase);
+                var mainFormCore = RepositorySource.FindSourceFile("MainForm.cs");
+
+                foreach (var path in RepositorySource.FindAllSourceFiles())
+                {
+                    var text = File.ReadAllText(path);
+                    var lines = File.ReadAllLines(path);
+                    metrics.MethodsOver150Lines += CountLongMembers(lines, LongMethodLineLimit);
+                    if (lines.Length > LargeFileLineLimit)
+                    {
+                        metrics.FilesOver1200Lines++;
+                    }
+
+                    if (mainFormPartials.Contains(path))
+                    {
+                        metrics.MainFormPartialCount++;
+                        metrics.MainFormPartialNonEmptyLines += CountNonEmptyLines(lines);
+                        metrics.MainFormFields += CountFields(lines);
+                    }
+
+                    if (string.Equals(path, mainFormCore, StringComparison.OrdinalIgnoreCase))
+                    {
+                        metrics.MainFormCoreFileNonEmptyLines = CountNonEmptyLines(lines);
+                    }
+
+                    foreach (var helper in DuplicateHelpers)
+                    {
+                        if (helper.Covers(path) && helper.Declaration.IsMatch(text))
+                        {
+                            metrics.DuplicateCopies[helper.Name]++;
+                        }
+                    }
+                }
+
+                return metrics;
+            }
         }
 
         private sealed class DuplicateHelper
@@ -158,9 +213,16 @@ namespace MyCodex.Application.Tests.SourceGuards
             public DuplicateHelper(string name, string declarationPattern, string projectName, int ceiling)
             {
                 Name = name;
-                Declaration = new Regex(declarationPattern, RegexOptions.Multiline | RegexOptions.CultureInvariant);
+                // Compiled: each pattern scans every production file.
+                Declaration = new Regex(declarationPattern, RegexOptions.Multiline | RegexOptions.CultureInvariant | RegexOptions.Compiled);
                 ProjectName = projectName;
                 Ceiling = ceiling;
+            }
+
+            public bool Covers(string path)
+            {
+                return ProjectName == null ||
+                    path.StartsWith(RepositorySource.GetPath("src", ProjectName) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
             }
 
             public string Name { get; }

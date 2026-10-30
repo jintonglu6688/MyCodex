@@ -30,10 +30,10 @@ namespace MyCodex.Application.Tests
         public void WinFormsStringResources_AreReferencedByCodeLiterals()
         {
             var resourceKeys = LoadResourceKeys();
-            var sourceTexts = LoadSourceTexts();
+            var quotedTexts = LoadQuotedSourceTexts(resourceKeys.Max(key => key.Length));
 
             var unusedKeys = resourceKeys
-                .Where(key => !sourceTexts.Any(text => text.IndexOf("\"" + key + "\"", StringComparison.Ordinal) >= 0))
+                .Where(key => key.IndexOf('"') >= 0 || !quotedTexts.Contains(key))
                 .OrderBy(key => key, StringComparer.Ordinal)
                 .ToArray();
 
@@ -153,14 +153,63 @@ namespace MyCodex.Application.Tests
                 .ToArray();
         }
 
-        private static string[] LoadSourceTexts()
+        /// <summary>
+        /// Collects the text between every pair of adjacent quote characters in the C# sources. A quote-free
+        /// key appears as "key" in a file exactly when it is in this set, so one pass replaces a search per key.
+        /// </summary>
+        private static HashSet<string> LoadQuotedSourceTexts(int maxLength)
         {
-            var repositoryRoot = RepositorySource.Root;
-            return Directory.GetFiles(repositoryRoot, "*.cs", SearchOption.AllDirectories)
-                .Where(path => !path.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar))
-                .Where(path => !path.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
-                .Select(File.ReadAllText)
-                .ToArray();
+            var quoted = new HashSet<string>(StringComparer.Ordinal);
+            // The C# sources live in these folders; walking the whole repository would also walk runtime payloads.
+            foreach (var folder in new[] { "src", "tests", "tools" })
+            {
+                foreach (var path in EnumerateSourceFiles(RepositorySource.GetPath(folder)))
+                {
+                    var text = File.ReadAllText(path);
+                    var open = text.IndexOf('"');
+                    while (open >= 0)
+                    {
+                        var close = text.IndexOf('"', open + 1);
+                        if (close < 0)
+                        {
+                            break;
+                        }
+
+                        if (close - open - 1 <= maxLength)
+                        {
+                            quoted.Add(text.Substring(open + 1, close - open - 1));
+                        }
+
+                        open = close;
+                    }
+                }
+            }
+
+            return quoted;
+        }
+
+        // Skips build output folders without walking them.
+        private static IEnumerable<string> EnumerateSourceFiles(string directory)
+        {
+            foreach (var path in Directory.EnumerateFiles(directory, "*.cs"))
+            {
+                yield return path;
+            }
+
+            foreach (var child in Directory.EnumerateDirectories(directory))
+            {
+                var name = Path.GetFileName(child);
+                if (string.Equals(name, "bin", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(name, "obj", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                foreach (var path in EnumerateSourceFiles(child))
+                {
+                    yield return path;
+                }
+            }
         }
     }
 }

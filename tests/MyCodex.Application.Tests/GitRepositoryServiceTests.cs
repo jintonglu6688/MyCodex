@@ -22,6 +22,42 @@ namespace MyCodex.Application.Tests
             return new GitRepositoryService(new MyCodex.Infrastructure.Git.GitCommandRunner());
         }
 
+        private string _repositoryTemplate;
+
+        [OneTimeSetUp]
+        public void CreateRepositoryTemplate()
+        {
+            _repositoryTemplate = CreateTempDirectory();
+            RunGit(_repositoryTemplate, "init");
+            ConfigureTestIdentity(_repositoryTemplate);
+        }
+
+        [OneTimeTearDown]
+        public void DeleteRepositoryTemplate()
+        {
+            DeleteDirectory(_repositoryTemplate);
+        }
+
+        /// <summary>
+        /// Same result as git init plus the test identity: copies the repository prepared once for this fixture,
+        /// which avoids three git process starts per test.
+        /// </summary>
+        private void InitializeTestRepository(string workspaceRoot)
+        {
+            var source = Path.Combine(_repositoryTemplate, ".git");
+            var destination = Path.Combine(workspaceRoot, ".git");
+            Directory.CreateDirectory(destination);
+            foreach (var directory in Directory.GetDirectories(source, "*", SearchOption.AllDirectories))
+            {
+                Directory.CreateDirectory(Path.Combine(destination, directory.Substring(source.Length + 1)));
+            }
+
+            foreach (var file in Directory.GetFiles(source, "*", SearchOption.AllDirectories))
+            {
+                File.Copy(file, Path.Combine(destination, file.Substring(source.Length + 1)));
+            }
+        }
+
         [Test]
         public void ReadStatus_ForNonGitDirectory_AllowsInitialization()
         {
@@ -120,8 +156,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
 
                 var service = CreateService();
@@ -150,8 +185,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
 
                 var service = CreateService();
@@ -175,8 +209,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
 
                 var service = CreateService();
@@ -199,8 +232,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -231,8 +263,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -262,8 +293,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -294,8 +324,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -326,8 +355,7 @@ namespace MyCodex.Application.Tests
             try
             {
                 RunGit(remoteRoot, "init --bare");
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -404,8 +432,7 @@ namespace MyCodex.Application.Tests
             try
             {
                 RunGit(remoteRoot, "init --bare");
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -437,8 +464,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -468,8 +494,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -497,8 +522,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -533,8 +557,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -560,8 +583,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -591,8 +613,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -648,8 +669,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 File.WriteAllText(Path.Combine(workspaceRoot, "other.txt"), "other" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
@@ -690,8 +710,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -720,8 +739,7 @@ namespace MyCodex.Application.Tests
             try
             {
                 Directory.Delete(worktreeRoot, true);
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -753,8 +771,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -784,8 +801,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -817,8 +833,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -851,8 +866,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -884,8 +898,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -912,8 +925,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 var notePath = Path.Combine(workspaceRoot, "note.txt");
                 File.WriteAllText(notePath, "note" + Environment.NewLine);
 
@@ -939,8 +951,7 @@ namespace MyCodex.Application.Tests
             try
             {
                 RunGit(remoteRoot, "init --bare");
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 RunGit(workspaceRoot, "branch -M main");
                 RunGit(workspaceRoot, "remote add origin " + QuoteArgument(remoteRoot));
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
@@ -975,8 +986,7 @@ namespace MyCodex.Application.Tests
             try
             {
                 RunGit(remoteRoot, "init --bare");
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 RunGit(workspaceRoot, "branch -M main");
                 RunGit(workspaceRoot, "remote add origin " + QuoteArgument(remoteRoot));
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
@@ -1017,8 +1027,7 @@ namespace MyCodex.Application.Tests
             try
             {
                 RunGit(remoteRoot, "init --bare");
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 RunGit(workspaceRoot, "branch -M main");
                 RunGit(workspaceRoot, "remote add origin " + QuoteArgument(remoteRoot));
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
@@ -1061,8 +1070,7 @@ namespace MyCodex.Application.Tests
             try
             {
                 RunGit(remoteRoot, "init --bare");
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 RunGit(workspaceRoot, "branch -M main");
                 RunGit(workspaceRoot, "remote add origin " + QuoteArgument(remoteRoot));
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
@@ -1104,8 +1112,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -1131,8 +1138,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -1186,8 +1192,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "base" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -1249,8 +1254,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "old.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -1276,8 +1280,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "one" + Environment.NewLine + "two" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
                 RunGit(workspaceRoot, "commit -m \"Initial commit\"");
@@ -1409,8 +1412,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
-                ConfigureTestIdentity(workspaceRoot);
+                InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "note.txt"), "hello" + Environment.NewLine);
 
                 var service = CreateService();

@@ -1876,7 +1876,7 @@ namespace MyCodex.Application.Tests
         public void ConnectAsync_WhenConfigLoadIsSlow_ReturnsTaskWithoutBlockingCaller()
         {
             var appDataPath = Path.Combine(TestContext.CurrentContext.WorkDirectory, Guid.NewGuid().ToString("N"));
-            var configStore = new SlowUnavailableConfigStore(1200);
+            var configStore = new SlowUnavailableConfigStore();
             var client = new AppServerClient(
                 new CodexRuntimeManager(new AppConfigService(appDataPath)),
                 configStore);
@@ -1884,6 +1884,7 @@ namespace MyCodex.Application.Tests
 
             var connectTask = client.ConnectAsync();
             watch.Stop();
+            configStore.Release.Set();
 
             Assert.That(watch.ElapsedMilliseconds, Is.LessThan(500));
             Assert.ThrowsAsync<CodexRuntimeUnavailableException>(async () => await connectTask);
@@ -4219,16 +4220,12 @@ namespace MyCodex.Application.Tests
 
         private sealed class SlowUnavailableConfigStore : IAppConfigStore
         {
-            private readonly int _delayMilliseconds;
-
-            public SlowUnavailableConfigStore(int delayMilliseconds)
-            {
-                _delayMilliseconds = delayMilliseconds;
-            }
+            // Loading stays slow until the test has measured the caller; the timeout only bounds a failing test.
+            public ManualResetEventSlim Release { get; } = new ManualResetEventSlim(false);
 
             public AppConfigSnapshot Load()
             {
-                Thread.Sleep(_delayMilliseconds);
+                Release.Wait(TimeSpan.FromSeconds(5));
                 return new AppConfigSnapshot
                 {
                     CodexRuntimeSource = CodexRuntimeSources.Custom,

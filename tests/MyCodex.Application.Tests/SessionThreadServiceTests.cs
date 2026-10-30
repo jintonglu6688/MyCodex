@@ -386,12 +386,14 @@ namespace MyCodex.Application.Tests
         public async Task TryUpdateThreadGitMetadataAsync_WhenGitReadIsSlow_ReturnsTaskWithoutBlockingCaller()
         {
             var client = new RecordingAppServerClient();
+            var release = new ManualResetEventSlim(false);
             var service = new SessionThreadService(
                 client,
                 new WorkspaceService(),
                 path =>
                 {
-                    Thread.Sleep(1200);
+                    // Stays slow until the caller has been measured; the timeout only bounds a failing test.
+                    release.Wait(TimeSpan.FromSeconds(5));
                     return new WorkspaceGitInfoSnapshot
                     {
                         IsGitRepository = true,
@@ -405,6 +407,7 @@ namespace MyCodex.Application.Tests
 
             var task = service.TryUpdateThreadGitMetadataAsync("thread-1", workspace);
             watch.Stop();
+            release.Set();
 
             Assert.That(watch.ElapsedMilliseconds, Is.LessThan(500));
             await task;

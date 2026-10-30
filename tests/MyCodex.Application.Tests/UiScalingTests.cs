@@ -351,7 +351,7 @@ namespace MyCodex.Application.Tests
             {
                 var config = (AppConfigSnapshot)serializer.ReadObject(stream);
                 Assert.That(config.UiFontScalePercent, Is.EqualTo(expected));
-                var path = Path.Combine(RepositorySource.Root, "artifacts", "font-scale-" + Guid.NewGuid().ToString("N"));
+                var path = Path.Combine(TestContext.CurrentContext.WorkDirectory, "font-scale-" + Guid.NewGuid().ToString("N"));
                 var store = new JsonAppConfigStore(new AppConfigService(path));
                 store.Save(config);
                 Assert.That(store.Load().UiFontScalePercent, Is.EqualTo(expected));
@@ -463,7 +463,7 @@ namespace MyCodex.Application.Tests
             Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
             UiTheme.InitializeUiFontScale(150);
             UiTheme.InitializeUiFontFamily(culture);
-            var paths = new AppConfigService(Path.Combine(RepositorySource.Root, "artifacts", "main-scale-" + Guid.NewGuid().ToString("N")));
+            var paths = new AppConfigService(Path.Combine(TestContext.CurrentContext.WorkDirectory, "main-scale-" + Guid.NewGuid().ToString("N")));
             var config = new JsonAppConfigStore(paths);
             var runtime = new CodexRuntimeManager(paths);
             using (var client = new AppServerClient(runtime, config))

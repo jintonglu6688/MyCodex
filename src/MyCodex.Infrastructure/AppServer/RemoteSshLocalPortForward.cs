@@ -148,8 +148,8 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static void WaitForLocalForward(int port, Func<int, bool> isLocalPortListening, Action<int> sleep)
         {
-            var deadline = DateTime.UtcNow.AddSeconds(5);
-            while (DateTime.UtcNow < deadline)
+            // About five seconds of 100 ms waits; counting attempts keeps an injected sleep from spinning on the clock.
+            for (var attempt = 0; attempt < 50; attempt++)
             {
                 if (isLocalPortListening(port))
                 {

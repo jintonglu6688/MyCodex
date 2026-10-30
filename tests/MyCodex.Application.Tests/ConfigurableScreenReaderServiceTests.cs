@@ -228,6 +228,7 @@ namespace MyCodex.Application.Tests
                 var result = service.Speak("hello", true, false, true);
 
                 stopwatch.Stop();
+                zdsr.Release.Set();
                 Assert.That(result, Is.True);
                 Assert.That(stopwatch.ElapsedMilliseconds, Is.LessThan(250));
                 Assert.That(zdsr.SpeakStarted.WaitOne(1000), Is.True);
@@ -245,6 +246,7 @@ namespace MyCodex.Application.Tests
                 var result = service.EnsureInitialized();
 
                 stopwatch.Stop();
+                zdsr.Release.Set();
                 Assert.That(result, Is.True);
                 Assert.That(stopwatch.ElapsedMilliseconds, Is.LessThan(250));
                 Assert.That(zdsr.InitializeStarted.WaitOne(1000), Is.True);
@@ -484,6 +486,9 @@ namespace MyCodex.Application.Tests
 
             public ManualResetEvent SpeakStarted { get; } = new ManualResetEvent(false);
 
+            // The provider stays busy until the test has measured the caller; the timeout only bounds a failing test.
+            public ManualResetEvent Release { get; } = new ManualResetEvent(false);
+
             public bool IsAvailable
             {
                 get { return true; }
@@ -502,7 +507,7 @@ namespace MyCodex.Application.Tests
             public bool EnsureInitialized()
             {
                 InitializeStarted.Set();
-                Thread.Sleep(750);
+                Release.WaitOne(750);
                 return true;
             }
 
@@ -519,7 +524,7 @@ namespace MyCodex.Application.Tests
             public bool Speak(string text, bool useSlave, bool append, bool allowBreak)
             {
                 SpeakStarted.Set();
-                Thread.Sleep(750);
+                Release.WaitOne(750);
                 return true;
             }
 

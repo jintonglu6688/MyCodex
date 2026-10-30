@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tests write scratch files under TestContext.CurrentContext.WorkDirectory; keep them in one folder the run can clean. -->
+<RunSettings>
+  <NUnit>
+    <WorkDirectory>TestWork</WorkDirectory>
+  </NUnit>
+</RunSettings>

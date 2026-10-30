@@ -87,6 +87,18 @@
       <Link>help\UserManual.en.html</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\MyCodex.Infrastructure\BrowserUse\PluginAssets\**\*">
+      <Link>browser-use\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\runtime\putty\**\*">
+      <Link>runtime\putty\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Prepared runtime payloads (over 1 GB) belong to app builds only; tests never read them from the build output. -->
+  <ItemGroup Condition="'$(MyCodexTestBuildOutputRoot)' == ''">
     <None Include="..\..\runtime\cua\**\*">
       <Link>runtime\cua\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -99,20 +111,12 @@
       <Link>runtime\browser-host\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\MyCodex.Infrastructure\BrowserUse\PluginAssets\**\*">
-      <Link>browser-use\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="..\..\runtime\git\**\*">
       <Link>runtime\git\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\runtime\codex\**\*">
       <Link>runtime\codex\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\..\runtime\putty\**\*">
-      <Link>runtime\putty\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\runtime\auth-core\mycodex-auth-host.exe;..\..\runtime\auth-core\mycodex-auth-host.manifest.json;..\..\runtime\auth-core\LICENSE" Condition="Exists('..\..\runtime\auth-core\mycodex-auth-host.manifest.json')">
