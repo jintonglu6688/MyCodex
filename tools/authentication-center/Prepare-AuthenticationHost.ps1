@@ -8,13 +8,19 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+$hostVersion = '0.3.12'
 if ([string]::IsNullOrWhiteSpace($DestinationRoot)) { $DestinationRoot = Join-Path $repositoryRoot 'runtime\auth-core' }
 if ([string]::IsNullOrWhiteSpace($SourceRoot)) {
-    if ($Configuration -eq 'Debug' -and (Test-Path -LiteralPath (Join-Path $DestinationRoot 'mycodex-auth-host.manifest.json') -PathType Leaf)) {
-        . (Join-Path $PSScriptRoot 'Test-AuthenticationHostPackage.ps1')
-        $existing = Test-AuthenticationHostPackage -PackageRoot $DestinationRoot -AllowDevelopment
-        Write-Host "Using verified local authentication backend for Debug: $($existing.sourceRevision); uncommitted changes: $($existing.sourceDirty)"
-        return
+    $existingManifest = Join-Path $DestinationRoot 'mycodex-auth-host.manifest.json'
+    if ($Configuration -eq 'Debug' -and (Test-Path -LiteralPath $existingManifest -PathType Leaf)) {
+        # A package from another backend version is replaced by the pinned release; any other mismatch still fails.
+        if ((Get-Content -LiteralPath $existingManifest -Raw | ConvertFrom-Json).hostVersion -ceq $hostVersion) {
+            . (Join-Path $PSScriptRoot 'Test-AuthenticationHostPackage.ps1')
+            $existing = Test-AuthenticationHostPackage -PackageRoot $DestinationRoot -AllowDevelopment
+            Write-Host "Using verified local authentication backend for Debug: $($existing.sourceRevision); uncommitted changes: $($existing.sourceDirty)"
+            return
+        }
+        Write-Host "The local authentication backend is not version $hostVersion; preparing the pinned release."
     }
     & (Join-Path $PSScriptRoot 'Prepare-AuthenticationHostRelease.ps1') -DestinationRoot $DestinationRoot
     return
@@ -51,7 +57,7 @@ $currentChanges = & git -C $sourcePath status --porcelain --untracked-files=norm
 if ($LASTEXITCODE -ne 0 -or ((-not [string]::IsNullOrWhiteSpace(($currentChanges -join "`n"))) -ne $dirty)) {
     throw 'The source cleanliness changed during the build. Run preparation again.'
 }
-if ($identity.hostVersion -ne '0.3.12' -or $identity.protocolVersion -ne 3 -or
+if ($identity.hostVersion -ne $hostVersion -or $identity.protocolVersion -ne 3 -or
     $identity.upstreamRevision -ne '85ad4969b3399500baaea9d46b1e08f87aba80e1' -or
     $identity.sourceRevision -ne $revision -or $identity.sourceDirty -isnot [bool] -or $identity.sourceDirty -ne $dirty -or
     $identity.target -ne 'x86_64-pc-windows-msvc') {
