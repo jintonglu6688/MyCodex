@@ -161,7 +161,9 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                     throw;
                 }
                 _started = true;
-                await AuthenticationHostDeployment.FinalizeRemoteAsync(_config, _executor, release, false, maintenanceToken).ConfigureAwait(false);
+                // The new backend already runs; the next install removes a rollback copy a failed commit leaves.
+                try { await AuthenticationHostDeployment.FinalizeRemoteAsync(_config, _executor, release, false, maintenanceToken).ConfigureAwait(false); }
+                catch { }
                 await AuthenticationHostRelease.CleanupCacheAsync(release.Target).ConfigureAwait(false);
             }
             finally { _gate.Release(); }

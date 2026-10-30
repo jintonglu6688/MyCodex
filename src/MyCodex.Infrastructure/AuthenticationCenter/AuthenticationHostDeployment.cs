@@ -41,7 +41,8 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             "trap 'result=$?; if [ -n \"$stage\" ]; then rm -rf \"$stage\"; fi; rmdir \"$root/.install-lock\"; exit \"$result\"' 0\n" +
             "trap 'exit 1' HUP INT TERM\n" +
             "stage=$(mktemp -d \"$root/.stage.XXXXXXXX\")\n" +
-            "if [ ! -e \"$root/bin\" ] && [ -d \"$root/.previous\" ]; then mv \"$root/.previous\" \"$root/bin\"; fi\n" +
+            "restored=\n" +
+            "if [ ! -e \"$root/bin\" ] && [ -d \"$root/.previous\" ]; then mv \"$root/.previous\" \"$root/bin\"; restored=1; fi\n" +
             "if [ \"$1\" = Darwin ]; then tr -cd 'A-Za-z0-9+/=' | base64 -D > \"$stage/archive.tar.gz\";\n" +
             "else tr -cd 'A-Za-z0-9+/=' | base64 -d > \"$stage/archive.tar.gz\"; fi\n" +
             "if [ \"$1\" = Darwin ]; then digest() { shasum -a 256 \"$1\" | cut -c1-64; };\n" +
@@ -53,16 +54,23 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             "[ ! -L \"$stage/bin/mycodex-auth-host\" ] && [ \"$(digest \"$stage/bin/mycodex-auth-host\")\" = \"$4\" ] || exit 16\n" +
             "chmod 700 \"$stage/bin/mycodex-auth-host\"\n" +
             "\"$stage/bin/mycodex-auth-host\" --version-json > /dev/null || exit 17\n" +
-            "if [ \"$5\" = missing ]; then\n" +
+            // An update interrupted between its two moves was restored above; the caller checks its identity.
+            "if [ \"$5\" = missing ] && [ -n \"$restored\" ]; then :\n" +
+            "elif [ \"$5\" = missing ]; then\n" +
             "  [ ! -e \"$root/bin\" ] && [ ! -e \"$root/.previous\" ] || exit 18\n" +
             "  mv \"$stage/bin\" \"$root/bin\"\n" +
             "else\n" +
-            "  [ -d \"$root/bin\" ] && [ ! -e \"$root/.previous\" ] || exit 18\n" +
+            "  [ -d \"$root/bin\" ] || exit 18\n" +
             "  for entry in \"$root/bin\"/* \"$root/bin\"/.[!.]* \"$root/bin\"/..?*; do\n" +
             "    [ -e \"$entry\" ] || continue\n" +
             "    [ -f \"$entry\" ] && [ ! -L \"$entry\" ] || exit 14\n" +
             "    case ${entry##*/} in mycodex-auth-host|mycodex-auth-host.manifest.json|LICENSE|RUNTIME.md|dependencies.txt) ;; *) exit 18;; esac\n" +
             "  done\n" +
+            // A rollback copy left by an update that was never finalized; bin is what runs now.
+            "  if [ -e \"$root/.previous\" ]; then\n" +
+            "    [ -d \"$root/.previous\" ] && [ ! -L \"$root/.previous\" ] || exit 18\n" +
+            "    rm -rf \"$root/.previous\"\n" +
+            "  fi\n" +
             "  mv \"$root/bin\" \"$root/.previous\"\n" +
             "  if ! mv \"$stage/bin\" \"$root/bin\"; then mv \"$root/.previous\" \"$root/bin\"; exit 18; fi\n" +
             "  if [ \"$(digest \"$root/bin/mycodex-auth-host\")\" != \"$4\" ]; then\n" +

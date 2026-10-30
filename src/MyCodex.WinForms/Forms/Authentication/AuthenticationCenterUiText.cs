@@ -122,7 +122,6 @@ namespace MyCodex.WinForms.Forms
                 case "stack_member_rejected":
                     return UiLocalization.Text("Aggregation.Error.MemberRejected", "A selected provider cannot be added to aggregation. Check its configuration and try again.");
                 case "stack_already_active":
-                case "stack_not_active":
                 case "stack_enter_failed":
                 case "stack_exit_failed":
                 case "stack_operation_failed":

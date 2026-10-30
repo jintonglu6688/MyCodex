@@ -57,6 +57,24 @@ namespace MyCodex.Application.Tests
                     "[ ! -e \"$HOME/.local/share/MyCodex/auth-core/.previous\" ]");
                 await AssertCleanAsync(executor, config);
 
+                // A rollback copy left by an update that was never finalized must not block the next one.
+                await CheckAsync(executor, config,
+                    "set -eu\nroot=\"$HOME/.local/share/MyCodex/auth-core\"\n" +
+                    "mkdir \"$root/.previous\"\ntouch \"$root/.previous/stale\"");
+                await AuthenticationHostDeployment.InstallRemoteAsync(config, executor, archive, true, token, input);
+                await CheckAsync(executor, config,
+                    "[ ! -e \"$HOME/.local/share/MyCodex/auth-core/.previous/stale\" ]");
+                await AuthenticationHostDeployment.FinalizeRemoteAsync(config, executor, archive, false, token);
+
+                // An update stopped between its two moves is restored instead of refused.
+                await CheckAsync(executor, config,
+                    "set -eu\nroot=\"$HOME/.local/share/MyCodex/auth-core\"\nmv \"$root/bin\" \"$root/.previous\"");
+                await AuthenticationHostDeployment.InstallRemoteAsync(config, executor, archive, false, token, input);
+                await CheckAsync(executor, config,
+                    "set -eu\nroot=\"$HOME/.local/share/MyCodex/auth-core\"\n" +
+                    "[ -f \"$root/bin/mycodex-auth-host\" ] && [ ! -e \"$root/.previous\" ]");
+                await AssertCleanAsync(executor, config);
+
                 var error = Assert.ThrowsAsync<AuthenticationCenterException>(async () =>
                     await AuthenticationHostDeployment.InstallRemoteAsync(config, executor, archive, true, token, "AAAA"));
                 Assert.That(error.Code, Is.EqualTo("backend_integrity_failed"));
