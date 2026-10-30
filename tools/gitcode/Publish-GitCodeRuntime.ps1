@@ -77,8 +77,7 @@ function Add-OrUpdateRuntimePackage {
         [string]$RuntimeSource,
         [string]$RuntimeVersion,
         [string]$TargetTriple,
-        [object]$Package,
-        [string]$ReleaseTag
+        [object]$Package
     )
 
     if ($null -eq $Manifest.runtimes) {
@@ -103,7 +102,7 @@ function Add-OrUpdateRuntimePackage {
     $match.version = $RuntimeVersion
     $match.packageFormat = "npm-tgz"
     $asset = [pscustomobject]@{
-        url = "$gitCodeApiBase/repos/$Owner/$Repo/releases/$ReleaseTag/attach_files/$($Package.FileName)/download"
+        url = $Package.DownloadUrl
         fileName = $Package.FileName
         sha256 = $Package.Sha256
         size = $Package.Size
@@ -139,22 +138,11 @@ for ($index = 0; $index -lt $targetTriples.Count; $index++) {
         -DestinationRoot $repoRoot `
         -ArchiveDirectory $runtimeArtifactDirectory `
         -PruneOldVersions:($index -eq $targetTriples.Count - 1)
-    # Resolve latest once; all architectures and the uploaded archives use that same version.
+    # Resolve latest once; all architectures and the manifest use that same version.
     $version = $package.Version
     $packages[$targetTripleKey] = $package
 }
-$releaseTag = "runtime-standard-$version"
-
-Remove-RemoteTagIfExists -TagName $releaseTag
-New-GitCodeRelease `
-    -TagName $releaseTag `
-    -Name "$Source runtime $version" `
-    -Body "MyCodex $Source runtime package $version."
-
-foreach ($packagePath in @($packages.Values | ForEach-Object { $_.Path } | Select-Object -Unique)) {
-    Send-GitCodeReleaseFile -TagName $releaseTag -Path $packagePath
-}
-
+# Old clients still read the small manifest; verified npm archives are downloaded directly.
 $manifest.generatedAt = [DateTimeOffset]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
 foreach ($targetTriple in $targetTriples) {
     $targetTripleKey = [string]$targetTriple
@@ -167,8 +155,7 @@ foreach ($targetTriple in $targetTriples) {
         -RuntimeSource $Source `
         -RuntimeVersion $version `
         -TargetTriple $targetTripleKey `
-        -Package ($packages[$targetTripleKey]) `
-        -ReleaseTag $releaseTag
+        -Package ($packages[$targetTripleKey])
 }
 Write-Manifest -Manifest $manifest -Path $ManifestPath
 
@@ -192,12 +179,12 @@ Send-GitCodeReleaseFile -TagName "updates-stable" -Path $ManifestPath
 
 foreach ($targetTriple in $targetTriples) {
     $package = $packages[[string]$targetTriple]
-    $url = "$gitCodeApiBase/repos/$Owner/$Repo/releases/$releaseTag/attach_files/$($package.FileName)/download"
+    $url = $package.DownloadUrl
     Assert-GitCodePublicDownloadSize -Url $url -ExpectedSize ([long]$package.Size) -Name "Runtime package $targetTriple"
 }
 
 Write-Host ""
-Write-Host "GitCode runtime published:"
+Write-Host "Legacy runtime manifest published:"
 Write-Host "  Source:  $Source"
 Write-Host "  Version: $version"
-Write-Host "  Release: $releaseTag"
+Write-Host "  Packages: verified npm URLs (no runtime attachment upload)"

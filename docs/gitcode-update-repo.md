@@ -3,7 +3,7 @@
 GitCode is used as the default public update hub for:
 
 - MyCodex app installer updates.
-- Bundled standard Codex runtime packages.
+- Legacy bundled-runtime manifests for older clients (packages use verified npm URLs).
 - OfficeCLI mirror packages for users who cannot reliably download from GitHub.
 
 Do not push the MyCodex source repository to GitCode. The GitCode repository is
@@ -46,11 +46,13 @@ Release assets should use versioned tags:
 
 ```text
 app-v3.1.0
-runtime-standard-0.125.0
 officecli-v1.2.3
 updates-stable
 officecli-stable
 ```
+
+Previously published `runtime-standard-*` releases remain valid for old links; new
+runtime publication uses direct verified npm URLs.
 
 ## Manifest Shape
 
@@ -144,8 +146,8 @@ The script:
 - Fetches and packages the official latest bundled Codex runtime by default.
 - Builds the installer with that bundled runtime.
 - Copies it to a unique release file name.
-- Publishes or updates the matching standard runtime package before generating
-  the app manifest.
+- Refreshes the legacy runtime manifest with verified npm download URLs before
+  generating the app manifest; runtime archives are not uploaded to GitCode.
 - Writes `updates/stable.json` as old-client-compatible ASCII JSON.
 - Publishes only `README.md` and `updates/` to the GitCode distribution repo.
 - Deletes and recreates `app-v<version>` and `updates-stable` tags/releases.
@@ -154,9 +156,9 @@ The script:
 
 Use `-BundledCodexVersion <version>` only when you intentionally want to pin the
 installer and standard runtime manifest to a specific Codex runtime version.
-Use `-SkipStandardRuntimePublish` only when the matching runtime release has
-already been published and `updates/stable.json` already contains the correct
-runtime asset entry.
+Use `-SkipStandardRuntimePublish` only when `updates/stable.json` already contains
+correct verified runtime URLs for older clients. New clients discover stable
+runtime versions independently of this app manifest.
 
 Use `-SkipInstallerBuild` only when the versioned installer already exists and
 you intentionally want to republish it.
@@ -175,49 +177,52 @@ manifest generation without touching GitCode:
 
 ## Runtime Package Distribution
 
-Standard runtime is synchronized from the official npm registry by GitCode
-workflow `.gitcode/workflows/sync-standard-runtime.yml`. The workflow reads
-`@openai/codex@latest`, downloads the Windows x64 platform package, publishes
-it to `runtime-standard-<version>`, updates `updates/stable.json`, and
-republishes the `updates-stable` manifest attachment.
+The bundled Windows runtime follows `@openai/codex@latest` directly. Version and
+platform metadata come from the official npm registry, with a bounded npmmirror
+metadata fallback when the official registry is unreachable. Only stable versions
+are selected. Packages download from npmmirror first and fall back to the same
+official archive if the mirror is unavailable or fails integrity validation.
+The checked package version and upstream integrity are retained through the update
+confirmation and download, so a later release cannot change an in-flight install.
+Automatic updates do not downgrade installed versions. App updates still use the
+GitCode manifest, and System, Custom, WSL and SSH runtimes remain separately managed.
 
-The GitCode distribution repository must define a secret named
-`GITCODE_TOKEN`. It must be a token that can push to the distribution repository
-and create Release attachments.
+Older clients still read `runtimes` in `updates/stable.json`. The daily GitCode
+workflow `.gitcode/workflows/sync-standard-runtime.yml` refreshes that compatibility
+manifest, verifies the Windows x64 npm archive, records a verified direct npm URL
+and SHA-256/size, and republishes only the small `updates-stable` attachment.
+It does not create a `runtime-standard-*` release or upload runtime tarballs.
+This daily job does not control when new clients discover runtime updates.
 
-Use one command to update the repository's bundled runtime and publish the same
-verified package to GitCode:
+The distribution repository still needs `GITCODE_TOKEN` permission to update its
+manifest and Release pointer. No additional GitCode runtime upload is needed.
+The existing command prepares local bundled files and refreshes the old-client
+manifest:
 
 ```powershell
 .\tools\gitcode\Publish-GitCodeRuntime.ps1
 ```
 
-The command resolves the official latest version once, downloads and verifies
-the package, installs it under `runtime/codex/<version>/<targetTriple>`, deletes
-the previous version directories under the repository's `runtime/codex`, and
-uploads the original verified archive. It updates the runtime entries in
-`updates/stable.json`, the distribution repository, and the `updates-stable`
-attachment. App update entries are preserved. The archive is retained under
-`artifacts/runtime/Bundled/<version>`.
+It resolves latest once, uses verified mirror-first downloads, retains the archive
+under `artifacts/runtime/Bundled/<version>`, and updates only the legacy runtime
+entries and stable pointer. App entries are preserved. `-Version <version>` still
+pins an explicit local preparation/legacy publication; it does not pin new clients
+to that version. `-TargetTriple x86_64-pc-windows-msvc,aarch64-pc-windows-msvc`
+prepares both architectures; Windows x64 is the default. Preparation failure
+preserves previous versions; publication failure leaves the prepared archive
+available for retry. Repository cleanup is limited to validated `runtime/codex`
+paths and never changes user installations or build output.
 
-Cleanup does not inspect running processes or touch user installations, `debug`,
-or `Release`. It starts only after all requested architectures are prepared;
-a download or validation failure retains previous repository versions.
-
-Use `-Version <version>` to select a specific version, or
-`-TargetTriple x86_64-pc-windows-msvc,aarch64-pc-windows-msvc` to prepare and
-publish both architectures. The default is Windows x64. If upload fails after
-local preparation, the new local runtime and archive remain available; retry
-with the same `-Version`.
-
-`tools/runtime/prepare-bundled-codex-runtime.ps1` remains the local preparation
-helper used by builds and packaging. Those callers do not publish or prune old
-repository versions.
+`tools/runtime/prepare-bundled-codex-runtime.ps1` is also used by builds and
+packaging. Those callers prepare files without publishing or pruning versions.
+The script uses the same mirror-first/official fallback and upstream integrity
+rules; it does not change global npm configuration.
 
 Offline verification:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tests/tools/PublishCodexRuntime.Tests.ps1
+python tests/tools/test_runtime_registry_workflow.py
 ```
 
 ## OfficeCLI Mirror Distribution

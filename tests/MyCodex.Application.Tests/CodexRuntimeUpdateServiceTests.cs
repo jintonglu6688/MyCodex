@@ -11,21 +11,17 @@ namespace MyCodex.Application.Tests
     public class CodexRuntimeUpdateServiceTests
     {
         [Test]
-        public void CheckedInstallUsesItsSnapshotWithoutFetchingADifferentManifest()
+        public void CheckedInstallRejectsAnIncompleteSnapshotWithoutFetchingAgain()
         {
             var root = CreateTempDirectory();
             try
             {
-                var service = new CodexRuntimeUpdateService(new AppConfigService(root),
-                    new MyCodex.Infrastructure.Updates.UpdateManifestClient("not an absolute manifest URI"),
-                    new MyCodex.Infrastructure.Updates.UpdatePackageDownloader());
-                // This snapshot is incomplete, so validation must refuse it. A fresh
-                // lookup would instead fail while parsing the deliberately invalid URI.
-                var error = Assert.ThrowsAsync<InvalidOperationException>(() => service.InstallCheckedAsync(
-                    new CodexRuntimeUpdateInfo { LatestVersion = "0.124.0", TargetTriple = "x86_64-pc-windows-msvc",
-                        Manifest = new MyCodex.Infrastructure.Updates.UpdateManifest() },
+                var packages = new CodexRuntimePackageClient((url, token) =>
+                    throw new AssertionException("A checked install must not query latest again."));
+                var service = new CodexRuntimeUpdateService(new AppConfigService(root), packages);
+                Assert.ThrowsAsync<InvalidOperationException>(() => service.InstallCheckedAsync(
+                    new CodexRuntimeUpdateInfo { LatestVersion = "0.124.0", TargetTriple = "x86_64-pc-windows-msvc" },
                     null, null, System.Threading.CancellationToken.None));
-                Assert.That(error, Is.Not.TypeOf<UriFormatException>());
             }
             finally { DeleteDirectory(root); }
         }
@@ -225,40 +221,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void VerifyPackageIntegrity_StrongSriMismatchIsNotRescuedBySha1()
-        {
-            var rootPath = CreateTempDirectory();
-            try
-            {
-                var archivePath = Path.Combine(rootPath, "package.tgz");
-                File.WriteAllText(archivePath, "runtime package");
-                var bytes = File.ReadAllBytes(archivePath);
-                string sha1Hex;
-                string sha512Base64;
-                using (var sha1 = System.Security.Cryptography.SHA1.Create())
-                {
-                    sha1Hex = BitConverter.ToString(sha1.ComputeHash(bytes)).Replace("-", string.Empty);
-                }
-
-                using (var sha512 = System.Security.Cryptography.SHA512.Create())
-                {
-                    sha512Base64 = Convert.ToBase64String(sha512.ComputeHash(bytes));
-                }
-
-                var wrongSri = "sha512-" + Convert.ToBase64String(new byte[64]);
-
-                Assert.That(CodexRuntimeUpdateService.VerifyPackageIntegrity(archivePath, "sha512-" + sha512Base64, sha1Hex), Is.True);
-                Assert.That(CodexRuntimeUpdateService.VerifyPackageIntegrity(archivePath, wrongSri, sha1Hex), Is.False);
-                Assert.That(CodexRuntimeUpdateService.VerifyPackageIntegrity(archivePath, null, sha1Hex), Is.True);
-                Assert.That(CodexRuntimeUpdateService.VerifyPackageIntegrity(archivePath, null, new string('0', 40)), Is.False);
-            }
-            finally
-            {
-                DeleteDirectory(rootPath);
-            }
-        }
-
-        [Test]
         public void ResolveTarExecutablePath_UsesSystemDirectoryWhenAvailable()
         {
             var systemTar = Path.Combine(Environment.SystemDirectory, "tar.exe");
@@ -286,7 +248,7 @@ namespace MyCodex.Application.Tests
 
         private static string CreateTempDirectory()
         {
-            var path = Path.Combine(Path.GetTempPath(), "MyCodex-CodexRuntimeUpdateTests-" + Guid.NewGuid().ToString("N"));
+            var path = Path.Combine(TestContext.CurrentContext.WorkDirectory, "MyCodex-CodexRuntimeUpdateTests-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(path);
             return path;
         }

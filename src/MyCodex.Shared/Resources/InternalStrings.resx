@@ -156,9 +156,6 @@
   <data name="CodexRuntimeUpdate.Error.ExtractFailed" xml:space="preserve">
     <value>Failed to extract Codex runtime package.</value>
   </data>
-  <data name="CodexRuntimeUpdate.Error.MetadataMissing.Template" xml:space="preserve">
-    <value>Codex runtime metadata did not include {0}.</value>
-  </data>
   <data name="CodexRuntimeUpdate.Error.UnsafeArchiveEntry" xml:space="preserve">
     <value>Codex runtime archive contains an unsafe entry path.</value>
   </data>
@@ -177,7 +174,7 @@
   <data name="CodexRuntimeUpdate.Error.UnsafeRuntimeLink" xml:space="preserve">
     <value>Codex runtime paths cannot contain symbolic links or junctions.</value>
   </data>
-  <data name="CodexRuntimeUpdate.Error.ManifestChanged" xml:space="preserve">
+  <data name="CodexRuntimeUpdate.Error.PackageChanged" xml:space="preserve">
     <value>Runtime update metadata changed during installation. Check for updates again.</value>
   </data>
   <data name="UpdatePackage.Error.FileNameMissing" xml:space="preserve">
@@ -872,9 +869,6 @@
   </data>
   <data name="RemoteSshLocalPortForward.Error.StartFailed" xml:space="preserve">
     <value>Unable to start SSH port forwarding.</value>
-  </data>
-<data name="CodexRuntimeUpdate.Error.VersionMetadataMissing.Template" xml:space="preserve">
-    <value>Codex runtime metadata was not found for version {0}.</value>
   </data>
   <data name="GitCommandRunner.Error.WorkingDirectoryRequired" xml:space="preserve">
     <value>Working directory cannot be empty.</value>
@@ -1781,9 +1775,6 @@ This file is empty.</value>
   </data>
   <data name="AppUpdate.Error.AppPackageMissing" xml:space="preserve">
     <value>Update manifest does not include an app package.</value>
-  </data>
-  <data name="CodexRuntimeUpdate.Error.ManifestRuntimeMissing.Template" xml:space="preserve">
-    <value>Update manifest does not include runtime package {0} for {1}.</value>
   </data>
   <data name="PluginMarketCatalogClient.Error.IndexUrlRequired" xml:space="preserve">
     <value>Plugin market index URL is not configured.</value>

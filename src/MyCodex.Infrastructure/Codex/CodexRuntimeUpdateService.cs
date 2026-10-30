@@ -3,12 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Net;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
-using MyCodex.Domain.Entities;
 using MyCodex.Infrastructure.Persistence;
 using MyCodex.Infrastructure.Updates;
 using MyCodex.Shared.Constants;
@@ -19,48 +15,25 @@ namespace MyCodex.Infrastructure.Codex
 {
     public sealed class CodexRuntimeUpdateService
     {
-        private const string RegistryBaseUrl = "https://registry.npmjs.org";
         private readonly AppConfigService _appConfigService;
-        private readonly UpdateManifestClient _manifestClient;
-        private readonly UpdatePackageDownloader _updatePackageDownloader;
+        private readonly CodexRuntimePackageClient _packages;
         private readonly Func<IEnumerable<string>> _runningExecutablePaths;
-        private readonly JavaScriptSerializer _serializer = new JavaScriptSerializer();
 
         public CodexRuntimeUpdateService(AppConfigService appConfigService)
-            : this(appConfigService, (UpdateSettingsSnapshot)null)
-        {
-        }
-
-        public CodexRuntimeUpdateService(AppConfigService appConfigService, UpdateSettingsSnapshot updateSettings)
-            : this(
-                  appConfigService,
-                  new UpdateManifestClient(updateSettings),
-                  new UpdatePackageDownloader())
-        {
-        }
-
-        public CodexRuntimeUpdateService(
-            AppConfigService appConfigService,
-            UpdateManifestClient manifestClient,
-            UpdatePackageDownloader updatePackageDownloader)
-            : this(appConfigService, manifestClient, updatePackageDownloader, null)
+            : this(appConfigService, new CodexRuntimePackageClient(), null)
         {
         }
 
         internal CodexRuntimeUpdateService(AppConfigService appConfigService, Func<IEnumerable<string>> runningExecutablePaths)
-            : this(appConfigService, new UpdateManifestClient((UpdateSettingsSnapshot)null), new UpdatePackageDownloader(), runningExecutablePaths)
+            : this(appConfigService, new CodexRuntimePackageClient(), runningExecutablePaths)
         {
         }
 
-        private CodexRuntimeUpdateService(
-            AppConfigService appConfigService,
-            UpdateManifestClient manifestClient,
-            UpdatePackageDownloader updatePackageDownloader,
-            Func<IEnumerable<string>> runningExecutablePaths)
+        internal CodexRuntimeUpdateService(AppConfigService appConfigService, CodexRuntimePackageClient packages,
+            Func<IEnumerable<string>> runningExecutablePaths = null)
         {
             _appConfigService = appConfigService ?? throw new ArgumentNullException(nameof(appConfigService));
-            _manifestClient = manifestClient ?? throw new ArgumentNullException(nameof(manifestClient));
-            _updatePackageDownloader = updatePackageDownloader ?? throw new ArgumentNullException(nameof(updatePackageDownloader));
+            _packages = packages ?? throw new ArgumentNullException(nameof(packages));
             _runningExecutablePaths = runningExecutablePaths;
         }
 
@@ -90,10 +63,8 @@ namespace MyCodex.Infrastructure.Codex
         public async Task<CodexRuntimeUpdateInfo> CheckLatestAsync(string runtimeSource, CancellationToken cancellationToken)
         {
             var targetTriple = GetCurrentTargetTriple();
-            var manifest = _manifestClient.IsConfigured
-                ? await LoadRuntimeManifestAsync(runtimeSource, targetTriple, cancellationToken).ConfigureAwait(false) : null;
-            var latestVersion = manifest != null ? manifest.FindRuntimePackage(runtimeSource, targetTriple).Version.Trim()
-                : await GetLatestVersionAsync(cancellationToken).ConfigureAwait(false);
+            var package = await _packages.CheckLatestAsync(targetTriple, cancellationToken).ConfigureAwait(false);
+            var latestVersion = package.Version;
             var installedVersion = ResolveInstalledVersion(runtimeSource, targetTriple);
 
             return new CodexRuntimeUpdateInfo
@@ -101,7 +72,7 @@ namespace MyCodex.Infrastructure.Codex
                 TargetTriple = targetTriple,
                 InstalledVersion = installedVersion,
                 LatestVersion = latestVersion,
-                Manifest = manifest,
+                Package = package,
                 IsLatestInstalled = string.Equals(installedVersion, latestVersion, StringComparison.OrdinalIgnoreCase) &&
                     File.Exists(_appConfigService.GetBundledCodexExecutablePath(latestVersion, targetTriple))
             };
@@ -159,7 +130,7 @@ namespace MyCodex.Infrastructure.Codex
                 "Checking latest Codex runtime..."));
 
             var info = checkedInfo ?? await CheckLatestAsync(runtimeSource, cancellationToken).ConfigureAwait(false);
-            if (checkedInfo != null)
+            if (!forceReinstall)
             {
                 // Another window may have published the package while this one was waiting.
                 var installed = GetInstalledInfo(runtimeSource);
@@ -172,38 +143,15 @@ namespace MyCodex.Infrastructure.Codex
                         PreviousVersion = info.InstalledVersion
                     };
             }
-            if (info.IsLatestInstalled && !forceReinstall)
-            {
-                return new CodexRuntimeUpdateResult
-                {
-                    TargetTriple = info.TargetTriple,
-                    Version = info.LatestVersion,
-                    ExecutablePath = _appConfigService.GetBundledCodexExecutablePath(info.LatestVersion, info.TargetTriple),
-                    WasUpdated = false,
-                    PreviousVersion = info.InstalledVersion
-                };
-            }
-
-            if (_manifestClient.IsConfigured)
-            {
-                return await InstallLatestFromManifestAsync(
-                    runtimeSource,
-                    info,
-                    progress,
-                    cancellationToken,
-                    forceReinstall,
-                    reservation, downloadProgress).ConfigureAwait(false);
-            }
-
-            var metadata = await GetPlatformPackageMetadataAsync(
-                info.LatestVersion,
-                info.TargetTriple,
-                cancellationToken).ConfigureAwait(false);
+            var metadata = info.Package;
+            if (metadata == null || metadata.Version != info.LatestVersion || metadata.TargetTriple != info.TargetTriple)
+                throw new InvalidOperationException(SharedLocalization.Text("CodexRuntimeUpdate.Error.PackageChanged",
+                    "Runtime update metadata changed during installation. Check for updates again."));
 
             var tempRoot = Path.Combine(
                 Path.GetTempPath(),
                 "MyCodex-CodexRuntime-" + Guid.NewGuid().ToString("N"));
-            var archivePath = Path.Combine(tempRoot, metadata.ExpectedFileName);
+            var archivePath = Path.Combine(tempRoot, metadata.FileName);
             var extractRoot = Path.Combine(tempRoot, "extract");
             var destinationPath = _appConfigService.GetBundledCodexInstallDirectory(info.LatestVersion, info.TargetTriple);
             EnsurePathUnderBundledRuntimeRoot(destinationPath);
@@ -213,23 +161,7 @@ namespace MyCodex.Infrastructure.Codex
                 Directory.CreateDirectory(tempRoot);
                 Directory.CreateDirectory(extractRoot);
 
-                Report(progress, string.Format(
-                    CultureInfo.CurrentCulture,
-                    SharedLocalization.Text(
-                        "CodexRuntimeUpdate.Progress.Downloading.Template",
-                        "Downloading Codex runtime {0}..."),
-                    info.LatestVersion));
-                await DownloadFileAsync(metadata.TarballUrl, archivePath, cancellationToken, downloadProgress).ConfigureAwait(false);
-
-                Report(progress, SharedLocalization.Text(
-                    "CodexRuntimeUpdate.Progress.Verifying",
-                    "Verifying Codex runtime package..."));
-                if (!VerifyPackageIntegrity(archivePath, metadata.Integrity, metadata.ShaSum))
-                {
-                    throw new InvalidOperationException(SharedLocalization.Text(
-                        "CodexRuntimeUpdate.Error.IntegrityCheckFailed",
-                        "Codex runtime package integrity check failed."));
-                }
+                await _packages.DownloadVerifiedAsync(metadata, archivePath, downloadProgress, cancellationToken, progress).ConfigureAwait(false);
 
                 Report(progress, SharedLocalization.Text(
                     "CodexRuntimeUpdate.Progress.Extracting",
@@ -271,115 +203,6 @@ namespace MyCodex.Infrastructure.Codex
         private string ResolveInstalledVersion(string runtimeSource, string targetTriple)
         {
             return _appConfigService.GetLatestInstalledBundledCodexVersion(targetTriple);
-        }
-
-        private async Task<UpdateManifest> LoadRuntimeManifestAsync(
-            string runtimeSource,
-            string targetTriple,
-            CancellationToken cancellationToken)
-        {
-            var manifest = await _manifestClient.LoadAsync(cancellationToken).ConfigureAwait(false);
-            var runtimePackage = manifest.FindRuntimePackage(runtimeSource, targetTriple);
-            if (runtimePackage == null || runtimePackage.Asset == null || string.IsNullOrWhiteSpace(runtimePackage.Version))
-            {
-                throw new InvalidOperationException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    SharedLocalization.Text(
-                        "CodexRuntimeUpdate.Error.ManifestRuntimeMissing.Template",
-                        "Update manifest does not include runtime package {0} for {1}."),
-                    runtimeSource,
-                    targetTriple));
-            }
-
-            return manifest;
-        }
-
-        private async Task<CodexRuntimeUpdateResult> InstallLatestFromManifestAsync(
-            string runtimeSource,
-            CodexRuntimeUpdateInfo info,
-            IProgress<string> progress,
-            CancellationToken cancellationToken,
-            bool forceReinstall,
-            SharedRuntimeMutationReservation reservation,
-            IProgress<UpdateDownloadProgress> downloadProgress = null)
-        {
-            // Retain the checked version and checksum while newer releases are published.
-            var manifest = info.Manifest ?? await _manifestClient.LoadAsync(cancellationToken).ConfigureAwait(false);
-            var runtimePackage = manifest.FindRuntimePackage(runtimeSource, info.TargetTriple);
-            if (runtimePackage == null || runtimePackage.Asset == null)
-            {
-                throw new InvalidOperationException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    SharedLocalization.Text(
-                        "CodexRuntimeUpdate.Error.ManifestRuntimeMissing.Template",
-                        "Update manifest does not include runtime package {0} for {1}."),
-                    runtimeSource,
-                    info.TargetTriple));
-            }
-            if (!string.Equals(runtimePackage.Version?.Trim(), info.LatestVersion, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException(SharedLocalization.Text("CodexRuntimeUpdate.Error.ManifestChanged",
-                    "Runtime update metadata changed during installation. Check for updates again."));
-
-            var tempRoot = Path.Combine(
-                Path.GetTempPath(),
-                "MyCodex-CodexRuntime-" + Guid.NewGuid().ToString("N"));
-            var extractRoot = Path.Combine(tempRoot, "extract");
-            var destinationPath = _appConfigService.GetBundledCodexInstallDirectory(info.LatestVersion, info.TargetTriple);
-            EnsurePathUnderBundledRuntimeRoot(destinationPath);
-
-            try
-            {
-                Directory.CreateDirectory(tempRoot);
-                Directory.CreateDirectory(extractRoot);
-
-                Report(progress, string.Format(
-                    CultureInfo.CurrentCulture,
-                    SharedLocalization.Text(
-                        "CodexRuntimeUpdate.Progress.Downloading.Template",
-                        "Downloading Codex runtime {0}..."),
-                    info.LatestVersion));
-                var archivePath = await _updatePackageDownloader.DownloadVerifiedAsync(
-                    _manifestClient.ResolveAssetUri(runtimePackage.Asset, manifest),
-                    runtimePackage.Asset,
-                    tempRoot,
-                    downloadProgress,
-                    cancellationToken).ConfigureAwait(false);
-
-                Report(progress, SharedLocalization.Text(
-                    "CodexRuntimeUpdate.Progress.Extracting",
-                    "Extracting Codex runtime package..."));
-                await ExtractPackageAsync(archivePath, extractRoot, cancellationToken).ConfigureAwait(false);
-
-                var packageRoot = Path.Combine(extractRoot, "package");
-                var codexExe = ResolvePackageCodexExecutablePath(packageRoot, info.TargetTriple);
-                if (!File.Exists(codexExe))
-                {
-                    throw new InvalidOperationException(string.Format(
-                        CultureInfo.CurrentCulture,
-                        SharedLocalization.Text(
-                            "CodexRuntimeUpdate.Error.ExecutableMissing.Template",
-                            "Codex runtime package did not contain {0}."),
-                        codexExe));
-                }
-
-                Report(progress, SharedLocalization.Text(
-                    "CodexRuntimeUpdate.Progress.Installing",
-                    "Installing Codex runtime..."));
-                var updated = reservation.PublishPackage(packageRoot, destinationPath, info.TargetTriple, forceReinstall, cancellationToken);
-
-                return new CodexRuntimeUpdateResult
-                {
-                    TargetTriple = info.TargetTriple,
-                    Version = info.LatestVersion,
-                    ExecutablePath = _appConfigService.GetBundledCodexExecutablePath(info.LatestVersion, info.TargetTriple),
-                    WasUpdated = updated,
-                    PreviousVersion = info.InstalledVersion
-                };
-            }
-            finally
-            {
-                TryDeleteDirectory(tempRoot);
-            }
         }
 
         internal static string ResolvePackageCodexExecutablePath(string packageRoot, string targetTriple)
@@ -458,130 +281,6 @@ namespace MyCodex.Infrastructure.Codex
                 throw new InvalidOperationException(SharedLocalization.Text(
                     "CodexRuntimeUpdate.Error.InstallPathEscaped",
                     "Codex runtime install path escapes the bundled runtime directory."));
-            }
-        }
-
-        private async Task<string> GetLatestVersionAsync(CancellationToken cancellationToken)
-        {
-            var metadataUrl = RegistryBaseUrl.TrimEnd('/') + "/%40openai%2Fcodex/latest";
-            var metadata = await DownloadJsonAsync(metadataUrl, cancellationToken).ConfigureAwait(false);
-            var version = GetRequiredString(metadata, "version");
-            if (string.IsNullOrWhiteSpace(version))
-            {
-                throw new InvalidOperationException(SharedLocalization.Text(
-                    "CodexRuntimeUpdate.Error.LatestVersionMissing",
-                    "Codex runtime metadata did not include the latest version."));
-            }
-
-            return version.Trim();
-        }
-
-        private async Task<PlatformPackageMetadata> GetPlatformPackageMetadataAsync(
-            string version,
-            string targetTriple,
-            CancellationToken cancellationToken)
-        {
-            var packageSuffix = GetPackageSuffix(targetTriple);
-            var packageVersionTag = version + "-" + packageSuffix;
-
-            var candidates = new[]
-            {
-                new
-                {
-                    MetadataUrl = RegistryBaseUrl.TrimEnd('/') + "/%40openai%2Fcodex/" + packageVersionTag,
-                    ExpectedFileName = "codex-" + packageVersionTag + ".tgz"
-                },
-                new
-                {
-                    MetadataUrl = RegistryBaseUrl.TrimEnd('/') + "/%40openai%2Fcodex/" + version,
-                    ExpectedFileName = "codex-" + version + ".tgz"
-                }
-            };
-
-            foreach (var candidate in candidates)
-            {
-                try
-                {
-                    var metadata = await DownloadJsonAsync(candidate.MetadataUrl, cancellationToken).ConfigureAwait(false);
-                    var dist = GetRequiredDictionary(metadata, "dist");
-                    var tarballUrl = GetRequiredString(dist, "tarball");
-                    var tarballFileName = Path.GetFileName(new Uri(tarballUrl).AbsolutePath);
-                    if (!string.Equals(tarballFileName, candidate.ExpectedFileName, StringComparison.Ordinal))
-                    {
-                        throw new InvalidOperationException(string.Format(
-                            CultureInfo.CurrentCulture,
-                            SharedLocalization.Text(
-                                "CodexRuntimeUpdate.Error.UnexpectedPackageName.Template",
-                                "Unexpected Codex runtime package name '{0}'. Expected '{1}'."),
-                            tarballFileName,
-                            candidate.ExpectedFileName));
-                    }
-
-                    return new PlatformPackageMetadata
-                    {
-                        TarballUrl = tarballUrl,
-                        Integrity = GetOptionalString(dist, "integrity"),
-                        ShaSum = GetOptionalString(dist, "shasum"),
-                        ExpectedFileName = candidate.ExpectedFileName
-                    };
-                }
-                catch (WebException ex)
-                {
-                    var response = ex.Response as HttpWebResponse;
-                    if (response == null || response.StatusCode != HttpStatusCode.NotFound)
-                    {
-                        throw;
-                    }
-                }
-            }
-
-            throw new InvalidOperationException(string.Format(
-                CultureInfo.CurrentCulture,
-                SharedLocalization.Text(
-                    "CodexRuntimeUpdate.Error.VersionMetadataMissing.Template",
-                    "Codex runtime metadata was not found for version {0}."),
-                version));
-        }
-
-        private async Task<Dictionary<string, object>> DownloadJsonAsync(string url, CancellationToken cancellationToken)
-        {
-            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
-            using (var client = new WebClient())
-            using (cancellationToken.Register(client.CancelAsync))
-            {
-                try
-                {
-                    var json = await client.DownloadStringTaskAsync(new Uri(url)).ConfigureAwait(false);
-                    return _serializer.Deserialize<Dictionary<string, object>>(json);
-                }
-                catch (WebException) when (cancellationToken.IsCancellationRequested)
-                {
-                    throw new OperationCanceledException(cancellationToken);
-                }
-            }
-        }
-
-        private static async Task DownloadFileAsync(string url, string destinationPath, CancellationToken cancellationToken,
-            IProgress<UpdateDownloadProgress> progress = null)
-        {
-            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
-            using (var client = new WebClient())
-            using (cancellationToken.Register(client.CancelAsync))
-            {
-                if (progress != null)
-                    client.DownloadProgressChanged += (sender, e) => progress.Report(new UpdateDownloadProgress
-                    {
-                        Percentage = e.ProgressPercentage, BytesReceived = e.BytesReceived,
-                        TotalBytesToReceive = e.TotalBytesToReceive
-                    });
-                try
-                {
-                    await client.DownloadFileTaskAsync(UpdateManifestClient.EnsureTrustedUpdateUri(new Uri(url)), destinationPath).ConfigureAwait(false);
-                }
-                catch (WebException) when (cancellationToken.IsCancellationRequested)
-                {
-                    throw new OperationCanceledException(cancellationToken);
-                }
             }
         }
 
@@ -714,118 +413,6 @@ namespace MyCodex.Infrastructure.Codex
             return true;
         }
 
-        // A published SHA-256/384/512 SRI hash is authoritative: a mismatch must not be rescued by
-        // the weaker SHA-1 shasum. SHA-1 is used only when no strong SRI hash is published.
-        internal static bool VerifyPackageIntegrity(string filePath, string integrity, string shaSum)
-        {
-            bool hasStrongHash;
-            if (TestSriIntegrity(filePath, integrity, out hasStrongHash))
-            {
-                return true;
-            }
-
-            return !hasStrongHash && TestSha1(filePath, shaSum);
-        }
-
-        private static bool TestSriIntegrity(string filePath, string integrity, out bool hasStrongHash)
-        {
-            hasStrongHash = false;
-            if (string.IsNullOrWhiteSpace(integrity))
-            {
-                return false;
-            }
-
-            var weakMatch = false;
-            foreach (var token in integrity.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                var separator = token.IndexOf("-", StringComparison.Ordinal);
-                if (separator <= 0 || separator >= token.Length - 1)
-                {
-                    continue;
-                }
-
-                var algorithmName = token.Substring(0, separator).ToUpperInvariant();
-                var expected = token.Substring(separator + 1);
-                var actual = ComputeHashBase64(filePath, algorithmName);
-                if (actual == null)
-                {
-                    continue;
-                }
-
-                var isStrong = !string.Equals(algorithmName, "SHA1", StringComparison.Ordinal);
-                hasStrongHash |= isStrong;
-                if (string.Equals(actual, expected, StringComparison.Ordinal))
-                {
-                    if (isStrong)
-                    {
-                        return true;
-                    }
-
-                    weakMatch = true;
-                }
-            }
-
-            return weakMatch && !hasStrongHash;
-        }
-
-        private static bool TestSha1(string filePath, string shaSum)
-        {
-            if (string.IsNullOrWhiteSpace(shaSum))
-            {
-                return false;
-            }
-
-            return string.Equals(
-                ComputeHashHex(filePath, "SHA1"),
-                shaSum.Trim(),
-                StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static string ComputeHashBase64(string filePath, string algorithmName)
-        {
-            var hash = ComputeHash(filePath, algorithmName);
-            return hash == null ? null : Convert.ToBase64String(hash);
-        }
-
-        private static string ComputeHashHex(string filePath, string algorithmName)
-        {
-            var hash = ComputeHash(filePath, algorithmName);
-            if (hash == null)
-            {
-                return null;
-            }
-
-            return BitConverter.ToString(hash).Replace("-", string.Empty);
-        }
-
-        private static byte[] ComputeHash(string filePath, string algorithmName)
-        {
-            HashAlgorithm algorithm;
-            switch (algorithmName)
-            {
-                case "SHA1":
-                    algorithm = SHA1.Create();
-                    break;
-                case "SHA256":
-                    algorithm = SHA256.Create();
-                    break;
-                case "SHA384":
-                    algorithm = SHA384.Create();
-                    break;
-                case "SHA512":
-                    algorithm = SHA512.Create();
-                    break;
-                default:
-                    return null;
-            }
-
-            using (algorithm)
-            using (var stream = File.OpenRead(filePath))
-            {
-                return algorithm.ComputeHash(stream);
-            }
-        }
-
         private static string GetCurrentTargetTriple()
         {
             var primaryArchitecture = (Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE") ?? string.Empty).Trim();
@@ -837,58 +424,6 @@ namespace MyCodex.Infrastructure.Codex
             }
 
             return "x86_64-pc-windows-msvc";
-        }
-
-        private static string GetPackageSuffix(string targetTriple)
-        {
-            return string.Equals(targetTriple, "aarch64-pc-windows-msvc", StringComparison.OrdinalIgnoreCase)
-                ? "win32-arm64"
-                : "win32-x64";
-        }
-
-        private static Dictionary<string, object> GetRequiredDictionary(
-            IDictionary<string, object> values,
-            string name)
-        {
-            object value;
-            var dictionary = values != null && values.TryGetValue(name, out value)
-                ? value as Dictionary<string, object>
-                : null;
-            if (dictionary == null)
-            {
-                throw new InvalidOperationException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    SharedLocalization.Text(
-                        "CodexRuntimeUpdate.Error.MetadataMissing.Template",
-                        "Codex runtime metadata did not include {0}."),
-                    name));
-            }
-
-            return dictionary;
-        }
-
-        private static string GetRequiredString(IDictionary<string, object> values, string name)
-        {
-            var value = GetOptionalString(values, name);
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                throw new InvalidOperationException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    SharedLocalization.Text(
-                        "CodexRuntimeUpdate.Error.MetadataMissing.Template",
-                        "Codex runtime metadata did not include {0}."),
-                    name));
-            }
-
-            return value;
-        }
-
-        private static string GetOptionalString(IDictionary<string, object> values, string name)
-        {
-            object value;
-            return values != null && values.TryGetValue(name, out value)
-                ? Convert.ToString(value, CultureInfo.InvariantCulture)
-                : null;
         }
 
         private static string QuoteArgument(string argument)
@@ -932,17 +467,6 @@ namespace MyCodex.Infrastructure.Codex
             {
                 // Cancellation cleanup is best-effort.
             }
-        }
-
-        private sealed class PlatformPackageMetadata
-        {
-            public string TarballUrl { get; set; }
-
-            public string Integrity { get; set; }
-
-            public string ShaSum { get; set; }
-
-            public string ExpectedFileName { get; set; }
         }
     }
 }

@@ -156,9 +156,6 @@
   <data name="CodexRuntimeUpdate.Error.ExtractFailed" xml:space="preserve">
     <value>Codex 运行时包解压失败。</value>
   </data>
-  <data name="CodexRuntimeUpdate.Error.MetadataMissing.Template" xml:space="preserve">
-    <value>Codex 运行时元数据中没有 {0}。</value>
-  </data>
   <data name="CodexRuntimeUpdate.Error.UnsafeArchiveEntry" xml:space="preserve">
     <value>Codex 运行时归档中包含不安全的条目路径。</value>
   </data>
@@ -177,7 +174,7 @@
   <data name="CodexRuntimeUpdate.Error.UnsafeRuntimeLink" xml:space="preserve">
     <value>Codex 运行时路径不能包含符号链接或目录联接。</value>
   </data>
-  <data name="CodexRuntimeUpdate.Error.ManifestChanged" xml:space="preserve">
+  <data name="CodexRuntimeUpdate.Error.PackageChanged" xml:space="preserve">
     <value>安装期间运行时更新信息发生变化，请重新检查更新。</value>
   </data>
   <data name="UpdatePackage.Error.FileNameMissing" xml:space="preserve">
@@ -872,9 +869,6 @@
   </data>
   <data name="RemoteSshLocalPortForward.Error.StartFailed" xml:space="preserve">
     <value>无法启动 SSH 端口转发。</value>
-  </data>
-<data name="CodexRuntimeUpdate.Error.VersionMetadataMissing.Template" xml:space="preserve">
-    <value>未找到版本 {0} 的 Codex 运行时元数据。</value>
   </data>
   <data name="GitCommandRunner.Error.WorkingDirectoryRequired" xml:space="preserve">
     <value>工作目录不能为空。</value>
@@ -1781,9 +1775,6 @@
   </data>
   <data name="AppUpdate.Error.AppPackageMissing" xml:space="preserve">
     <value>更新清单中没有应用包信息。</value>
-  </data>
-  <data name="CodexRuntimeUpdate.Error.ManifestRuntimeMissing.Template" xml:space="preserve">
-    <value>更新清单中没有适用于 {1} 的运行时包 {0}。</value>
   </data>
   <data name="PluginMarketCatalogClient.Error.IndexUrlRequired" xml:space="preserve">
     <value>未配置插件市场索引地址。</value>

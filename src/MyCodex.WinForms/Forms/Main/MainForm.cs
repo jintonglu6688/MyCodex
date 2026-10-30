@@ -339,14 +339,7 @@ namespace MyCodex.WinForms.Forms
 
         private CodexRuntimeUpdateService CreateCodexRuntimeUpdateService()
         {
-            if (_appConfigSnapshot == null)
-            {
-                LoadAppConfig();
-            }
-
-            return new CodexRuntimeUpdateService(
-                _appConfigService,
-                _appConfigSnapshot != null ? _appConfigSnapshot.UpdateSettings : null);
+            return new CodexRuntimeUpdateService(_appConfigService);
         }
 
         public MainForm(

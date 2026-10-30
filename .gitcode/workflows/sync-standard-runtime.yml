@@ -21,7 +21,9 @@ jobs:
             exit 1
           fi
           python3 - <<'PY'
+          import base64
           import hashlib
+          import re
           import json
           import os
           import pathlib
@@ -41,19 +43,51 @@ jobs:
               "x86_64-pc-windows-msvc": "win32-x64",
           }
 
-          def request_json(url, data=None, method=None):
+          def request_json(url, data=None, method=None, timeout=120):
               headers = {}
               body = None
               if data is not None:
                   body = urllib.parse.urlencode(data).encode("utf-8")
                   headers["Content-Type"] = "application/x-www-form-urlencoded"
               req = urllib.request.Request(url, data=body, headers=headers, method=method)
-              with urllib.request.urlopen(req, timeout=120) as response:
+              with urllib.request.urlopen(req, timeout=timeout) as response:
                   return json.loads(response.read().decode("utf-8"))
 
-          def download(url, path):
-              with urllib.request.urlopen(url, timeout=900) as response:
-                  path.write_bytes(response.read())
+          def registry_json(version):
+              path = f"/%40openai%2Fcodex/{version}"
+              try:
+                  return request_json(registry_base + path, timeout=4)
+              except (OSError, TimeoutError):
+                  return request_json("https://registry.npmmirror.com" + path, timeout=4)
+
+          def download_verified(metadata, path):
+              dist = metadata["dist"]
+              url = dist["tarball"]
+              parsed = urllib.parse.urlsplit(url)
+              if parsed.scheme != "https" or parsed.hostname not in ("registry.npmjs.org", "registry.npmmirror.com"):
+                  raise ValueError("Unexpected runtime registry address")
+              origin = "https://registry.npmjs.org" + parsed.path
+              mirror = "https://registry.npmmirror.com" + parsed.path
+              for source in (mirror, origin):
+                  try:
+                      with urllib.request.urlopen(source, timeout=900) as response:
+                          data = response.read()
+                      supported = []
+                      for token in dist.get("integrity", "").split():
+                          algorithm, _, expected = token.partition("-")
+                          if algorithm in ("sha256", "sha384", "sha512"):
+                              supported.append((algorithm, expected))
+                      if supported:
+                          valid = any(base64.b64encode(hashlib.new(alg, data).digest()).decode() == expected for alg, expected in supported)
+                      else:
+                          valid = hashlib.sha1(data).hexdigest() == dist.get("shasum", "")
+                      if not valid:
+                          raise ValueError("Runtime package integrity check failed")
+                      path.write_bytes(data)
+                      return source
+                  except (OSError, TimeoutError, ValueError):
+                      if source == origin:
+                          raise
 
           def upload_release_file(tag, path):
               file_name = path.name
@@ -97,37 +131,39 @@ jobs:
           def ascii_json(data):
               return json.dumps(data, ensure_ascii=True, indent=2) + "\n"
 
-          latest = request_json(f"{registry_base}/%40openai%2Fcodex/latest")["version"].strip()
+          latest = registry_json("latest")["version"].strip()
+          if not re.fullmatch(r"\d+\.\d+\.\d+", latest):
+              raise ValueError("Latest runtime must be a stable version")
           manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
           existing = [
               item for item in manifest.get("runtimes", [])
-              if item.get("source") == "Bundled"
+              if item.get("source") == "Bundled" and item.get("targetTriple") in target_triples
           ]
-          if existing and all(item.get("version") == latest and item.get("asset", {}).get("url") for item in existing):
+          if any(re.fullmatch(r"\d+\.\d+\.\d+", item.get("version", "")) and
+                 tuple(map(int, item["version"].split("."))) > tuple(map(int, latest.split("."))) for item in existing):
+              print("A newer runtime is already published; retaining the existing manifest.")
+              raise SystemExit(0)
+          if existing and all(item.get("version") == latest and item.get("asset", {}).get("url", "").startswith((registry_base + "/", "https://registry.npmmirror.com/")) for item in existing):
               print(f"Bundled runtime {latest} already published in manifest.")
               raise SystemExit(0)
 
-          release_tag = f"runtime-standard-{latest}"
           artifact_dir = pathlib.Path("artifacts/runtime/Bundled") / latest
           artifact_dir.mkdir(parents=True, exist_ok=True)
           packages = {}
           for target, suffix in target_triples.items():
-              metadata = request_json(f"{registry_base}/%40openai%2Fcodex/{latest}-{suffix}")
+              metadata = registry_json(f"{latest}-{suffix}")
               tarball = metadata["dist"]["tarball"]
               file_name = pathlib.PurePosixPath(urllib.parse.urlparse(tarball).path).name
               path = artifact_dir / file_name
-              download(tarball, path)
+              if file_name != f"codex-{latest}-{suffix}.tgz":
+                  raise ValueError("Unexpected runtime package name")
+              verified_url = download_verified(metadata, path)
               packages[target] = {
-                  "path": path,
+                  "url": verified_url,
                   "fileName": file_name,
                   "size": path.stat().st_size,
                   "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
               }
-
-          delete_tag(release_tag)
-          create_release(release_tag, f"Bundled runtime {latest}", f"MyCodex bundled standard runtime {latest}.")
-          for package in packages.values():
-              upload_release_file(release_tag, package["path"])
 
           runtimes = manifest.setdefault("runtimes", [])
           for target, package in packages.items():
@@ -142,7 +178,7 @@ jobs:
               match["version"] = latest
               match["packageFormat"] = "npm-tgz"
               match["asset"] = {
-                  "url": f"{api_base}/repos/{owner}/{repo}/releases/{release_tag}/attach_files/{package['fileName']}/download",
+                  "url": package["url"],
                   "fileName": package["fileName"],
                   "sha256": package["sha256"],
                   "size": package["size"],
@@ -164,5 +200,5 @@ jobs:
           delete_tag("updates-stable")
           create_release("updates-stable", "Stable Update Manifest", "Stable manifest pointer for MyCodex update checks.")
           upload_release_file("updates-stable", manifest_path)
-          print(f"Published bundled runtime {latest}.")
+          print(f"Published legacy runtime manifest {latest}; no runtime archive uploaded.")
           PY

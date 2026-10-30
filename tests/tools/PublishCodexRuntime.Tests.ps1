@@ -7,6 +7,11 @@ $triples = @('x86_64-pc-windows-msvc', 'aarch64-pc-windows-msvc')
 $global:codexRuntimeFixture = @{ Downloads = 0; LatestQueries = 0; SizeChecks = 0; Uploads = @{} }
 $badIntegrity = $false
 $failArm = $false
+$productionRegistry = $false
+$failOfficialMetadata = $false
+$failMirror = $false
+$corruptMirror = $false
+$downloadRequests = [Collections.Generic.List[string]]::new()
 $archiveHash = $null
 $archiveIntegrity = $null
 
@@ -18,6 +23,12 @@ function Assert-True($Condition, [string]$Message) {
 function git { param([Parameter(ValueFromRemainingArguments = $true)]$Arguments) $global:LASTEXITCODE = 0 }
 function Invoke-RestMethod {
     param([string]$Uri, [string]$Method, $Body, $TimeoutSec, [switch]$UseBasicParsing)
+    if ($Uri.StartsWith('https://registry.npmjs.org/')) {
+        if ($failOfficialMetadata) { throw [Net.WebException]::new('Injected official metadata failure') }
+        $Uri = $Uri.Replace('https://registry.npmjs.org/', 'https://registry.fixture/')
+    } elseif ($Uri.StartsWith('https://registry.npmmirror.com/')) {
+        $Uri = $Uri.Replace('https://registry.npmmirror.com/', 'https://registry.fixture/')
+    }
     if ($Uri -like 'https://registry.fixture/*/latest') {
         $global:codexRuntimeFixture.LatestQueries++
         return [pscustomobject]@{ version = $fixtureVersion }
@@ -26,8 +37,9 @@ function Invoke-RestMethod {
         if ($failArm -and $Uri.EndsWith('win32-arm64')) { throw 'Injected ARM download failure' }
         $suffix = if ($Uri.EndsWith('win32-arm64')) { 'win32-arm64' } else { 'win32-x64' }
         $integrity = if ($badIntegrity) { 'sha512-invalid' } else { $archiveIntegrity }
+        $packageBase = if ($productionRegistry) { 'https://registry.npmjs.org/@openai/codex/-' } else { 'https://packages.fixture' }
         return [pscustomobject]@{ dist = [pscustomobject]@{
-            tarball = "https://packages.fixture/codex-$fixtureVersion-$suffix.tgz"; integrity = $integrity; shasum = ''
+            tarball = "$packageBase/codex-$fixtureVersion-$suffix.tgz"; integrity = $integrity; shasum = ''
         } }
     }
     if ($Uri -like '*upload_url?*') {
@@ -41,7 +53,12 @@ function Invoke-RestMethod {
 }
 function Invoke-WebRequest {
     param([string]$Uri, [string]$OutFile, [string]$InFile, [string]$Method, $Headers, $ContentType, $TimeoutSec, [switch]$UseBasicParsing)
-    if ($Uri.StartsWith('https://packages.fixture/')) {
+    if ($Uri.StartsWith('https://packages.fixture/') -or $Uri -like 'https://registry.npm*/@openai/codex/-/*') {
+        $downloadRequests.Add($Uri)
+        if ($Uri.StartsWith('https://registry.npmmirror.com/')) {
+            if ($failMirror) { throw [Net.WebException]::new('Injected mirror transfer failure') }
+            if ($corruptMirror) { [IO.File]::WriteAllText($OutFile, 'corrupt mirror archive'); return }
+        }
         $global:codexRuntimeFixture.Downloads++
         Copy-Item -LiteralPath (Join-Path $fixtureRoot 'package.tgz') -Destination $OutFile
         return
@@ -66,7 +83,7 @@ try {
 function Get-GitCodePublicDownloadSize {
     param([string]$Url)
     $global:codexRuntimeFixture.SizeChecks++
-    return [long]$global:codexRuntimeFixture.Uploads[($Url -split '/')[-2]].Size
+    return [long](Get-Item -LiteralPath (Join-Path $fixtureRoot 'package.tgz')).Length
 }
 '@
     # The distribution publisher is outside this test's boundary; verify it receives the prepared manifest.
@@ -123,9 +140,11 @@ function Get-GitCodePublicDownloadSize {
     Assert-True (@($manifest.runtimes | Where-Object { $_.source -eq 'Other' -and $_.version -eq 'keep' }).Count -eq 1) 'Unrelated runtime manifest changed.'
     foreach ($item in @($manifest.runtimes | Where-Object { $_.source -eq 'Bundled' })) {
         Assert-True ($item.version -eq $fixtureVersion -and $item.asset.sha256 -ieq $archiveHash) 'Manifest does not describe the prepared archive.'
-        Assert-True ($global:codexRuntimeFixture.Uploads[$item.asset.fileName].Hash -eq $archiveHash) 'Uploaded bytes differ from the locally extracted archive.'
+        Assert-True ($item.asset.url.StartsWith('https://packages.fixture/')) 'Manifest must use the verified upstream URL.'
+        Assert-True (-not $global:codexRuntimeFixture.Uploads.ContainsKey($item.asset.fileName)) 'A runtime archive was uploaded to GitCode.'
     }
     Assert-True ($global:codexRuntimeFixture.Uploads.ContainsKey('stable.json')) 'Stable pointer was not uploaded.'
+    Assert-True ($global:codexRuntimeFixture.Uploads.Count -eq 1) 'Only the small stable manifest may be uploaded.'
     Assert-True ($global:codexRuntimeFixture.SizeChecks -eq $triples.Count) 'Each published runtime package must be size-checked once.'
 
     try {
@@ -150,6 +169,24 @@ function Get-GitCodePublicDownloadSize {
     $beforeUploads = $global:codexRuntimeFixture.Uploads.Count
     $output = & $prepare -Version $fixtureVersion -RegistryBaseUrl 'https://registry.fixture'
     Assert-True ($null -eq $output -and (Test-Path $old) -and $global:codexRuntimeFixture.Uploads.Count -eq $beforeUploads) 'Local-only preparation contract changed.'
+    # Production origins are still intercepted: no external network or real credentials.
+    $productionRegistry = $true
+    $failOfficialMetadata = $true
+    $archiveDirectory = Join-Path $fixtureRoot 'verified'
+    $downloadRequests.Clear()
+    $prepared = & $prepare -ArchiveDirectory $archiveDirectory
+    Assert-True ($prepared.DownloadUrl.StartsWith('https://registry.npmmirror.com/')) 'Official metadata fallback did not retain the selected mirror package.'
+    Assert-True ($downloadRequests.Count -eq 1) 'A valid mirror archive should need only one transfer.'
+    $failOfficialMetadata = $false
+    foreach ($mode in @('unavailable', 'corrupt')) {
+        $failMirror = $mode -eq 'unavailable'
+        $corruptMirror = $mode -eq 'corrupt'
+        $downloadRequests.Clear()
+        $prepared = & $prepare -Version $fixtureVersion -ArchiveDirectory $archiveDirectory
+        Assert-True ($downloadRequests.Count -eq 2 -and $downloadRequests[0].StartsWith('https://registry.npmmirror.com/')) 'Mirror must be attempted first.'
+        Assert-True ($prepared.DownloadUrl.StartsWith('https://registry.npmjs.org/')) 'Failed mirror must fall back to the same official package.'
+        Assert-True ($prepared.Sha256 -ieq $archiveHash) 'Fallback changed the pinned archive.'
+    }
     Write-Host 'Codex runtime preparation and publication checks passed.'
 } finally {
     if ([IO.Path]::GetFullPath($fixtureRoot).StartsWith($repoRoot.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) {

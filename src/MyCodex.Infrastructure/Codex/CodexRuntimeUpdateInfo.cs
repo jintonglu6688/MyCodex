@@ -10,7 +10,7 @@ namespace MyCodex.Infrastructure.Codex
 
         public bool IsLatestInstalled { get; set; }
 
-        internal Updates.UpdateManifest Manifest { get; set; }
+        internal CodexRuntimePackage Package { get; set; }
 
         public bool IsUpdateAvailable => !string.IsNullOrWhiteSpace(LatestVersion) &&
             (string.IsNullOrWhiteSpace(InstalledVersion) ||

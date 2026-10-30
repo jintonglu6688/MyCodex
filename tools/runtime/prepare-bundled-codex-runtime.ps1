@@ -93,6 +93,17 @@ function Get-MetadataObject {
     return $property.Value
 }
 
+function Invoke-CodexMetadataRequest {
+    param([string]$Url)
+
+    try { return Invoke-RestMethod -Uri $Url -TimeoutSec 4 -UseBasicParsing }
+    catch [System.Net.WebException] {
+        if (-not $Url.StartsWith('https://registry.npmjs.org/', [StringComparison]::Ordinal)) { throw }
+        $mirrorUrl = 'https://registry.npmmirror.com/' + $Url.Substring('https://registry.npmjs.org/'.Length)
+        return Invoke-RestMethod -Uri $mirrorUrl -TimeoutSec 4 -UseBasicParsing
+    }
+}
+
 function Resolve-CodexVersion {
     param(
         [string]$RequestedVersion,
@@ -106,12 +117,15 @@ function Resolve-CodexVersion {
 
     $latestMetadataUrl = "$RegistryBase/%40openai%2Fcodex/latest"
     Write-Host "Fetching latest Codex runtime metadata: $latestMetadataUrl"
-    $latestMetadata = Invoke-RestMethod -Uri $latestMetadataUrl -UseBasicParsing
+    $latestMetadata = Invoke-CodexMetadataRequest -Url $latestMetadataUrl
     $latestVersion = Get-MetadataString -Metadata $latestMetadata -Name "version"
     if ([string]::IsNullOrWhiteSpace($latestVersion)) {
         throw "Codex runtime metadata did not include the latest version."
     }
 
+    if ($latestVersion.Trim() -notmatch '^\d+\.\d+\.\d+$') {
+        throw 'Latest Codex runtime metadata must name a stable version.'
+    }
     return $latestVersion.Trim()
 }
 
@@ -137,7 +151,7 @@ function Get-PlatformPackageMetadata {
     foreach ($candidate in $candidates) {
         try {
             Write-Host "Fetching Codex runtime metadata: $($candidate.MetadataUrl)"
-            $metadata = Invoke-RestMethod -Uri $candidate.MetadataUrl -UseBasicParsing
+            $metadata = Invoke-CodexMetadataRequest -Url $candidate.MetadataUrl
             $dist = Get-MetadataObject -Metadata $metadata -Name "dist"
             $tarballUrl = Get-MetadataString -Metadata $dist -Name "tarball"
             if ([string]::IsNullOrWhiteSpace($tarballUrl)) {
@@ -237,6 +251,8 @@ function Test-SriIntegrity {
         return $false
     }
 
+    $hasStrongHash = $false
+    $weakMatch = $false
     foreach ($token in $Integrity.Split(" ", [StringSplitOptions]::RemoveEmptyEntries)) {
         $separator = $token.IndexOf("-")
         if ($separator -le 0 -or $separator -ge ($token.Length - 1)) {
@@ -251,12 +267,15 @@ function Test-SriIntegrity {
 
         $bytes = Get-HashBytes -FilePath $FilePath -Algorithm $algorithm
         $actual = [Convert]::ToBase64String($bytes)
+        $strong = $algorithm -ne 'SHA1'
+        $hasStrongHash = $hasStrongHash -or $strong
         if ($actual -ceq $expected) {
-            return $true
+            if ($strong) { return $true }
+            $weakMatch = $true
         }
     }
 
-    return $false
+    return $weakMatch -and -not $hasStrongHash
 }
 
 function Test-Sha1 {
@@ -327,15 +346,37 @@ try {
     New-Item -ItemType Directory -Path $tempRoot | Out-Null
     New-Item -ItemType Directory -Path $extractRoot | Out-Null
 
-    Write-Host "Downloading Codex runtime: $tarballUrl"
-    Invoke-WebRequest -Uri $tarballUrl -OutFile $archivePath -UseBasicParsing
-
-    Write-Host "Verifying Codex runtime package integrity..."
-    if (-not (Test-SriIntegrity -FilePath $archivePath -Integrity $integrity)) {
-        if (-not (Test-Sha1 -FilePath $archivePath -ShaSum $shaSum)) {
-            throw "Codex runtime package integrity check failed."
-        }
+    $downloadUrls = @($tarballUrl)
+    if ($tarballUrl.StartsWith('https://registry.npmjs.org/', [StringComparison]::Ordinal)) {
+        $downloadUrls = @(('https://registry.npmmirror.com/' + $tarballUrl.Substring('https://registry.npmjs.org/'.Length)), $tarballUrl)
+    } elseif ($tarballUrl.StartsWith('https://registry.npmmirror.com/', [StringComparison]::Ordinal)) {
+        $downloadUrls += 'https://registry.npmjs.org/' + $tarballUrl.Substring('https://registry.npmmirror.com/'.Length)
     }
+    $downloadUrl = $null
+    $oldProgressPreference = $ProgressPreference
+    try {
+        $ProgressPreference = 'SilentlyContinue'
+        for ($downloadIndex = 0; $downloadIndex -lt $downloadUrls.Count; $downloadIndex++) {
+            $candidateUrl = $downloadUrls[$downloadIndex]
+            try {
+                Write-Host "Downloading Codex runtime: $candidateUrl"
+                Invoke-WebRequest -Uri $candidateUrl -OutFile $archivePath -TimeoutSec 900 -UseBasicParsing
+                Write-Host "Verifying Codex runtime package integrity..."
+                $valid = Test-SriIntegrity -FilePath $archivePath -Integrity $integrity
+                # A matching SHA-1 must never rescue a failed stronger upstream checksum.
+                if (-not $valid -and $integrity -notmatch '(?i)(?:^|\s)sha(?:256|384|512)-') {
+                    $valid = Test-Sha1 -FilePath $archivePath -ShaSum $shaSum
+                }
+                if (-not $valid) { throw 'Codex runtime package integrity check failed.' }
+                $downloadUrl = $candidateUrl
+                break
+            } catch {
+                if (Test-Path -LiteralPath $archivePath) { Remove-Item -LiteralPath $archivePath -Force }
+                if ($downloadIndex -eq $downloadUrls.Count - 1) { throw }
+                Write-Host 'Mirror download unavailable or invalid; trying the same official package.'
+            }
+        }
+    } finally { $ProgressPreference = $oldProgressPreference }
 
     Write-Host "Extracting Codex runtime..."
     tar.exe -xzf $archivePath -C $extractRoot
@@ -363,6 +404,7 @@ try {
             Size = (Get-Item -LiteralPath $archiveDestination).Length
             Sha256 = (Get-FileHash -LiteralPath $archiveDestination -Algorithm SHA256).Hash.ToLowerInvariant()
             RuntimePath = $destinationPath
+            DownloadUrl = $downloadUrl
         }
     }
 
