@@ -1,20 +1,20 @@
 {
     "schemaVersion":  "1",
     "channel":  "stable",
-    "generatedAt":  "2026-10-29T09:49:20Z",
-    "packageBaseUrl":  "https://api.gitcode.com/api/v5/repos/gcw_SpGZ48lW/mycodex-updates/releases/app-v8.0.5/attach_files/",
+    "generatedAt":  "2026-10-30T03:10:10Z",
+    "packageBaseUrl":  "https://api.gitcode.com/api/v5/repos/gcw_SpGZ48lW/mycodex-updates/releases/app-v8.0.6/attach_files/",
     "app":  {
-                "version":  "8.0.5",
-                "releaseDate":  "2026-10-25",
+                "version":  "8.0.6",
+                "releaseDate":  "2026-10-30",
                 "releaseNotes":  {
-                                     "zh-CN":  "MyCodex 8.0.5 \u66f4\u65b0\u65e5\u5fd7\r\n\r\n\u2022 \u65b0\u589e\u5b9e\u65f6\u8bed\u97f3\u5bf9\u8bdd\uff1a\u672c\u673a Windows \u4f7f\u7528 ChatGPT \u8d26\u53f7\u767b\u5f55\u540e\uff0c\u53ef\u5f00\u542f\u8bed\u97f3\u5bf9\u8bdd\uff0c\u9ed8\u8ba4\u6309\u4f4f F8 \u8bf4\u8bdd\u3001\u677e\u5f00\u53d1\u9001\u3002\u652f\u6301\u81ea\u5b9a\u4e49\u70ed\u952e\u3001\u8bf4\u8bdd\u65b9\u5f0f\u3001\u97f3\u8272\u3001\u8bed\u901f\u548c\u97f3\u91cf\uff0c\u5e76\u53ef\u8bd5\u542c\u3002\r\n\u2022 \u4fee\u590d\u6b7b\u673a\u6216\u65ad\u7535\u540e\u53ef\u80fd\u65e0\u6cd5\u542f\u52a8\u7684\u95ee\u9898\uff0c\u652f\u6301\u4ece\u6709\u6548\u5907\u4efd\u81ea\u52a8\u6062\u590d\u635f\u574f\u6570\u636e\u3002\r\n\u2022 \u6539\u8fdb\u4efb\u52a1\u72b6\u6001\u63d0\u793a\uff1a\u81ea\u52a8\u91cd\u8bd5\u65f6\u4fdd\u6301\u8fd0\u884c\u72b6\u6001\uff0c\u6700\u7ec8\u5931\u8d25\u65f6\u64ad\u653e\u9519\u8bef\u63d0\u793a\u97f3\u3002\r\n\u2022 \u4fee\u590d\u5ba1\u6279\u548c\u63d0\u95ee\u7a97\u53e3\u6587\u5b57\u91cd\u53e0\u3001\u622a\u65ad\u95ee\u9898\uff0c\u4f18\u5316\u8ba4\u8bc1\u4e2d\u5fc3\u6a21\u578b\u5217\u8868\u7684\u64cd\u4f5c\u5e03\u5c40\u3002\r\n\u2022 \u52a0\u5f3a\u81ea\u5b9a\u4e49\u5ba1\u6279\u5bf9\u590d\u5408\u547d\u4ee4\u548c\u53ea\u8bfb Git \u547d\u4ee4\u7684\u5b89\u5168\u5224\u65ad\u3002",
-                                     "en-US":  "MyCodex 8.0.5 Release Notes\r\n\r\n\u2022 Added realtime voice chat for local Windows targets signed in with a ChatGPT account. Hold F8 to talk and release to send. Customize the hotkey, talk mode, voice, speech speed and volume, with voice preview.\r\n\u2022 Fixed startup failures after a crash or power loss, with automatic recovery of damaged data from valid backups.\r\n\u2022 Improved task status reporting: automatic retries keep tasks running, while final failures play an error sound.\r\n\u2022 Fixed overlapping and clipped text in approval and question dialogs, and improved the model list controls in Authentication Center.\r\n\u2022 Strengthened custom approval checks for compound commands and read-only Git operations."
+                                     "zh-CN":  "MyCodex 8.0.6 \u66f4\u65b0\u65e5\u5fd7\r\n\r\n\u2022 \u65b0\u589e\u5185\u7f6e\u6d4f\u89c8\u5668\u81ea\u52a8\u5316\u5de5\u5177\uff0c\u53ef\u5728\u201c\u9009\u9879\u201d\u2192\u201c\u6d4f\u89c8\u5668\u63a7\u5236\u201d\u9009\u9879\u5361\u4e2d\u5f00\u542f\u3002\r\n\u2022 \u66f4\u65b0 Computer Use \u5b98\u65b9\u7ec4\u4ef6\u3002",
+                                     "en-US":  "MyCodex 8.0.6 Release Notes\r\n\r\n\u2022 Added built-in browser automation. Enable it on the Browser Control tab in Options.\r\n\u2022 Updated the official Computer Use components."
                                  },
                 "asset":  {
-                              "url":  "MyCodex_v8.0.5_Setup_20261025094913.exe/download",
-                              "fileName":  "MyCodex_v8.0.5_Setup_20261025094913.exe",
-                              "sha256":  "083728b880dd17cca77f99c6177029626c572d93a7f6e1221566f3caa01614f5",
-                              "size":  199881903
+                              "url":  "MyCodex_v8.0.6_Setup_20261030030631.exe/download",
+                              "fileName":  "MyCodex_v8.0.6_Setup_20261030030631.exe",
+                              "sha256":  "de2e2a6c40bf30ade3e427be96f0e709f773a9c399ff70ef5a46a7a4fd8274f4",
+                              "size":  264323025
                           }
             },
     "runtimes":  [
