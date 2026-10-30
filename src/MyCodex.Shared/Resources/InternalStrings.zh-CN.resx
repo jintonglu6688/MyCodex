@@ -1806,4 +1806,7 @@
   <data name="UpdateManifest.Error.ManifestUrlNotConfigured" xml:space="preserve">
     <value>未配置更新清单地址。</value>
   </data>
+  <data name="UpdateDownload.Error.Stalled" xml:space="preserve">
+    <value>下载长时间没有收到数据，已停止。</value>
+  </data>
 </root>

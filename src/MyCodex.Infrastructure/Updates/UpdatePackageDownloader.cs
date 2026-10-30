@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Net;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -62,31 +61,7 @@ namespace MyCodex.Infrastructure.Updates
             var destinationPath = ResolveSafeDestinationPath(destinationDirectory, fileName);
             try
             {
-                ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
-                using (var client = new WebClient())
-                using (cancellationToken.Register(client.CancelAsync))
-                {
-                    if (progress != null)
-                    {
-                        client.DownloadProgressChanged += (sender, e) =>
-                            progress.Report(new UpdateDownloadProgress
-                            {
-                                Percentage = e.ProgressPercentage,
-                                BytesReceived = e.BytesReceived,
-                                TotalBytesToReceive = e.TotalBytesToReceive
-                            });
-                    }
-
-                    try
-                    {
-                        await client.DownloadFileTaskAsync(sourceUri, destinationPath).ConfigureAwait(false);
-                    }
-                    catch (WebException) when (cancellationToken.IsCancellationRequested)
-                    {
-                        throw new OperationCanceledException(cancellationToken);
-                    }
-                }
-
+                await UpdateFileTransfer.DownloadFileAsync(sourceUri, destinationPath, progress, cancellationToken).ConfigureAwait(false);
                 VerifySize(destinationPath, asset.Size);
                 VerifySha256(destinationPath, asset.Sha256);
                 return destinationPath;

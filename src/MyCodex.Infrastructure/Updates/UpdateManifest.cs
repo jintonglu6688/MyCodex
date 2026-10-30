@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 namespace MyCodex.Infrastructure.Updates
@@ -15,34 +14,6 @@ namespace MyCodex.Infrastructure.Updates
         public string PackageBaseUrl { get; set; }
 
         public UpdateManifestAppPackage App { get; set; }
-
-        public List<UpdateManifestRuntimePackage> Runtimes { get; set; } =
-            new List<UpdateManifestRuntimePackage>();
-
-        public UpdateManifestRuntimePackage FindRuntimePackage(string runtimeSource, string targetTriple)
-        {
-            if (Runtimes == null)
-            {
-                return null;
-            }
-
-            for (var i = 0; i < Runtimes.Count; i++)
-            {
-                var package = Runtimes[i];
-                if (package == null)
-                {
-                    continue;
-                }
-
-                if (string.Equals(package.Source, runtimeSource, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(package.TargetTriple, targetTriple, StringComparison.OrdinalIgnoreCase))
-                {
-                    return package;
-                }
-            }
-
-            return null;
-        }
     }
 
     public sealed class UpdateManifestAppPackage
@@ -58,19 +29,6 @@ namespace MyCodex.Infrastructure.Updates
         public string ReleaseNotesZhCn { get; set; }
 
         public string ReleaseNotesEnUs { get; set; }
-
-        public UpdateAssetReference Asset { get; set; }
-    }
-
-    public sealed class UpdateManifestRuntimePackage
-    {
-        public string Source { get; set; }
-
-        public string Version { get; set; }
-
-        public string TargetTriple { get; set; }
-
-        public string PackageFormat { get; set; }
 
         public UpdateAssetReference Asset { get; set; }
     }

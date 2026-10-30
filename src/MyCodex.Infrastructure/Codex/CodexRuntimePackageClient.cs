@@ -41,17 +41,20 @@ namespace MyCodex.Infrastructure.Codex
         internal const string MirrorRegistry = "https://registry.npmmirror.com";
         private readonly Func<string, CancellationToken, Task<IDictionary<string, object>>> _readJson;
         private readonly Func<string, string, IProgress<UpdateDownloadProgress>, CancellationToken, Task> _download;
+        private bool _officialMetadataFailed;
 
         public CodexRuntimePackageClient(
             Func<string, CancellationToken, Task<IDictionary<string, object>>> readJson = null,
             Func<string, string, IProgress<UpdateDownloadProgress>, CancellationToken, Task> download = null)
         {
             _readJson = readJson ?? ReadJsonAsync;
-            _download = download ?? DownloadFileAsync;
+            _download = download ?? ((url, path, progress, token) =>
+                UpdateFileTransfer.DownloadFileAsync(new Uri(url), path, progress, token));
         }
 
         public async Task<CodexRuntimePackage> CheckLatestAsync(string targetTriple, CancellationToken token)
         {
+            _officialMetadataFailed = false;
             var latest = await ReadMetadataAsync("latest", token).ConfigureAwait(false);
             var version = JsonValueReader.GetString(latest, "version");
             if (version == null || !Regex.IsMatch(version, @"\A(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\z", RegexOptions.CultureInvariant))
@@ -67,18 +70,7 @@ namespace MyCodex.Infrastructure.Codex
             }
 
             var packageVersion = version + "-" + suffix;
-            IDictionary<string, object> metadata;
-            try
-            {
-                metadata = await ReadMetadataAsync(packageVersion, token).ConfigureAwait(false);
-            }
-            catch (WebException error) when ((error.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.NotFound)
-            {
-                // Older Codex releases used one archive for all supported platforms.
-                packageVersion = version;
-                metadata = await ReadMetadataAsync(packageVersion, token).ConfigureAwait(false);
-            }
-
+            var metadata = await ReadMetadataAsync(packageVersion, token).ConfigureAwait(false);
             var fileName = "codex-" + packageVersion + ".tgz";
             var dist = JsonValueReader.GetDictionary(metadata, "dist");
             var tarball = JsonValueReader.GetString(dist, "tarball");
@@ -105,11 +97,17 @@ namespace MyCodex.Infrastructure.Codex
         {
             token.ThrowIfCancellationRequested();
             var path = "/%40openai%2Fcodex/" + version;
-            try { return await _readJson(OfficialRegistry + path, token).ConfigureAwait(false); }
-            catch (Exception error) when (CanRetry(error, token))
+            if (!_officialMetadataFailed)
             {
-                return await _readJson(MirrorRegistry + path, token).ConfigureAwait(false);
+                try { return await _readJson(OfficialRegistry + path, token).ConfigureAwait(false); }
+                catch (Exception error) when (CanRetry(error, token))
+                {
+                    // Startup waits for this check; one official timeout per check is enough.
+                    _officialMetadataFailed = true;
+                }
             }
+
+            return await _readJson(MirrorRegistry + path, token).ConfigureAwait(false);
         }
 
         public async Task DownloadVerifiedAsync(CodexRuntimePackage package, string path,
@@ -164,24 +162,6 @@ namespace MyCodex.Infrastructure.Codex
                 {
                     throw new OperationCanceledException(token);
                 }
-            }
-        }
-
-        private static async Task DownloadFileAsync(string url, string path,
-            IProgress<UpdateDownloadProgress> progress, CancellationToken token)
-        {
-            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
-            using (var client = new WebClient())
-            using (token.Register(client.CancelAsync))
-            {
-                if (progress != null)
-                    client.DownloadProgressChanged += (sender, e) => progress.Report(new UpdateDownloadProgress
-                    {
-                        Percentage = e.ProgressPercentage, BytesReceived = e.BytesReceived,
-                        TotalBytesToReceive = e.TotalBytesToReceive
-                    });
-                try { await client.DownloadFileTaskAsync(new Uri(url), path).ConfigureAwait(false); }
-                catch (WebException) when (token.IsCancellationRequested) { throw new OperationCanceledException(token); }
             }
         }
 

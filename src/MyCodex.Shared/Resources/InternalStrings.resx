@@ -1806,4 +1806,7 @@ This file is empty.</value>
   <data name="UpdateManifest.Error.ManifestUrlNotConfigured" xml:space="preserve">
     <value>Update manifest URL is not configured.</value>
   </data>
+  <data name="UpdateDownload.Error.Stalled" xml:space="preserve">
+    <value>The download received no data for too long and was stopped.</value>
+  </data>
 </root>

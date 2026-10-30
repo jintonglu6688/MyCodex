@@ -146,7 +146,7 @@ namespace MyCodex.Infrastructure.Updates
                     "Update manifest is invalid."));
             }
 
-            var manifest = new UpdateManifest
+            return new UpdateManifest
             {
                 SchemaVersion = GetOptionalString(root, "schemaVersion"),
                 Channel = GetOptionalString(root, "channel"),
@@ -154,22 +154,6 @@ namespace MyCodex.Infrastructure.Updates
                 PackageBaseUrl = GetOptionalString(root, "packageBaseUrl"),
                 App = ParseApp(GetOptionalDictionary(root, "app"))
             };
-
-            var runtimeItems = GetOptionalArray(root, "runtimes");
-            if (runtimeItems != null)
-            {
-                foreach (var item in runtimeItems)
-                {
-                    var dictionary = item as Dictionary<string, object>;
-                    var runtimePackage = ParseRuntime(dictionary);
-                    if (runtimePackage != null)
-                    {
-                        manifest.Runtimes.Add(runtimePackage);
-                    }
-                }
-            }
-
-            return manifest;
         }
 
         private static UpdateManifestAppPackage ParseApp(Dictionary<string, object> values)
@@ -187,23 +171,6 @@ namespace MyCodex.Infrastructure.Updates
                 ReleaseNotes = GetOptionalString(values, "releaseNotes"),
                 ReleaseNotesZhCn = GetLocalizedReleaseNotes(values, "zh-CN", "zhCn", "zh"),
                 ReleaseNotesEnUs = GetLocalizedReleaseNotes(values, "en-US", "enUs", "en"),
-                Asset = ParseAsset(GetOptionalDictionary(values, "asset"))
-            };
-        }
-
-        private static UpdateManifestRuntimePackage ParseRuntime(Dictionary<string, object> values)
-        {
-            if (values == null)
-            {
-                return null;
-            }
-
-            return new UpdateManifestRuntimePackage
-            {
-                Source = GetOptionalString(values, "source"),
-                Version = GetOptionalString(values, "version"),
-                TargetTriple = GetOptionalString(values, "targetTriple"),
-                PackageFormat = GetOptionalString(values, "packageFormat"),
                 Asset = ParseAsset(GetOptionalDictionary(values, "asset"))
             };
         }
@@ -240,14 +207,6 @@ namespace MyCodex.Infrastructure.Updates
             object value;
             return values != null && values.TryGetValue(name, out value)
                 ? value as Dictionary<string, object>
-                : null;
-        }
-
-        private static IEnumerable GetOptionalArray(IDictionary<string, object> values, string name)
-        {
-            object value;
-            return values != null && values.TryGetValue(name, out value)
-                ? value as IEnumerable
                 : null;
         }
 

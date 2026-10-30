@@ -50,9 +50,16 @@ namespace MyCodex.Application.Tests
                 return Task.FromResult(Metadata(url));
             });
             Assert.That((await client.CheckLatestAsync(Target, CancellationToken.None)).Version, Is.EqualTo("0.165.0"));
-            Assert.That(requests.Count, Is.EqualTo(4));
-            Assert.That(requests[1], Does.StartWith(CodexRuntimePackageClient.MirrorRegistry));
-            Assert.That(requests[3], Does.EndWith("/0.165.0-win32-x64"));
+            Assert.That(requests, Is.EqualTo(new[]
+            {
+                CodexRuntimePackageClient.OfficialRegistry + "/%40openai%2Fcodex/latest",
+                CodexRuntimePackageClient.MirrorRegistry + "/%40openai%2Fcodex/latest",
+                CodexRuntimePackageClient.MirrorRegistry + "/%40openai%2Fcodex/0.165.0-win32-x64"
+            }), "After one official failure the platform request goes straight to the mirror.");
+
+            requests.Clear();
+            await client.CheckLatestAsync(Target, CancellationToken.None);
+            Assert.That(requests[0], Does.StartWith(CodexRuntimePackageClient.OfficialRegistry), "Each check tries the official registry again.");
         }
 
         [TestCase("0.166.0-alpha.1")]

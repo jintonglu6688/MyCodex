@@ -11,8 +11,9 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public class UpdateManifestClientTests
     {
+        // Old clients still read the runtimes entries; this client must ignore them.
         [Test]
-        public void Parse_ReadsAppAndRuntimePackages()
+        public void Parse_ReadsAppAndIgnoresLegacyRuntimeEntries()
         {
             var manifest = new UpdateManifestClient("https://gitcode.com/demo/mycodex/raw/main/updates/stable.json")
                 .Parse(
@@ -30,9 +31,6 @@ namespace MyCodex.Application.Tests
             Assert.That(manifest.App.ReleaseNotesEnUs, Is.EqualTo("English notes"));
             Assert.That(manifest.App.ReleaseNotes, Is.Null);
             Assert.That(manifest.App.Asset.Sha256, Is.EqualTo("abc"));
-            var runtimePackage = manifest.FindRuntimePackage("Bundled", "x86_64-pc-windows-msvc");
-            Assert.That(runtimePackage, Is.Not.Null);
-            Assert.That(runtimePackage.Version, Is.EqualTo("0.125.0"));
         }
 
         [Test]
