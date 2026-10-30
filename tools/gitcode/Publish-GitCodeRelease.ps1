@@ -45,6 +45,7 @@ $runtimeScript = Join-Path $repoRoot "tools\gitcode\Publish-GitCodeRuntime.ps1"
 $gitCodeApiBase = "https://api.gitcode.com/api/v5"
 $script:CachedGitCodeToken = $null
 . (Join-Path $repoRoot "tools\gitcode\GitCodePublishing.ps1")
+. (Join-Path $repoRoot "tools\build\ScriptHelpers.ps1")
 
 if ([string]::IsNullOrWhiteSpace($RepoUrl)) {
     $RepoUrl = "https://gitcode.com/$Owner/$Repo.git"
@@ -56,18 +57,6 @@ if ([string]::IsNullOrWhiteSpace($Token)) {
 
 if ([string]::IsNullOrWhiteSpace($Token)) {
     $Token = [Environment]::GetEnvironmentVariable("GITCODE_TOKEN", "Machine")
-}
-
-function Get-AppVersion {
-    param([string]$Path)
-
-    $content = Get-Content -LiteralPath $Path -Raw
-    $match = [regex]::Match($content, "<Version>([^<]+)</Version>")
-    if (-not $match.Success) {
-        throw "Unable to read <Version> from $Path"
-    }
-
-    return $match.Groups[1].Value.Trim()
 }
 
 $sourceRemotes = @(git remote)

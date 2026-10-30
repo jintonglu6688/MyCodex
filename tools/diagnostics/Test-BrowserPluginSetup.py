@@ -25,7 +25,7 @@ parser.add_argument('--marketplace', default=str(ROOT / 'src/MyCodex.Infrastruct
 args = parser.parse_args()
 cli = Path(args.codex).resolve(strict=True)
 market = Path(args.marketplace).resolve(strict=True)
-assert subprocess.check_output([str(cli), '--version'], text=True).strip() == 'codex-cli 0.164.0'
+assert subprocess.check_output([str(cli), '--version'], text=True).strip().startswith('codex-cli ')
 run = ROOT / 'artifacts/browser-plugin-setup' / uuid.uuid4().hex
 home = run / 'home'
 home.mkdir(parents=True)

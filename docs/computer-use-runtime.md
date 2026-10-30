@@ -48,7 +48,7 @@ For this update:
 
 - Bundle preparation and complete inventory verification passed; 2399 files are inventoried, including the generated marketplace catalog.
 - `node tools/diagnostics/Test-ComputerUseHost.mjs`: 210 checks passed with a synthetic executor.
-- `node tools/diagnostics/Test-BrowserRuntime.mjs --check-tool-routing`: the actual new Node REPL/Sky reached only the synthetic native executor, rejected calls after turn end, and all seven browser regression checks passed.
+- `node tools/diagnostics/Test-BrowserRuntime.mjs --codex <codex.exe> --check-tool-routing`: the actual new Node REPL/Sky reached only the synthetic native executor, rejected calls after turn end, and all seven browser regression checks passed.
 - The original new Windows helper accepted `end_turn` through the production `WindowsHelperTransport` and closed successfully, using a temporary helper home and the bundled Codex CLI `0.164.0`.
 - Focused .NET tests for Computer Use, Browser Use, Office instructions, App Server messages and code health: 386 passed, one filesystem-link fixture skipped.
 - Release build: zero warnings and errors.

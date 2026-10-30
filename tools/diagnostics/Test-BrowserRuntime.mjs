@@ -23,7 +23,10 @@ const node = path.join(runtime, 'bin/node.exe');
 const modules = path.join(runtime, 'bin/node_modules');
 const launcher = path.join(modules, '@oai/cua-repl/bin/cua-repl.mjs');
 const service = path.join(modules, '@oai/browser-desktop/scripts/browser-service.mjs');
-const codex = path.join(root, 'runtime/codex/0.164.0/x86_64-pc-windows-msvc/vendor/x86_64-pc-windows-msvc/bin/codex.exe');
+// The bundled runtime follows the latest stable Codex release, so its version folder is passed in.
+const codexIndex = process.argv.indexOf('--codex');
+assert.ok(codexIndex > 1 && process.argv[codexIndex + 1], 'Pass --codex <path to the prepared codex.exe>.');
+const codex = path.resolve(process.argv[codexIndex + 1]);
 for (const file of [node, launcher, service, codex]) assert.ok(existsSync(file), 'Prepared runtime component is missing.');
 const temporary = mkdtempSync(path.join(os.tmpdir(), 'mycodex-browser-runtime-'));
 const children = new Set();

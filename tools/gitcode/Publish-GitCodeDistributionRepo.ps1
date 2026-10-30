@@ -16,52 +16,10 @@ $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $artifactRoot = Join-Path $repoRoot "artifacts"
 . (Join-Path $repoRoot "tools\gitcode\GitCodePublishing.ps1")
+. (Join-Path $repoRoot "tools\build\ScriptHelpers.ps1")
 
 if ([string]::IsNullOrWhiteSpace($WorkDirectory)) {
     $WorkDirectory = Join-Path $artifactRoot "gitcode-distribution"
-}
-
-function Test-IsPathUnderRoot {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Path,
-
-        [Parameter(Mandatory = $true)]
-        [string]$Root
-    )
-
-    $resolvedPath = [System.IO.Path]::GetFullPath($Path).TrimEnd(
-        [System.IO.Path]::DirectorySeparatorChar,
-        [System.IO.Path]::AltDirectorySeparatorChar)
-    $resolvedRoot = [System.IO.Path]::GetFullPath($Root).TrimEnd(
-        [System.IO.Path]::DirectorySeparatorChar,
-        [System.IO.Path]::AltDirectorySeparatorChar)
-    $rootWithSeparator = $resolvedRoot + [System.IO.Path]::DirectorySeparatorChar
-
-    return $resolvedPath -eq $resolvedRoot -or
-        ($resolvedPath -ne $resolvedRoot -and $resolvedPath.StartsWith($rootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase))
-}
-
-function Remove-DirectorySafely {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Path,
-
-        [Parameter(Mandatory = $true)]
-        [string]$AllowedRoot
-    )
-
-    if (-not (Test-Path -LiteralPath $Path)) {
-        return
-    }
-
-    $resolvedPath = (Resolve-Path -LiteralPath $Path).Path
-    $resolvedRoot = (Resolve-Path -LiteralPath $AllowedRoot).Path
-    if (-not (Test-IsPathUnderRoot -Path $resolvedPath -Root $resolvedRoot)) {
-        throw "Refusing to delete outside allowed root: $resolvedPath"
-    }
-
-    Remove-Item -LiteralPath $resolvedPath -Recurse -Force
 }
 
 function Invoke-GitCodePush {

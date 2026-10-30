@@ -47,7 +47,7 @@ A clean-machine report attempted Windows Settings inspection through `cua_repl/j
 
 After successful per-thread preparation, MyCodex now adds capability-specific routing through that thread's `developer_instructions` override. Windows desktop interfaces, Settings and browser-internal interfaces use `node_repl` with the existing computer-use skill and `@oai/sky`; external web pages use browser-only `cua_repl`. The instructions preserve existing global/thread instructions, explicit clearing and Office collaboration-mode instructions. They do not enable a denied capability, add desktop access to the browser service, write global configuration or change the original permission/lifecycle checks. Already loaded threads require a runtime reconnect/cold resume to receive changed configuration.
 
-`node tools/diagnostics/Test-BrowserRuntime.mjs --check-tool-routing` reproduces the wrong-tool missing-sky error, then runs the actual pinned `node_repl` and Sky service against a synthetic native host and verifies that ending the turn prevents subsequent executor calls. No real windows are read, screenshots captured or input injected. The loopback-only real CLI fixture also checks that per-thread routing and Office developer instructions both reach the provider request. Related .NET checks passed 386 tests with one filesystem-link fixture skipped, and the Release build completed with zero warnings/errors. The user subsequently confirmed that desktop control worked on the target device and that browser automation still passed regression testing.
+`node tools/diagnostics/Test-BrowserRuntime.mjs --codex <codex.exe> --check-tool-routing` reproduces the wrong-tool missing-sky error, then runs the actual pinned `node_repl` and Sky service against a synthetic native host and verifies that ending the turn prevents subsequent executor calls. No real windows are read, screenshots captured or input injected. The loopback-only real CLI fixture also checks that per-thread routing and Office developer instructions both reach the provider request. Related .NET checks passed 386 tests with one filesystem-link fixture skipped, and the Release build completed with zero warnings/errors. The user subsequently confirmed that desktop control worked on the target device and that browser automation still passed regression testing.
 
 ### First-send component preparation
 
@@ -90,9 +90,10 @@ Focused setup/service/installer/form/plugin/resource/mnemonic/source checks: 239
 ```powershell
 node tools/diagnostics/Test-BrowserAccessHost.mjs
 node tools/diagnostics/Test-BrowserUseControl.mjs
-node tools/diagnostics/Test-BrowserRuntime.mjs
+$codex = "runtime/codex/<version>/x86_64-pc-windows-msvc/vendor/x86_64-pc-windows-msvc/bin/codex.exe"
+node tools/diagnostics/Test-BrowserRuntime.mjs --codex $codex
 node tools/diagnostics/Test-ComputerUseHost.mjs
-python tools/diagnostics/Test-BrowserThreadBinding.py --codex runtime/codex/0.164.0/x86_64-pc-windows-msvc/vendor/x86_64-pc-windows-msvc/bin/codex.exe
+python tools/diagnostics/Test-BrowserThreadBinding.py --codex $codex
 dotnet test tests/MyCodex.Application.Tests/MyCodex.Application.Tests.csproj -c Debug -p:Platform=x64 --no-restore --filter "FullyQualifiedName~BrowserUse|FullyQualifiedName~ComputerUse|FullyQualifiedName~McpToolApproval|FullyQualifiedName~ProtocolCapabilities"
 ```
 

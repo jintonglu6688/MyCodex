@@ -1,4 +1,4 @@
-"""Owned Codex 0.164 thread/MCP configuration probe; no turns, models, browser, or UI."""
+"""Owned Codex thread/MCP configuration probe; no turns, models, browser, or UI."""
 import argparse
 import hashlib
 import importlib.util
@@ -48,12 +48,12 @@ def digest(path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--codex', required=True, help='Explicit existing Codex 0.164 executable.')
+    parser.add_argument('--codex', required=True, help='Explicit existing Codex executable, such as the prepared bundled runtime.')
     args = parser.parse_args()
     cli = Path(args.codex).resolve()
     assert cli.is_file() and cli.name.lower() == 'codex.exe'
     version = subprocess.check_output([str(cli), '--version'], text=True).strip()
-    assert version == 'codex-cli 0.164.0', 'This probe is pinned to the selected MyCodex runtime contract.'
+    assert version.startswith('codex-cli '), 'Expected a Codex CLI executable, got: ' + version
     run = ROOT / 'artifacts/browser-thread-binding' / uuid.uuid4().hex
     home = run / 'home'
     home.mkdir(parents=True)

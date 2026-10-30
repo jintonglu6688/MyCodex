@@ -9,21 +9,7 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $projectPath = Join-Path $repoRoot "src\MyCodex.WinForms\MyCodex.WinForms.csproj"
-
-function Test-IsPathUnderRoot {
-    param(
-        [string]$Path,
-        [string]$Root
-    )
-
-    $resolvedPath = [IO.Path]::GetFullPath($Path)
-    $resolvedRoot = [IO.Path]::GetFullPath($Root).TrimEnd(
-        [IO.Path]::DirectorySeparatorChar,
-        [IO.Path]::AltDirectorySeparatorChar)
-    $rootWithSeparator = $resolvedRoot + [IO.Path]::DirectorySeparatorChar
-    return $resolvedPath -ne $resolvedRoot -and
-           $resolvedPath.StartsWith($rootWithSeparator, [StringComparison]::OrdinalIgnoreCase)
-}
+. (Join-Path $PSScriptRoot "ScriptHelpers.ps1")
 
 function Assert-PathUnderRoot {
     param(

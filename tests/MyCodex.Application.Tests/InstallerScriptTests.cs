@@ -140,11 +140,21 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ReleaseDistributionScripts_UseBoundaryAwareSafeDelete()
         {
-            var installerBuild = RepositorySource.ReadFile("tools", "installer", "build-installer.ps1");
-            var gitCodeDistribution = RepositorySource.ReadFile("tools", "gitcode", "Publish-GitCodeDistributionRepo.ps1");
+            var helpers = RepositorySource.ReadFile("tools", "build", "ScriptHelpers.ps1");
+            AssertBoundaryAwareSafeDelete(helpers);
+            Assert.That(helpers, Does.Not.Contain("$resolvedPath -eq $resolvedRoot"), "The allowed root itself must never be deletable.");
 
-            AssertBoundaryAwareSafeDelete(installerBuild);
-            AssertBoundaryAwareSafeDelete(gitCodeDistribution);
+            foreach (var script in new[]
+            {
+                RepositorySource.ReadFile("tools", "build", "Build-MyCodex.ps1"),
+                RepositorySource.ReadFile("tools", "installer", "build-installer.ps1"),
+                RepositorySource.ReadFile("tools", "gitcode", "Publish-GitCodeDistributionRepo.ps1")
+            })
+            {
+                Assert.That(script, Does.Contain("ScriptHelpers.ps1"));
+                Assert.That(script, Does.Not.Contain("function Test-IsPathUnderRoot"));
+                Assert.That(script, Does.Not.Contain("function Remove-DirectorySafely"));
+            }
         }
 
         [Test]

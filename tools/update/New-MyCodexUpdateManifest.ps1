@@ -55,19 +55,6 @@ function ConvertTo-AsciiJson {
     return $builder.ToString()
 }
 
-function Write-Utf8NoBom {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Path,
-
-        [Parameter(Mandatory = $true)]
-        [string]$Value
-    )
-
-    $encoding = [System.Text.UTF8Encoding]::new($false)
-    [System.IO.File]::WriteAllText($Path, $Value, $encoding)
-}
-
 function Get-FileAsset {
     param(
         [Parameter(Mandatory = $true)]
@@ -160,7 +147,7 @@ if ($EscapeNonAscii) {
     $json = ConvertTo-AsciiJson -Json $json
 }
 
-Write-Utf8NoBom -Path $OutputPath -Value ($json + [Environment]::NewLine)
+[System.IO.File]::WriteAllText($OutputPath, $json + [Environment]::NewLine, [System.Text.UTF8Encoding]::new($false))
 
 Write-Host "Manifest created:"
 Write-Host $OutputPath

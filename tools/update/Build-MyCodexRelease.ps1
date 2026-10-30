@@ -30,18 +30,7 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $versionPropsPath = Join-Path $repoRoot "Version.props"
 $installerScript = Join-Path $repoRoot "tools\installer\build-installer.ps1"
 $manifestScript = Join-Path $repoRoot "tools\update\New-MyCodexUpdateManifest.ps1"
-
-function Get-AppVersion {
-    param([string]$Path)
-
-    $content = Get-Content -LiteralPath $Path -Raw
-    $match = [regex]::Match($content, "<Version>([^<]+)</Version>")
-    if (-not $match.Success) {
-        throw "Unable to read <Version> from $Path"
-    }
-
-    return $match.Groups[1].Value.Trim()
-}
+. (Join-Path $repoRoot "tools\build\ScriptHelpers.ps1")
 
 $version = Get-AppVersion -Path $versionPropsPath
 $installerPath = Join-Path $repoRoot ("artifacts\installer\MyCodex_v" + $version + "_Setup.exe")

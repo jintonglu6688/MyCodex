@@ -15,6 +15,7 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 . (Join-Path $repoRoot 'tools\authentication-center\Test-AuthenticationHostPackage.ps1')
+. (Join-Path $repoRoot 'tools\build\ScriptHelpers.ps1')
 if ($AllowDevelopmentAuthenticationHost -and $Configuration -ne 'Debug') { throw 'Development authentication packages require an explicit Debug installer build.' }
 if ([string]::IsNullOrWhiteSpace($AuthenticationPackageRoot)) { $AuthenticationPackageRoot = Join-Path $repoRoot 'runtime\auth-core' }
 $authenticationPackageRoot = [IO.Path]::GetFullPath($AuthenticationPackageRoot)
@@ -22,21 +23,6 @@ $authenticationPackage = Test-AuthenticationHostPackage -PackageRoot $authentica
 $versionPropsPath = Join-Path $repoRoot "Version.props"
 $issPath = Join-Path $PSScriptRoot "MyCodex.iss"
 $codexTargetTriple = if ($env:PROCESSOR_ARCHITEW6432 -eq "ARM64" -or $env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "aarch64-pc-windows-msvc" } else { "x86_64-pc-windows-msvc" }
-function Get-AppVersion {
-    param([string]$Path)
-
-    if (-not (Test-Path -LiteralPath $Path)) {
-        throw "Version.props was not found: $Path"
-    }
-
-    $content = Get-Content -LiteralPath $Path -Raw
-    $match = [regex]::Match($content, "<Version>([^<]+)</Version>")
-    if (-not $match.Success) {
-        throw "Unable to read <Version> from $Path"
-    }
-
-    return $match.Groups[1].Value.Trim()
-}
 
 function ConvertTo-CodexRuntimeVersion {
     param([string]$VersionName)
@@ -114,46 +100,6 @@ function Get-MaximumInstallRootLength {
     }
     if ($limit -lt 60) { throw 'Package paths are too deep for the default per-user installation. Shorten the packaged directory layout.' }
     return $limit
-}
-
-function Test-IsPathUnderRoot {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Path,
-
-        [Parameter(Mandatory = $true)]
-        [string]$Root
-    )
-
-    $resolvedPath = [System.IO.Path]::GetFullPath($Path).TrimEnd(
-        [System.IO.Path]::DirectorySeparatorChar,
-        [System.IO.Path]::AltDirectorySeparatorChar)
-    $resolvedRoot = [System.IO.Path]::GetFullPath($Root).TrimEnd(
-        [System.IO.Path]::DirectorySeparatorChar,
-        [System.IO.Path]::AltDirectorySeparatorChar)
-    $rootWithSeparator = $resolvedRoot + [System.IO.Path]::DirectorySeparatorChar
-
-    return $resolvedPath -eq $resolvedRoot -or
-        ($resolvedPath -ne $resolvedRoot -and $resolvedPath.StartsWith($rootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase))
-}
-
-function Remove-DirectorySafely {
-    param(
-        [string]$Path,
-        [string]$AllowedRoot
-    )
-
-    if (-not (Test-Path -LiteralPath $Path)) {
-        return
-    }
-
-    $resolvedPath = (Resolve-Path -LiteralPath $Path).Path
-    $resolvedRoot = (Resolve-Path -LiteralPath $AllowedRoot).Path
-    if (-not (Test-IsPathUnderRoot -Path $resolvedPath -Root $resolvedRoot)) {
-        throw "Refusing to delete outside allowed root: $resolvedPath"
-    }
-
-    Remove-Item -LiteralPath $resolvedPath -Recurse -Force
 }
 
 function Test-BundledCodexRuntimeExists {

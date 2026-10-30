@@ -83,16 +83,6 @@ function Assert-Sha256 {
     }
 }
 
-function Write-Utf8NoBom {
-    param(
-        [string]$Path,
-        [string]$Content
-    )
-
-    $encoding = [System.Text.UTF8Encoding]::new($false)
-    [System.IO.File]::WriteAllText($Path, $Content, $encoding)
-}
-
 function Download-File {
     param(
         [string]$Url,
@@ -180,7 +170,7 @@ $manifest = [ordered]@{
     }
 }
 
-Write-Utf8NoBom -Path $manifestPath -Content (($manifest | ConvertTo-Json -Depth 10) + [Environment]::NewLine)
+[System.IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 10) + [Environment]::NewLine, [System.Text.UTF8Encoding]::new($false))
 
 Remove-RemoteTagIfExists -TagName $stableTag
 New-GitCodeRelease -TagName $stableTag -Name "OfficeCLI Stable Manifest" -Body "Stable OfficeCLI mirror manifest for MyCodex."
