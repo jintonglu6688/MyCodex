@@ -1,20 +1,20 @@
 {
     "schemaVersion":  "1",
     "channel":  "stable",
-    "generatedAt":  "2026-10-30T03:10:10Z",
-    "packageBaseUrl":  "https://api.gitcode.com/api/v5/repos/gcw_SpGZ48lW/mycodex-updates/releases/app-v8.0.6/attach_files/",
+    "generatedAt":  "2026-10-30T11:40:54Z",
+    "packageBaseUrl":  "https://api.gitcode.com/api/v5/repos/gcw_SpGZ48lW/mycodex-updates/releases/app-v8.0.7/attach_files/",
     "app":  {
-                "version":  "8.0.6",
+                "version":  "8.0.7",
                 "releaseDate":  "2026-10-30",
                 "releaseNotes":  {
-                                     "zh-CN":  "MyCodex 8.0.6 \u66f4\u65b0\u65e5\u5fd7\r\n\r\n\u2022 \u65b0\u589e\u5185\u7f6e\u6d4f\u89c8\u5668\u81ea\u52a8\u5316\u5de5\u5177\uff0c\u53ef\u5728\u201c\u9009\u9879\u201d\u2192\u201c\u6d4f\u89c8\u5668\u63a7\u5236\u201d\u9009\u9879\u5361\u4e2d\u5f00\u542f\u3002\r\n\u2022 \u66f4\u65b0 Computer Use \u5b98\u65b9\u7ec4\u4ef6\u3002",
-                                     "en-US":  "MyCodex 8.0.6 Release Notes\r\n\r\n\u2022 Added built-in browser automation. Enable it on the Browser Control tab in Options.\r\n\u2022 Updated the official Computer Use components."
+                                     "zh-CN":  "MyCodex 8.0.7 \u66f4\u65b0\u65e5\u5fd7\r\n\r\n\u4fee\u590d\u5173\u95ed\u6d4f\u89c8\u5668\u63a7\u5236\u65f6\uff0c\u65b0\u5efa\u4f1a\u8bdd\u53d1\u9001\u6d88\u606f\u53ef\u80fd\u63d0\u793a\u201cinvalid transport\u201d\u800c\u65e0\u6cd5\u7ee7\u7eed\u7684\u95ee\u9898\u3002",
+                                     "en-US":  "MyCodex 8.0.7 Release Notes\r\n\r\nFixed an issue where sending a message in a new conversation could fail with \"invalid transport\" when browser control was disabled."
                                  },
                 "asset":  {
-                              "url":  "MyCodex_v8.0.6_Setup_20261030030631.exe/download",
-                              "fileName":  "MyCodex_v8.0.6_Setup_20261030030631.exe",
-                              "sha256":  "de2e2a6c40bf30ade3e427be96f0e709f773a9c399ff70ef5a46a7a4fd8274f4",
-                              "size":  264323025
+                              "url":  "MyCodex_v8.0.7_Setup_20261030114053.exe/download",
+                              "fileName":  "MyCodex_v8.0.7_Setup_20261030114053.exe",
+                              "sha256":  "4f97529798eba30b7776f09ddeabda12291f3c0e89d71560949b29e126cbb6a3",
+                              "size":  264314004
                           }
             },
     "runtimes":  [

@@ -101,7 +101,7 @@ namespace MyCodex.Infrastructure.ComputerUse
                 var config = await ReadConfigAsync(workspace, token, overrides).ConfigureAwait(false);
                 if (!_browserEnabled())
                 {
-                    overrides = BrowserUseConfigurationPlanner.SuppressBrowser(overrides);
+                    overrides = BrowserUseConfigurationPlanner.SuppressBrowser(config, overrides, _codexPath);
                     parameters["config"] = overrides;
                 }
                 var browserRequested = _browserEnabled() && BrowserUseConfigurationPlanner.IsRequested(config, overrides);

@@ -56,7 +56,7 @@ namespace MyCodex.Infrastructure.ComputerUse
                 {
                     { "slot", binding.Slot }
                 }, token).ConfigureAwait(false);
-                if (!_browserEnabled()) return BrowserUseConfigurationPlanner.SuppressBrowser(overrides);
+                if (!_browserEnabled()) return BrowserUseConfigurationPlanner.SuppressBrowser(config, overrides, _codexPath);
                 binding.BrowserAccess = access;
                 return plan.ConfigOverrides;
             }

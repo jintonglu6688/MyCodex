@@ -13,6 +13,8 @@ using MyCodex.Application.Tests.SourceGuards;
 using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Infrastructure.BrowserUse;
+using MyCodex.Infrastructure.ComputerUse;
+using MyCodex.Infrastructure.Persistence;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -22,6 +24,67 @@ namespace MyCodex.Application.Tests
     [Explicit("Real pinned CLI in a new temporary home; no account, model, browser or registry changes.")]
     public sealed class BrowserControlFreshSetupIntegrationTests
     {
+        [TestCase("")]
+        [TestCase("command = 'unused-stdio.exe'")]
+        [TestCase("url = 'http://127.0.0.1:9/mcp'")]
+        public async Task DisabledBrowserCanCreateThreadWithAbsentOrExistingTransport(string transport)
+        {
+            var root = Path.Combine(TestContext.CurrentContext.WorkDirectory, "browser-disabled-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+            var config = "model = 'unused-offline-fixture'\nmodel_provider = 'offline'\n" +
+                "[model_providers.offline]\nname = 'Offline fixture'\nbase_url = 'http://127.0.0.1:9/v1'\n" +
+                "wire_api = 'responses'\nrequires_openai_auth = false\n" +
+                "[plugins.'computer-use@mycodex-computer-use']\nenabled = false\n";
+            if (transport.Length > 0) config += "[mcp_servers.cua_repl]\nenabled = false\n" + transport + "\n";
+            File.WriteAllText(Path.Combine(root, "config.toml"), config);
+            var paths = new AppConfigService(RepositorySource.Root);
+            const string target = "x86_64-pc-windows-msvc";
+            var codex = paths.GetBundledCodexExecutablePath(paths.GetLatestInstalledBundledCodexVersion(target), target);
+            var start = new ProcessStartInfo(codex, "app-server --listen stdio://")
+            {
+                WorkingDirectory = root, UseShellExecute = false, CreateNoWindow = true,
+                RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true
+            };
+            start.EnvironmentVariables["CODEX_HOME"] = root;
+            start.EnvironmentVariables["OTEL_SDK_DISABLED"] = "true";
+            foreach (var key in new[] { "OPENAI_API_KEY", "AZURE_OPENAI_API_KEY", "CODEX_API_KEY", "CHATGPT_AUTH_TOKEN" })
+                start.EnvironmentVariables.Remove(key);
+            using (var process = Process.Start(start))
+            {
+                var stderr = process.StandardError.ReadToEndAsync();
+                try
+                {
+                    var rpc = new Rpc(process);
+                    await rpc.Send("initialize", new Dictionary<string, object>
+                    {
+                        { "clientInfo", new Dictionary<string, object> { { "name", "disabled-browser-fixture" }, { "version", "1" } } },
+                        { "capabilities", new Dictionary<string, object> { { "experimentalApi", true } } }
+                    }, CancellationToken.None, 10000);
+                    process.StandardInput.WriteLine("{\"method\":\"initialized\",\"params\":{}}");
+                    process.StandardInput.Flush();
+                    using (var manager = new ComputerUseSessionManager(codex, "fixture", root,
+                        (method, parameters, token) => rpc.Send(method, parameters, token, 10000), null,
+                        browserEnabled: () => false))
+                    {
+                        var parameters = new Dictionary<string, object> { { "cwd", root }, { "ephemeral", true } };
+                        await manager.PrepareAsync(parameters, CancellationToken.None);
+                        var overrides = (IDictionary<string, object>)parameters["config"];
+                        var servers = (IDictionary<string, object>)overrides["mcp_servers"];
+                        Assert.That(((IDictionary<string, object>)servers["cua_repl"])["enabled"], Is.False);
+                        var created = await rpc.Send("thread/start", parameters, CancellationToken.None, 10000);
+                        Assert.That(((IDictionary<string, object>)created["thread"])["id"], Is.Not.Null.And.Not.Empty);
+                        Assert.That(File.ReadAllText(Path.Combine(root, "config.toml")), Is.EqualTo(config));
+                    }
+                }
+                finally
+                {
+                    process.StandardInput.Close();
+                    if (!process.WaitForExit(5000)) process.Kill();
+                    await stderr;
+                }
+            }
+        }
+
         [Test]
         public async Task ActualDotNetSetupPreparesPluginAndBridgeInFreshHome()
         {

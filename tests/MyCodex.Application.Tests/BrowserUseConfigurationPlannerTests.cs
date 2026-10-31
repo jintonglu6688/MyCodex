@@ -11,11 +11,62 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class BrowserUseConfigurationPlannerTests
     {
+        [TestCase("{}")]
+        [TestCase("{'mcp_servers':{'other':{'command':'other.exe'}}}")]
+        [TestCase("{'mcp_servers':{'cua_repl':{'enabled':true}}}")]
+        public void SuppressBrowser_WithoutExistingTransportStillProducesValidDisabledServer(string json)
+        {
+            var original = Json(json);
+            var before = Serialize(original);
+            var disabled = BrowserUseConfigurationPlanner.SuppressBrowser(null, original, Components().SelectedCodexPath);
+            var browser = Child(Child(disabled, "mcp_servers"), "cua_repl");
+            Assert.That(browser["enabled"], Is.False);
+            Assert.That(browser.ContainsKey("command") || browser.ContainsKey("url"), Is.True,
+                "Codex validates the transport even when the MCP server is disabled.");
+            Assert.That(browser["command"], Is.EqualTo(Components().SelectedCodexPath));
+            Assert.That(BrowserUseConfigurationPlanner.IsRequested(null, disabled), Is.False);
+            Assert.That(Serialize(original), Is.EqualTo(before));
+        }
+
+        [TestCase("{'command':'existing.exe','args':['existing.js'],'env':{'CUSTOM':'keep'}}", "command", "existing.exe")]
+        [TestCase("{'url':'https://example.test/mcp','http_headers':{'X-Custom':'keep'}}", "url", "https://example.test/mcp")]
+        public void SuppressBrowser_InheritsExistingTransportAndPreservesThreadSettings(string server, string transport, string value)
+        {
+            var config = Json("{'mcp_servers':{'cua_repl':" + server + "}}");
+            var original = Json("{'mcp_servers':{'cua_repl':{'tool_timeout_sec':120},'node_repl':{'command':'native.exe'}},'model':'keep'}");
+            var configBefore = Serialize(config);
+            var overridesBefore = Serialize(original);
+            var disabled = BrowserUseConfigurationPlanner.SuppressBrowser(config, original, Components().SelectedCodexPath);
+            var browser = Child(Child(disabled, "mcp_servers"), "cua_repl");
+            Assert.That(browser[transport], Is.EqualTo(value));
+            Assert.That(browser.ContainsKey(transport == "url" ? "command" : "url"), Is.False);
+            Assert.That(browser["enabled"], Is.False);
+            Assert.That(browser["tool_timeout_sec"], Is.EqualTo(120));
+            Assert.That(Child(Child(disabled, "mcp_servers"), "node_repl")["command"], Is.EqualTo("native.exe"));
+            Assert.That(disabled["model"], Is.EqualTo("keep"));
+            foreach (var item in Json(server)) Assert.That(Serialize(browser[item.Key]), Is.EqualTo(Serialize(item.Value)));
+            Assert.That(Serialize(config), Is.EqualTo(configBefore));
+            Assert.That(Serialize(original), Is.EqualTo(overridesBefore));
+        }
+
+        [Test]
+        public void SuppressBrowser_IgnoresNullTransportFieldsAndRetainsThreadTransportOverride()
+        {
+            var config = Json("{'mcp_servers':{'cua_repl':{'command':null,'url':null}}}");
+            var disabled = BrowserUseConfigurationPlanner.SuppressBrowser(config, null, Components().SelectedCodexPath);
+            var browser = Child(Child(disabled, "mcp_servers"), "cua_repl");
+            Assert.That(browser["command"], Is.EqualTo(Components().SelectedCodexPath));
+            Assert.That(browser.ContainsKey("url"), Is.False);
+            var overridden = BrowserUseConfigurationPlanner.SuppressBrowser(config,
+                Json("{'mcp_servers':{'cua_repl':{'command':'thread.exe'}}}"), Components().SelectedCodexPath);
+            Assert.That(Child(Child(overridden, "mcp_servers"), "cua_repl")["command"], Is.EqualTo("thread.exe"));
+        }
+
         [Test]
         public void MasterSwitchSuppressesBrowserOnlyAndDoesNotMutateOverrides()
         {
             var original = Json("{'mcp_servers':{'cua_repl':{'enabled':true,'command':'custom'},'other':{'enabled':true}},'model':'keep'}");
-            var disabled = BrowserUseConfigurationPlanner.SuppressBrowser(original);
+            var disabled = BrowserUseConfigurationPlanner.SuppressBrowser(null, original, Components().SelectedCodexPath);
             var servers = (IDictionary<string, object>)disabled["mcp_servers"];
             Assert.That(((IDictionary<string, object>)servers["cua_repl"])["enabled"], Is.False);
             Assert.That(((IDictionary<string, object>)servers["other"])["enabled"], Is.True);

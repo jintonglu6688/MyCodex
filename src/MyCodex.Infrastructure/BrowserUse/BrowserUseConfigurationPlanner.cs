@@ -37,11 +37,17 @@ namespace MyCodex.Infrastructure.BrowserUse
 
     internal static class BrowserUseConfigurationPlanner
     {
-        internal static IDictionary<string, object> SuppressBrowser(IDictionary<string, object> overrides)
+        internal static IDictionary<string, object> SuppressBrowser(IDictionary<string, object> config,
+            IDictionary<string, object> overrides, string codexPath)
         {
             var result = Clone(overrides);
             var servers = Clone(Child(result, "mcp_servers"));
-            var browser = Clone(Child(servers, "cua_repl"));
+            var browser = Clone(Child(Child(config, "mcp_servers"), "cua_repl"));
+            Merge(browser, Child(servers, "cua_repl"));
+            browser = browser.Where(item => item.Value != null).ToDictionary(item => item.Key, item => item.Value);
+            // Disabled MCP entries still require a transport; this command is never launched.
+            if (!browser.ContainsKey("command") && !browser.ContainsKey("url"))
+                browser["command"] = codexPath;
             browser["enabled"] = false;
             servers["cua_repl"] = browser;
             result["mcp_servers"] = servers;
