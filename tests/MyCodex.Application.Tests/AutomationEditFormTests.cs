@@ -340,6 +340,8 @@ namespace MyCodex.Application.Tests
                 WorkspacePath = @"E:\MyCodex"
             }, null, models, null))
             {
+                var modelComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model"));
+                SelectComboItemProperty(modelComboBox, "ModelId", "official-observed");
                 var reasoningComboBox = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort"));
                 Assert.That(reasoningComboBox.Enabled, Is.False);
 
@@ -353,7 +355,7 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void AutomationEditForm_UnconfiguredRunUsesFirstAppServerModelObservation()
+        public void AutomationEditForm_UnconfiguredRunFollowsDefaults()
         {
             var models = new[]
             {
@@ -371,10 +373,64 @@ namespace MyCodex.Application.Tests
 
                 FormTestDriver.ClickOk(form);
 
-                Assert.That(form.Request.ModelId, Is.EqualTo("official-observed"));
-                Assert.That(form.Request.ReasoningEffort, Is.EqualTo("medium"));
+                Assert.That(form.Request.ModelId, Is.Null);
+                Assert.That(form.Request.ReasoningEffort, Is.Null);
                 Assert.That(form.Request.ApprovalMode, Is.EqualTo(ApprovalMode.Auto));
             }
+        }
+
+        [TestCase(false, "en")]
+        [TestCase(true, "en")]
+        [TestCase(false, "zh-CN")]
+        [TestCase(true, "zh-CN")]
+        public void AutomationEditForm_CanSaveAndReopenFollowDefault(bool editing, string culture)
+        {
+            var originalCulture = Thread.CurrentThread.CurrentUICulture;
+            try
+            {
+                Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+                var models = new[] { CreateModelOption("gpt-5.6-luna", "high", "high", "low") };
+                var definition = new AutomationDefinitionSnapshot
+                {
+                    Id = "automation", Kind = AutomationKind.Standalone, Name = "News", Prompt = "Collect news",
+                    ModelId = "gpt-5.6-luna", ReasoningEffort = "high",
+                    Context = new AutomationContextSnapshot { WorkspacePath = @"E:\MyCodex" }
+                };
+                using (var form = editing
+                    ? new AutomationEditForm(definition, null, models, model => true)
+                    : new AutomationEditForm(new AutomationCreationContext
+                    {
+                        Kind = definition.Kind, ModelId = definition.ModelId, ReasoningEffort = definition.ReasoningEffort
+                    }, null, models, model => true))
+                {
+                    var model = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model"));
+                    var effort = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.ReasoningEffort", "Reasoning effort"));
+                    Assert.That(GetSelectedComboItemProperty(model, "ModelId"), Is.EqualTo(definition.ModelId));
+                    SelectComboItemProperty(model, "ModelId", null);
+                    var followDefault = UiLocalization.Text("MainForm.SessionSettings.Common.FollowDefault", "Follow Default");
+                    Assert.That(model.SelectedItem.ToString(), Is.EqualTo(followDefault));
+                    Assert.That(effort.Enabled, Is.False);
+                    Assert.That(effort.SelectedItem.ToString(), Is.EqualTo(followDefault));
+                    Assert.That(model.TabIndex, Is.LessThan(effort.TabIndex));
+                    FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Name", "Name")).Text = definition.Name;
+                    FormTestDriver.FindControlOrDefault<TextBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Prompt", "Prompt")).Text = definition.Prompt;
+                    FormTestDriver.ClickOk(form);
+                    Assert.That(form.Request.ModelId, Is.Null);
+                    Assert.That(form.Request.ReasoningEffort, Is.Null);
+                    definition.ModelId = form.Request.ModelId;
+                    definition.ReasoningEffort = form.Request.ReasoningEffort;
+                }
+                using (var form = new AutomationEditForm(definition, null, models, model => true))
+                {
+                    var model = FormTestDriver.FindControlOrDefault<ComboBox>(form, UiLocalization.Text("AutomationEditForm.Accessible.Model", "Model"));
+                    Assert.That(GetSelectedComboItemProperty(model, "ModelId"), Is.Null);
+                    SelectComboItemProperty(model, "ModelId", "gpt-5.6-luna");
+                    FormTestDriver.ClickOk(form);
+                    Assert.That(form.Request.ModelId, Is.EqualTo("gpt-5.6-luna"));
+                    Assert.That(form.Request.ReasoningEffort, Is.EqualTo("high"));
+                }
+            }
+            finally { Thread.CurrentThread.CurrentUICulture = originalCulture; }
         }
 
         [Test]

@@ -108,6 +108,46 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public async Task StartAsync_FollowDefaultResolvesCurrentSettingsOnEveryRun()
+        {
+            var store = new InMemoryAutomationStore();
+            var definition = BuildStandaloneDefinition();
+            definition.ModelId = null;
+            definition.ReasoningEffort = null;
+            store.Snapshot.Definitions.Add(definition);
+            var client = new FakeThreadClient();
+            var defaults = new SessionDefaultsResolution();
+            var sequence = 0;
+            var runner = new AutomationRunner(store, client, new AutomationResultClassifier(), () => Now,
+                () => "run-" + (++sequence))
+            {
+                ModelResolver = new AutomationModelResolver(null, null, null, null,
+                    current => Task.FromResult(defaults))
+            };
+
+            foreach (var settings in new[]
+            {
+                new SessionDefaultsResolution { ModelId = "gpt-5.6-luna", ReasoningEffort = "high" },
+                new SessionDefaultsResolution { ModelId = "gpt-6.1-sol", ReasoningEffort = "low" }
+            })
+            {
+                defaults = settings;
+                client.NextThreadId = settings.ModelId + "-thread";
+                var run = await runner.StartAsync(new AutomationRunRequest { AutomationId = definition.Id });
+                Assert.That(client.CreatedThreads.Last().ModelId, Is.EqualTo(settings.ModelId));
+                Assert.That(client.CreatedThreads.Last().ReasoningEffort, Is.EqualTo(settings.ReasoningEffort));
+                Assert.That(client.SentMessages.Last().ModelId, Is.EqualTo(settings.ModelId));
+                Assert.That(client.SentMessages.Last().ReasoningEffort, Is.EqualTo(settings.ReasoningEffort));
+                Assert.That(run.ConfiguredModelId, Is.Null);
+                Assert.That(run.ConfiguredReasoningEffort, Is.Null);
+                Assert.That(run.ActualModelId, Is.EqualTo(settings.ModelId));
+                Assert.That(run.ActualReasoningEffort, Is.EqualTo(settings.ReasoningEffort));
+                runner.CompleteByThread(run.ThreadId, null, new AutomationRunCompletion { Status = AutomationRunStatus.Completed });
+            }
+            Assert.That(client.SentMessages, Has.Count.EqualTo(2));
+        }
+
+        [Test]
         public async Task StartAsync_OfficeAutomation_SendsOfficeCollaborationMode()
         {
             var store = new InMemoryAutomationStore();

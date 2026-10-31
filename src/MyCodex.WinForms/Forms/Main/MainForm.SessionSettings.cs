@@ -741,6 +741,7 @@ namespace MyCodex.WinForms.Forms
             var wasPlanModeEnabled = session.IsPlanModeEnabled;
             session.ModelId = null;
             session.ReasoningEffort = null;
+            session.AutomationModelSettingsInitialized = true;
             session.ApprovalMode = null;
             session.IsPlanModeEnabled = false;
             if (!wasPlanModeEnabled || string.IsNullOrWhiteSpace(session.ThreadId))

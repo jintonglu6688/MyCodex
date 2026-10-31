@@ -114,6 +114,11 @@ namespace MyCodex.Infrastructure.RemoteRelay
                     : null;
             }
 
+            if (request.HasModelId || request.HasReasoningEffort)
+            {
+                session.AutomationModelSettingsInitialized = true;
+            }
+
             if (request.HasApprovalMode)
             {
                 session.ApprovalMode = ParseApprovalMode(request.ApprovalMode);

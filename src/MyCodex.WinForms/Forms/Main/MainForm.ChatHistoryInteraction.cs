@@ -20,6 +20,7 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
+            RestoreAutomationSessionModelSettings(new[] { session });
             SaveCurrentComposeState();
             _currentSession = plan.Session;
             UpdateCurrentModeSessionSelection(session);
@@ -35,6 +36,7 @@ namespace MyCodex.WinForms.Forms
 
         private async Task LoadSessionHistoryAsync(ChatSession session, bool includeSystemHeader)
         {
+            RestoreAutomationSessionModelSettings(new[] { session });
             var request = _sessionHistoryLoadWorkflow.BuildRequest(session, includeSystemHeader);
             ApplySessionHistoryLoadResult(request.ImmediateResult);
             if (!request.RequiresRemoteRead)

@@ -313,6 +313,7 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
+            RestoreAutomationSessionModelSettings(new[] { selectedItem.Session });
             using (var form = new SessionStatisticsForm(
                 selectedItem.Session,
                 new SessionStatisticsDisplayContext

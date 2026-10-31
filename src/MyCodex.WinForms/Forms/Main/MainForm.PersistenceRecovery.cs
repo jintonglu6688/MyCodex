@@ -137,6 +137,7 @@ namespace MyCodex.WinForms.Forms
             {
                 automationUpdated = _automationRuntimeHost != null &&
                     _automationRuntimeHost.HandleTurnTerminal(e.ThreadId, e.TurnId, completion);
+                if (automationUpdated) RestoreAutomationSessionModelSettings(_sessions);
                 return true;
             }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)

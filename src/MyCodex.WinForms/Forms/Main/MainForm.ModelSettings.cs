@@ -87,6 +87,7 @@ namespace MyCodex.WinForms.Forms
 
                 session.ModelId = form.SelectedModelId;
                 session.ReasoningEffort = form.SelectedReasoningEffort;
+                session.AutomationModelSettingsInitialized = true;
                 PersistState();
                 RefreshSessionSettingsState();
 

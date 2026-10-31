@@ -86,7 +86,26 @@ namespace MyCodex.Application.Tests
             var session = store.Snapshot.Sessions[0];
             Assert.That(session.ModelId, Is.EqualTo("gpt-custom"));
             Assert.That(session.ReasoningEffort, Is.EqualTo("medium"));
+            Assert.That(session.AutomationModelSettingsInitialized, Is.True);
             Assert.That(session.ApprovalMode, Is.EqualTo(ApprovalMode.ReadOnly));
+        }
+
+        [Test]
+        public async Task UpdateSessionSettingsAsync_FollowGlobalPreventsAutomationSettingsFromBeingRestored()
+        {
+            var store = CreateStore();
+            var session = store.Snapshot.Sessions[0];
+            session.ModelId = "gpt-5.6-luna";
+            session.ReasoningEffort = "high";
+            await CreateOperator(store, supportsReasoning: true).UpdateSessionSettingsAsync(
+                new MyCodex.Application.CodingRemote.CodingRemoteSessionSettingsUpdateRequest
+                {
+                    SessionId = session.Id, HasModelId = true, ModelId = null,
+                    HasReasoningEffort = true, ReasoningEffort = null
+                }, CancellationToken.None);
+            Assert.That(session.ModelId, Is.Null);
+            Assert.That(session.ReasoningEffort, Is.Null);
+            Assert.That(session.AutomationModelSettingsInitialized, Is.True);
         }
 
         [TestCase("custom", ApprovalMode.Custom)]

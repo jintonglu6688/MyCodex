@@ -571,6 +571,8 @@ namespace MyCodex.WinForms.Forms
                 CreateAutomationThreadTitleFallbackResolver());
             EnsureActiveOfficeSessionScopes();
 
+            RestoreAutomationSessionModelSettings(_sessions);
+
             SortSessions();
             if (_currentWorkspace == null && mergeResult.PreferredWorkspace != null)
             {
@@ -612,49 +614,20 @@ namespace MyCodex.WinForms.Forms
 
         private Dictionary<string, string> BuildAutomationThreadTitleMap()
         {
-            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (_automationStore == null)
-            {
-                return result;
-            }
-
             AutomationStateSnapshot snapshot;
-            if (!TryLoadAutomationSnapshot(out snapshot))
-            {
-                return result;
-            }
+            return AutomationThreadSessionService.BuildTitleMap(
+                _automationStore != null && TryLoadAutomationSnapshot(out snapshot) ? snapshot : null);
+        }
 
-            if (snapshot == null || snapshot.Definitions == null || snapshot.Runs == null)
-            {
-                return result;
-            }
-
-            var definitionById = snapshot.Definitions
-                .Where(item => item != null &&
-                               item.Kind != AutomationKind.Thread &&
-                               !string.IsNullOrWhiteSpace(item.Id) &&
-                               !string.IsNullOrWhiteSpace(item.Name))
-                .GroupBy(item => item.Id, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
-
-            foreach (var run in snapshot.Runs
-                .Where(item => item != null && !string.IsNullOrWhiteSpace(item.ThreadId))
-                .OrderByDescending(item => item.StartedAt ?? item.ScheduledFor ?? DateTime.MinValue))
-            {
-                if (result.ContainsKey(run.ThreadId))
-                {
-                    continue;
-                }
-
-                AutomationDefinitionSnapshot definition;
-                if (!string.IsNullOrWhiteSpace(run.AutomationId) &&
-                    definitionById.TryGetValue(run.AutomationId, out definition))
-                {
-                    result[run.ThreadId] = definition.Name.Trim();
-                }
-            }
-
-            return result;
+        private void RestoreAutomationSessionModelSettings(IEnumerable<ChatSession> sessions)
+        {
+            var pending = (sessions ?? Enumerable.Empty<ChatSession>())
+                .Where(session => session != null && !session.AutomationModelSettingsInitialized && !string.IsNullOrWhiteSpace(session.ThreadId)).ToArray();
+            AutomationStateSnapshot snapshot;
+            if (_automationStore == null || pending.Length == 0 || !TryLoadAutomationSnapshot(out snapshot) ||
+                !AutomationThreadSessionService.InitializeModelSettings(pending, snapshot)) return;
+            PersistState();
+            RefreshSessionSettingsState();
         }
 
         private WorkspaceInfo CreateWorkspaceForHistoryImport(string path, bool requireExisting)

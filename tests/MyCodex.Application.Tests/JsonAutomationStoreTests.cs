@@ -76,6 +76,8 @@ namespace MyCodex.Application.Tests
                 Assert.That(File.Exists(service.GetAutomationsFilePath() + ".tmp"), Is.False);
                 Assert.That(File.Exists(service.GetAutomationsFilePath() + ".bak"), Is.False);
                 Assert.That(reloaded.Definitions, Has.Count.EqualTo(1));
+                Assert.That(reloaded.Definitions[0].ModelId, Is.Null);
+                Assert.That(reloaded.Definitions[0].ReasoningEffort, Is.Null);
                 Assert.That(reloaded.Runs, Has.Count.EqualTo(100));
                 Assert.That(reloaded.Runs[0].Id, Is.EqualTo("run-005"));
                 Assert.That(reloaded.Runs[99].Id, Is.EqualTo("run-104"));

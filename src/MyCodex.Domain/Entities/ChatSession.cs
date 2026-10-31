@@ -58,6 +58,10 @@ namespace MyCodex.Domain.Entities
         [DataMember]
         public string ReasoningEffort { get; set; }
 
+        // A later manual model choice or follow-global reset must survive automation synchronization.
+        [DataMember(EmitDefaultValue = false)]
+        public bool AutomationModelSettingsInitialized { get; set; }
+
         [DataMember]
         public bool IsPlanModeEnabled { get; set; }
 

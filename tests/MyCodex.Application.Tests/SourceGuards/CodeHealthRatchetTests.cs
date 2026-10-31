@@ -16,7 +16,7 @@ namespace MyCodex.Application.Tests.SourceGuards
     [Category(SourceGuardCategory.Placement)]
     public sealed class CodeHealthRatchetTests
     {
-        private const int MainFormPartialNonEmptyLinesCeiling = 22794;
+        private const int MainFormPartialNonEmptyLinesCeiling = 22777;
         private const int MainFormCoreFileNonEmptyLinesCeiling = 2954;
         // One coordinator owns deferred browser setup; feature state stays outside MainForm.
         private const int MainFormFieldCeiling = 363;

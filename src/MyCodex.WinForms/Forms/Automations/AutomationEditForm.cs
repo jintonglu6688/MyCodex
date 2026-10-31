@@ -485,6 +485,9 @@ namespace MyCodex.WinForms.Forms
         private void BindModelChoices()
         {
             _modelComboBox.Items.Clear();
+            _modelComboBox.Items.Add(new AutomationModelItem(null,
+                UiLocalization.Text("MainForm.SessionSettings.Common.FollowDefault", "Follow Default"),
+                null, Array.Empty<AppServerModelEffortOption>()));
             var selectedModelId = ResolveInitialModelId();
             var hasSelectedModel = false;
 
@@ -535,6 +538,14 @@ namespace MyCodex.WinForms.Forms
         {
             _reasoningEffortComboBox.Items.Clear();
             var model = _modelComboBox.SelectedItem as AutomationModelItem;
+            if (model != null && string.IsNullOrWhiteSpace(model.ModelId))
+            {
+                _reasoningEffortComboBox.Items.Add(new ReasoningEffortItem(null,
+                    UiLocalization.Text("MainForm.SessionSettings.Common.FollowDefault", "Follow Default")));
+                _reasoningEffortComboBox.SelectedIndex = 0;
+                _reasoningEffortComboBox.Enabled = false;
+                return;
+            }
             if (model == null || !SupportsReasoningEffortForModel(model.ModelId))
             {
                 _reasoningEffortComboBox.Enabled = false;
@@ -696,6 +707,7 @@ namespace MyCodex.WinForms.Forms
 
         private bool SupportsReasoningEffortForModel(string modelId)
         {
+            if (string.IsNullOrWhiteSpace(modelId)) return false;
             if (_supportsReasoningEffortForModel != null)
             {
                 return _supportsReasoningEffortForModel(modelId);

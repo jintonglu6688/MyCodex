@@ -169,6 +169,40 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [TestCase(false, false)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(true, true)]
+        public void SaveAndLoad_PreservesAutomationBindingAndManualFollowGlobal(bool endpoint, bool followGlobal)
+        {
+            var root = CreateTempDirectory();
+            try
+            {
+                var runtimeStore = new FakeRuntimeScopedConfigFileStore { UseRuntimeEndpoint = endpoint };
+                var config = new AppConfigSnapshot { CodexRuntimeSource = endpoint ? CodexRuntimeSources.Wsl : CodexRuntimeSources.Bundled };
+                config.WslAppServer.DistributionName = "Ubuntu";
+                var profile = endpoint ? "wsl|ubuntu" : "windows";
+                var path = endpoint ? "/home/me/project" : @"C:\code\project";
+                var session = CreateSession("session", "workspace", profile);
+                session.ModelId = followGlobal ? null : "gpt-5.6-luna";
+                session.ReasoningEffort = followGlobal ? null : "high";
+                session.AutomationModelSettingsInitialized = true;
+                var store = new JsonAppStateStore(new AppConfigService(root), null, runtimeStore);
+                store.Save(new AppStateSnapshot
+                {
+                    Sessions = new List<ChatSession> { session },
+                    RecentWorkspaces = new List<WorkspaceInfo> { CreateWorkspace("workspace", path) },
+                    RuntimeProfiles = new List<RuntimeProfileStateSnapshot> { CreateRuntimeProfile(profile, "workspace", "session", path) }
+                }, config);
+
+                var restored = store.Load(config).Sessions.Single(item => item.Id == "session");
+                Assert.That(restored.AutomationModelSettingsInitialized, Is.True);
+                Assert.That(restored.ModelId, Is.EqualTo(session.ModelId));
+                Assert.That(restored.ReasoningEffort, Is.EqualTo(session.ReasoningEffort));
+            }
+            finally { DeleteDirectory(root); }
+        }
+
         [Test]
         public void Save_UnchangedLocalStateDoesNotRewriteFile()
         {
