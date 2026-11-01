@@ -43,11 +43,17 @@ namespace MyCodex.WinForms.Forms
         public static string RenderDocument(string markdown, string accessibleName)
         {
             var safeAccessibleName = HtmlEncode(string.IsNullOrWhiteSpace(accessibleName) ? "Message content" : accessibleName);
+            var scriptNonce = Guid.NewGuid().ToString("N");
             var builder = new StringBuilder();
             builder.AppendLine("<!doctype html>");
             builder.AppendLine("<html lang=\"\">");
             builder.AppendLine("<head>");
             builder.AppendLine("<meta charset=\"utf-8\">");
+            // Message text is untrusted: a remote image would leak data in its URL as soon as the viewer opens,
+            // and Markdig keeps javascript: links. Only the viewer's own script may run.
+            builder.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:; script-src 'nonce-");
+            builder.Append(scriptNonce);
+            builder.AppendLine("'; base-uri 'none'; form-action 'none'\">");
             builder.AppendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
             builder.AppendLine("<title>&#8203;</title>");
             builder.AppendLine("<style>");
@@ -58,7 +64,9 @@ namespace MyCodex.WinForms.Forms
             builder.AppendLine("<div id=\"content\" tabindex=\"-1\">");
             builder.Append(RenderBody(markdown));
             builder.AppendLine("</div>");
-            builder.AppendLine("<script>");
+            builder.Append("<script nonce=\"");
+            builder.Append(scriptNonce);
+            builder.AppendLine("\">");
             builder.Append(BuildScript());
             builder.AppendLine("</script>");
             builder.AppendLine("</body>");

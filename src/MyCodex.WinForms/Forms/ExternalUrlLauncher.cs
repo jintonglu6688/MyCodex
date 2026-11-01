@@ -29,7 +29,7 @@ namespace MyCodex.WinForms.Forms
             return false;
         }
 
-        public static void Open(string url)
+        public static string RequireAllowedUrl(string url)
         {
             string normalizedUrl;
             if (!TryNormalizeAllowedUrl(url, out normalizedUrl))
@@ -39,9 +39,14 @@ namespace MyCodex.WinForms.Forms
                     "Only HTTPS URLs and local HTTP callback URLs can be opened automatically."));
             }
 
+            return normalizedUrl;
+        }
+
+        public static void Open(string url)
+        {
             Process.Start(new ProcessStartInfo
             {
-                FileName = normalizedUrl,
+                FileName = RequireAllowedUrl(url),
                 UseShellExecute = true
             });
         }

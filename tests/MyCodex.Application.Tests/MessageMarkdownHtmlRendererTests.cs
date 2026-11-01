@@ -119,6 +119,27 @@ namespace MyCodex.Application.Tests
             Assert.That(html, Does.Contain("<hr>"));
         }
 
+        [Test]
+        public void RenderDocument_ContentSecurityPolicyBlocksRemoteResourcesAndUnnoncedScripts()
+        {
+            var html = RenderDocument("![a](https://example.com/?q=secret)\r\n\r\n[x](javascript:alert(1))");
+
+            var policy = System.Text.RegularExpressions.Regex.Match(
+                html,
+                "<head>[\\s\\S]*<meta http-equiv=\"Content-Security-Policy\" content=\"(?<policy>[^\"]*)\">[\\s\\S]*</head>");
+            Assert.That(policy.Success, Is.True, "The policy must be a meta tag in the document head.");
+            var policyText = policy.Groups["policy"].Value;
+            Assert.That(policyText, Does.Contain("default-src 'none'"));
+            Assert.That(policyText, Does.Contain("img-src data:"));
+            Assert.That(policyText, Does.Not.Contain("http"));
+            Assert.That(policyText, Does.Not.Contain("script-src 'unsafe-inline'"));
+
+            var nonce = System.Text.RegularExpressions.Regex.Match(policyText, "script-src 'nonce-(?<nonce>[0-9a-f]{32})'");
+            Assert.That(nonce.Success, Is.True);
+            Assert.That(html, Does.Contain("<script nonce=\"" + nonce.Groups["nonce"].Value + "\">"));
+            Assert.That(RenderDocument("text"), Does.Not.Contain(nonce.Groups["nonce"].Value), "Each document needs its own nonce.");
+        }
+
         private static string RenderDocument(string markdown)
         {
             var assembly = typeof(MyCodex.WinForms.Forms.StructuredMessageViewerForm).Assembly;
