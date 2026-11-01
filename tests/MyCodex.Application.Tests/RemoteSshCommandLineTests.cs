@@ -99,6 +99,29 @@ namespace MyCodex.Application.Tests
             Assert.That(arguments, Does.Not.Contain("SHA256:abc123"));
         }
 
+        [TestCase(@"C:\Users\A B\.ssh\key", "\"C:\\\\Users\\\\A B\\\\.ssh\\\\key\"")]
+        [TestCase(@"\\server\share\key", "\"\\\\\\\\server\\\\share\\\\key\"")]
+        [TestCase("/home/a \"b\"/key", "\"/home/a \\\"b\\\"/key\"")]
+        [TestCase("C:\\keys\\100%\\key\r\nProxyCommand evil", "\"C:\\\\keys\\\\100%%\\\\key  ProxyCommand evil\"")]
+        public void CreateOpenSshConfigFile_QuotesPrivateKeyPath(string keyPath, string expected)
+        {
+            var path = RemoteSshSensitiveCommandFile.CreateOpenSshConfigFile(new RemoteMacSshConfigSnapshot
+            {
+                HostName = "192.168.50.2",
+                AuthenticationMode = RemoteSshAuthenticationMode.PrivateKey,
+                PrivateKeyPath = keyPath
+            }, "codex app-server");
+
+            try
+            {
+                Assert.That(System.IO.File.ReadAllLines(path), Does.Contain("  IdentityFile " + expected));
+            }
+            finally
+            {
+                System.IO.File.Delete(path);
+            }
+        }
+
         [Test]
         public void CreateOpenSshConfigFile_ForPrivateKeyWithHostKeyFingerprint_DoesNotEmbedFingerprint()
         {

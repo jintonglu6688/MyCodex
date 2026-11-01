@@ -268,6 +268,135 @@ namespace MyCodex.Application.Tests
             Assert.ThrowsAsync<InvalidOperationException>(async () => await secondTask.ConfigureAwait(false));
         }
 
+        [Test]
+        public async Task SendRequestAsync_BlockedWriteHonorsTimeoutAndKeepsMessagesFromInterleaving()
+        {
+            var writer = new BlockedWriter();
+            var transport = CreateTransport(() => writer);
+
+            var request = transport.SendRequestAsync("codex/first", new Dictionary<string, object>(), TimeSpan.FromMilliseconds(50), CancellationToken.None);
+
+            Assert.That(await Task.WhenAny(request, Task.Delay(10000)).ConfigureAwait(false), Is.SameAs(request));
+            Assert.ThrowsAsync<TimeoutException>(async () => await request.ConfigureAwait(false));
+            Assert.That(transport.DrainPendingRequests(), Is.Empty);
+
+            // The first write still owns the writer, so the next message times out while queued.
+            var queued = transport.SendRequestAsync("codex/second", new Dictionary<string, object>(), TimeSpan.FromMilliseconds(50), CancellationToken.None);
+            Assert.That(await Task.WhenAny(queued, Task.Delay(10000)).ConfigureAwait(false), Is.SameAs(queued));
+            Assert.ThrowsAsync<TimeoutException>(async () => await queued.ConfigureAwait(false));
+            Assert.That(writer.WriteCount, Is.EqualTo(1));
+
+            writer.Release();
+            await transport.SendNotificationAsync("codex/next", new Dictionary<string, object>(), CancellationToken.None).ConfigureAwait(false);
+            Assert.That(writer.WriteCount, Is.EqualTo(2));
+        }
+
+        [Test]
+        public async Task SendRequestAsync_BlockedWriteHonorsCancellation()
+        {
+            var writer = new BlockedWriter();
+            var transport = CreateTransport(() => writer);
+            using (var cancellation = new CancellationTokenSource())
+            {
+                var request = transport.SendRequestAsync("codex/first", new Dictionary<string, object>(), TimeSpan.FromMinutes(5), cancellation.Token);
+                cancellation.Cancel();
+
+                Assert.That(await Task.WhenAny(request, Task.Delay(10000)).ConfigureAwait(false), Is.SameAs(request));
+                Assert.That(request.IsCanceled, Is.True);
+            }
+
+            writer.Release();
+        }
+
+        [Test]
+        public async Task StalledWrite_FreesLockBeforeReportingAndFailsLaterWritesForThatConnection()
+        {
+            var writer = new BlockedWriter();
+            var writeLock = new SemaphoreSlim(1, 1);
+            var reported = new TaskCompletionSource<long>();
+            var lockFreeWhenReported = false;
+            var transport = new AppServerProtocolTransport(
+                () => writer,
+                AppServerJsonValue.CreateSerializer(),
+                writeLock,
+                new object(),
+                (method, timeoutMs) => new TimeoutException(method),
+                () => 7L,
+                (epoch, error) =>
+                {
+                    lockFreeWhenReported = writeLock.CurrentCount == 1;
+                    reported.TrySetResult(epoch);
+                },
+                TimeSpan.FromMilliseconds(50));
+
+            var notification = transport.SendNotificationAsync("codex/stuck", new Dictionary<string, object>(), CancellationToken.None);
+
+            Assert.That(await Task.WhenAny(reported.Task, Task.Delay(10000)).ConfigureAwait(false), Is.SameAs(reported.Task));
+            Assert.That(reported.Task.Result, Is.EqualTo(7L));
+            Assert.That(lockFreeWhenReported, Is.True);
+
+            var exception = Assert.ThrowsAsync<AppServerTransportWriteException>(async () =>
+                await transport.SendNotificationAsync("codex/next", new Dictionary<string, object>(), CancellationToken.None).ConfigureAwait(false));
+            Assert.That(exception.ConnectionEpoch, Is.EqualTo(7L));
+            Assert.That(writer.WriteCount, Is.EqualTo(1));
+
+            writer.Release();
+            try
+            {
+                await notification.ConfigureAwait(false);
+            }
+            catch (TimeoutException)
+            {
+                // The caller's own deadline ends at about the same moment as the stall.
+            }
+        }
+
+        [Test]
+        public void SendRequestAsync_BrokenPipeDuringSlowWriteIsReportedAsWriteFailure()
+        {
+            var writer = new BlockedWriter();
+            var transport = CreateTransport(() => writer);
+            var request = transport.SendRequestAsync("codex/first", new Dictionary<string, object>(), TimeSpan.FromMinutes(5), CancellationToken.None);
+
+            writer.Fail(new IOException("broken pipe"));
+
+            var exception = Assert.ThrowsAsync<AppServerTransportWriteException>(async () => await request.ConfigureAwait(false));
+            Assert.That(exception.InnerException, Is.TypeOf<IOException>());
+        }
+
+        private sealed class BlockedWriter : TextWriter
+        {
+            private readonly TaskCompletionSource<bool> _completion = new TaskCompletionSource<bool>();
+
+            public int WriteCount { get; private set; }
+
+            public override System.Text.Encoding Encoding
+            {
+                get { return System.Text.Encoding.UTF8; }
+            }
+
+            public override Task WriteLineAsync(string value)
+            {
+                WriteCount++;
+                return _completion.Task;
+            }
+
+            public override Task FlushAsync()
+            {
+                return Task.CompletedTask;
+            }
+
+            public void Release()
+            {
+                _completion.TrySetResult(true);
+            }
+
+            public void Fail(Exception exception)
+            {
+                _completion.TrySetException(exception);
+            }
+        }
+
         private static AppServerProtocolTransport CreateTransport(Func<TextWriter> writerProvider)
         {
             return new AppServerProtocolTransport(

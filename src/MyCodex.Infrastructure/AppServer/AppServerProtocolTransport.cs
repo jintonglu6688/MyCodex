@@ -26,15 +26,21 @@ namespace MyCodex.Infrastructure.AppServer
 
     internal sealed class AppServerProtocolTransport
     {
+        // A short request timeout must not end a connection that is merely slow to accept a large message.
+        private static readonly TimeSpan DefaultWriteStallTimeout = TimeSpan.FromSeconds(60);
+
         private readonly Func<TextWriter> _writerProvider;
         private readonly JavaScriptSerializer _serializer;
         private readonly SemaphoreSlim _writeLock;
         private readonly object _syncRoot;
         private readonly Func<string, int, TimeoutException> _timeoutFactory;
         private readonly Func<long> _connectionEpochProvider;
+        private readonly Action<long, Exception> _writeStalled;
+        private readonly TimeSpan _minimumWriteStallTimeout;
         private readonly Dictionary<string, TaskCompletionSource<IDictionary<string, object>>> _pendingRequests =
             new Dictionary<string, TaskCompletionSource<IDictionary<string, object>>>(StringComparer.Ordinal);
         private int _nextRequestId;
+        private long? _stalledConnectionEpoch;
 
         public AppServerProtocolTransport(
             Func<TextWriter> writerProvider,
@@ -42,8 +48,12 @@ namespace MyCodex.Infrastructure.AppServer
             SemaphoreSlim writeLock,
             object syncRoot,
             Func<string, int, TimeoutException> timeoutFactory,
-            Func<long> connectionEpochProvider = null)
+            Func<long> connectionEpochProvider = null,
+            Action<long, Exception> writeStalled = null,
+            TimeSpan? minimumWriteStallTimeout = null)
         {
+            _writeStalled = writeStalled;
+            _minimumWriteStallTimeout = minimumWriteStallTimeout ?? DefaultWriteStallTimeout;
             _writerProvider = writerProvider ?? throw new ArgumentNullException(nameof(writerProvider));
             _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             _writeLock = writeLock ?? throw new ArgumentNullException(nameof(writeLock));
@@ -112,6 +122,8 @@ namespace MyCodex.Infrastructure.AppServer
             var timeoutMs = GetTimeoutMilliseconds(timeout);
             var connectionEpoch = expectedConnectionEpoch ?? _connectionEpochProvider();
             var pendingRequest = new TaskCompletionSource<IDictionary<string, object>>(TaskCreationOptions.RunContinuationsAsynchronously);
+            // One deadline covers waiting for the write lock, writing, and the response.
+            var elapsed = Stopwatch.StartNew();
 
             lock (_syncRoot)
             {
@@ -129,12 +141,20 @@ namespace MyCodex.Infrastructure.AppServer
                         { "params", parameters ?? new Dictionary<string, object>() }
                     },
                     cancellationToken,
-                    connectionEpoch).ConfigureAwait(false);
+                    connectionEpoch,
+                    method,
+                    timeout).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
                 RemovePendingRequest(requestId, pendingRequest);
                 pendingRequest.TrySetCanceled();
+                throw;
+            }
+            catch (TimeoutException ex)
+            {
+                RemovePendingRequest(requestId, pendingRequest);
+                pendingRequest.TrySetException(ex);
                 throw;
             }
             catch (AppServerTransportWriteException ex)
@@ -144,7 +164,7 @@ namespace MyCodex.Infrastructure.AppServer
                 throw;
             }
 
-            var delayTask = Task.Delay(timeout, cancellationToken);
+            var delayTask = Task.Delay(GetRemainingTime(timeout, elapsed), cancellationToken);
             var completedTask = await Task.WhenAny(pendingRequest.Task, delayTask).ConfigureAwait(false);
             if (completedTask == pendingRequest.Task)
             {
@@ -284,8 +304,19 @@ namespace MyCodex.Infrastructure.AppServer
             await WriteMessageAsync(message, cancellationToken, _connectionEpochProvider()).ConfigureAwait(false);
         }
 
-        private async Task WriteMessageAsync(object message, CancellationToken cancellationToken, long expectedConnectionEpoch)
+        private Task WriteMessageAsync(object message, CancellationToken cancellationToken, long expectedConnectionEpoch)
         {
+            return WriteMessageAsync(message, cancellationToken, expectedConnectionEpoch, "write", _minimumWriteStallTimeout);
+        }
+
+        private async Task WriteMessageAsync(
+            object message,
+            CancellationToken cancellationToken,
+            long expectedConnectionEpoch,
+            string operationName,
+            TimeSpan timeout)
+        {
+            var elapsed = Stopwatch.StartNew();
             string json;
             try
             {
@@ -296,12 +327,26 @@ namespace MyCodex.Infrastructure.AppServer
                 throw new AppServerTransportWriteException("Failed to write App Server message.", ex, expectedConnectionEpoch);
             }
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            if (!await _writeLock.WaitAsync(timeout, cancellationToken).ConfigureAwait(false))
+            {
+                throw _timeoutFactory(operationName, GetTimeoutMilliseconds(timeout));
+            }
+
+            Task writeTask;
+            var monitorOwnsWriteLock = false;
             try
             {
                 if (_connectionEpochProvider() != expectedConnectionEpoch)
                 {
                     throw new AppServerTransportWriteException("App Server connection changed before write.", null, expectedConnectionEpoch);
+                }
+
+                lock (_syncRoot)
+                {
+                    if (_stalledConnectionEpoch == expectedConnectionEpoch)
+                    {
+                        throw new AppServerTransportWriteException("An earlier App Server write did not finish.", null, expectedConnectionEpoch);
+                    }
                 }
 
                 var writer = _writerProvider();
@@ -311,20 +356,111 @@ namespace MyCodex.Infrastructure.AppServer
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
-                try
+                writeTask = WriteLineAndFlushAsync(writer, json, expectedConnectionEpoch);
+                if (!writeTask.IsCompleted)
                 {
-                    await writer.WriteLineAsync(json).ConfigureAwait(false);
-                    await writer.FlushAsync().ConfigureAwait(false);
+                    // TextWriter has no cancellable write, so this caller may leave while the write is still
+                    // running. The lock stays held until the write ends, which keeps messages from interleaving.
+                    monitorOwnsWriteLock = true;
+                    var stallTimeout = timeout > _minimumWriteStallTimeout ? timeout : _minimumWriteStallTimeout;
+                    _ = MonitorWriteAsync(writeTask, stallTimeout, expectedConnectionEpoch);
                 }
-                catch (Exception ex)
+            }
+            finally
+            {
+                if (!monitorOwnsWriteLock)
                 {
-                    throw new AppServerTransportWriteException("Failed to write App Server message.", ex, expectedConnectionEpoch);
+                    _writeLock.Release();
+                }
+            }
+
+            if (writeTask.IsCompleted)
+            {
+                await writeTask.ConfigureAwait(false);
+                return;
+            }
+
+            using (var delayCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+            {
+                var delayTask = Task.Delay(GetRemainingTime(timeout, elapsed), delayCancellation.Token);
+                if (await Task.WhenAny(writeTask, delayTask).ConfigureAwait(false) == writeTask)
+                {
+                    delayCancellation.Cancel();
+                    await writeTask.ConfigureAwait(false);
+                    return;
+                }
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            throw _timeoutFactory(operationName, GetTimeoutMilliseconds(timeout));
+        }
+
+        private static async Task WriteLineAndFlushAsync(TextWriter writer, string json, long expectedConnectionEpoch)
+        {
+            try
+            {
+                await writer.WriteLineAsync(json).ConfigureAwait(false);
+                await writer.FlushAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw new AppServerTransportWriteException("Failed to write App Server message.", ex, expectedConnectionEpoch);
+            }
+        }
+
+        // A write that never ends cannot be recovered: later writes fail for this connection, and the
+        // lock is freed first because connection-lost handling takes the same lock to end the process.
+        private async Task MonitorWriteAsync(Task writeTask, TimeSpan stallTimeout, long connectionEpoch)
+        {
+            Exception stall = null;
+            try
+            {
+                using (var delayCancellation = new CancellationTokenSource())
+                {
+                    if (await Task.WhenAny(writeTask, Task.Delay(stallTimeout, delayCancellation.Token)).ConfigureAwait(false) == writeTask)
+                    {
+                        delayCancellation.Cancel();
+                    }
+                    else
+                    {
+                        lock (_syncRoot)
+                        {
+                            _stalledConnectionEpoch = connectionEpoch;
+                        }
+
+                        stall = new AppServerTransportWriteException("An App Server write did not finish in time.", null, connectionEpoch);
+                    }
                 }
             }
             finally
             {
                 _writeLock.Release();
             }
+
+            if (stall == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _writeStalled?.Invoke(connectionEpoch, stall);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceWarning("Handling a stalled App Server write failed: {0}", ex.Message);
+            }
+        }
+
+        private static TimeSpan GetRemainingTime(TimeSpan timeout, Stopwatch elapsed)
+        {
+            if (timeout == Timeout.InfiniteTimeSpan)
+            {
+                return timeout;
+            }
+
+            var remaining = timeout - elapsed.Elapsed;
+            return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
         }
 
         private bool RemovePendingRequest(

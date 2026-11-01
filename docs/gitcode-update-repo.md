@@ -191,7 +191,8 @@ Older clients still read `runtimes` in `updates/stable.json`. The daily GitCode
 workflow `.gitcode/workflows/sync-standard-runtime.yml` refreshes that compatibility
 manifest, verifies the Windows x64 npm archive, records a verified direct npm URL
 and SHA-256/size, and republishes only the small `updates-stable` attachment.
-It does not create a `runtime-standard-*` release or upload runtime tarballs.
+Each run also checks the published attachment, so a retry repairs one that an
+earlier run left missing or behind the repository manifest. It does not create a `runtime-standard-*` release or upload runtime tarballs.
 This daily job does not control when new clients discover runtime updates.
 
 The distribution repository still needs `GITCODE_TOKEN` permission to update its

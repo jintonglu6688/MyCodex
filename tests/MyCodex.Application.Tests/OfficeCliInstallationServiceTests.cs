@@ -98,6 +98,81 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public async Task UninstallAsync_RestoresOriginalSkillAndKeepsUserFiles()
+        {
+            var root = CreateTempDirectory();
+            try
+            {
+                var sourceExe = Path.Combine(root, "officecli-win-x64.exe");
+                File.WriteAllText(sourceExe, "fake exe");
+                using (var env = new FakeEnvironmentStore(@"C:\Windows"))
+                {
+                    var service = new OfficeCliInstallationService(env);
+                    var paths = OfficeCliIntegrationPlanner.BuildPaths(Path.Combine(root, "LocalAppData"), Path.Combine(root, "User"), null);
+                    var directory = paths.SkillDirectories[0];
+                    Directory.CreateDirectory(directory);
+                    File.WriteAllText(Path.Combine(directory, "SKILL.md"), "user skill");
+                    File.WriteAllText(Path.Combine(directory, "helper.txt"), "user helper");
+
+                    await service.InstallFromLocalPackageAsync(paths, sourceExe, "1.0.0", "# OfficeCLI 1", CancellationToken.None);
+                    // An upgrade must not replace the backup of the user's file with MyCodex's older skill.
+                    await service.InstallFromLocalPackageAsync(paths, sourceExe, "2.0.0", "# OfficeCLI 2", CancellationToken.None);
+                    Assert.That(Directory.GetFiles(directory, "SKILL.md.bak.*"), Has.Length.EqualTo(1));
+
+                    await service.UninstallAsync(paths, CancellationToken.None);
+
+                    Assert.That(File.ReadAllText(Path.Combine(directory, "SKILL.md")), Is.EqualTo("user skill"));
+                    Assert.That(File.ReadAllText(Path.Combine(directory, "helper.txt")), Is.EqualTo("user helper"));
+                    Assert.That(Directory.GetFiles(directory, "SKILL.md.bak.*"), Is.Empty);
+                    Assert.That(Directory.Exists(paths.SkillDirectories[1]), Is.False);
+                }
+            }
+            finally
+            {
+                DeleteDirectory(root);
+            }
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public async Task UninstallAsync_KeepsEditedOrUnrecordedSkillTextWithoutLoadingIt(bool editedAfterInstall)
+        {
+            var root = CreateTempDirectory();
+            try
+            {
+                var sourceExe = Path.Combine(root, "officecli-win-x64.exe");
+                File.WriteAllText(sourceExe, "fake exe");
+                using (var env = new FakeEnvironmentStore(@"C:\Windows"))
+                {
+                    var service = new OfficeCliInstallationService(env);
+                    var paths = OfficeCliIntegrationPlanner.BuildPaths(Path.Combine(root, "LocalAppData"), Path.Combine(root, "User"), null);
+                    await service.InstallFromLocalPackageAsync(paths, sourceExe, "1.0.0", "# OfficeCLI", CancellationToken.None);
+                    var directory = paths.SkillDirectories[0];
+                    if (editedAfterInstall)
+                    {
+                        File.WriteAllText(Path.Combine(directory, "SKILL.md"), "edited");
+                    }
+                    else
+                    {
+                        // Installs from older versions have a manifest without skill records.
+                        File.WriteAllText(Path.Combine(paths.InstallDirectory, "mycodex-install.json"), "{\"installedBy\":\"MyCodex\"}");
+                    }
+
+                    await service.UninstallAsync(paths, CancellationToken.None);
+
+                    Assert.That(File.Exists(Path.Combine(directory, "SKILL.md")), Is.False);
+                    var kept = Directory.GetFiles(directory, "SKILL.md.bak.*");
+                    Assert.That(kept, Has.Length.EqualTo(1));
+                    Assert.That(File.ReadAllText(kept[0]), Is.EqualTo(editedAfterInstall ? "edited" : "# OfficeCLI"));
+                }
+            }
+            finally
+            {
+                DeleteDirectory(root);
+            }
+        }
+
+        [Test]
         public async Task Results_UseChineseSharedLocalization()
         {
             var root = CreateTempDirectory();

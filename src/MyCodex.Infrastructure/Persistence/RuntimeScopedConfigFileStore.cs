@@ -143,6 +143,10 @@ namespace MyCodex.Infrastructure.Persistence
                 : appStateFilePath;
         }
 
+        // Commands with standard input keep their output exact. These files are read back and saved again,
+        // so redacting a value on read would overwrite it for good.
+        private const string ExactOutputInput = "";
+
         public bool TryGetRuntimeModeSettingsFilePathForAsyncAccess(AppConfigSnapshot config, out string path)
         {
             path = null;
@@ -163,7 +167,8 @@ namespace MyCodex.Infrastructure.Persistence
         public bool ReadTextFile(AppConfigSnapshot config, string path, out string content)
         {
             content = null;
-            var result = Execute(config, ReadTextFileScript, "mycodex-read-runtime-config", TextFileTimeoutMilliseconds, path);
+            var result = ExecuteAsync(config, ReadTextFileScript, "mycodex-read-runtime-config", TextFileTimeoutMilliseconds, ExactOutputInput, new[] { path })
+                .GetAwaiter().GetResult();
             if (result.ExitCode == 0)
             {
                 content = result.StandardOutput ?? string.Empty;
@@ -180,7 +185,7 @@ namespace MyCodex.Infrastructure.Persistence
 
         public async Task<Tuple<bool, string>> ReadTextFileAsync(AppConfigSnapshot config, string path)
         {
-            var result = await ExecuteAsync(config, ReadTextFileScript, "mycodex-read-runtime-config", TextFileTimeoutMilliseconds, path).ConfigureAwait(false);
+            var result = await ExecuteAsync(config, ReadTextFileScript, "mycodex-read-runtime-config", TextFileTimeoutMilliseconds, ExactOutputInput, new[] { path }).ConfigureAwait(false);
             if (result.ExitCode == 0)
             {
                 return Tuple.Create(true, result.StandardOutput ?? string.Empty);
@@ -221,16 +226,6 @@ namespace MyCodex.Infrastructure.Persistence
 
             runtimePath = path;
             return true;
-        }
-
-        private RuntimeCommandResult Execute(AppConfigSnapshot config, string script, string operationName, int timeoutMilliseconds, params string[] arguments)
-        {
-            return ExecuteAsync(config, script, operationName, timeoutMilliseconds, arguments).GetAwaiter().GetResult();
-        }
-
-        private Task<RuntimeCommandResult> ExecuteAsync(AppConfigSnapshot config, string script, string operationName, int timeoutMilliseconds, params string[] arguments)
-        {
-            return ExecuteAsync(config, script, operationName, timeoutMilliseconds, null, arguments);
         }
 
         private async Task<RuntimeCommandResult> ExecuteAsync(AppConfigSnapshot config, string script, string operationName,

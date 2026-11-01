@@ -30,6 +30,16 @@ namespace MyCodex.Application.Tests
             Assert.That(redacted, Is.EqualTo("https://***:***@example.com/repo.git *** *** access_token=*** token: *** ***"));
         }
 
+        [TestCase("https://AUDIT_TOKEN@example.com/repo.git", "https://***@example.com/repo.git")]
+        [TestCase("Cloning into https://u:p:q@example.com/repo.git now", "Cloning into https://***:***@example.com/repo.git now")]
+        [TestCase("https://example.com:8080/a@b", "https://example.com:8080/a@b")]
+        [TestCase("https://example.com?user=a@b", "https://example.com?user=a@b")]
+        [TestCase("git@github.com:owner/repo.git", "git@github.com:owner/repo.git")]
+        public void RedactSensitiveText_HidesWholeUserInformationOnly(string text, string expected)
+        {
+            Assert.That(GitOutputSanitizer.RedactSensitiveText(text), Is.EqualTo(expected));
+        }
+
         [Test]
         public void CloneAsync_ClonesLocalRepository()
         {

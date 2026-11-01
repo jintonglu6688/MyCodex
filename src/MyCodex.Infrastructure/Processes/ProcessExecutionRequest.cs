@@ -18,6 +18,9 @@ namespace MyCodex.Infrastructure.Processes
 
         public Func<string, string> OutputTransform { get; set; }
 
+        // For protocol and file exchanges: the final standard output stays exact and only standard error is transformed.
+        public bool PreserveStandardOutput { get; set; }
+
         public Action<string, bool> OutputReceived { get; set; }
 
         public int KillWaitMilliseconds { get; set; }

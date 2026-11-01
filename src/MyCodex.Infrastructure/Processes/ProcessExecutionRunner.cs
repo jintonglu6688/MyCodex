@@ -67,7 +67,9 @@ namespace MyCodex.Infrastructure.Processes
                     return new ProcessExecutionResult
                     {
                         ExitCode = process.ExitCode,
-                        StandardOutput = Transform(stdoutBuilder.ToString(), request.OutputTransform),
+                        StandardOutput = request.PreserveStandardOutput
+                            ? stdoutBuilder.ToString()
+                            : Transform(stdoutBuilder.ToString(), request.OutputTransform),
                         StandardError = Transform(stderrBuilder.ToString(), request.OutputTransform)
                     };
                 }

@@ -80,7 +80,7 @@ namespace MyCodex.Infrastructure.AppServer
                 builder.AppendLine("  BatchMode yes");
                 if (!string.IsNullOrWhiteSpace(config.PrivateKeyPath))
                 {
-                    builder.AppendLine("  IdentityFile " + EscapeOpenSshConfigValue(config.PrivateKeyPath.Trim()));
+                    builder.AppendLine("  IdentityFile " + QuoteOpenSshConfigValue(config.PrivateKeyPath.Trim()));
                 }
             }
             else
@@ -91,6 +91,12 @@ namespace MyCodex.Infrastructure.AppServer
 
             builder.AppendLine("  RemoteCommand " + EscapeOpenSshConfigValue(remoteCommand));
             return builder.ToString();
+        }
+
+        // ssh_config unescapes \\ and \" inside quotes, so a UNC path keeps its leading backslashes.
+        private static string QuoteOpenSshConfigValue(string value)
+        {
+            return "\"" + EscapeOpenSshConfigValue(value).Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
         }
 
         private static string EscapeOpenSshConfigValue(string value)

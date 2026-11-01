@@ -105,7 +105,8 @@ namespace MyCodex.Infrastructure.AppServer
                 _writeLock,
                 _syncRoot,
                 CreateRequestTimeoutException,
-                GetConnectionEpoch);
+                GetConnectionEpoch,
+                (epoch, error) => HandleAppServerConnectionLost(BuildConnectionLostMessage(error), epoch, null));
             _operations = new AppServerClientOperations(
                 EnsureConnected,
                 () => ProtocolCapabilities,

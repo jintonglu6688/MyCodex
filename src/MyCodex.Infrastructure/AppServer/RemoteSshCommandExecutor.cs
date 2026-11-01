@@ -163,7 +163,8 @@ namespace MyCodex.Infrastructure.AppServer
                     TimeoutMessage = "Remote SSH command timed out.",
                     CancellationToken = cancellationToken,
                     StandardInput = standardInput,
-                    OutputTransform = GitOutputSanitizer.RedactSensitiveText
+                    OutputTransform = GitOutputSanitizer.RedactSensitiveText,
+                    PreserveStandardOutput = standardInput != null
                 });
                 return new RemoteSshCommandExecutionResult
                 {

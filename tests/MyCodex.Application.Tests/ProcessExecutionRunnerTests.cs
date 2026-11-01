@@ -141,6 +141,33 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void Run_PreserveStandardOutputKeepsProtocolDataAndStillRedactsStderr()
+        {
+            var result = MyCodex.Infrastructure.Processes.ProcessExecutionRunner.Run(new MyCodex.Infrastructure.Processes.ProcessExecutionRequest
+            {
+                StartInfo = BuildPowerShellStartInfo("[Console]::Out.Write('ghp_SECRET'); [Console]::Error.Write('ghp_SECRET')"),
+                TimeoutMilliseconds = 15000,
+                TimeoutMessage = "process timed out",
+                OutputTransform = GitOutputSanitizer.RedactSensitiveText,
+                PreserveStandardOutput = true
+            });
+
+            Assert.That(result.StandardOutput, Is.EqualTo("ghp_SECRET"));
+            Assert.That(result.StandardError, Is.EqualTo("***"));
+        }
+
+        [Category(MyCodex.Application.Tests.SourceGuards.SourceGuardCategory.SourceBehavior)]
+        [TestCase("MyCodex.Infrastructure", "RemoteSshCommandExecutor.cs")]
+        [TestCase("MyCodex.Infrastructure", "WslCommandExecutor.cs")]
+        public void CommandExecutors_KeepOutputExactOnlyForCommandsWithStandardInput(string project, string fileName)
+        {
+            // Both executors start real ssh or wsl processes, so the safety boundary is checked in their source.
+            var source = MyCodex.Application.Tests.SourceGuards.RepositorySource.ReadSourceFiles(project, fileName);
+
+            Assert.That(source, Does.Contain("PreserveStandardOutput = standardInput != null"));
+        }
+
+        [Test]
         public void Run_ReportsOutputBeforeProcessExits()
         {
             var stopwatch = Stopwatch.StartNew();

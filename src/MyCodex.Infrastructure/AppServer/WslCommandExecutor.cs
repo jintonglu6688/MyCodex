@@ -140,7 +140,8 @@ namespace MyCodex.Infrastructure.AppServer
                 TimeoutMessage = "WSL command timed out.",
                 CancellationToken = cancellationToken,
                 StandardInput = standardInput,
-                OutputTransform = GitOutputSanitizer.RedactSensitiveText
+                OutputTransform = GitOutputSanitizer.RedactSensitiveText,
+                PreserveStandardOutput = standardInput != null
             });
             return new WslCommandExecutionResult
             {

@@ -28,6 +28,9 @@ jobs:
           import os
           import pathlib
           import subprocess
+          import tempfile
+          import time
+          import urllib.error
           import urllib.parse
           import urllib.request
 
@@ -37,7 +40,8 @@ jobs:
           api_base = "https://api.gitcode.com/api/v5"
           registry_base = "https://registry.npmjs.org"
           encoded_token = urllib.parse.quote(token, safe="")
-          push_url = f"https://oauth2:{encoded_token}@gitcode.com/{owner}/{repo}.git"
+          push_url = f"https://gitcode.com/{owner}/{repo}.git"
+          stable_manifest_url = f"{api_base}/repos/{owner}/{repo}/releases/updates-stable/attach_files/stable.json/download"
           manifest_path = pathlib.Path("updates/stable.json")
           target_triples = {
               "x86_64-pc-windows-msvc": "win32-x64",
@@ -124,12 +128,111 @@ jobs:
               )
               return bool(result.stdout.strip())
 
+          def git_push(*refspecs):
+              # GIT_ASKPASS keeps the token out of argv, so a failed command's exception cannot reveal it.
+              with tempfile.TemporaryDirectory() as directory:
+                  askpass = pathlib.Path(directory) / "askpass.sh"
+                  askpass.write_text('#!/bin/sh\ncase "$1" in\n  Username*) echo oauth2 ;;\n  *) printf "%s\\n" "$GITCODE_TOKEN" ;;\nesac\n', encoding="utf-8")
+                  askpass.chmod(0o700)
+                  env = dict(os.environ, GIT_ASKPASS=str(askpass), GIT_TERMINAL_PROMPT="0")
+                  subprocess.run(["git", "push", push_url, *refspecs], check=True, env=env)
+
           def delete_tag(tag):
               if tag_exists(tag):
-                  subprocess.run(["git", "push", push_url, f":refs/tags/{tag}"], check=True)
+                  git_push(f":refs/tags/{tag}")
 
           def ascii_json(data):
               return json.dumps(data, ensure_ascii=True, indent=2) + "\n"
+
+          def published_manifest():
+              try:
+                  with urllib.request.urlopen(stable_manifest_url, timeout=120) as response:
+                      return json.loads(response.read().decode("utf-8-sig"))
+              except urllib.error.HTTPError as error:
+                  # A refused or failing check must not delete the release clients read their updates from.
+                  if error.code >= 500 or error.code in (401, 403, 429):
+                      raise
+                  return None
+              except ValueError:
+                  return None
+
+          def managed_runtimes(data):
+              entries = [item for item in data.get("runtimes", []) if item.get("source") == "Bundled" and item.get("targetTriple") in target_triples]
+              return sorted(entries, key=lambda item: item["targetTriple"])
+
+          def attachment_matches(expected):
+              # Only this workflow's runtime entries are compared: the app release process also writes
+              # this attachment, and a repair must not replace a newer app version with an older one.
+              published = published_manifest()
+              return isinstance(published, dict) and managed_runtimes(published) == managed_runtimes(expected)
+
+          def publish_manifest(expected):
+              # GitCode cannot overwrite an attachment, and clients read their updates from this one, so an
+              # interrupted replacement is retried now rather than leaving them without it until the next run.
+              for attempt in range(3):
+                  try:
+                      delete_tag("updates-stable")
+                      create_release("updates-stable", "Stable Update Manifest", "Stable manifest pointer for MyCodex update checks.")
+                      upload_release_file("updates-stable", manifest_path)
+                      if attachment_matches(expected):
+                          return
+                      failure = ValueError("Published stable manifest does not match the repository manifest")
+                  except (OSError, ValueError) as error:
+                      failure = error
+                  print(f"Publishing the stable manifest failed on attempt {attempt + 1}: {type(failure).__name__}")
+                  time.sleep(5)
+              raise failure
+
+          def refresh_manifest(latest, manifest):
+              artifact_dir = pathlib.Path("artifacts/runtime/Bundled") / latest
+              artifact_dir.mkdir(parents=True, exist_ok=True)
+              packages = {}
+              for target, suffix in target_triples.items():
+                  metadata = registry_json(f"{latest}-{suffix}")
+                  tarball = metadata["dist"]["tarball"]
+                  file_name = pathlib.PurePosixPath(urllib.parse.urlparse(tarball).path).name
+                  path = artifact_dir / file_name
+                  if file_name != f"codex-{latest}-{suffix}.tgz":
+                      raise ValueError("Unexpected runtime package name")
+                  verified_url = download_verified(metadata, path)
+                  packages[target] = {
+                      "url": verified_url,
+                      "fileName": file_name,
+                      "size": path.stat().st_size,
+                      "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                  }
+
+              runtimes = manifest.setdefault("runtimes", [])
+              for target, package in packages.items():
+                  match = next((item for item in runtimes if item.get("source") == "Bundled" and item.get("targetTriple") == target), None)
+                  if match is None:
+                      match = {
+                          "source": "Bundled",
+                          "targetTriple": target,
+                          "packageFormat": "npm-tgz",
+                      }
+                      runtimes.append(match)
+                  match["version"] = latest
+                  match["packageFormat"] = "npm-tgz"
+                  match["asset"] = {
+                      "url": package["url"],
+                      "fileName": package["fileName"],
+                      "sha256": package["sha256"],
+                      "size": package["size"],
+                  }
+
+              manifest["generatedAt"] = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+              manifest_path.write_text(ascii_json(manifest), encoding="utf-8")
+
+              subprocess.run(["git", "config", "user.name", "MyCodex Release Bot"], check=True)
+              subprocess.run(["git", "config", "user.email", "release@mycodex.local"], check=True)
+              subprocess.run(["git", "add", str(manifest_path)], check=True)
+              diff = subprocess.run(["git", "diff", "--cached", "--quiet"])
+              if diff.returncode == 0:
+                  print("Manifest unchanged.")
+              else:
+                  subprocess.run(["git", "commit", "-m", f"Publish bundled runtime {latest}"], check=True)
+                  git_push("HEAD:main")
 
           latest = registry_json("latest")["version"].strip()
           if not re.fullmatch(r"\d+\.\d+\.\d+", latest):
@@ -139,66 +242,23 @@ jobs:
               item for item in manifest.get("runtimes", [])
               if item.get("source") == "Bundled" and item.get("targetTriple") in target_triples
           ]
-          if any(re.fullmatch(r"\d+\.\d+\.\d+", item.get("version", "")) and
-                 tuple(map(int, item["version"].split("."))) > tuple(map(int, latest.split("."))) for item in existing):
+          newer_published = any(re.fullmatch(r"\d+\.\d+\.\d+", item.get("version", "")) and
+                                tuple(map(int, item["version"].split("."))) > tuple(map(int, latest.split("."))) for item in existing)
+          latest_published = existing and all(item.get("version") == latest and item.get("asset", {}).get("url", "").startswith((registry_base + "/", "https://registry.npmmirror.com/")) for item in existing)
+          if newer_published:
               print("A newer runtime is already published; retaining the existing manifest.")
-              raise SystemExit(0)
-          if existing and all(item.get("version") == latest and item.get("asset", {}).get("url", "").startswith((registry_base + "/", "https://registry.npmmirror.com/")) for item in existing):
+          elif latest_published:
               print(f"Bundled runtime {latest} already published in manifest.")
+          else:
+              refresh_manifest(latest, manifest)
+
+          # The repository push and the attachment clients read are separate steps, so an earlier run may
+          # have stopped between them. Check what is published instead of trusting the repository alone.
+          expected = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+          if attachment_matches(expected):
+              print("Stable manifest attachment is up to date.")
               raise SystemExit(0)
 
-          artifact_dir = pathlib.Path("artifacts/runtime/Bundled") / latest
-          artifact_dir.mkdir(parents=True, exist_ok=True)
-          packages = {}
-          for target, suffix in target_triples.items():
-              metadata = registry_json(f"{latest}-{suffix}")
-              tarball = metadata["dist"]["tarball"]
-              file_name = pathlib.PurePosixPath(urllib.parse.urlparse(tarball).path).name
-              path = artifact_dir / file_name
-              if file_name != f"codex-{latest}-{suffix}.tgz":
-                  raise ValueError("Unexpected runtime package name")
-              verified_url = download_verified(metadata, path)
-              packages[target] = {
-                  "url": verified_url,
-                  "fileName": file_name,
-                  "size": path.stat().st_size,
-                  "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-              }
-
-          runtimes = manifest.setdefault("runtimes", [])
-          for target, package in packages.items():
-              match = next((item for item in runtimes if item.get("source") == "Bundled" and item.get("targetTriple") == target), None)
-              if match is None:
-                  match = {
-                      "source": "Bundled",
-                      "targetTriple": target,
-                      "packageFormat": "npm-tgz",
-                  }
-                  runtimes.append(match)
-              match["version"] = latest
-              match["packageFormat"] = "npm-tgz"
-              match["asset"] = {
-                  "url": package["url"],
-                  "fileName": package["fileName"],
-                  "sha256": package["sha256"],
-                  "size": package["size"],
-              }
-
-          manifest["generatedAt"] = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-          manifest_path.write_text(ascii_json(manifest), encoding="utf-8")
-
-          subprocess.run(["git", "config", "user.name", "MyCodex Release Bot"], check=True)
-          subprocess.run(["git", "config", "user.email", "release@mycodex.local"], check=True)
-          subprocess.run(["git", "add", str(manifest_path)], check=True)
-          diff = subprocess.run(["git", "diff", "--cached", "--quiet"])
-          if diff.returncode == 0:
-              print("Manifest unchanged.")
-          else:
-              subprocess.run(["git", "commit", "-m", f"Publish bundled runtime {latest}"], check=True)
-              subprocess.run(["git", "push", push_url, "HEAD:main"], check=True)
-
-          delete_tag("updates-stable")
-          create_release("updates-stable", "Stable Update Manifest", "Stable manifest pointer for MyCodex update checks.")
-          upload_release_file("updates-stable", manifest_path)
-          print(f"Published legacy runtime manifest {latest}; no runtime archive uploaded.")
+          publish_manifest(expected)
+          print(f"Published legacy runtime manifest for {latest}; no runtime archive uploaded.")
           PY

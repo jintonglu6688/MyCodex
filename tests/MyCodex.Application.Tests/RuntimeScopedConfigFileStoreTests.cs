@@ -307,6 +307,20 @@ namespace MyCodex.Application.Tests
             return config;
         }
 
+        [Test]
+        public async Task ReadTextFile_AsksExecutorsForExactOutput()
+        {
+            var config = CreateRemoteConfig(CodexRuntimeSources.RemoteUnixSsh, true, out _);
+            var executors = new CapturingCommandExecutors();
+            executors.RemoteResult = new RemoteSshCommandExecutionResult { ExitCode = 0, StandardOutput = "ghp_kept" };
+            var store = new RuntimeScopedConfigFileStore(executors, executors);
+
+            var result = await store.ReadTextFileAsync(config, "/state.json");
+
+            Assert.That(result.Item2, Is.EqualTo("ghp_kept"));
+            Assert.That(executors.StandardInput, Is.Not.Null, "Commands with standard input keep their output exact.");
+        }
+
         private static void AssertCommand(
             CapturingCommandExecutors executors,
             string operationName,

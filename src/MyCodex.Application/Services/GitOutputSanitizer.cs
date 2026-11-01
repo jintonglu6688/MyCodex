@@ -5,7 +5,7 @@ namespace MyCodex.Application.Services
     public static class GitOutputSanitizer
     {
         private static readonly Regex UrlCredentialRegex = new Regex(
-            "(https?://)([^\\s/@:]+):([^\\s/@]+)@",
+            "(https?://)([^\\s/?#@]+)@",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex GitHubTokenRegex = new Regex(
@@ -23,7 +23,10 @@ namespace MyCodex.Application.Services
                 return string.Empty;
             }
 
-            var value = UrlCredentialRegex.Replace(text, "$1***:***@");
+            // A token may be the whole user name, as in https://TOKEN@host/repo.git.
+            var value = UrlCredentialRegex.Replace(
+                text,
+                match => match.Groups[1].Value + (match.Groups[2].Value.IndexOf(':') >= 0 ? "***:***@" : "***@"));
             value = GitHubTokenRegex.Replace(value, "***");
             value = NamedSecretRegex.Replace(value, "$1$2***");
             return value;

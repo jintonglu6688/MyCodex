@@ -194,9 +194,10 @@ namespace MyCodex.Infrastructure.Office
 
             cancellationToken.ThrowIfCancellationRequested();
             Directory.CreateDirectory(paths.InstallDirectory);
+            var previousSkills = ReadInstalledSkills(paths);
             File.Copy(sourceExecutablePath, paths.ExecutablePath, true);
-            InstallSkills(paths.SkillDirectories, skillMarkdown ?? string.Empty);
-            WriteInstallManifest(paths, version);
+            var installedSkills = InstallSkills(paths.SkillDirectories, skillMarkdown ?? string.Empty, previousSkills);
+            WriteInstallManifest(paths, version, installedSkills);
             ApplyUserAndProcessPath(paths.InstallDirectory);
 
             var status = OfficeCliIntegrationPlanner.EvaluateStatus(paths, _environmentStore.GetUserPath(), File.Exists);
@@ -221,8 +222,9 @@ namespace MyCodex.Infrastructure.Office
             }
 
             cancellationToken.ThrowIfCancellationRequested();
+            var installedSkills = ReadInstalledSkills(paths);
             TryDeleteDirectory(paths.InstallDirectory);
-            DeleteSkillDirectories(paths.SkillDirectories);
+            RemoveSkills(paths.SkillDirectories, installedSkills);
             RemoveDirectoryFromUserAndProcessPath(paths.InstallDirectory);
 
             var status = OfficeCliIntegrationPlanner.EvaluateStatus(paths, _environmentStore.GetUserPath(), File.Exists);
@@ -369,23 +371,31 @@ namespace MyCodex.Infrastructure.Office
                 "OfficeCLI SHA256 entry was not found."));
         }
 
-        private static void VerifySha256(string filePath, string expectedSha256)
+        private static string ComputeSha256(string filePath)
         {
             using (var sha = SHA256.Create())
             using (var stream = File.OpenRead(filePath))
             {
-                var actual = BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", string.Empty).ToLowerInvariant();
-                if (!string.Equals(actual, expectedSha256, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new InvalidOperationException(SharedLocalization.Text(
-                        "OfficeCliInstallation.Error.ShaMismatch",
-                        "OfficeCLI SHA256 verification failed."));
-                }
+                return BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", string.Empty).ToLowerInvariant();
             }
         }
 
-        private static void InstallSkills(IEnumerable<string> skillDirectories, string skillMarkdown)
+        private static void VerifySha256(string filePath, string expectedSha256)
         {
+            if (!string.Equals(ComputeSha256(filePath), expectedSha256, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(SharedLocalization.Text(
+                    "OfficeCliInstallation.Error.ShaMismatch",
+                    "OfficeCLI SHA256 verification failed."));
+            }
+        }
+
+        private static List<InstalledSkill> InstallSkills(
+            IEnumerable<string> skillDirectories,
+            string skillMarkdown,
+            IReadOnlyList<InstalledSkill> previousSkills)
+        {
+            var installedSkills = new List<InstalledSkill>();
             foreach (var directory in skillDirectories ?? Enumerable.Empty<string>())
             {
                 if (string.IsNullOrWhiteSpace(directory))
@@ -395,38 +405,130 @@ namespace MyCodex.Infrastructure.Office
 
                 Directory.CreateDirectory(directory);
                 var skillPath = Path.Combine(directory, "SKILL.md");
-                BackupChangedSkill(skillPath, skillMarkdown);
+                var previous = FindInstalledSkill(previousSkills, directory);
+                var originalBackup = previous == null ? null : previous.BackupFileName;
+                if (!IsInstalledSkillUnchanged(skillPath, previous))
+                {
+                    // A file MyCodex did not write is the one to give back on uninstall.
+                    originalBackup = BackupChangedSkill(skillPath, skillMarkdown) ?? originalBackup;
+                }
+
                 File.WriteAllText(skillPath, skillMarkdown ?? string.Empty, new UTF8Encoding(false));
+                installedSkills.Add(new InstalledSkill
+                {
+                    Directory = directory,
+                    Sha256 = ComputeSha256(skillPath),
+                    BackupFileName = originalBackup
+                });
             }
+
+            return installedSkills;
         }
 
-        private static void BackupChangedSkill(string skillPath, string skillMarkdown)
+        private static string BackupChangedSkill(string skillPath, string skillMarkdown)
         {
             if (!File.Exists(skillPath))
             {
-                return;
+                return null;
             }
 
             var existing = File.ReadAllText(skillPath, Encoding.UTF8);
             if (string.Equals(existing, skillMarkdown ?? string.Empty, StringComparison.Ordinal))
             {
-                return;
+                return null;
             }
 
-            var backupPath = skillPath + ".bak." + DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
+            var backupPath = BuildBackupPath(skillPath);
             File.Copy(skillPath, backupPath, false);
+            return Path.GetFileName(backupPath);
         }
 
-        private static void DeleteSkillDirectories(IEnumerable<string> skillDirectories)
+        private static string BuildBackupPath(string skillPath)
+        {
+            return skillPath + ".bak." + DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
+        }
+
+        // Only the unmodified SKILL.md recorded at install time is deleted. Anything else in these
+        // directories may belong to the user, so it stays, and the directory goes only when empty.
+        private static void RemoveSkills(IEnumerable<string> skillDirectories, IReadOnlyList<InstalledSkill> installedSkills)
         {
             foreach (var directory in skillDirectories ?? Enumerable.Empty<string>())
             {
-                if (string.IsNullOrWhiteSpace(directory))
+                if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
                 {
                     continue;
                 }
 
-                TryDeleteDirectory(directory);
+                try
+                {
+                    RemoveSkill(directory, FindInstalledSkill(installedSkills, directory));
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    Trace.TraceWarning("Failed to remove OfficeCLI skill from '{0}': {1}", directory, ex.Message);
+                }
+            }
+        }
+
+        private static void RemoveSkill(string directory, InstalledSkill installed)
+        {
+            var skillPath = Path.Combine(directory, "SKILL.md");
+            if (IsInstalledSkillUnchanged(skillPath, installed))
+            {
+                File.Delete(skillPath);
+                var backupFileName = Path.GetFileName(installed.BackupFileName ?? string.Empty);
+                var backupPath = Path.Combine(directory, backupFileName);
+                if (backupFileName.Length > 0 && File.Exists(backupPath))
+                {
+                    File.Move(backupPath, skillPath);
+                }
+            }
+            else if (File.Exists(skillPath))
+            {
+                // Edited, or installed before ownership was recorded: keep the text but stop the skill loading.
+                File.Move(skillPath, BuildBackupPath(skillPath));
+            }
+
+            if (Directory.GetFileSystemEntries(directory).Length == 0)
+            {
+                Directory.Delete(directory, false);
+            }
+        }
+
+        private static bool IsInstalledSkillUnchanged(string skillPath, InstalledSkill installed)
+        {
+            return installed != null &&
+                File.Exists(skillPath) &&
+                string.Equals(ComputeSha256(skillPath), installed.Sha256, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static InstalledSkill FindInstalledSkill(IReadOnlyList<InstalledSkill> installedSkills, string directory)
+        {
+            return installedSkills.FirstOrDefault(item => string.Equals(
+                NormalizePath(item.Directory),
+                NormalizePath(directory),
+                StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static IReadOnlyList<InstalledSkill> ReadInstalledSkills(OfficeCliIntegrationPaths paths)
+        {
+            var manifestPath = Path.Combine(paths.InstallDirectory, InstallManifestFileName);
+            if (!File.Exists(manifestPath))
+            {
+                return new InstalledSkill[0];
+            }
+
+            try
+            {
+                var manifest = new JavaScriptSerializer().Deserialize<InstallManifest>(File.ReadAllText(manifestPath, Encoding.UTF8));
+                return (manifest == null ? null : manifest.Skills)?
+                    .Where(item => item != null && !string.IsNullOrWhiteSpace(item.Directory))
+                    .ToList() ?? new List<InstalledSkill>();
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is ArgumentException || ex is InvalidOperationException)
+            {
+                Trace.TraceWarning("Failed to read the OfficeCLI install manifest: {0}", ex.Message);
+                return new InstalledSkill[0];
             }
         }
 
@@ -474,21 +576,18 @@ namespace MyCodex.Infrastructure.Office
             return Path.GetFullPath(path.Trim()).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         }
 
-        private static void WriteInstallManifest(OfficeCliIntegrationPaths paths, string version)
+        private static void WriteInstallManifest(OfficeCliIntegrationPaths paths, string version, List<InstalledSkill> installedSkills)
         {
             var manifestPath = Path.Combine(paths.InstallDirectory, InstallManifestFileName);
-            var json = "{\n" +
-                "  \"installedBy\": \"MyCodex\",\n" +
-                "  \"version\": \"" + EscapeJson(version ?? string.Empty) + "\",\n" +
-                "  \"installedAt\": \"" + DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture) + "\",\n" +
-                "  \"executablePath\": \"" + EscapeJson(paths.ExecutablePath ?? string.Empty) + "\"\n" +
-                "}\n";
+            var json = new JavaScriptSerializer().Serialize(new InstallManifest
+            {
+                InstalledBy = "MyCodex",
+                Version = version ?? string.Empty,
+                InstalledAt = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture),
+                ExecutablePath = paths.ExecutablePath ?? string.Empty,
+                Skills = installedSkills
+            });
             File.WriteAllText(manifestPath, json, new UTF8Encoding(false));
-        }
-
-        private static string EscapeJson(string value)
-        {
-            return (value ?? string.Empty).Replace("\\", "\\\\").Replace("\"", "\\\"");
         }
 
         private static string TrimVersionPrefix(string tagName)
@@ -521,6 +620,28 @@ namespace MyCodex.Infrastructure.Office
             {
                 Trace.TraceWarning("Failed to delete OfficeCLI directory '{0}': {1}", path, ex.Message);
             }
+        }
+
+        private sealed class InstallManifest
+        {
+            public string InstalledBy { get; set; }
+
+            public string Version { get; set; }
+
+            public string InstalledAt { get; set; }
+
+            public string ExecutablePath { get; set; }
+
+            public List<InstalledSkill> Skills { get; set; }
+        }
+
+        private sealed class InstalledSkill
+        {
+            public string Directory { get; set; }
+
+            public string Sha256 { get; set; }
+
+            public string BackupFileName { get; set; }
         }
 
         private sealed class ReleaseInfo
