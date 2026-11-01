@@ -24,7 +24,12 @@ class Probe {
             return File.Exists(Path.Combine(root, "startup-fail")) ? 1 : 0;
         var json = new JavaScriptSerializer();
         var identity = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(Path.Combine(root, "mycodex-auth-host.manifest.json")));
-        if (args.Length == 1 && args[0] == "--version-json") { Console.WriteLine(json.Serialize(identity)); return 0; }
+        if (args.Length == 1 && args[0] == "--version-json") {
+            if (File.Exists(Path.Combine(root, "version-fail-always"))) return 1;
+            var once = Path.Combine(root, "version-fail-once");
+            if (File.Exists(once)) { File.Delete(once); return 1; }
+            Console.WriteLine(json.Serialize(identity)); return 0;
+        }
         if (args[0] == "serve") { Console.Error.Write("backend_already_running"); return 1; }
         if (args[0] == "rpc") {
             Console.In.ReadToEnd();
@@ -108,8 +113,34 @@ Copy-Item -LiteralPath (Join-Path $old 'runtime\auth-core') -Destination $backup
 [IO.File]::WriteAllText((Join-Path $corrupt 'runtime\auth-core\mycodex-auth-host.exe'), 'incomplete', $utf8)
 Run-Maintenance $corrupt 'Finalize' 1
 Assert ([IO.File]::ReadAllText((Join-Path $corrupt 'runtime\auth-core\mycodex-auth-host.exe')) -eq 'incomplete') 'Finalize silently restored an old package'
-Run-Maintenance $corrupt 'Resume'
-Assert ((Get-Content (Join-Path $corrupt 'runtime\auth-core\mycodex-auth-host.manifest.json') -Raw | ConvertFrom-Json).hostVersion -eq '0.2.1') 'Cancellation recovery no longer restores the old package'
+Run-Maintenance $corrupt 'Resume' 1
+Assert ([IO.File]::ReadAllText((Join-Path $corrupt 'runtime\auth-core\mycodex-auth-host.exe')) -eq 'incomplete') 'Post-install recovery restored an incompatible old backend'
+Assert (-not (Get-Content (Join-Path $corrupt 'state.json') -Raw | ConvertFrom-Json).completed) 'Failed repair was marked complete'
+
+$cancelled = New-Install 'cancelled-before-finalize'
+Copy-Item -LiteralPath (Join-Path $old 'runtime\auth-core') -Destination (Join-Path $cancelled 'state.json.backup') -Recurse
+[IO.File]::WriteAllText((Join-Path $cancelled 'runtime\auth-core\mycodex-auth-host.exe'), 'incomplete', $utf8)
+Run-Maintenance $cancelled 'Resume'
+Assert ((Get-Content (Join-Path $cancelled 'runtime\auth-core\mycodex-auth-host.manifest.json') -Raw | ConvertFrom-Json).hostVersion -eq '0.2.1') 'Pre-install cancellation must still restore the old package'
+
+$repairArguments = @($script, '-Action', 'Finalize', '-InstallRoot', $corrupt, '-StatePath', (Join-Path $corrupt 'state.json'), '-ExpectedManifestPath', $expected, '-RepairPackageRoot', $package)
+$locked = [IO.File]::Open((Join-Path $corrupt 'runtime\auth-core\mycodex-auth-host.exe'), 'Open', 'Read', 'Read')
+try {
+    Assert ((Invoke-TestPowerShell $repairArguments).Code -eq 1) 'A locked backend must not report successful repair'
+    Run-Maintenance $corrupt 'Resume' 1
+} finally { $locked.Dispose() }
+$repaired = Invoke-TestPowerShell $repairArguments
+Assert ($repaired.Code -eq 0) ('Trusted package repair failed: ' + $repaired.Output)
+Assert ((Get-FileHash (Join-Path $corrupt 'runtime\auth-core\mycodex-auth-host.exe')).Hash -eq $manifest.sha256) 'Repair did not install the expected executable'
+Assert ((Get-Content (Join-Path $corrupt 'state.json') -Raw | ConvertFrom-Json).completed) 'Repaired installation did not complete'
+
+$badSource = Join-Path $work 'bad-repair-source'
+Copy-Item -LiteralPath $package -Destination $badSource -Recurse
+[IO.File]::WriteAllText((Join-Path $badSource 'mycodex-auth-host.exe'), 'untrusted', $utf8)
+$beforeRepair = (Get-FileHash (Join-Path $old 'runtime\auth-core\mycodex-auth-host.exe')).Hash
+$rejected = Invoke-TestPowerShell @($script, '-Action', 'Finalize', '-InstallRoot', $old, '-StatePath', (Join-Path $old 'state.json'), '-ExpectedManifestPath', $expected, '-RepairPackageRoot', $badSource)
+Assert ($rejected.Code -eq 1) 'Tampered repair source was accepted'
+Assert ((Get-FileHash (Join-Path $old 'runtime\auth-core\mycodex-auth-host.exe')).Hash -eq $beforeRepair) 'Invalid repair source changed installed files'
 
 $wrongArtifact = New-Install 'wrong-artifact'
 $different = $manifest.Clone(); $different.sourceRevision = 'b'*40
@@ -186,6 +217,10 @@ function Test-Installer($name, $expectedCode, $development = $false) {
         New-Item -ItemType Directory -Path (Join-Path $root 'runtime\auth-core') -Force | Out-Null
         [IO.File]::WriteAllText((Join-Path $root 'runtime\auth-core\mycodex-auth-host.exe'), 'interrupted update', $utf8)
     }
+    if ($name -eq 'verification-failure') {
+        New-Item -ItemType Directory -Path (Join-Path $root 'runtime') -Force | Out-Null
+        Copy-Item -LiteralPath (Join-Path $old 'runtime\auth-core') -Destination (Join-Path $root 'runtime\auth-core') -Recurse
+    }
     $installer = Join-Path $output 'MyCodex_v3.0.0_Setup.exe'
     $process = Start-Process -FilePath $installer -ArgumentList @('/SP-', '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', ('/DIR="'+$root+'"'), ('/LOG="'+$output+'\setup.log"')) -PassThru -WindowStyle Hidden
     try {
@@ -198,9 +233,25 @@ function Test-Installer($name, $expectedCode, $development = $false) {
         Assert ($log.Contains('Authentication startup registrations: result=0')) 'Installer skipped startup registrations'
         Assert (-not $log.Contains('action=Resume')) 'Successful installation ran cancellation recovery'
     } else { Assert ($log.Contains('action=Resume')) 'Failed installation did not attempt recovery' }
+    if ($name -in @('repair-verification', 'verification-failure')) {
+        $diagnosticPath = [regex]::Match($log, 'action=Finalize result=\d+ diagnostics=([^\r\n]+)').Groups[1].Value
+        $diagnostic = Get-Content -LiteralPath $diagnosticPath -Raw
+        if ($name -eq 'repair-verification') { Assert ($diagnostic.Contains('expected_package_repaired')) 'Installer did not use its extracted repair payload' }
+        else {
+            Assert (-not $diagnostic.Contains('previous_package_restored')) 'Failed post-install verification restored an old backend'
+            Assert ((Get-Content (Join-Path $root 'runtime\auth-core\mycodex-auth-host.manifest.json') -Raw | ConvertFrom-Json).hostVersion -eq '0.3.12') 'New frontend was left with old backend'
+            Assert ($log.Contains('action=Resume result=1')) 'Persistent verification failure was hidden by recovery'
+        }
+    }
 }
 Test-Installer 'success' 0
 Test-Installer 'repair' 0
+[IO.File]::WriteAllText((Join-Path $package 'version-fail-once'), 'fixture', $utf8)
+Test-Installer 'repair-verification' 0
+Remove-Item -LiteralPath (Join-Path $package 'version-fail-once')
+[IO.File]::WriteAllText((Join-Path $package 'version-fail-always'), 'fixture', $utf8)
+Test-Installer 'verification-failure' 10
+Remove-Item -LiteralPath (Join-Path $package 'version-fail-always')
 [IO.File]::WriteAllText((Join-Path $source 'startup-fail'), '', $utf8)
 Test-Installer 'startup-failure' 10
 Remove-Item -LiteralPath (Join-Path $source 'startup-fail')

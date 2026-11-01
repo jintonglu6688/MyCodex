@@ -163,9 +163,10 @@ namespace MyCodex.WinForms.Forms
                 case "backend_integrity_failed":
                     return UiLocalization.Text("AuthenticationCenter.Error.BackendIntegrity", "The authentication backend package is incomplete or damaged. Prepare or reinstall the matching package, then restart MyCodex. No authentication operation was sent.");
                 case "backend_incompatible":
-                case "backend_version_mismatch":
                 case "protocol_mismatch":
-                    return UiLocalization.Text("AuthenticationCenter.Error.BackendVersion", "The authentication backend version does not match this app or the running backend. Finish any sign-in or switching work, then restart with the matching backend package. The existing backend was not stopped.");
+                    return UiLocalization.Text("AuthenticationCenter.Error.BackendVersion", "The installed authentication backend does not match this app. Run the current MyCodex installer again to repair it. If MYCODEX_AUTH_CORE_PATH is set, check that it points to the matching backend.");
+                case "backend_version_mismatch":
+                    return UiLocalization.Text("AuthenticationCenter.Error.ResidentBackendVersion", "A different authentication backend is still running and could not be safely replaced. Finish sign-in and active tasks, close other MyCodex installations using this Codex home, then retry Refresh. The existing backend was not forcibly stopped.");
                 case "backend_update_available":
                     return UiLocalization.Text("AuthenticationCenter.Error.BackendUpdateAvailable", "This target has an older authentication backend. Choose Update backend to install the version required by MyCodex.");
                 case "backend_download_failed":

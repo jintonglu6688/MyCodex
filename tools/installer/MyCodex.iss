@@ -113,6 +113,9 @@ Source: "Stop-MyCodexManagedProcesses.ps1"; DestDir: "{tmp}"; Flags: dontcopy
 Source: "Update-AuthenticationHosts.ps1"; DestDir: "{tmp}"; Flags: dontcopy
 Source: "..\authentication-center\Test-AuthenticationHostPackage.ps1"; DestDir: "{tmp}"; Flags: dontcopy
 Source: "{#SourceDir}\runtime\auth-core\mycodex-auth-host.manifest.json"; DestDir: "{tmp}"; DestName: "expected-authentication.json"; Flags: dontcopy
+Source: "{#SourceDir}\runtime\auth-core\mycodex-auth-host.exe"; DestDir: "{tmp}"; Flags: dontcopy
+Source: "{#SourceDir}\runtime\auth-core\mycodex-auth-host.manifest.json"; DestDir: "{tmp}"; Flags: dontcopy
+Source: "{#SourceDir}\runtime\auth-core\LICENSE"; DestDir: "{tmp}"; Flags: dontcopy
 Source: "Test-MyCodexResourceUsers.ps1"; DestDir: "{app}\tools"; Flags: ignoreversion
 Source: "Stop-MyCodexManagedProcesses.ps1"; DestDir: "{app}\tools"; Flags: ignoreversion
 Source: "Close-LegacyMyCodexTargets.ps1"; DestDir: "{app}\tools"; Flags: ignoreversion
@@ -160,9 +163,11 @@ var
 begin
   Arguments := '-NoProfile -ExecutionPolicy Bypass -File "' + ScriptPath + '" -Action ' + Action + ' -InstallRoot "' + ExpandConstant('{app}') + '" -StatePath "' + StatePath + '"';
   if Action = 'Finalize' then
-    Arguments := Arguments + ' -ExpectedManifestPath "' + ExpandConstant('{tmp}\expected-authentication.json') + '" -VerificationScript "' + ExpandConstant('{tmp}\Test-AuthenticationHostPackage.ps1') + '"';
+    Arguments := Arguments + ' -ExpectedManifestPath "' + ExpandConstant('{tmp}\expected-authentication.json') + '" -RepairPackageRoot "' + ExpandConstant('{tmp}') + '"';
+  if (Action = 'Finalize') or (Action = 'Resume') then
+    Arguments := Arguments + ' -VerificationScript "' + ExpandConstant('{tmp}\Test-AuthenticationHostPackage.ps1') + '"';
   #ifdef DevelopmentAuthenticationHost
-  if Action = 'Finalize' then
+  if (Action = 'Finalize') or (Action = 'Resume') then
     Arguments := Arguments + ' -AllowDevelopmentAuthenticationHost';
   #endif
   ResultCode := -1;
@@ -204,6 +209,9 @@ begin
     ExtractTemporaryFile('Update-AuthenticationHosts.ps1');
     ExtractTemporaryFile('Test-AuthenticationHostPackage.ps1');
     ExtractTemporaryFile('expected-authentication.json');
+    ExtractTemporaryFile('mycodex-auth-host.exe');
+    ExtractTemporaryFile('mycodex-auth-host.manifest.json');
+    ExtractTemporaryFile('LICENSE');
     AuthenticationStatePath := ExpandConstant('{localappdata}\MyCodex\authentication-updates\') + GetMD5OfString(ExpandConstant('{app}')) + '\state.json';
     ForceDirectories(ExtractFileDir(AuthenticationStatePath));
     AuthenticationPrepared := True;

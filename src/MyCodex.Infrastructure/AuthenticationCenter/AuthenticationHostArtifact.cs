@@ -36,6 +36,16 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
 
         internal static AuthenticationHostArtifact Load(string executable)
         {
+            return LoadLocal(executable, false);
+        }
+
+        internal static AuthenticationHostArtifact LoadForUpdate(string executable)
+        {
+            return LoadLocal(executable, true);
+        }
+
+        private static AuthenticationHostArtifact LoadLocal(string executable, bool allowOlderRelease)
+        {
             if (string.IsNullOrWhiteSpace(executable) || !Path.IsPathRooted(executable) || !File.Exists(executable))
             {
                 throw new AuthenticationCenterException("backend_missing");
@@ -61,9 +71,14 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                 {
                     throw new AuthenticationCenterException("backend_manifest_invalid");
                 }
-                if (!Equals(Value(manifest, "protocolVersion"), ProtocolVersion) ||
-                    !Equals(Value(manifest, "hostVersion"), HostVersion) ||
-                    !Equals(Value(manifest, "upstreamRevision"), UpstreamRevision) ||
+                var currentProtocol = Equals(Value(manifest, "protocolVersion"), ProtocolVersion) &&
+                    Equals(Value(manifest, "upstreamRevision"), UpstreamRevision);
+                var olderProtocol = allowOlderRelease && UpdatableIdentities.Any(identity =>
+                    Equals(Value(manifest, "protocolVersion"), identity.Key) && Equals(Value(manifest, "upstreamRevision"), identity.Value));
+                var validVersion = allowOlderRelease
+                    ? Version.TryParse(Value(manifest, "hostVersion") as string, out var version) && version <= new Version(HostVersion)
+                    : Equals(Value(manifest, "hostVersion"), HostVersion);
+                if (!(currentProtocol || olderProtocol) || !validVersion ||
                     !Equals(Value(manifest, "target"), "x86_64-pc-windows-msvc"))
                 {
                     throw new AuthenticationCenterException("backend_incompatible");

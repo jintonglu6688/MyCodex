@@ -80,6 +80,20 @@ namespace MyCodex.Application.Tests
             Assert.That(Directory.Exists(store), Is.False);
         }
 
+        [TestCase("0.2.1", 2, "e0f70019b2758f5b6b9a04dd60e4689481a0c0ac")]
+        [TestCase("0.3.11", 3, "85ad4969b3399500baaea9d46b1e08f87aba80e1")]
+        public void OlderKnownLocalPackageCanOnlyBeLoadedForVerifiedReplacement(string version, int protocol, string upstream)
+        {
+            _manifest["hostVersion"] = version;
+            _manifest["protocolVersion"] = protocol;
+            _manifest["upstreamRevision"] = upstream;
+            WriteManifest();
+            AssertCode(() => AuthenticationHostArtifact.Load(_executable), "backend_incompatible");
+            AuthenticationHostArtifact.LoadForUpdate(_executable).ValidateIdentity(_manifest);
+            File.AppendAllText(_executable, "changed");
+            AssertCode(() => AuthenticationHostArtifact.LoadForUpdate(_executable), "backend_integrity_failed");
+        }
+
         [Test]
         public void MissingMalformedAndTamperedArtifactsHaveDistinctFailures()
         {

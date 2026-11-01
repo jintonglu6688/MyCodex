@@ -101,28 +101,34 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             if (!_registered) return false;
             File.Delete(_userFile);
             _registered = false;
-            var last = true;
+            return !HasOtherUsers();
+        }
+
+        internal bool HasOtherUsers()
+        {
+            var others = false;
             foreach (var path in Directory.GetFiles(_directory, "*.json"))
             {
+                if (_registered && string.Equals(path, _userFile, StringComparison.OrdinalIgnoreCase)) continue;
                 try
                 {
                     var expected = new JavaScriptSerializer().Deserialize<Identity>(File.ReadAllText(path));
                     if (!IsComplete(expected))
                     {
-                        last = false;
+                        others = true;
                         continue;
                     }
                     var actual = _readIdentity(expected.ProcessId);
                     if (actual == null || !Matches(expected, actual)) File.Delete(path);
-                    else last = false;
+                    else others = true;
                 }
                 catch (Exception)
                 {
                     // An inaccessible or damaged ownership record is not permission to stop a service.
-                    last = false;
+                    others = true;
                 }
             }
-            return last;
+            return others;
         }
 
         private static bool IsComplete(Identity value)

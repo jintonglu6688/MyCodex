@@ -160,6 +160,22 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public async Task ReplacementChecksOwnersWithoutRegisteringOrReleasingThem()
+        {
+            var first = CreateUsage(11, "MyCodex.exe");
+            var replacement = CreateUsage(12, "MyCodex-dev.exe");
+            using (await first.EnterAsync(CancellationToken.None)) first.Register();
+            using (await replacement.EnterAsync(CancellationToken.None))
+            {
+                Assert.That(replacement.HasOtherUsers(), Is.True);
+                Assert.That(first.HasOtherUsers(), Is.False);
+                Assert.That(Directory.GetFiles(_usersDirectory, "*.json"), Has.Length.EqualTo(1));
+                _processes.Remove(11);
+                Assert.That(replacement.HasOtherUsers(), Is.False);
+            }
+        }
+
+        [Test]
         public async Task SeparateHostsWithinOneProcessAndReconnectDoNotLoseUsage()
         {
             var first = CreateUsage(11, "MyCodex.exe");

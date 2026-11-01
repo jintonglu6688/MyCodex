@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory = $true)][string]$StatePath,
     [string]$ExpectedManifestPath,
     [string]$VerificationScript,
+    [string]$RepairPackageRoot,
     [switch]$AllowDevelopmentAuthenticationHost
 )
 Set-StrictMode -Version Latest
@@ -146,31 +147,76 @@ function Test-PackageHash([string]$directory) {
     } catch { return $false }
 }
 
+function Assert-ExpectedPackage($expected, [string]$directory) {
+    $installed = Get-Content -LiteralPath (Join-Path $directory 'mycodex-auth-host.manifest.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    foreach ($field in @('hostVersion','protocolVersion','upstreamRevision','sourceRevision','sourceDirty','target','sha256')) {
+        if ($installed.$field -cne $expected.$field) { throw 'authentication_installed_package_mismatch' }
+    }
+    # Never execute an unverified destination or repair payload.
+    if ((Get-FileHash -LiteralPath (Join-Path $directory 'mycodex-auth-host.exe') -Algorithm SHA256).Hash -ine $expected.sha256) { throw 'authentication_installed_package_mismatch' }
+    . $VerificationScript
+    try { $null = Test-AuthenticationHostPackage -PackageRoot $directory -AllowDevelopment:$AllowDevelopmentAuthenticationHost }
+    catch { throw 'authentication_installed_package_invalid' }
+}
+
+function Repair-ExpectedPackage($expected) {
+    Assert-ExpectedPackage $expected $RepairPackageRoot
+    # Repairs may only write regular files below the selected installation.
+    $directory = $packageDirectory
+    while ($true) {
+        if ((Test-Path -LiteralPath $directory) -and ((Get-Item -LiteralPath $directory -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'authentication_update_unsafe_path' }
+        if ($directory -ieq $root) { break }
+        if (-not $directory.StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'authentication_update_unsafe_path' }
+        $directory = Split-Path -Parent $directory
+    }
+    foreach ($name in @('mycodex-auth-host.exe','LICENSE','mycodex-auth-host.manifest.json')) {
+        $destination = Join-Path $packageDirectory $name
+        if ((Test-Path -LiteralPath $destination) -and ((Get-Item -LiteralPath $destination -Force).Attributes -band ([IO.FileAttributes]::ReparsePoint -bor [IO.FileAttributes]::Directory))) { throw 'authentication_update_unsafe_path' }
+    }
+    for ($attempt = 0; $attempt -lt 3; $attempt++) {
+        try {
+            [IO.Directory]::CreateDirectory($packageDirectory) | Out-Null
+            foreach ($name in @('mycodex-auth-host.exe','LICENSE','mycodex-auth-host.manifest.json')) {
+                Copy-Item -LiteralPath (Join-Path $RepairPackageRoot $name) -Destination (Join-Path $packageDirectory $name) -Force
+            }
+            Assert-ExpectedPackage $expected $packageDirectory
+            Write-Diagnostic 'expected_package_repaired'
+            return
+        } catch {
+            if ($attempt -eq 2) { throw 'authentication_update_repair_required' }
+            Start-Sleep -Milliseconds 200
+        }
+    }
+}
+
 try {
     Write-Diagnostic 'started'
     if ($Action -in @('Resume', 'Finalize')) {
-        if ($Action -eq 'Finalize') {
-            # The expected manifest is extracted from this installer, not read from
-            # the destination or a previous update's backup.
-            if (-not $ExpectedManifestPath) { throw 'authentication_expected_package_missing' }
-            $expected = Get-Content -LiteralPath $ExpectedManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
-            $installed = Get-Content -LiteralPath (Join-Path $packageDirectory 'mycodex-auth-host.manifest.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-            foreach ($field in @('hostVersion','protocolVersion','upstreamRevision','sourceRevision','sourceDirty','target','sha256')) {
-                if ($installed.$field -cne $expected.$field) { throw 'authentication_installed_package_mismatch' }
-            }
-            # Check against the trusted payload before executing --version-json.
-            if ((Get-FileHash -LiteralPath $executable -Algorithm SHA256).Hash -ine $expected.sha256) { throw 'authentication_installed_package_mismatch' }
-            . $VerificationScript
-            try { $installed = Test-AuthenticationHostPackage -PackageRoot $packageDirectory -AllowDevelopment:$AllowDevelopmentAuthenticationHost }
-            catch { throw 'authentication_installed_package_invalid' }
-            Write-Diagnostic ('verified version=' + $installed.hostVersion + ' sha256=' + $installed.sha256)
-        }
         if (-not (Test-Path -LiteralPath $stateFile)) {
             if ($Action -eq 'Finalize') { throw 'authentication_update_state_missing' }
             exit 0
         }
         $state = Get-Content -Raw -Encoding UTF8 $stateFile | ConvertFrom-Json
         if ($state.installRoot -ine $root) { throw 'authentication_update_target_mismatch' }
+        if ($Action -eq 'Finalize') {
+            # The expected manifest is extracted from this installer, not read from
+            # the destination or a previous update's backup.
+            if (-not $ExpectedManifestPath) { throw 'authentication_expected_package_missing' }
+            $expected = Get-Content -LiteralPath $ExpectedManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            # The frontend has now been installed; cancellation must not restore an older core beside it.
+            $state | Add-Member -NotePropertyName expectedPackage -NotePropertyValue $expected -Force
+            $state.completed = $false
+            Write-State $state
+            try { Assert-ExpectedPackage $expected $packageDirectory }
+            catch {
+                if (-not $RepairPackageRoot) { throw }
+                Repair-ExpectedPackage $expected
+            }
+            Write-Diagnostic ('verified version=' + $expected.hostVersion + ' sha256=' + $expected.sha256)
+        } elseif ($state.PSObject.Properties['expectedPackage']) {
+            try { Assert-ExpectedPackage $state.expectedPackage $packageDirectory }
+            catch { throw 'authentication_update_repair_required' }
+        }
         if (-not (Test-PackageHash $packageDirectory)) {
             if ($Action -eq 'Finalize') { throw 'authentication_installed_package_invalid' }
             if (-not $state.hadPackage -and @($state.targets).Count -eq 0) { exit 0 }

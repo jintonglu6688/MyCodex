@@ -52,30 +52,54 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             try
             {
                 var applicationPath = Process.GetCurrentProcess().MainModule.FileName;
-                var applicationKey = KeyFor(applicationPath);
-                using (var registrations = required ? Registry.CurrentUser.CreateSubKey(RegistrationRoot + "\\" + applicationKey)
-                    : Registry.CurrentUser.OpenSubKey(RegistrationRoot + "\\" + applicationKey, true))
+                using (var root = required ? Registry.CurrentUser.CreateSubKey(RegistrationRoot)
+                    : Registry.CurrentUser.OpenSubKey(RegistrationRoot, true))
                 using (var run = required ? Registry.CurrentUser.CreateSubKey(RunKey) : Registry.CurrentUser.OpenSubKey(RunKey, true))
                 {
-                    if (registrations == null || run == null) return;
-                    var name = KeyFor(home);
-                    if (required)
-                    {
-                        // Only paths are registered; credentials remain in the protected backend store.
-                        var command = StartupCommand(applicationPath);
-                        registrations.SetValue(name, new[] { executable, home, store }, RegistryValueKind.MultiString);
-                        run.SetValue("MyCodex.Authentication." + applicationKey, command, RegistryValueKind.String);
-                    }
-                    else
-                    {
-                        registrations.DeleteValue(name, false);
-                        if (registrations.ValueCount == 0) run.DeleteValue("MyCodex.Authentication." + applicationKey, false);
-                    }
+                    if (root != null && run != null) Configure(root, run, applicationPath, executable, home, store, required);
                 }
             }
             catch (Exception)
             {
                 throw new AuthenticationCenterException("startup_registration_failed");
+            }
+        }
+
+        internal static void Configure(RegistryKey root, RegistryKey run, string applicationPath,
+            string executable, string home, string store, bool required)
+        {
+            var applicationKey = KeyFor(applicationPath);
+            var name = KeyFor(home);
+            using (var registrations = required ? root.CreateSubKey(applicationKey) : root.OpenSubKey(applicationKey, true))
+            {
+                if (registrations == null) return;
+                if (required)
+                {
+                    // Only paths are registered; credentials remain in the protected backend store.
+                    var command = StartupCommand(applicationPath);
+                    registrations.SetValue(name, new[] { executable, home, store }, RegistryValueKind.MultiString);
+                    run.SetValue("MyCodex.Authentication." + applicationKey, command, RegistryValueKind.String);
+                }
+                else
+                {
+                    registrations.DeleteValue(name, false);
+                    if (registrations.ValueCount == 0) run.DeleteValue("MyCodex.Authentication." + applicationKey, false);
+                    return;
+                }
+            }
+            // One shared store needs one startup owner; stale installation entries must not win the next sign-in race.
+            foreach (var key in root.GetSubKeyNames())
+            {
+                if (string.Equals(key, applicationKey, StringComparison.OrdinalIgnoreCase)) continue;
+                using (var previous = root.OpenSubKey(key, true))
+                {
+                    var paths = previous?.GetValue(name) as string[];
+                    if (paths == null || paths.Length != 3 || string.IsNullOrWhiteSpace(paths[1]) || string.IsNullOrWhiteSpace(paths[2]) ||
+                        !Path.IsPathRooted(paths[1]) || !Path.IsPathRooted(paths[2]) || !string.Equals(KeyFor(paths[1]), name, StringComparison.Ordinal) ||
+                        !string.Equals(KeyFor(paths[2]), KeyFor(store), StringComparison.Ordinal)) continue;
+                    previous.DeleteValue(name, false);
+                    if (previous.ValueCount == 0) run.DeleteValue("MyCodex.Authentication." + key, false);
+                }
             }
         }
 
@@ -103,7 +127,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                         var expectedExecutable = Path.Combine(Path.GetDirectoryName(applicationPath), "runtime", "auth-core", "mycodex-auth-host.exe");
                         if (paths == null || paths.Length != 3 || name != KeyFor(paths[1]) ||
                             !string.Equals(paths[0], expectedExecutable, StringComparison.OrdinalIgnoreCase)) { failures++; continue; }
-                        var host = new LocalAuthenticationHost("Bundled", paths[0], paths[1], paths[2]);
+                        var host = new LocalAuthenticationHost("Bundled", paths[0], paths[1], paths[2], manageStartup: true);
                         var status = await host.RequestAsync("status", new Dictionary<string, object>(), CancellationToken.None).ConfigureAwait(false);
                         if (!RouteRequired(status))
                         {

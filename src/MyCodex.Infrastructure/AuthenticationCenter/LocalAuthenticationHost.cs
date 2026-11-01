@@ -57,9 +57,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                     await Task.Run(() => ResolvePaths(), cancellationToken).ConfigureAwait(false);
                     using (await _usage.EnterAsync(cancellationToken).ConfigureAwait(false))
                     {
-                        await StartAsync(cancellationToken).ConfigureAwait(false);
-                        var status = await SendAsync("status", new Dictionary<string, object>(), cancellationToken).ConfigureAwait(false);
-                        _artifact.ValidateIdentity(status);
+                        var status = await ReadCompatibleStatusAsync(cancellationToken).ConfigureAwait(false);
                         _usage.Register();
                         UpdateStartup(status);
                         _started = true;
@@ -293,6 +291,41 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             return AppServerProcessLifecycle.BuildStartInfo(_executable,
                 command + " --data-dir " + WindowsCommandLineArgumentEscaper.Quote(_dataDirectory) +
                 " --codex-home " + WindowsCommandLineArgumentEscaper.Quote(_codexHome), null, null, null);
+        }
+
+        private async Task<IDictionary<string, object>> ReadCompatibleStatusAsync(CancellationToken token)
+        {
+            await StartAsync(token).ConfigureAwait(false);
+            var status = await SendAsync("status", new Dictionary<string, object>(), token).ConfigureAwait(false);
+            try
+            {
+                _artifact.ValidateIdentity(status);
+                return status;
+            }
+            catch (AuthenticationCenterException error) when (error.Code == "backend_version_mismatch")
+            {
+                await LocalAuthenticationHostRecovery.StopIdleResidentAsync(status, _codexHome, _dataDirectory,
+                    _usage.HasOtherUsers(), SendAsync, token).ConfigureAwait(false);
+            }
+            var timer = Stopwatch.StartNew();
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+                try
+                {
+                    await StartAsync(token).ConfigureAwait(false);
+                    status = await SendAsync("status", new Dictionary<string, object>(), token).ConfigureAwait(false);
+                    _artifact.ValidateIdentity(status);
+                    return status;
+                }
+                catch (AuthenticationCenterException error) when (timer.ElapsedMilliseconds < 15000 &&
+                    (error.Code == "backend_version_mismatch" || error.Code == "backend_unavailable" ||
+                        error.Code == "backend_not_found" || error.Code == "host_not_found" || error.Code == "store_busy"))
+                {
+                    // Shutdown acknowledgement can arrive before the resident releases its store and IPC endpoint.
+                    await Task.Delay(100, token).ConfigureAwait(false);
+                }
+            }
         }
 
         private async Task StartAsync(CancellationToken cancellationToken)

@@ -20,6 +20,16 @@ namespace MyCodex.Application.Tests
     public sealed class AuthenticationCenterFormTests
     {
         [Test]
+        public void PackageMismatchAndResidentConflictHaveDifferentRecoveryInstructions()
+        {
+            var package = AuthenticationCenterUiText.Error(new AuthenticationCenterException("backend_incompatible"));
+            var resident = AuthenticationCenterUiText.Error(new AuthenticationCenterException("backend_version_mismatch"));
+            Assert.That(package, Does.Contain("MYCODEX_AUTH_CORE_PATH"));
+            Assert.That(resident, Is.Not.EqualTo(package));
+            Assert.That(resident, Is.Not.EqualTo(AuthenticationCenterUiText.Error(new AuthenticationCenterException("unmapped_code"))));
+        }
+
+        [Test]
         public void UnreachableBackendHoldingItsStoreExplainsRecoveryInsteadOfGenericFailure()
         {
             var text = AuthenticationCenterUiText.Error(new AuthenticationCenterException("store_busy"));

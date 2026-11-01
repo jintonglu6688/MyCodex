@@ -12616,7 +12616,10 @@ Local configuration directory: {1}</value>
     <value>The authentication backend package is incomplete or damaged. Prepare or reinstall the matching package, then restart MyCodex. No authentication operation was sent.</value>
   </data>
   <data name="AuthenticationCenter.Error.BackendVersion" xml:space="preserve">
-    <value>The authentication backend version does not match this app or the running backend. Finish any sign-in or switching work, then restart with the matching backend package. The existing backend was not stopped.</value>
+    <value>The installed authentication backend does not match this app. Run the current MyCodex installer again to repair it. If MYCODEX_AUTH_CORE_PATH is set, check that it points to the matching backend.</value>
+  </data>
+  <data name="AuthenticationCenter.Error.ResidentBackendVersion" xml:space="preserve">
+    <value>A different authentication backend is still running and could not be safely replaced. Finish sign-in and active tasks, close other MyCodex installations using this Codex home, then retry Refresh. The existing backend was not forcibly stopped.</value>
   </data>
   <data name="AuthenticationCenter.Error.Unavailable" xml:space="preserve">
     <value>The authentication backend is unavailable. Check its installation and try Refresh.</value>

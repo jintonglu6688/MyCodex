@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Win32;
 using MyCodex.Application.Interfaces;
 using MyCodex.Infrastructure.AuthenticationCenter;
 using NUnit.Framework;
@@ -33,6 +34,43 @@ namespace MyCodex.Application.Tests
             Assert.That(AuthenticationHostStartup.RouteRunning(status), Is.True);
             route["takeover"] = false;
             Assert.That(AuthenticationHostStartup.RouteRequired(status), Is.False);
+        }
+
+        [Test]
+        public void NewStartupOwnerRemovesOnlyTheSameHomeAndStoreFromOlderInstallations()
+        {
+            var path = @"Software\MyCodex.Tests\" + Guid.NewGuid().ToString("N");
+            try
+            {
+                using (var root = Registry.CurrentUser.CreateSubKey(path + @"\Hosts"))
+                using (var run = Registry.CurrentUser.CreateSubKey(path + @"\Run"))
+                {
+                    var oldApp = @"C:\Old\MyCodex.exe";
+                    var newApp = @"C:\New\MyCodex.exe";
+                    var separateApp = @"C:\SeparateStore\MyCodex.exe";
+                    var home = @"C:\Fixture\home";
+                    var store = @"C:\Fixture\store";
+                    AuthenticationHostStartup.Configure(root, run, oldApp, @"C:\Old\runtime\auth-core\mycodex-auth-host.exe", home, store, true);
+                    AuthenticationHostStartup.Configure(root, run, oldApp, @"C:\Old\runtime\auth-core\mycodex-auth-host.exe", home + "2", store + "2", true);
+                    AuthenticationHostStartup.Configure(root, run, separateApp, @"C:\SeparateStore\runtime\auth-core\mycodex-auth-host.exe", home, store + "-separate", true);
+                    AuthenticationHostStartup.Configure(root, run, newApp, @"C:\New\runtime\auth-core\mycodex-auth-host.exe", home, store, true);
+                    using (var old = root.OpenSubKey(AuthenticationHostStartup.KeyFor(oldApp)))
+                    {
+                        Assert.That(old.GetValue(AuthenticationHostStartup.KeyFor(home)), Is.Null);
+                        Assert.That(old.GetValue(AuthenticationHostStartup.KeyFor(home + "2")), Is.Not.Null);
+                    }
+                    Assert.That(run.GetValue("MyCodex.Authentication." + AuthenticationHostStartup.KeyFor(oldApp)), Is.Not.Null);
+                    AuthenticationHostStartup.Configure(root, run, newApp, @"C:\New\runtime\auth-core\mycodex-auth-host.exe", home + "2", store + "2", true);
+                    Assert.That(run.GetValue("MyCodex.Authentication." + AuthenticationHostStartup.KeyFor(oldApp)), Is.Null);
+                    Assert.That(run.GetValue("MyCodex.Authentication." + AuthenticationHostStartup.KeyFor(newApp)), Is.Not.Null);
+                    AuthenticationHostStartup.Configure(root, run, oldApp, @"C:\Old\runtime\auth-core\mycodex-auth-host.exe", home, store, false);
+                    using (var current = root.OpenSubKey(AuthenticationHostStartup.KeyFor(newApp)))
+                        Assert.That(current.GetValue(AuthenticationHostStartup.KeyFor(home)), Is.Not.Null, "An older client exiting cannot remove the new owner.");
+                    using (var separate = root.OpenSubKey(AuthenticationHostStartup.KeyFor(separateApp)))
+                        Assert.That(separate.GetValue(AuthenticationHostStartup.KeyFor(home)), Is.Not.Null, "A different store has independent startup ownership.");
+                }
+            }
+            finally { Registry.CurrentUser.DeleteSubKeyTree(path, false); }
         }
 
         [Test]

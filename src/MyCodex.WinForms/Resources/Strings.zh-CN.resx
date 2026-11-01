@@ -12571,7 +12571,10 @@ MyCodex 桌面客户端。</value>
     <value>认证后台文件不完整或校验失败。请重新准备或安装匹配的后台文件，再启动 MyCodex。尚未发送认证操作。</value>
   </data>
   <data name="AuthenticationCenter.Error.BackendVersion" xml:space="preserve">
-    <value>认证后台与当前程序或已运行后台的版本不一致。请先完成登录或切换操作，再使用匹配的后台重新启动。未停止原有后台。</value>
+    <value>安装的认证后台文件与当前程序版本不匹配。请重新运行当前版本的 MyCodex 安装包进行修复。如果设置过 MYCODEX_AUTH_CORE_PATH，请确认它指向匹配的后台。</value>
+  </data>
+  <data name="AuthenticationCenter.Error.ResidentBackendVersion" xml:space="preserve">
+    <value>另一个版本的认证后台仍在运行，暂时无法安全替换。请完成登录和运行中的任务，关闭使用同一 Codex 配置目录的其他 MyCodex 程序，再点击刷新。未强制停止原有后台。</value>
   </data>
   <data name="AuthenticationCenter.Error.Unavailable" xml:space="preserve">
     <value>认证后台不可用。请检查安装后重试刷新。</value>
