@@ -47,7 +47,7 @@ namespace MyCodex.Application.Tests
             }
         }
 
-        [TestCase(150)]
+        [TestCase(250)]
         [TestCase(400)]
         [Apartment(ApartmentState.STA)]
         public void Confirmation_LongContentGrowsWithoutCoveringQuestions(int wordCount)

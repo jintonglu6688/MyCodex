@@ -11,6 +11,7 @@ using NUnit.Framework;
 namespace MyCodex.Application.Tests
 {
     [TestFixture]
+    [SetUICulture("zh-CN")]
     [Apartment(ApartmentState.STA)]
     public sealed class CommandTerminalFormTests
     {

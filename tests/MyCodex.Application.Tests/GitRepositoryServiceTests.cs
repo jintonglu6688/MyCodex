@@ -28,7 +28,7 @@ namespace MyCodex.Application.Tests
         public void CreateRepositoryTemplate()
         {
             _repositoryTemplate = CreateTempDirectory();
-            RunGit(_repositoryTemplate, "init");
+            RunGit(_repositoryTemplate, "init -b main");
             ConfigureTestIdentity(_repositoryTemplate);
         }
 
@@ -354,7 +354,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(remoteRoot, "init --bare");
+                RunGit(remoteRoot, "init --bare -b main");
                 InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
@@ -394,7 +394,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
+                RunGit(workspaceRoot, "init -b main");
 
                 var service = CreateService();
                 var addResult = service.AddRemoteAsync(workspaceRoot, "origin", "https://example.com/fetch.git").GetAwaiter().GetResult();
@@ -431,7 +431,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(remoteRoot, "init --bare");
+                RunGit(remoteRoot, "init --bare -b main");
                 InitializeTestRepository(workspaceRoot);
                 File.WriteAllText(Path.Combine(workspaceRoot, "readme.txt"), "hello" + Environment.NewLine);
                 RunGit(workspaceRoot, "add --all");
@@ -950,7 +950,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(remoteRoot, "init --bare");
+                RunGit(remoteRoot, "init --bare -b main");
                 InitializeTestRepository(workspaceRoot);
                 RunGit(workspaceRoot, "branch -M main");
                 RunGit(workspaceRoot, "remote add origin " + QuoteArgument(remoteRoot));
@@ -985,7 +985,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(remoteRoot, "init --bare");
+                RunGit(remoteRoot, "init --bare -b main");
                 InitializeTestRepository(workspaceRoot);
                 RunGit(workspaceRoot, "branch -M main");
                 RunGit(workspaceRoot, "remote add origin " + QuoteArgument(remoteRoot));
@@ -1026,7 +1026,7 @@ namespace MyCodex.Application.Tests
             var cloneRoot = CreateTempDirectory();
             try
             {
-                RunGit(remoteRoot, "init --bare");
+                RunGit(remoteRoot, "init --bare -b main");
                 InitializeTestRepository(workspaceRoot);
                 RunGit(workspaceRoot, "branch -M main");
                 RunGit(workspaceRoot, "remote add origin " + QuoteArgument(remoteRoot));
@@ -1069,7 +1069,7 @@ namespace MyCodex.Application.Tests
             var otherRoot = CreateTempDirectory();
             try
             {
-                RunGit(remoteRoot, "init --bare");
+                RunGit(remoteRoot, "init --bare -b main");
                 InitializeTestRepository(workspaceRoot);
                 RunGit(workspaceRoot, "branch -M main");
                 RunGit(workspaceRoot, "remote add origin " + QuoteArgument(remoteRoot));
@@ -1229,7 +1229,7 @@ namespace MyCodex.Application.Tests
             var workspaceRoot = CreateTempDirectory();
             try
             {
-                RunGit(workspaceRoot, "init");
+                RunGit(workspaceRoot, "init -b main");
                 RunGit(workspaceRoot, "config core.quotepath true");
                 var relativePath = Path.Combine("docs", "\u4E2D\u6587 \u7A7A\u683C.txt");
                 Directory.CreateDirectory(Path.Combine(workspaceRoot, "docs"));
@@ -1897,6 +1897,7 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        [SetUICulture("zh-CN")]
         public void RuntimeGitService_SkipSequencerFailsWithoutActiveOperation()
         {
             var runner = new FakeGitCommandRunner();
@@ -1921,6 +1922,7 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        [SetUICulture("zh-CN")]
         public void RuntimeGitService_MergeBranchIntoCurrentReportsNoChangesWhenAlreadyUpToDate()
         {
             var runner = new FakeGitCommandRunner { MergeOutput = "Already up to date.\n" };
@@ -1957,6 +1959,7 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        [SetUICulture("zh-CN")]
         public void RuntimeGitService_RebaseCurrentBranchOntoReportsNoChangesWhenAlreadyUpToDate()
         {
             var runner = new FakeGitCommandRunner { RebaseOutput = "Current branch test is up to date.\n" };

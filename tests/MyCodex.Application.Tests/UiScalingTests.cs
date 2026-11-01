@@ -40,6 +40,13 @@ namespace MyCodex.Application.Tests
         private static readonly FieldInfo ScaleField = typeof(UiTheme).GetField("_uiFontScalePercent", BindingFlags.Static | BindingFlags.NonPublic);
         private static readonly FieldInfo FamilyField = typeof(UiTheme).GetField("_uiFontFamily", BindingFlags.Static | BindingFlags.NonPublic);
 
+        // These windows' scaled minimum sizes are wider than a small display, as on a CI runner.
+        private static void RequireDisplayForScaledMinimumSizes()
+        {
+            var area = Screen.PrimaryScreen.WorkingArea;
+            Assume.That(area.Width, Is.AtLeast(1600), "This layout test needs a display at least 1600 pixels wide.");
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -441,6 +448,11 @@ namespace MyCodex.Application.Tests
         [TestCase("Git", "zh-CN")]
         public void RepresentativeForms_150Percent_TextAndControlsFit(string name, string culture)
         {
+            if (name == "Authentication" || name == "Automation")
+            {
+                RequireDisplayForScaledMinimumSizes();
+            }
+
             Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
             UiTheme.InitializeUiFontScale(150);
             using (var graphics = Graphics.FromHwnd(IntPtr.Zero))
@@ -460,6 +472,7 @@ namespace MyCodex.Application.Tests
         [TestCase("zh-CN")]
         public void MainWindow_150Percent_ClampsMinimumBeforeBoundsAndKeepsSplitsUsable(string culture)
         {
+            RequireDisplayForScaledMinimumSizes();
             Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
             UiTheme.InitializeUiFontScale(150);
             UiTheme.InitializeUiFontFamily(culture);
@@ -504,6 +517,7 @@ namespace MyCodex.Application.Tests
         [TestCase("zh-CN")]
         public void SubAgentWindow_150Percent_ShownScalesPanelMinimaOnce(string culture)
         {
+            RequireDisplayForScaledMinimumSizes();
             Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
             UiTheme.InitializeUiFontScale(150);
             using (var form = new SubAgentWorkbenchForm(null, new ChatSession[0], new SubAgentWorkbenchOperations()))
