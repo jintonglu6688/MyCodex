@@ -85,6 +85,7 @@ class RuntimeWorkflowTests(unittest.TestCase):
             self.git_envs.append(kwargs.get('env'))
             return Result()
 
+        (ROOT / 'temp').mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(prefix='runtime-workflow-', dir=ROOT / 'temp') as directory:
             root = Path(directory)
             (root / 'updates').mkdir()

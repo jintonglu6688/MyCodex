@@ -57,6 +57,8 @@ workflow.
 - `.gitcode\workflows\update-verify.yml` validates the update JSON shape.
 - Build the Windows installer on Windows. Hosted GitCode Linux runners suit
   manifest validation and other platform-neutral checks only.
+- `.github\workflows\ci.yml` does not run on pushes to `main`. Run it by hand
+  (`gh workflow run ci.yml --ref main`) and see it pass before releasing.
 
 ## Packaged assets
 

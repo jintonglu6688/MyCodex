@@ -1,0 +1,65 @@
+name: CI
+
+# Pull requests run automatically. Pushes to main do not: run this by hand before a
+# release and after high-risk changes (Actions > CI > Run workflow).
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+  workflow_dispatch:
+  push:
+    branches: [ci/windows-tests]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      # actions/checkout v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      # actions/setup-dotnet v6.0.0
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.x
+
+      # actions/cache v6.1.0
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore tests\MyCodex.Application.Tests\MyCodex.Application.Tests.csproj -p:Platform=x64
+
+      - name: Build Release
+        run: dotnet build src\MyCodex.WinForms\MyCodex.WinForms.csproj -c Release -p:Platform=x64 --no-restore -v:minimal
+
+      - name: Test
+        run: dotnet test tests\MyCodex.Application.Tests\MyCodex.Application.Tests.csproj -c Debug -p:Platform=x64 --no-restore -v:minimal --logger trx --results-directory TestResults
+
+      - name: Test hooks
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File .codex\hooks\test_hooks.ps1
+
+      - name: Test runtime workflow
+        run: python tests\tools\test_runtime_registry_workflow.py
+
+      # actions/upload-artifact v7.0.2
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: failure()
+        with:
+          name: test-results
+          path: TestResults
+          if-no-files-found: ignore
