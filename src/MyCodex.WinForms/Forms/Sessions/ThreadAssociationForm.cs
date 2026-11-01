@@ -533,7 +533,7 @@ namespace MyCodex.WinForms.Forms
 
         private static ComboBox CreateFilterComboBox()
         {
-            var comboBox = new ComboBox
+            var comboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Top,
                 DropDownStyle = ComboBoxStyle.DropDownList,

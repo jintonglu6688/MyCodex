@@ -52,7 +52,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(_statusLabel, true);
 
-            _tabControl = new TabControl
+            _tabControl = new ThemedTabControl
             {
                 Dock = DockStyle.Fill,
                 AccessibleName = string.Empty,

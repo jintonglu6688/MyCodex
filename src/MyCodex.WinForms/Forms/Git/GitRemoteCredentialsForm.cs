@@ -753,7 +753,7 @@ namespace MyCodex.WinForms.Forms
 
         private static TabControl CreateTabs()
         {
-            var tabs = new TabControl
+            var tabs = new ThemedTabControl
             {
                 Dock = DockStyle.Fill,
                 AccessibleName = string.Empty,

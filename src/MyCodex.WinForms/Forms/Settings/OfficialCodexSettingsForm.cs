@@ -192,7 +192,7 @@ namespace MyCodex.WinForms.Forms
 
         private static CheckBox CreateCheckBox(string accessibleName, string text, int tabIndex)
         {
-            var checkBox = new CheckBox
+            var checkBox = new ThemedCheckBox
             {
                 AutoSize = true,
                 Dock = DockStyle.Top,

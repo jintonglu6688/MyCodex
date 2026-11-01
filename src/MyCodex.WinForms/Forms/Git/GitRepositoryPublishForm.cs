@@ -46,7 +46,7 @@ namespace MyCodex.WinForms.Forms
             ClientSize = new Size(800, 410);
             UiTheme.ApplyForm(this);
 
-            _sourceTabControl = new TabControl
+            _sourceTabControl = new ThemedTabControl
             {
                 Dock = DockStyle.Fill,
                 AccessibleName = string.Empty,
@@ -59,7 +59,7 @@ namespace MyCodex.WinForms.Forms
             _createNameTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitRepositoryPublishForm.Accessible.Name", "Repository name"), 2);
             _createNameTextBox.Text = _preferredRepositoryName;
             _createDescriptionTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitRepositoryPublishForm.Accessible.Description", "Description"), 3);
-            _createPrivateCheckBox = new CheckBox
+            _createPrivateCheckBox = new ThemedCheckBox
             {
                 Dock = DockStyle.Fill,
                 Text = UiLocalization.Text("GitRepositoryPublishForm.Check.Private", "Private(&P)"),

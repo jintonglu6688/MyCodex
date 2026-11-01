@@ -188,7 +188,7 @@ namespace MyCodex.WinForms.Forms
 
         private void ConfigureNewWslDistributionPicker()
         {
-            _targetDistributionComboBox = new ComboBox
+            _targetDistributionComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Fill,
                 DropDownStyle = ComboBoxStyle.DropDownList,

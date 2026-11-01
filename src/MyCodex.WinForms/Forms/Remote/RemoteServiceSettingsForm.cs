@@ -71,7 +71,7 @@ namespace MyCodex.WinForms.Forms
             TabStop = false;
             UiTheme.ApplyForm(this);
 
-            _serverModeComboBox = new ComboBox
+            _serverModeComboBox = new ThemedComboBox
             {
                 AccessibleName = UiLocalization.Text("RemoteServiceSettingsForm.Accessible.ServerMode", "Service type"),
                 Dock = DockStyle.Fill,
@@ -686,7 +686,7 @@ namespace MyCodex.WinForms.Forms
 
         private static CheckBox CreateCheckBox(string text, string accessibleName, int tabIndex)
         {
-            var checkBox = new CheckBox
+            var checkBox = new ThemedCheckBox
             {
                 Text = text,
                 AccessibleName = accessibleName,

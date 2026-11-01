@@ -127,7 +127,7 @@ namespace MyCodex.WinForms.Forms
             KeyPreview = true;
             UiTheme.ApplyForm(this);
 
-            _tabs = new TabControl
+            _tabs = new ThemedTabControl
             {
                 Dock = DockStyle.Fill,
                 AccessibleName = string.Empty,
@@ -2404,7 +2404,7 @@ namespace MyCodex.WinForms.Forms
 
         private static ComboBox CreateFilterComboBox(string accessibleName)
         {
-            var comboBox = new ComboBox
+            var comboBox = new ThemedComboBox
             {
                 AccessibleName = accessibleName,
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -2852,7 +2852,7 @@ namespace MyCodex.WinForms.Forms
                 TextBoxLineEndingNormalizer.NormalizeTextBox(_bodyTextBox);
                 _bodyTextBox.ScrollBars = ScrollBars.Vertical;
                 _bodyTextBox.Height = 160;
-                _draftCheckBox = new CheckBox
+                _draftCheckBox = new ThemedCheckBox
                 {
                     Text = UiLocalization.Text("GitHubPullRequestCreateForm.CheckBox.Draft", "Draft(&D)"),
                     AccessibleName = UiLocalization.Text("GitHubPullRequestCreateForm.Accessible.Draft", "Draft"),

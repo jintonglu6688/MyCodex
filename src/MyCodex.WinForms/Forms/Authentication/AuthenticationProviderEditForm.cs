@@ -89,7 +89,7 @@ namespace MyCodex.WinForms.Forms
             _fields.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 180));
             _fields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             _nameTextBox = TextBox(UiLocalization.Text("AuthenticationProviderEdit.Label.Name", "&Name"), 0, provider?.Name ?? template?.Name);
-            _kindComboBox = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill, TabIndex = 3 };
+            _kindComboBox = new ThemedComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill, TabIndex = 3 };
             UiTheme.ApplyComboBox(_kindComboBox);
             foreach (var protocol in new[] { "responses", "chat_completions", "anthropic" }) { _kindComboBox.Items.Add(new ProviderKindChoice(protocol)); }
             _kindComboBox.SelectedIndex = kind == "chat_completions" ? 1 : kind == "anthropic" ? 2 : 0;
@@ -99,7 +99,7 @@ namespace MyCodex.WinForms.Forms
             _keyTextBox = TextBox(UiLocalization.Text("AuthenticationProviderEdit.Label.Key", "API &key"), 3, null);
             _keyTextBox.UseSystemPasswordChar = true;
             var clearCaption = UiLocalization.Text("AuthenticationProviderEdit.ClearKey", "C&lear stored API key");
-            _clearKeyCheckBox = new CheckBox { Text = clearCaption, AccessibleName = AuthenticationCenterUiText.Name(clearCaption), AutoSize = true, TabIndex = 8 };
+            _clearKeyCheckBox = new ThemedCheckBox { Text = clearCaption, AccessibleName = AuthenticationCenterUiText.Name(clearCaption), AutoSize = true, TabIndex = 8 };
             UiTheme.ApplyCheckBox(_clearKeyCheckBox);
             _clearKeyCheckBox.CheckedChanged += (sender, args) => { _keyTextBox.Enabled = !_clearKeyCheckBox.Checked; if (_clearKeyCheckBox.Checked) { _keyTextBox.Clear(); } };
             _fields.Controls.Add(_clearKeyCheckBox, 1, 4);

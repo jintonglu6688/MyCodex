@@ -84,7 +84,7 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 0
             };
 
-            _targetComboBox = new ComboBox
+            _targetComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Fill,
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -110,7 +110,7 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 4
             };
 
-            _runModeComboBox = new ComboBox
+            _runModeComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Fill,
                 DropDownStyle = ComboBoxStyle.DropDownList,

@@ -101,7 +101,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(descriptionLabel, true);
 
-            _permissionComboBox = new ComboBox
+            _permissionComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Top,
                 DropDownStyle = ComboBoxStyle.DropDownList,

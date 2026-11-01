@@ -172,7 +172,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(introLabel, true);
 
-            _runtimeSourceComboBox = new ComboBox
+            _runtimeSourceComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Top,
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -182,7 +182,7 @@ namespace MyCodex.WinForms.Forms
             UiTheme.ApplyComboBox(_runtimeSourceComboBox);
             AddRuntimeSourceItems();
 
-            _windowsShellComboBox = new ComboBox
+            _windowsShellComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Top,
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -238,7 +238,7 @@ namespace MyCodex.WinForms.Forms
                 6);
             _shellCommandTextBox.Text = wslConfig.ShellCommand;
 
-            _remoteProfileComboBox = new ComboBox
+            _remoteProfileComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Top,
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -307,7 +307,7 @@ namespace MyCodex.WinForms.Forms
             _remoteUserNameTextBox.Text = remoteMacConfig.UserName;
             _remoteUserNameTextBox.TextChanged += RemoteField_TextChanged;
 
-            _remoteAuthenticationComboBox = new ComboBox
+            _remoteAuthenticationComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Top,
                 DropDownStyle = ComboBoxStyle.DropDownList,

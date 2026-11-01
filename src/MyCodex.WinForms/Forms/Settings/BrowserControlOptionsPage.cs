@@ -32,7 +32,7 @@ namespace MyCodex.WinForms.Forms
             TabStop = true;
             AutoScroll = true;
             BackColor = UiTheme.WindowBackColor;
-            _enabled = new CheckBox
+            _enabled = new ThemedCheckBox
             {
                 Name = "BrowserControlEnabled", AutoSize = true, TabIndex = 0,
                 Text = UiLocalization.Text("BrowserControl.Enabled", "Enable &browser control"),

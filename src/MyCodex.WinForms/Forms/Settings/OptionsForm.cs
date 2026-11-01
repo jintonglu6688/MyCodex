@@ -88,7 +88,7 @@ namespace MyCodex.WinForms.Forms
             KeyPreview = true;
             UiTheme.ApplyForm(this);
 
-            _tabControl = new TabControl
+            _tabControl = new ThemedTabControl
             {
                 Dock = DockStyle.Fill,
                 TabIndex = 0
@@ -132,7 +132,7 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 8
             };
             UiTheme.ApplyTextBox(_textFileExternalEditorArgumentsTextBox, false, false);
-            _closeSessionWorkbenchOnEscapeCheckBox = new CheckBox
+            _closeSessionWorkbenchOnEscapeCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("OptionsForm.Check.CloseSessionWorkbenchOnEscape", "Allow Esc to close the main and independent windows"),
                 AccessibleName = UiLocalization.Text("OptionsForm.Accessible.CloseSessionWorkbenchOnEscape", "Allow Esc to close the main and independent windows"),
@@ -188,7 +188,7 @@ namespace MyCodex.WinForms.Forms
                 TabStop = false
             };
             UiTheme.ApplyLabel(_officeRootStatusLabel, false);
-            _officeShowActivityPaneCheckBox = new CheckBox
+            _officeShowActivityPaneCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("OptionsForm.Label.OfficeShowActivityPane", "Show activity area"),
                 AccessibleName = UiLocalization.Text("OptionsForm.Accessible.OfficeShowActivityPane", "Show activity area"),

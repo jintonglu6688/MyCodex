@@ -55,7 +55,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(messageLabel, false);
 
-            _deleteLocalHistoryCheckBox = new CheckBox
+            _deleteLocalHistoryCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("LocalSessionDeleteConfirmationForm.Check.DeleteLocalHistory", "Also delete local history records(&H)"),
                 AccessibleName = UiLocalization.Text("LocalSessionDeleteConfirmationForm.Accessible.DeleteLocalHistory", "Also delete local history records"),

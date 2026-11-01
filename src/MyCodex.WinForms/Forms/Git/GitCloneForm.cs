@@ -98,7 +98,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(_statusLabel, true);
 
-            _recurseSubmodulesCheckBox = new CheckBox
+            _recurseSubmodulesCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("GitCloneForm.Check.RecurseSubmodules", "Recurse submodules(&S)"),
                 AccessibleName = UiLocalization.Text("GitCloneForm.Accessible.RecurseSubmodules", "Recurse submodules"),
@@ -107,7 +107,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyCheckBox(_recurseSubmodulesCheckBox);
 
-            _useSshCloneUrlCheckBox = new CheckBox
+            _useSshCloneUrlCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("GitCloneForm.Check.UseSshCloneUrl", "Use SSH URL(&H)"),
                 AccessibleName = UiLocalization.Text("GitCloneForm.Accessible.UseSshCloneUrl", "Use SSH URL"),
@@ -821,7 +821,7 @@ namespace MyCodex.WinForms.Forms
 
         private static TabControl CreateSourceTabControl()
         {
-            var tabControl = new TabControl
+            var tabControl = new ThemedTabControl
             {
                 Dock = DockStyle.Fill,
                 AccessibleName = string.Empty,

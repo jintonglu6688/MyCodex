@@ -43,7 +43,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(_statusLabel, true);
 
-            _progressBar = new ProgressBar
+            _progressBar = new ThemedProgressBar
             {
                 AccessibleName = UiLocalization.Text("AppUpdateDownloadForm.Accessible.Progress", "Download progress"),
                 Dock = DockStyle.Fill,

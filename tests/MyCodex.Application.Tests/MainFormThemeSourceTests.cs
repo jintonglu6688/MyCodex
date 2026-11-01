@@ -40,7 +40,7 @@ namespace MyCodex.Application.Tests
             Assert.That(handler, Does.Contain("mode != UiTheme.CurrentMode"));
             Assert.That(handler, Does.Contain("ApplyConfiguredTheme()"));
             Assert.That(handler, Does.Not.Contain("UiThemePreference.Auto"));
-            Assert.That(source, Does.Contain("UiTheme.ApplyToOpenForms();"));
+            Assert.That(source, Does.Contain("UiTheme.ApplyToOpenForms(this);"));
         }
     }
 }

@@ -48,7 +48,7 @@ namespace MyCodex.WinForms.Forms
             KeyPreview = true;
             UiTheme.ApplyForm(this);
 
-            _includeHomeCheckBox = new CheckBox
+            _includeHomeCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("ExternalAgentConfigImportForm.Option.IncludeHome", "User configuration(&U)"),
                 AccessibleName = UiLocalization.Text("ExternalAgentConfigImportForm.Accessible.IncludeHome", "User configuration"),
@@ -57,7 +57,7 @@ namespace MyCodex.WinForms.Forms
                 UseMnemonic = true,
                 TabIndex = 0
             };
-            _includeCurrentWorkspaceCheckBox = new CheckBox
+            _includeCurrentWorkspaceCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("ExternalAgentConfigImportForm.Option.CurrentWorkspace", "Current workspace(&W)"),
                 AccessibleName = UiLocalization.Text("ExternalAgentConfigImportForm.Accessible.CurrentWorkspace", "Current workspace"),

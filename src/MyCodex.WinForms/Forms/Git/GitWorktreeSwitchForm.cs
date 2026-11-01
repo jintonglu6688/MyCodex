@@ -24,7 +24,7 @@ namespace MyCodex.WinForms.Forms
             ClientSize = new Size(560, 230);
             UiTheme.ApplyForm(this);
 
-            _modeComboBox = new ComboBox
+            _modeComboBox = new ThemedComboBox
             {
                 AccessibleName = UiLocalization.Text("GitWorktreeSwitchForm.Accessible.Mode", "Mode"),
                 Dock = DockStyle.Fill,

@@ -70,7 +70,7 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-            _requestPicker = new ComboBox
+            _requestPicker = new ThemedComboBox
             {
                 Dock = DockStyle.Top,
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -543,7 +543,7 @@ namespace MyCodex.WinForms.Forms
                     };
                     foreach (var option in question.Options)
                     {
-                        var radio = new RadioButton
+                        var radio = new ThemedRadioButton
                         {
                             AutoSize = true,
                             Text = option.Label,
@@ -558,7 +558,7 @@ namespace MyCodex.WinForms.Forms
                         options.Controls.Add(radio);
                     }
 
-                    _otherRadioButton = new RadioButton
+                    _otherRadioButton = new ThemedRadioButton
                     {
                         AutoSize = true,
                         Text = otherLabel,
@@ -575,7 +575,7 @@ namespace MyCodex.WinForms.Forms
                 }
                 else
                 {
-                    _comboBox = new ComboBox
+                    _comboBox = new ThemedComboBox
                     {
                         Dock = DockStyle.Top,
                         DropDownStyle = ComboBoxStyle.DropDownList,

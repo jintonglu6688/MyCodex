@@ -29,7 +29,7 @@ namespace MyCodex.WinForms.Forms
             _nameTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubRepositoryCreateForm.Accessible.Name", "Repository name"), 0);
             _nameTextBox.Text = initialName ?? string.Empty;
             _descriptionTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("GitHubRepositoryCreateForm.Accessible.Description", "Description"), 1);
-            _privateCheckBox = new CheckBox
+            _privateCheckBox = new ThemedCheckBox
             {
                 Dock = DockStyle.Fill,
                 Text = UiLocalization.Text("GitHubRepositoryCreateForm.Check.Private", "Private(&P)"),
@@ -40,7 +40,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyCheckBox(_privateCheckBox);
 
-            _addReadmeCheckBox = new CheckBox
+            _addReadmeCheckBox = new ThemedCheckBox
             {
                 Dock = DockStyle.Fill,
                 Text = UiLocalization.Text("GitHubRepositoryCreateForm.Check.AddReadme", "Add README(&R)"),

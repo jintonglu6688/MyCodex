@@ -43,7 +43,7 @@ namespace MyCodex.WinForms.Forms
             var defaultCaption = UiLocalization.Text("Aggregation.Dialog.Default", "&Default provider:");
             var defaultLabel = new Label { Text = defaultCaption, AutoSize = true, TabStop = false, TabIndex = 0, UseMnemonic = true, Dock = DockStyle.Fill };
             UiTheme.ApplyLabel(defaultLabel, false);
-            _defaultComboBox = new ComboBox
+            _defaultComboBox = new ThemedComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill, TabIndex = 1,
                 AccessibleName = AuthenticationCenterUiText.Name(defaultCaption).TrimEnd(':', '：')

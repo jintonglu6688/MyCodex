@@ -348,17 +348,6 @@ namespace MyCodex.WinForms.Forms
                 TabStop = false
             };
 
-            // Add splitter grip visual
-            _mainSplitContainer.Paint += (sender, e) =>
-            {
-                UiTheme.DrawSplitterGrip(e.Graphics, _mainSplitContainer.SplitterRectangle, Orientation.Vertical);
-            };
-
-            _contentSplitContainer.Paint += (sender, e) =>
-            {
-                UiTheme.DrawSplitterGrip(e.Graphics, _contentSplitContainer.SplitterRectangle, Orientation.Vertical);
-            };
-
             _mainSplitContainer.Panel1.TabStop = false;
             _mainSplitContainer.Panel2.TabStop = false;
             _contentSplitContainer.Panel1.TabStop = false;
@@ -375,7 +364,7 @@ namespace MyCodex.WinForms.Forms
             _contentSplitContainer.Panel1.Controls.Add(CreateCenterPanel());
             _contentSplitContainer.Panel2.Controls.Add(CreateRightPanel());
 
-            _modeTabControl = new TabControl
+            _modeTabControl = new ThemedTabControl
             {
                 Dock = DockStyle.Fill,
                 TabIndex = 0

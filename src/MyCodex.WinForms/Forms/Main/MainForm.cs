@@ -1207,11 +1207,10 @@ namespace MyCodex.WinForms.Forms
                 SystemInformation.HighContrast,
                 SystemThemeDetector.UsesDarkTheme());
             UiTheme.SetCurrentMode(mode);
-            UiTheme.ApplyToControlTree(this);
-            UiTheme.ApplyToOpenForms();
-            UiTheme.ApplyStatusStrip(_statusStrip);
+            UiTheme.ApplyToOpenForms(this);
+            UiTheme.ApplyMainShellTheme(_trayContextMenu, _statusStrip);
             _statusIndicator.Image = UiTheme.CreateStatusIndicator(UiTheme.StatusType.Ready);
-            WindowDarkMode.TryApply(this, mode == UiThemeMode.Dark);
+            WindowDarkMode.TryApply(this, mode == UiThemeMode.Dark, mode != UiThemeMode.HighContrast);
             Invalidate(true);
         }
 

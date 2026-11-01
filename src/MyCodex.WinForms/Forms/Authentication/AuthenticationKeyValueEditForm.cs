@@ -41,7 +41,7 @@ namespace MyCodex.WinForms.Forms
             _value.Text = Display(value, type);
             if (texts.Typed)
             {
-                _type = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
+                _type = new ThemedComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
                 AddField(fields, UiLocalization.Text("AuthenticationKeyValue.Type", "Value &type"), _type, 2);
                 if (type == PreservedType)
                 {

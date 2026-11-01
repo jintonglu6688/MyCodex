@@ -105,7 +105,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(descriptionLabel, true);
 
-            _modelComboBox = new ComboBox
+            _modelComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Top,
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -115,7 +115,7 @@ namespace MyCodex.WinForms.Forms
             UiTheme.ApplyComboBox(_modelComboBox);
             _modelComboBox.SelectedIndexChanged += ModelComboBox_SelectedIndexChanged;
 
-            _effortComboBox = new ComboBox
+            _effortComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Top,
                 DropDownStyle = ComboBoxStyle.DropDownList,

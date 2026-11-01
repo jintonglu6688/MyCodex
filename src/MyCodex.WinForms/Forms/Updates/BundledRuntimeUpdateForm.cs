@@ -49,7 +49,7 @@ namespace MyCodex.WinForms.Forms
                 Dock = DockStyle.Fill, TabStop = false, UseMnemonic = false,
                 Text = UiLocalization.Text("BundledRuntimeUpdateForm.Starting", "Preparing runtime update...")
             };
-            _progressBar = new ProgressBar
+            _progressBar = new ThemedProgressBar
             {
                 AccessibleName = UiLocalization.Text("BundledRuntimeUpdateForm.Accessible.Status", "Update progress"),
                 Dock = DockStyle.Fill, TabStop = false, Style = ProgressBarStyle.Marquee

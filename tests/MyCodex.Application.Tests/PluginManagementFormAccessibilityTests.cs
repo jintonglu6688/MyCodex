@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -8,6 +9,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
+using MyCodex.WinForms.Theming;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -71,6 +73,21 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Test]
+        public void MarketSourceSplit_ReservesWidthForSourceTreeLabels()
+        {
+            using (var screenReader = new RecordingScreenReaderService())
+            using (var form = CreateForm(screenReader))
+            {
+                CreateHandles(form);
+                var split = Descendants(form).OfType<SplitContainer>().Single();
+
+                Assert.That(split.Panel1MinSize, Is.GreaterThanOrEqualTo(UiTheme.Scale(260)));
+                Assert.That(split.Panel2MinSize, Is.GreaterThanOrEqualTo(UiTheme.Scale(420)));
+                Assert.That(split.SplitterDistance, Is.GreaterThanOrEqualTo(UiTheme.Scale(260)));
+            }
+        }
+
         private static PluginManagementForm CreateForm(IScreenReaderService screenReaderService)
         {
 #pragma warning disable SYSLIB0050
@@ -80,6 +97,29 @@ namespace MyCodex.Application.Tests
                 appServerClient,
                 new StubPluginMarketCatalogClient(),
                 screenReaderService);
+        }
+
+        private static void CreateHandles(Control control)
+        {
+            var handle = control.Handle;
+            foreach (Control child in control.Controls)
+            {
+                CreateHandles(child);
+            }
+
+            control.PerformLayout();
+        }
+
+        private static System.Collections.Generic.IEnumerable<Control> Descendants(Control parent)
+        {
+            foreach (Control child in parent.Controls)
+            {
+                yield return child;
+                foreach (var nested in Descendants(child))
+                {
+                    yield return nested;
+                }
+            }
         }
 
         private sealed class StubPluginMarketCatalogClient : IPluginMarketCatalogClient

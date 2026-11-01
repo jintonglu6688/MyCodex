@@ -29,7 +29,7 @@ namespace MyCodex.WinForms.Forms
         private static CheckBox CreateSessionHistoryCheckBox()
         {
             var caption = UiLocalization.Text("SessionHistory.Unified", "Unify Codex session &history");
-            var checkBox = new CheckBox
+            var checkBox = new ThemedCheckBox
             {
                 Text = caption, AccessibleName = AuthenticationCenterUiText.Name(caption),
                 AccessibleDescription = UiLocalization.Text("SessionHistory.Description", "When on, ChatGPT accounts use the same Codex session identity as third-party providers, so earlier conversations continue with the configuration in use after you switch. This applies to the current execution target only. Off by default."),

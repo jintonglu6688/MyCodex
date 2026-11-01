@@ -107,7 +107,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(descriptionLabel, true);
 
-            _providerComboBox = new ComboBox
+            _providerComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Top,
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -121,7 +121,7 @@ namespace MyCodex.WinForms.Forms
             _providerComboBox.Items.Add(new ProviderItem(ScreenReaderProviderKind.Zdsr, UiLocalization.Text("ScreenReaderSettingsForm.Provider.Zdsr", "ZDSR")));
             _providerComboBox.Items.Add(new ProviderItem(ScreenReaderProviderKind.Nvda, UiLocalization.Text("ScreenReaderSettingsForm.Provider.Nvda", "NVDA")));
 
-            _manualBrowseMainChannelCheckBox = new CheckBox
+            _manualBrowseMainChannelCheckBox = new ThemedCheckBox
             {
                 AutoSize = true,
                 Text = UiLocalization.Text("ScreenReaderSettingsForm.Option.ManualBrowseUseMainChannel", "Manual browse uses screen reader main channel (supported interfaces only)(&M)"),

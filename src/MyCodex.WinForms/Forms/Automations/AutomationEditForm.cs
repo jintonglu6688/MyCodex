@@ -90,7 +90,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(_intervalUnitLabel, false);
 
-            _timePicker = new DateTimePicker
+            _timePicker = new ThemedDateTimePicker
             {
                 AccessibleName = UiLocalization.Text("AutomationEditForm.Accessible.Time", "Time"),
                 Dock = DockStyle.Left,
@@ -131,7 +131,7 @@ namespace MyCodex.WinForms.Forms
             _inputItemsListView = CreateInputItemsListView();
             _inputItemsListView.TabIndex = 12;
 
-            _autoArchiveCheckBox = new CheckBox
+            _autoArchiveCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("AutomationEditForm.Check.AutoArchive", "Allow no-findings runs to archive automatically"),
                 AccessibleName = UiLocalization.Text("AutomationEditForm.Accessible.AutoArchive", "Allow no-findings runs to archive automatically"),

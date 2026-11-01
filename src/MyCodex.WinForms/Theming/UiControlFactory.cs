@@ -35,6 +35,7 @@ namespace MyCodex.WinForms.Theming
                 button.DialogResult = dialogResult;
             }
 
+            UiTheme.ApplyButtonSurface(button);
             return button;
         }
 
@@ -147,7 +148,7 @@ namespace MyCodex.WinForms.Theming
         /// <summary>Creates a themed drop-down list.</summary>
         internal static ComboBox CreateDropDownList(string accessibleName, int tabIndex, DockStyle dock)
         {
-            var comboBox = new ComboBox
+            var comboBox = new ThemedComboBox
             {
                 Dock = dock,
                 DropDownStyle = ComboBoxStyle.DropDownList,
