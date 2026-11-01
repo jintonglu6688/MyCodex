@@ -1026,7 +1026,7 @@ namespace MyCodex.WinForms.Forms
         private void OpenSelectedRepository()
         {
             var repository = GetSelectedRepository();
-            var url = BuildRepositoryWebUrl(repository);
+            var url = GitHubRepositoryWebUrl.Build(repository, null);
             if (string.IsNullOrWhiteSpace(url))
             {
                 RestoreRepositoryFocus();
@@ -1035,11 +1035,7 @@ namespace MyCodex.WinForms.Forms
 
             try
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = url,
-                    UseShellExecute = true
-                });
+                ExternalUrlLauncher.Open(url);
                 SetStatus(UiLocalization.Text("GitHubStoreForm.Status.OpenedRepository", "Repository page opened."), true);
             }
             catch (Exception ex)
@@ -1095,28 +1091,6 @@ namespace MyCodex.WinForms.Forms
             return _repositories[index];
         }
 
-        private static string BuildRepositoryWebUrl(GitHubRepositoryEntry repository)
-        {
-            if (repository == null)
-            {
-                return string.Empty;
-            }
-
-            if (!string.IsNullOrWhiteSpace(repository.HttpsUrl))
-            {
-                return repository.HttpsUrl.Trim();
-            }
-
-            if (!string.IsNullOrWhiteSpace(repository.NameWithOwner))
-            {
-                return string.Format(
-                    UiLocalization.Text("GitHubStoreForm.Value.RepositoryWebUrl", "https://github.com/{0}"),
-                    repository.NameWithOwner.Trim());
-            }
-
-            return string.Empty;
-        }
-
         private void RefreshRepositoryContextMenu()
         {
             var repository = GetSelectedRepository();
@@ -1131,7 +1105,7 @@ namespace MyCodex.WinForms.Forms
                 _repositoryContextMenu.MenuItems.Add(_viewDetailsMenuItem);
             }
 
-            if (!string.IsNullOrWhiteSpace(BuildRepositoryWebUrl(repository)))
+            if (!string.IsNullOrWhiteSpace(GitHubRepositoryWebUrl.Build(repository, null)))
             {
                 _repositoryContextMenu.MenuItems.Add(_openRepositoryPageMenuItem);
                 _repositoryContextMenu.MenuItems.Add(_copyHttpsUrlMenuItem);

@@ -15,7 +15,7 @@ namespace MyCodex.Infrastructure.AppServer
             var authorizedRoot = FindAuthorizedRoot(candidatePath, allowedSessionRoots);
             if (authorizedRoot == null)
             {
-                throw new InvalidOperationException(L(
+                throw new InvalidOperationException(SharedLocalization.Text(
                     "AppServerClient.Error.ThreadFilePathUnsupported",
                     "Current thread file path is outside supported Codex state directories and cannot be fully removed."));
             }
@@ -28,7 +28,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                throw new InvalidOperationException(L(
+                throw new InvalidOperationException(SharedLocalization.Text(
                     "AppServerClient.Error.ThreadFilePathUnsupported",
                     "Current thread file path is outside supported Codex state directories and cannot be fully removed."));
             }
@@ -43,7 +43,7 @@ namespace MyCodex.Infrastructure.AppServer
                 ex is NotSupportedException ||
                 ex is PathTooLongException)
             {
-                throw new InvalidOperationException(L(
+                throw new InvalidOperationException(SharedLocalization.Text(
                     "AppServerClient.Error.ThreadFilePathUnsupported",
                     "Current thread file path is outside supported Codex state directories and cannot be fully removed."), ex);
             }
@@ -131,7 +131,7 @@ namespace MyCodex.Infrastructure.AppServer
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(L(
+                throw new InvalidOperationException(SharedLocalization.Text(
                     "AppServerClient.Error.ThreadFilePathContainsReparsePoint",
                     "Current thread file path contains a reparse point and cannot be safely removed."), ex);
             }
@@ -139,14 +139,9 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static InvalidOperationException CreateReparsePointException()
         {
-            return new InvalidOperationException(L(
+            return new InvalidOperationException(SharedLocalization.Text(
                 "AppServerClient.Error.ThreadFilePathContainsReparsePoint",
                 "Current thread file path contains a reparse point and cannot be safely removed."));
-        }
-
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
         }
     }
 }

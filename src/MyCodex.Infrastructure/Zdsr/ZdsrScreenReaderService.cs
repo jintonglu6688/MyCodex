@@ -113,11 +113,11 @@ namespace MyCodex.Infrastructure.Zdsr
                     var result = _nativeApi.GetSpeakState();
                     if (result == (int)ZdsrSpeakState.NotRunningOrUnauthorized)
                     {
-                        _lastError = L("Zdsr.Error.NotRunningOrUnauthorized", "ZDSR is not running or not authorized.");
+                        _lastError = SharedLocalization.Text("Zdsr.Error.NotRunningOrUnauthorized", "ZDSR is not running or not authorized.");
                     }
                     else if (result == (int)ZdsrSpeakState.VersionMismatch)
                     {
-                        _lastError = L("Zdsr.Error.VersionMismatch", "ZDSR API version mismatch.");
+                        _lastError = SharedLocalization.Text("Zdsr.Error.VersionMismatch", "ZDSR API version mismatch.");
                     }
                     else
                     {
@@ -128,7 +128,7 @@ namespace MyCodex.Infrastructure.Zdsr
                 }
                 catch (Exception ex)
                 {
-                    _lastError = L("Zdsr.Error.ReadStateFailed.Prefix", "Failed to read ZDSR state: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("Zdsr.Error.ReadStateFailed.Prefix", "Failed to read ZDSR state: ") + ex.Message;
                     return 0;
                 }
             }
@@ -142,7 +142,7 @@ namespace MyCodex.Infrastructure.Zdsr
             {
                 lock (_syncRoot)
                 {
-                    _lastError = L("Zdsr.Error.SpeakTextRequired", "Text to read cannot be empty.");
+                    _lastError = SharedLocalization.Text("Zdsr.Error.SpeakTextRequired", "Text to read cannot be empty.");
                 }
 
                 return false;
@@ -170,7 +170,7 @@ namespace MyCodex.Infrastructure.Zdsr
                 }
                 catch (Exception ex)
                 {
-                    _lastError = L("Zdsr.Error.SpeakInvokeFailed.Prefix", "Failed to invoke ZDSR speech: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("Zdsr.Error.SpeakInvokeFailed.Prefix", "Failed to invoke ZDSR speech: ") + ex.Message;
                     return false;
                 }
             }
@@ -195,7 +195,7 @@ namespace MyCodex.Infrastructure.Zdsr
                 }
                 catch (Exception ex)
                 {
-                    _lastError = L("Zdsr.Error.StopFailed.Prefix", "Failed to stop ZDSR speech: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("Zdsr.Error.StopFailed.Prefix", "Failed to stop ZDSR speech: ") + ex.Message;
                     return false;
                 }
             }
@@ -247,17 +247,17 @@ namespace MyCodex.Infrastructure.Zdsr
             }
             catch (DllNotFoundException ex)
             {
-                _lastError = L("Zdsr.Error.LoadFailed.Prefix", "Failed to load ZDSR API: ") + ex.Message;
+                _lastError = SharedLocalization.Text("Zdsr.Error.LoadFailed.Prefix", "Failed to load ZDSR API: ") + ex.Message;
                 return false;
             }
             catch (EntryPointNotFoundException ex)
             {
-                _lastError = L("Zdsr.Error.VersionMismatch.Prefix", "ZDSR API version mismatch: ") + ex.Message;
+                _lastError = SharedLocalization.Text("Zdsr.Error.VersionMismatch.Prefix", "ZDSR API version mismatch: ") + ex.Message;
                 return false;
             }
             catch (BadImageFormatException ex)
             {
-                _lastError = L("Zdsr.Error.BitnessMismatch.Prefix", "ZDSR API bitness mismatch: ") + ex.Message;
+                _lastError = SharedLocalization.Text("Zdsr.Error.BitnessMismatch.Prefix", "ZDSR API bitness mismatch: ") + ex.Message;
                 return false;
             }
         }
@@ -267,7 +267,7 @@ namespace MyCodex.Infrastructure.Zdsr
             if (!IsAvailable)
             {
                 _lastError = string.Format(
-                    L("Zdsr.Error.LibraryNotFound.Template", "{0} was not found."),
+                    SharedLocalization.Text("Zdsr.Error.LibraryNotFound.Template", "{0} was not found."),
                     Path.GetFileName(LibraryRelativePath));
                 return false;
             }
@@ -278,7 +278,7 @@ namespace MyCodex.Infrastructure.Zdsr
                 return true;
             }
 
-            _lastError = L("Zdsr.Error.LoadFailed.Prefix", "Failed to load ZDSR API: ") + loadError;
+            _lastError = SharedLocalization.Text("Zdsr.Error.LoadFailed.Prefix", "Failed to load ZDSR API: ") + loadError;
             return false;
         }
 
@@ -306,8 +306,8 @@ namespace MyCodex.Infrastructure.Zdsr
         private static string BuildInitErrorMessage(int result)
         {
             return result == ZdsrResult.VersionMismatch
-                ? L("Zdsr.Error.VersionMismatch", "ZDSR API version mismatch.")
-                : L("Zdsr.Error.InitializeFailed", "Failed to initialize ZDSR.");
+                ? SharedLocalization.Text("Zdsr.Error.VersionMismatch", "ZDSR API version mismatch.")
+                : SharedLocalization.Text("Zdsr.Error.InitializeFailed", "Failed to initialize ZDSR.");
         }
 
         private static string BuildSpeakErrorMessage(int result)
@@ -315,17 +315,12 @@ namespace MyCodex.Infrastructure.Zdsr
             switch (result)
             {
                 case ZdsrResult.VersionMismatch:
-                    return L("Zdsr.Error.VersionMismatch", "ZDSR API version mismatch.");
+                    return SharedLocalization.Text("Zdsr.Error.VersionMismatch", "ZDSR API version mismatch.");
                 case ZdsrResult.NotRunningOrUnauthorized:
-                    return L("Zdsr.Error.NotRunningOrUnauthorized", "ZDSR is not running or not authorized.");
+                    return SharedLocalization.Text("Zdsr.Error.NotRunningOrUnauthorized", "ZDSR is not running or not authorized.");
                 default:
-                    return L("Zdsr.Error.SpeakFailed", "ZDSR speech failed.");
+                    return SharedLocalization.Text("Zdsr.Error.SpeakFailed", "ZDSR speech failed.");
             }
-        }
-
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
         }
 
         private void ThrowIfDisposed()
@@ -399,12 +394,12 @@ namespace MyCodex.Infrastructure.Zdsr
                 }
                 catch (EntryPointNotFoundException ex)
                 {
-                    error = L("Zdsr.Error.VersionMismatch.Prefix", "ZDSR API version mismatch: ") + ex.Message;
+                    error = SharedLocalization.Text("Zdsr.Error.VersionMismatch.Prefix", "ZDSR API version mismatch: ") + ex.Message;
                     return false;
                 }
                 catch (BadImageFormatException ex)
                 {
-                    error = L("Zdsr.Error.BitnessMismatch.Prefix", "ZDSR API bitness mismatch: ") + ex.Message;
+                    error = SharedLocalization.Text("Zdsr.Error.BitnessMismatch.Prefix", "ZDSR API bitness mismatch: ") + ex.Message;
                     return false;
                 }
             }

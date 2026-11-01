@@ -13,7 +13,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerEventArgs(
                 "thread_started",
-                L("AppServerClient.Thread.Started", "Thread is ready."),
+                SharedLocalization.Text("AppServerClient.Thread.Started", "Thread is ready."),
                 threadId: threadId, threadSummary: summary, threadStatus: summary?.ThreadStatus);
         }
 
@@ -21,7 +21,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerEventArgs(
                 "thread_archived",
-                L("AppServerClient.Thread.Archived", "Session archived."),
+                SharedLocalization.Text("AppServerClient.Thread.Archived", "Session archived."),
                 threadId: threadId);
         }
 
@@ -29,7 +29,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerEventArgs(
                 "thread_deleted",
-                L("AppServerClient.Thread.Deleted", "Session deleted."),
+                SharedLocalization.Text("AppServerClient.Thread.Deleted", "Session deleted."),
                 threadId: threadId);
         }
 
@@ -37,7 +37,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerEventArgs(
                 "thread_closed",
-                L("AppServerClient.Thread.Closed", "Session closed."),
+                SharedLocalization.Text("AppServerClient.Thread.Closed", "Session closed."),
                 threadId: threadId);
         }
 
@@ -45,7 +45,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerEventArgs(
                 "thread_unarchived",
-                L("AppServerClient.Thread.Unarchived", "Session restored from archive."),
+                SharedLocalization.Text("AppServerClient.Thread.Unarchived", "Session restored from archive."),
                 threadId: threadId);
         }
 
@@ -53,7 +53,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerEventArgs(
                 "context_compaction_completed",
-                L("AppServerClient.Thread.ContextCompacted", "Session context compressed."),
+                SharedLocalization.Text("AppServerClient.Thread.ContextCompacted", "Session context compressed."),
                 threadId: threadId,
                 turnId: turnId);
         }
@@ -62,7 +62,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerEventArgs(
                 "thread_status_changed",
-                L("AppServerClient.Thread.StatusUpdated.Prefix", "Thread status updated: ") + statusType,
+                SharedLocalization.Text("AppServerClient.Thread.StatusUpdated.Prefix", "Thread status updated: ") + statusType,
                 threadId: threadId, threadStatus: status ?? new AppServerThreadStatus { Type = statusType });
         }
 
@@ -70,7 +70,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerEventArgs(
                 "turn_started",
-                L("AppServerClient.Turn.Started", "Codex is processing..."),
+                SharedLocalization.Text("AppServerClient.Turn.Started", "Codex is processing..."),
                 threadId: threadId,
                 turnId: turnId);
         }
@@ -97,7 +97,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerEventArgs(
                 "turn_interrupted",
-                L("AppServerClient.Turn.Interrupted", "Current response interrupted."),
+                SharedLocalization.Text("AppServerClient.Turn.Interrupted", "Current response interrupted."),
                 threadId,
                 turnId);
         }
@@ -106,7 +106,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerEventArgs(
                 "turn_completed",
-                L("AppServerClient.Turn.Completed", "Current turn request completed."),
+                SharedLocalization.Text("AppServerClient.Turn.Completed", "Current turn request completed."),
                 threadId,
                 turnId);
         }
@@ -128,7 +128,7 @@ namespace MyCodex.Infrastructure.AppServer
                 // The runtime keeps the turn alive and retries it; show progress instead of a failure.
                 message = string.Format(
                     CultureInfo.CurrentCulture,
-                    L("AppServerClient.Turn.Retrying.Template", "Codex is retrying automatically: {0}"),
+                    SharedLocalization.Text("AppServerClient.Turn.Retrying.Template", "Codex is retrying automatically: {0}"),
                     message);
             }
 
@@ -152,16 +152,16 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return string.Equals(reason, "sessionBudgetExceeded", StringComparison.Ordinal)
-                ? L(
+                ? SharedLocalization.Text(
                     "AppServerClient.Error.SessionBudgetExceeded",
                     "The current session has reached its budget limit.")
-                : L(fallbackKey, fallback);
+                : SharedLocalization.Text(fallbackKey, fallback);
         }
 
         internal static AppServerEventArgs CreateAuthChanged(string authMode, string planType)
         {
             var message = string.IsNullOrWhiteSpace(authMode)
-                ? L("AppServerClient.Account.StatusUpdated", "Account status updated.")
+                ? SharedLocalization.Text("AppServerClient.Account.StatusUpdated", "Account status updated.")
                 : LF(
                     "AppServerClient.Account.StatusUpdatedWithMode.Template",
                     "Account status updated: {0}{1}",
@@ -175,9 +175,9 @@ namespace MyCodex.Infrastructure.AppServer
             return new AppServerEventArgs(
                 success ? "auth_login_completed" : "error",
                 success
-                    ? L("AppServerClient.Account.LoginCompleted", "Login completed.")
+                    ? SharedLocalization.Text("AppServerClient.Account.LoginCompleted", "Login completed.")
                     : (string.IsNullOrWhiteSpace(message)
-                        ? L("AppServerClient.Account.LoginFailed", "Login failed.")
+                        ? SharedLocalization.Text("AppServerClient.Account.LoginFailed", "Login failed.")
                         : message),
                 requestId: requestId);
         }
@@ -185,7 +185,7 @@ namespace MyCodex.Infrastructure.AppServer
         internal static AppServerEventArgs CreateMcpOauthLoginCompleted(string serverName, bool? success, string errorMessage)
         {
             var displayName = string.IsNullOrWhiteSpace(serverName)
-                ? L("AppServerClient.Value.UnknownServer", "(Unknown server)")
+                ? SharedLocalization.Text("AppServerClient.Value.UnknownServer", "(Unknown server)")
                 : serverName;
             var message = success.HasValue
                 ? (success.Value
@@ -216,10 +216,10 @@ namespace MyCodex.Infrastructure.AppServer
             var message = ExtractRuntimeMessage(parameters);
             var failureReason = ExtractMcpStartupFailureReason(parameters);
             var displayName = string.IsNullOrWhiteSpace(serverName)
-                ? L("AppServerClient.Value.UnknownServer", "(Unknown server)")
+                ? SharedLocalization.Text("AppServerClient.Value.UnknownServer", "(Unknown server)")
                 : serverName;
             var statusText = string.IsNullOrWhiteSpace(status)
-                ? L("AppServerClient.Mcp.StartupStatus.Unknown", "updated")
+                ? SharedLocalization.Text("AppServerClient.Mcp.StartupStatus.Unknown", "updated")
                 : status;
             var content = string.IsNullOrWhiteSpace(message)
                 ? LF(
@@ -277,7 +277,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerEventArgs(
                 "rate_limits_changed",
-                L("AppServerClient.RateLimits.Updated", "Quota information updated."));
+                SharedLocalization.Text("AppServerClient.RateLimits.Updated", "Quota information updated."));
         }
 
         internal static AppServerEventArgs CreateTokenUsage(
@@ -301,7 +301,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             return new AppServerEventArgs(
                 "token_usage",
-                L("AppServerClient.TokenUsage.Updated", "Context usage updated."),
+                SharedLocalization.Text("AppServerClient.TokenUsage.Updated", "Context usage updated."),
                 threadId,
                 turnId,
                 totalTokens: tokenUsage != null && tokenUsage.Total != null ? (long?)tokenUsage.Total.TotalTokens : null,
@@ -328,7 +328,7 @@ namespace MyCodex.Infrastructure.AppServer
                 !string.Equals(summary, details, StringComparison.Ordinal))
                 message += Environment.NewLine + details;
             return CreateProtocolWarning(string.IsNullOrWhiteSpace(message)
-                ? L("AppServerClient.Protocol.DeprecationNotice.NoDetails", "The runtime reported a deprecation notice.")
+                ? SharedLocalization.Text("AppServerClient.Protocol.DeprecationNotice.NoDetails", "The runtime reported a deprecation notice.")
                 : LF("AppServerClient.Protocol.DeprecationNotice.Template", "Deprecation notice: {0}", message),
                 parameters);
         }
@@ -357,10 +357,10 @@ namespace MyCodex.Infrastructure.AppServer
         {
             var warning = AppServerWorldWritableWarningMapper.BuildEvent(parameters);
             var samples = warning.SamplePaths.Count == 0
-                ? L("AppServerClient.Windows.WorldWritableWarning.NoSamples", "(no sample paths)")
+                ? SharedLocalization.Text("AppServerClient.Windows.WorldWritableWarning.NoSamples", "(no sample paths)")
                 : string.Join("; ", warning.SamplePaths.ToArray());
             var content = warning.FailedScan
-                ? L(
+                ? SharedLocalization.Text(
                     "AppServerClient.Windows.WorldWritableWarning.ScanFailed",
                     "Windows path permission scan did not complete. Review the diagnostic details.")
                 : LF(
@@ -450,7 +450,7 @@ namespace MyCodex.Infrastructure.AppServer
             else
             {
                 content = string.IsNullOrWhiteSpace(reason)
-                    ? L("AppServerClient.Protocol.ModelRerouted.NoDetails", "The runtime rerouted the model.")
+                    ? SharedLocalization.Text("AppServerClient.Protocol.ModelRerouted.NoDetails", "The runtime rerouted the model.")
                     : LF("AppServerClient.Protocol.ModelRerouted.Message.Template", "Model rerouted: {0}", reason);
             }
 
@@ -468,7 +468,7 @@ namespace MyCodex.Infrastructure.AppServer
                     ? LF("AppServerClient.Protocol.ModelVerification.ModelStatus.Template", "{0}: {1}", model, status)
                     : (!string.IsNullOrWhiteSpace(status) ? status : null));
             var content = string.IsNullOrWhiteSpace(detail)
-                ? L("AppServerClient.Protocol.ModelVerification.NoDetails", "The runtime reported a model verification update.")
+                ? SharedLocalization.Text("AppServerClient.Protocol.ModelVerification.NoDetails", "The runtime reported a model verification update.")
                 : LF("AppServerClient.Protocol.ModelVerification.Template", "Model verification: {0}", detail);
 
             return IsWarningStatus(status, message)
@@ -519,7 +519,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             var message = ExtractRuntimeMessage(parameters);
             var content = string.IsNullOrWhiteSpace(message)
-                ? L(emptyKey, emptyFallback)
+                ? SharedLocalization.Text(emptyKey, emptyFallback)
                 : LF(templateKey, fallbackTemplate, message);
             return CreateProtocolWarning(content, parameters);
         }
@@ -567,16 +567,16 @@ namespace MyCodex.Infrastructure.AppServer
         private static string BuildAutoApprovalReviewContent(string key, string fallback, AppServerGuardianApprovalReviewEvent review)
         {
             var reviewId = string.IsNullOrWhiteSpace(review.ReviewId)
-                ? L("AppServerClient.AutoApprovalReview.UnknownReview", "(unknown review)")
+                ? SharedLocalization.Text("AppServerClient.AutoApprovalReview.UnknownReview", "(unknown review)")
                 : review.ReviewId;
             var risk = string.IsNullOrWhiteSpace(review.RiskLevel)
-                ? L("AppServerClient.AutoApprovalReview.UnknownRisk", "unknown")
+                ? SharedLocalization.Text("AppServerClient.AutoApprovalReview.UnknownRisk", "unknown")
                 : review.RiskLevel;
             var status = string.IsNullOrWhiteSpace(review.Status)
-                ? L("AppServerClient.AutoApprovalReview.UnknownStatus", "unknown")
+                ? SharedLocalization.Text("AppServerClient.AutoApprovalReview.UnknownStatus", "unknown")
                 : review.Status;
             var action = review.Action == null || string.IsNullOrWhiteSpace(review.Action.Title)
-                ? L("AppServerClient.AutoApprovalReview.UnknownAction", "Guardian action")
+                ? SharedLocalization.Text("AppServerClient.AutoApprovalReview.UnknownAction", "Guardian action")
                 : review.Action.Title;
 
             return review.IsCompleted
@@ -688,7 +688,7 @@ namespace MyCodex.Infrastructure.AppServer
         private static string NormalizeMethod(string method)
         {
             return string.IsNullOrWhiteSpace(method)
-                ? L("AppServerClient.Protocol.UnknownMethod", "(unknown method)")
+                ? SharedLocalization.Text("AppServerClient.Protocol.UnknownMethod", "(unknown method)")
                 : method.Trim();
         }
 
@@ -712,14 +712,9 @@ namespace MyCodex.Infrastructure.AppServer
                    text.IndexOf("blocked", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
-        }
-
         private static string LF(string key, string fallback, params object[] args)
         {
-            return string.Format(CultureInfo.CurrentCulture, L(key, fallback), args ?? Array.Empty<object>());
+            return string.Format(CultureInfo.CurrentCulture, SharedLocalization.Text(key, fallback), args ?? Array.Empty<object>());
         }
     }
 }

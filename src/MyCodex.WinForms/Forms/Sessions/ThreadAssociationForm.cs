@@ -72,23 +72,23 @@ namespace MyCodex.WinForms.Forms
                 TextAlign = ContentAlignment.MiddleLeft,
                 TabStop = false
             };
-            _refreshButton = CreateButton(
+            _refreshButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ThreadAssociationForm.Button.Refresh", "Refresh(&R)"),
                 UiLocalization.Text("ThreadAssociationForm.Accessible.Refresh", "Refresh"),
                 96);
-            _selectAllButton = CreateButton(
+            _selectAllButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ThreadAssociationForm.Button.SelectAll", "Select All(&A)"),
                 UiLocalization.Text("ThreadAssociationForm.Accessible.SelectAll", "Select All"),
                 112);
-            _clearSelectionButton = CreateButton(
+            _clearSelectionButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ThreadAssociationForm.Button.ClearSelection", "Clear Selection(&N)"),
                 UiLocalization.Text("ThreadAssociationForm.Accessible.ClearSelection", "Clear Selection"),
                 144);
-            _associateButton = CreateButton(
+            _associateButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ThreadAssociationForm.Button.Associate", "Import(&S)"),
                 UiLocalization.Text("ThreadAssociationForm.Accessible.Associate", "Import"),
                 112);
-            _cancelButton = CreateButton(
+            _cancelButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ThreadAssociationForm.Button.Close", "Close(&C)"),
                 UiLocalization.Text("ThreadAssociationForm.Accessible.Close", "Close"),
                 96);
@@ -529,19 +529,6 @@ namespace MyCodex.WinForms.Forms
                 default:
                     return UiLocalization.Text("ThreadAssociationForm.StatusValue.Unassociated", "Unassociated");
             }
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int width)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = width,
-                Height = 32,
-                Margin = new Padding(0, 0, 8, 0),
-                UseMnemonic = true
-            };
         }
 
         private static ComboBox CreateFilterComboBox()

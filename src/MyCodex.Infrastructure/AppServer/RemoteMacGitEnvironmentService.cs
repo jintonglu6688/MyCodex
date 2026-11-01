@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Domain.Entities;
+using MyCodex.Shared.Helpers;
 using MyCodex.Shared.Localization;
 
 namespace MyCodex.Infrastructure.AppServer
@@ -128,7 +129,7 @@ namespace MyCodex.Infrastructure.AppServer
             var userName = GetBestOutput(GetProbe(probes, "user-name"));
             var userEmail = GetBestOutput(GetProbe(probes, "user-email"));
             var credentialHelper = GetBestOutput(GetProbe(probes, "credential-helper"));
-            var gcm = FirstNonEmpty(GetBestOutput(GetProbe(probes, "gcm")), GetBestOutput(GetProbe(probes, "gcm-legacy")));
+            var gcm = TextValueHelper.FirstNonEmptyTrimmed(GetBestOutput(GetProbe(probes, "gcm")), GetBestOutput(GetProbe(probes, "gcm-legacy")));
             var sshKeys = GetBestOutput(GetProbe(probes, "ssh-keys"));
             var githubSsh = GetBestOutput(GetProbe(probes, "github-ssh"));
 
@@ -203,24 +204,6 @@ namespace MyCodex.Infrastructure.AppServer
         private static string GetBestOutput(RemoteSshCommandExecutionResult result)
         {
             return result == null ? string.Empty : UnixGitEnvironmentText.GetBestOutput(result.StandardOutput, result.StandardError);
-        }
-
-        private static string FirstNonEmpty(params string[] values)
-        {
-            if (values == null)
-            {
-                return string.Empty;
-            }
-
-            for (var i = 0; i < values.Length; i++)
-            {
-                if (!string.IsNullOrWhiteSpace(values[i]))
-                {
-                    return values[i];
-                }
-            }
-
-            return string.Empty;
         }
     }
 }

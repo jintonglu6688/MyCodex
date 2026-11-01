@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace MyCodex.Application.Tests
 {
     [TestFixture]
-    public sealed class McpElicitationUrlFlowTests
+    public sealed class McpElicitationFlowTests
     {
         private readonly List<string> _calls = new List<string>();
         private bool _accept;
@@ -76,9 +76,32 @@ namespace MyCodex.Application.Tests
             Assert.That(_calls, Is.EqualTo(new[] { "confirm:https://example.com/login" }));
         }
 
+        [TestCase(true, true, "resolve")]
+        [TestCase(false, true, "cancel")]
+        [TestCase(true, false, null)]
+        [TestCase(false, false, null)]
+        public async Task Confirmation_AnswersOnlyWhileAppServerIsAvailable(bool accept, bool available, string expected)
+        {
+            await McpElicitationFlow.RunConfirmationAsync(
+                () => accept,
+                () => Task.FromResult(available),
+                () =>
+                {
+                    _calls.Add("resolve");
+                    return Task.CompletedTask;
+                },
+                () =>
+                {
+                    _calls.Add("cancel");
+                    return Task.CompletedTask;
+                });
+
+            Assert.That(_calls, Is.EqualTo(expected == null ? new string[0] : new[] { expected }));
+        }
+
         private Task RunAsync(string url)
         {
-            return McpElicitationUrlFlow.RunAsync(
+            return McpElicitationFlow.RunUrlAsync(
                 url,
                 allowedUrl =>
                 {

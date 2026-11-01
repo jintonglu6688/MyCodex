@@ -51,12 +51,12 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(_statusLabel, true);
 
-            _refreshButton = CreateButton(UiLocalization.Text("GitEnvironmentForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitEnvironmentForm.Accessible.Refresh", "Refresh"), 0, 112);
-            _setNameButton = CreateButton(UiLocalization.Text("GitEnvironmentForm.Button.SetName", "Set Name(&N)"), UiLocalization.Text("GitEnvironmentForm.Accessible.SetName", "Set name"), 1, 120);
-            _setEmailButton = CreateButton(UiLocalization.Text("GitEnvironmentForm.Button.SetEmail", "Set Email(&E)"), UiLocalization.Text("GitEnvironmentForm.Accessible.SetEmail", "Set email"), 2, 120);
-            _copySummaryButton = CreateButton(UiLocalization.Text("GitEnvironmentForm.Button.CopySummary", "Copy Summary(&S)"), UiLocalization.Text("GitEnvironmentForm.Accessible.CopySummary", "Copy summary"), 3, 140);
-            _copyDetailsButton = CreateButton(UiLocalization.Text("GitEnvironmentForm.Button.CopyDetails", "Copy Details(&D)"), UiLocalization.Text("GitEnvironmentForm.Accessible.CopyDetails", "Copy details"), 4, 132);
-            _closeButton = CreateButton(UiLocalization.Text("GitEnvironmentForm.Button.Close", "Close(&C)"), UiLocalization.Text("GitEnvironmentForm.Accessible.Close", "Close"), 5, 112);
+            _refreshButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitEnvironmentForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitEnvironmentForm.Accessible.Refresh", "Refresh"), 0, 112);
+            _setNameButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitEnvironmentForm.Button.SetName", "Set Name(&N)"), UiLocalization.Text("GitEnvironmentForm.Accessible.SetName", "Set name"), 1, 120);
+            _setEmailButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitEnvironmentForm.Button.SetEmail", "Set Email(&E)"), UiLocalization.Text("GitEnvironmentForm.Accessible.SetEmail", "Set email"), 2, 120);
+            _copySummaryButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitEnvironmentForm.Button.CopySummary", "Copy Summary(&S)"), UiLocalization.Text("GitEnvironmentForm.Accessible.CopySummary", "Copy summary"), 3, 140);
+            _copyDetailsButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitEnvironmentForm.Button.CopyDetails", "Copy Details(&D)"), UiLocalization.Text("GitEnvironmentForm.Accessible.CopyDetails", "Copy details"), 4, 132);
+            _closeButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitEnvironmentForm.Button.Close", "Close(&C)"), UiLocalization.Text("GitEnvironmentForm.Accessible.Close", "Close"), 5, 112);
             FormInteractionConventions.ConfigureRefreshButton(_refreshButton);
 
             UiTheme.ApplyButton(_refreshButton, UiGlyph.Refresh);
@@ -364,20 +364,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(textBox, true, true);
             return textBox;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, int width)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = width,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 4, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
     }
 }

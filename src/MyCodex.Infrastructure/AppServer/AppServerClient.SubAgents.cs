@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Domain.Enums;
+using MyCodex.Shared.Localization;
 
 namespace MyCodex.Infrastructure.AppServer
 {
@@ -39,7 +40,7 @@ namespace MyCodex.Infrastructure.AppServer
             var details = await ReadThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
             AppServerSubAgentOperations.ValidateIdentity(threadId, details);
             var inputs = BuildUserInputs(inputItems);
-            if (inputs.Count == 0) throw new ArgumentException(L("AppServerClient.Error.ValidInputRequired", "At least one valid input item is required."));
+            if (inputs.Count == 0) throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ValidInputRequired", "At least one valid input item is required."));
             var request = AppServerSubAgentOperations.BuildInputRequest(details, inputs.ToArray());
             cancellationToken.ThrowIfCancellationRequested();
             if (epoch != GetConnectionEpoch()) throw new OperationCanceledException();

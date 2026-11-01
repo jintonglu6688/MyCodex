@@ -254,10 +254,10 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
-            if (IsExternalUri(uri))
+            if (ExternalUrlLauncher.IsMessageLink(uri))
             {
                 e.Cancel = true;
-                OpenExternalUri(uri.AbsoluteUri);
+                OpenLinkAfterWebViewEvent(uri.AbsoluteUri);
                 return;
             }
 
@@ -294,18 +294,10 @@ namespace MyCodex.WinForms.Forms
             }
 
             Uri uri;
-            if (Uri.TryCreate(e.Uri, UriKind.Absolute, out uri) && IsExternalUri(uri))
+            if (Uri.TryCreate(e.Uri, UriKind.Absolute, out uri) && ExternalUrlLauncher.IsMessageLink(uri))
             {
-                OpenExternalUri(uri.AbsoluteUri);
+                OpenLinkAfterWebViewEvent(uri.AbsoluteUri);
             }
-        }
-
-        private static bool IsExternalUri(Uri uri)
-        {
-            return uri != null &&
-                   (string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(uri.Scheme, Uri.UriSchemeMailto, StringComparison.OrdinalIgnoreCase));
         }
 
         private static string GetViewerText(ChatHistoryItem item)
@@ -328,15 +320,10 @@ namespace MyCodex.WinForms.Forms
             return item.DisplayText ?? string.Empty;
         }
 
-        private static void OpenExternalUri(string uri)
+        // A failure opens a message box, which must not run a nested message loop inside a WebView2 event.
+        private void OpenLinkAfterWebViewEvent(string uri)
         {
-            try
-            {
-                Process.Start(new ProcessStartInfo { FileName = uri, UseShellExecute = true });
-            }
-            catch
-            {
-            }
+            BeginInvoke((Action)(() => ExternalUrlLauncher.OpenMessageLink(this, uri)));
         }
 
         private sealed class CopyCodeWebMessage

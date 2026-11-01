@@ -148,7 +148,7 @@ namespace MyCodex.WinForms.Forms
             targetPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112F));
             targetPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             targetPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            targetPanel.Controls.Add(CreateLabel(UiLocalization.Text("GitWorktreeCreateForm.Label.TargetPath", "Target path(&T)")), 0, 0);
+            targetPanel.Controls.Add(UiControlFactory.CreateFillAutoSizeLabel(UiLocalization.Text("GitWorktreeCreateForm.Label.TargetPath", "Target path(&T)")), 0, 0);
             targetPanel.Controls.Add(_targetPathTextBox, 0, 1);
             targetPanel.Controls.Add(_browseButton, 1, 1);
 
@@ -183,22 +183,9 @@ namespace MyCodex.WinForms.Forms
             };
             panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            panel.Controls.Add(CreateLabel(labelText), 0, 0);
+            panel.Controls.Add(UiControlFactory.CreateFillAutoSizeLabel(labelText), 0, 0);
             panel.Controls.Add(textBox, 0, 1);
             return panel;
-        }
-
-        private static Label CreateLabel(string text)
-        {
-            var label = new Label
-            {
-                Text = text,
-                Dock = DockStyle.Fill,
-                AutoSize = true,
-                TabStop = false
-            };
-            UiTheme.ApplyLabel(label, true);
-            return label;
         }
 
         private static string BuildDefaultTargetPath(string workspacePath)

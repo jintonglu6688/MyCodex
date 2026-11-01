@@ -241,7 +241,7 @@ namespace MyCodex.WinForms.Forms
                     .SelectMany(snapshot => snapshot.Skills)
                     .Where(skill => skill != null && !string.IsNullOrWhiteSpace(skill.Path))
                     .OrderByDescending(skill => skill.Enabled)
-                    .ThenBy(GetSkillInsertionDisplayName, StringComparer.CurrentCultureIgnoreCase)
+                    .ThenBy(ComposeAttachmentState.GetSkillInsertionDisplayName, StringComparer.CurrentCultureIgnoreCase)
                     .ToList();
                 if (skills.Count == 0)
                 {
@@ -298,7 +298,7 @@ namespace MyCodex.WinForms.Forms
                     }
 
                     var plugin = form.SelectedPlugin;
-                    var displayName = GetPluginInsertionDisplayName(plugin);
+                    var displayName = ComposeAttachmentState.GetPluginInsertionDisplayName(plugin);
                     return new[]
                     {
                         new PendingAttachmentItem(
@@ -478,7 +478,7 @@ namespace MyCodex.WinForms.Forms
                 return new ChatWorkbenchSendResult(false, false, UiLocalization.Text("SubAgentWorkbenchForm.Status.WorkspaceUnavailable", "Workspace is unavailable"));
             }
 
-            var planCommand = ParsePlanSlashCommand(request.RawText);
+            var planCommand = PlanSlashCommandParser.Parse(request.RawText);
             if (planCommand.IsPlanCommand && string.IsNullOrWhiteSpace(planCommand.PromptText))
             {
                 SetSessionPlanMode(session, true, true);

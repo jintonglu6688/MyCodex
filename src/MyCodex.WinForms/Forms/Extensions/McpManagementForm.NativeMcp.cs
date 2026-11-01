@@ -16,10 +16,10 @@ namespace MyCodex.WinForms.Forms
 
         private void InitializeNativeMcpActions()
         {
-            _importNativeMcpButton = CreateButton(
+            _importNativeMcpButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("McpManagementForm.Native.Import", "Import global settings (&I)"),
                 UiLocalization.Text("McpManagementForm.Native.ImportName", "Import global settings"), 8);
-            _reloadNativeMcpButton = CreateButton(
+            _reloadNativeMcpButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("McpManagementForm.Native.Reload", "Retry loading MCP (&L)"),
                 UiLocalization.Text("McpManagementForm.Native.ReloadName", "Retry loading MCP"), 9);
             _importNativeMcpButton.Visible = _nativeMcp != null;

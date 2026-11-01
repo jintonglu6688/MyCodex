@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Services;
 using MyCodex.Shared.Constants;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
@@ -679,7 +680,7 @@ namespace MyCodex.WinForms.Forms
             string status)
         {
             var repository = GetSelectedRepository(state);
-            var url = BuildGitHubWebUrl(repository, relativePath);
+            var url = GitHubRepositoryWebUrl.Build(repository, relativePath);
             if (string.IsNullOrWhiteSpace(url))
             {
                 RestoreRepositoryFocus(state);
@@ -688,11 +689,7 @@ namespace MyCodex.WinForms.Forms
 
             try
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = url,
-                    UseShellExecute = true
-                });
+                ExternalUrlLauncher.Open(url);
                 SetStatus(status, true);
             }
             catch (Exception ex)
@@ -1257,7 +1254,7 @@ namespace MyCodex.WinForms.Forms
 
             var loading = state.RefreshCancellation != null;
             var repository = GetSelectedRepository(state);
-            var hasWebUrl = !string.IsNullOrWhiteSpace(BuildGitHubWebUrl(repository, null));
+            var hasWebUrl = !string.IsNullOrWhiteSpace(GitHubRepositoryWebUrl.Build(repository, null));
             _repositoryContextMenu.MenuItems.Clear();
             if (loading || repository == null)
             {
@@ -2099,54 +2096,6 @@ namespace MyCodex.WinForms.Forms
             return value
                 ? UiLocalization.Text("GitRemoteRepositoriesForm.Value.Yes", "Yes")
                 : UiLocalization.Text("GitRemoteRepositoriesForm.Value.No", "No");
-        }
-
-        private static string BuildGitHubWebUrl(GitHubRepositoryEntry repository, string relativePath)
-        {
-            if (repository == null)
-            {
-                return string.Empty;
-            }
-
-            var baseUrl = NormalizeGitHubHttpsUrl(repository.HttpsUrl);
-            if (string.IsNullOrWhiteSpace(baseUrl) && !string.IsNullOrWhiteSpace(repository.NameWithOwner))
-            {
-                var fullName = repository.NameWithOwner.Trim().Trim('/');
-                if (fullName.IndexOf('/') > 0)
-                {
-                    baseUrl = "https://github.com/" + fullName;
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(baseUrl))
-            {
-                return string.Empty;
-            }
-
-            if (string.IsNullOrWhiteSpace(relativePath))
-            {
-                return baseUrl;
-            }
-
-            return baseUrl.TrimEnd('/') + "/" + relativePath.TrimStart('/');
-        }
-
-        private static string NormalizeGitHubHttpsUrl(string url)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                return string.Empty;
-            }
-
-            var value = url.Trim();
-            if (!value.StartsWith("https://github.com/", StringComparison.OrdinalIgnoreCase))
-            {
-                return string.Empty;
-            }
-
-            return value.EndsWith(".git", StringComparison.OrdinalIgnoreCase)
-                ? value.Substring(0, value.Length - 4)
-                : value;
         }
 
         private sealed class RepositoryRenameForm : Form

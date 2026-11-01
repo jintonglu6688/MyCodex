@@ -116,14 +116,14 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyCheckBox(_useSshCloneUrlCheckBox);
 
-            _refreshRepositoriesButton = CreateButton(UiLocalization.Text("GitCloneForm.Button.RefreshRepositories", "Load Repositories(&L)"), UiLocalization.Text("GitCloneForm.Accessible.RefreshRepositories", "Load repositories"), 2, 132);
-            _browseButton = CreateButton(UiLocalization.Text("GitCloneForm.Button.Browse", "Browse(&B)..."), UiLocalization.Text("GitCloneForm.Accessible.Browse", "Browse"), 6, 112);
-            _cloneButton = CreateButton(UiLocalization.Text("GitCloneForm.Button.Clone", "Clone(&C)"), UiLocalization.Text("GitCloneForm.Accessible.Clone", "Clone"), 10, 112);
-            _cancelCloneButton = CreateButton(UiLocalization.Text("GitCloneForm.Button.CancelClone", "Cancel(&N)"), UiLocalization.Text("GitCloneForm.Accessible.CancelClone", "Cancel clone"), 11, 112);
-            _copyOutputButton = CreateButton(UiLocalization.Text("GitCloneForm.Button.CopyOutput", "Copy Output(&O)"), UiLocalization.Text("GitCloneForm.Accessible.CopyOutput", "Copy output"), 12, 128);
-            _openWorkspaceButton = CreateButton(UiLocalization.Text("GitCloneForm.Button.OpenWorkspace", "Open Workspace(&W)"), UiLocalization.Text("GitCloneForm.Accessible.OpenWorkspace", "Open workspace"), 13, 150);
-            _openGitWorkbenchButton = CreateButton(UiLocalization.Text("GitCloneForm.Button.OpenGitWorkbench", "Open Git Workbench(&G)"), UiLocalization.Text("GitCloneForm.Accessible.OpenGitWorkbench", "Open Git Workbench"), 14, 170);
-            _closeButton = CreateButton(UiLocalization.Text("GitCloneForm.Button.Close", "Close(&E)"), UiLocalization.Text("GitCloneForm.Accessible.Close", "Close"), 15, 112);
+            _refreshRepositoriesButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitCloneForm.Button.RefreshRepositories", "Load Repositories(&L)"), UiLocalization.Text("GitCloneForm.Accessible.RefreshRepositories", "Load repositories"), 2, 132);
+            _browseButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitCloneForm.Button.Browse", "Browse(&B)..."), UiLocalization.Text("GitCloneForm.Accessible.Browse", "Browse"), 6, 112);
+            _cloneButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitCloneForm.Button.Clone", "Clone(&C)"), UiLocalization.Text("GitCloneForm.Accessible.Clone", "Clone"), 10, 112);
+            _cancelCloneButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitCloneForm.Button.CancelClone", "Cancel(&N)"), UiLocalization.Text("GitCloneForm.Accessible.CancelClone", "Cancel clone"), 11, 112);
+            _copyOutputButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitCloneForm.Button.CopyOutput", "Copy Output(&O)"), UiLocalization.Text("GitCloneForm.Accessible.CopyOutput", "Copy output"), 12, 128);
+            _openWorkspaceButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitCloneForm.Button.OpenWorkspace", "Open Workspace(&W)"), UiLocalization.Text("GitCloneForm.Accessible.OpenWorkspace", "Open workspace"), 13, 150);
+            _openGitWorkbenchButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitCloneForm.Button.OpenGitWorkbench", "Open Git Workbench(&G)"), UiLocalization.Text("GitCloneForm.Accessible.OpenGitWorkbench", "Open Git Workbench"), 14, 170);
+            _closeButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitCloneForm.Button.Close", "Close(&E)"), UiLocalization.Text("GitCloneForm.Accessible.Close", "Close"), 15, 112);
             FormInteractionConventions.ConfigureRefreshButton(_refreshRepositoriesButton, true);
 
             UiTheme.ApplyButton(_refreshRepositoriesButton, UiGlyph.Refresh);
@@ -865,20 +865,6 @@ namespace MyCodex.WinForms.Forms
             listView.Columns.Add(UiLocalization.Text("GitCloneForm.Column.UpdatedAt", "Updated"), 150);
             UiTheme.ApplyListView(listView);
             return listView;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, int width)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = width,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 4, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
 
         private static string NormalizeInitialTargetParent(string value, bool usesRemoteTargetDirectory)

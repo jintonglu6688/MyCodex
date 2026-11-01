@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MyCodex.Application.DTOs;
+using MyCodex.Shared.Helpers;
 using MyCodex.WinForms.Localization;
 
 namespace MyCodex.WinForms.Skills
@@ -257,7 +258,7 @@ namespace MyCodex.WinForms.Skills
                 return null;
             }
 
-            return FirstNonEmpty(plugin.DisplayName, plugin.Name, plugin.PluginId);
+            return TextValueHelper.TrimToNull(TextValueHelper.FirstNonEmptyTrimmed(plugin.DisplayName, plugin.Name, plugin.PluginId));
         }
 
         private static SkillSourceInfo CreateSimple(SkillSourceKind kind)
@@ -267,8 +268,8 @@ namespace MyCodex.WinForms.Skills
 
         private static SkillSourceInfo CreatePlugin(string pluginDisplayName, string marketplaceName, string sourcePath)
         {
-            pluginDisplayName = FirstNonEmpty(pluginDisplayName);
-            marketplaceName = FirstNonEmpty(marketplaceName);
+            pluginDisplayName = TextValueHelper.TrimToNull(pluginDisplayName);
+            marketplaceName = TextValueHelper.TrimToNull(marketplaceName);
 
             string displayText;
             if (!string.IsNullOrWhiteSpace(pluginDisplayName) && !string.IsNullOrWhiteSpace(marketplaceName))
@@ -312,24 +313,6 @@ namespace MyCodex.WinForms.Skills
                 default:
                     return UiLocalization.Text("SkillSourceResolver.Source.Unknown", "Unknown");
             }
-        }
-
-        private static string FirstNonEmpty(params string[] values)
-        {
-            if (values == null)
-            {
-                return null;
-            }
-
-            foreach (var value in values)
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    return value.Trim();
-                }
-            }
-
-            return null;
         }
     }
 }

@@ -117,7 +117,7 @@ namespace MyCodex.WinForms.Forms
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-            root.Controls.Add(CreateLabel(UiLocalization.Text("GitWorktreeSwitchForm.Label.Mode", "Mode(&M)")), 0, 0);
+            root.Controls.Add(UiControlFactory.CreateFillAutoSizeLabel(UiLocalization.Text("GitWorktreeSwitchForm.Label.Mode", "Mode(&M)")), 0, 0);
             root.Controls.Add(_modeComboBox, 0, 1);
             root.Controls.Add(_targetTextBox, 0, 2);
 
@@ -133,19 +133,6 @@ namespace MyCodex.WinForms.Forms
             footer.Controls.Add(_okButton);
             root.Controls.Add(footer, 0, 3);
             Controls.Add(root);
-        }
-
-        private static Label CreateLabel(string text)
-        {
-            var label = new Label
-            {
-                Text = text,
-                Dock = DockStyle.Fill,
-                AutoSize = true,
-                TabStop = false
-            };
-            UiTheme.ApplyLabel(label, true);
-            return label;
         }
 
         private sealed class ModeOption

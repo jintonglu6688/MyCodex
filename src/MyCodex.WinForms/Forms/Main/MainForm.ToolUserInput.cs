@@ -128,34 +128,17 @@ namespace MyCodex.WinForms.Forms
                     "{0} requests confirmation:\r\n\r\n{1}\r\n\r\nAllow it to continue?"),
                 serverName,
                 prompt);
-            var result = MessageBox.Show(
-                this,
-                message,
-                UiLocalization.Text("MainForm.McpElicitation.ConfirmationPrompt.Title", "MCP Confirmation"),
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question,
-                MessageBoxDefaultButton.Button2);
-
-            if (!await EnsureAppServerAvailableForActionAsync(UiLocalization.Text("MainForm.Action.SubmitToolInput", "Submit tool input")))
-            {
-                return;
-            }
-
-            if (!await EnsureAppServerAvailableForActionAsync(UiLocalization.Text("MainForm.Action.SubmitToolInput", "Submit tool input")))
-            {
-                return;
-            }
-
-            if (result == DialogResult.Yes)
-            {
-                await _appServerClient.ResolveToolUserInputRequestAsync(
-                    request.RequestId,
-                    new Dictionary<string, string[]>(StringComparer.Ordinal));
-            }
-            else
-            {
-                await _appServerClient.CancelToolUserInputRequestAsync(request.RequestId);
-            }
+            await McpElicitationFlow.RunConfirmationAsync(
+                () => MessageBox.Show(
+                    this,
+                    message,
+                    UiLocalization.Text("MainForm.McpElicitation.ConfirmationPrompt.Title", "MCP Confirmation"),
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button2) == DialogResult.Yes,
+                () => EnsureAppServerAvailableForActionAsync(UiLocalization.Text("MainForm.Action.SubmitToolInput", "Submit tool input")),
+                () => _appServerClient.ResolveToolUserInputRequestAsync(request.RequestId, new Dictionary<string, string[]>(StringComparer.Ordinal)),
+                () => _appServerClient.CancelToolUserInputRequestAsync(request.RequestId));
         }
 
         private async void ShowMcpElicitationUrlDialog(AppServerEventArgs request)
@@ -171,7 +154,7 @@ namespace MyCodex.WinForms.Forms
                 var serverName = string.IsNullOrWhiteSpace(request.McpServerName)
                     ? UiLocalization.Text("MainForm.McpElicitation.UnknownServer", "MCP server")
                     : request.McpServerName;
-                await McpElicitationUrlFlow.RunAsync(
+                await McpElicitationFlow.RunUrlAsync(
                     request.Url,
                     allowedUrl => MessageBox.Show(
                         this,

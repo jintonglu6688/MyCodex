@@ -64,10 +64,10 @@ namespace MyCodex.Infrastructure.AppServer
             var details = detailLines.Count == 0
                 ? string.Empty
                 : string.Join(Environment.NewLine, detailLines.ToArray());
-            var content = BuildChangedFilesPreview(changedFiles, L("AppServerClient.FileChange.ProgressPrefix", "Processing"));
+            var content = BuildChangedFilesPreview(changedFiles, SharedLocalization.Text("AppServerClient.FileChange.ProgressPrefix", "Processing"));
             if (string.IsNullOrWhiteSpace(content))
             {
-                content = L("AppServerClient.FileChange.PatchUpdated", "File changes updated.");
+                content = SharedLocalization.Text("AppServerClient.FileChange.PatchUpdated", "File changes updated.");
             }
 
             return new AppServerEventArgs(
@@ -84,22 +84,22 @@ namespace MyCodex.Infrastructure.AppServer
         private static string BuildDetailLine(string kind, string path, string movePath)
         {
             var displayPath = string.IsNullOrWhiteSpace(path)
-                ? L("AppServerClient.Value.UnknownFile", "(Unknown file)")
+                ? SharedLocalization.Text("AppServerClient.Value.UnknownFile", "(Unknown file)")
                 : path;
 
             switch ((kind ?? string.Empty).Trim().ToLowerInvariant())
             {
                 case "add":
-                    return L("AppServerClient.FileChange.LinePrefix.Added", "Added ") + displayPath;
+                    return SharedLocalization.Text("AppServerClient.FileChange.LinePrefix.Added", "Added ") + displayPath;
                 case "delete":
-                    return L("AppServerClient.FileChange.LinePrefix.Deleted", "Deleted ") + displayPath;
+                    return SharedLocalization.Text("AppServerClient.FileChange.LinePrefix.Deleted", "Deleted ") + displayPath;
                 case "update":
                     return !string.IsNullOrWhiteSpace(movePath)
                         ? LF("AppServerClient.FileChange.Line.Moved.Template", "Moved {0} -> {1}", displayPath, movePath)
-                        : L("AppServerClient.FileChange.LinePrefix.Modified", "Modified ") + displayPath;
+                        : SharedLocalization.Text("AppServerClient.FileChange.LinePrefix.Modified", "Modified ") + displayPath;
                 default:
                     return !string.IsNullOrWhiteSpace(path)
-                        ? L("AppServerClient.FileChange.LinePrefix.Processed", "Processed ") + path
+                        ? SharedLocalization.Text("AppServerClient.FileChange.LinePrefix.Processed", "Processed ") + path
                         : string.Empty;
             }
         }
@@ -131,9 +131,9 @@ namespace MyCodex.Infrastructure.AppServer
             if (changedFiles.Count > displayCount)
             {
                 builder.Append(Environment.NewLine);
-                builder.Append(L("AppServerClient.FileChange.MoreFiles.Prefix", "And "));
+                builder.Append(SharedLocalization.Text("AppServerClient.FileChange.MoreFiles.Prefix", "And "));
                 builder.Append(changedFiles.Count - displayCount);
-                builder.Append(L("AppServerClient.FileChange.MoreFiles.Suffix", " more files"));
+                builder.Append(SharedLocalization.Text("AppServerClient.FileChange.MoreFiles.Suffix", " more files"));
             }
 
             return builder.ToString();
@@ -224,14 +224,9 @@ namespace MyCodex.Infrastructure.AppServer
             }
         }
 
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
-        }
-
         private static string LF(string key, string fallback, params object[] args)
         {
-            return string.Format(CultureInfo.CurrentCulture, L(key, fallback), args ?? new object[0]);
+            return string.Format(CultureInfo.CurrentCulture, SharedLocalization.Text(key, fallback), args ?? new object[0]);
         }
     }
 }

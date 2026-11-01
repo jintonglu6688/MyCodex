@@ -80,7 +80,7 @@ namespace MyCodex.WinForms.Forms
                 }
 
                 InvalidateSessionHistoryCache(threadId);
-                ResetTurnProgressSummaryBeforeSend(threadId, CollectTurnSkillNames(queuedMessage.Attachments));
+                ResetTurnProgressSummaryBeforeSend(threadId, ComposeAttachmentState.CollectTurnSkillNames(queuedMessage.Attachments));
                 MarkLocalDesktopRealtimeTurn(threadId);
                 RegisterPendingInvalidEncryptedContentRetry(
                     queuedMessage.Session,

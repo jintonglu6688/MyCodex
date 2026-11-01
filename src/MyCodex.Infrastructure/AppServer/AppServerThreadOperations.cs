@@ -219,7 +219,7 @@ namespace MyCodex.Infrastructure.AppServer
                 ex.Message.StartsWith("cannot delete thread ", StringComparison.Ordinal) &&
                 ex.Message.EndsWith(": forked history still references it", StringComparison.Ordinal))
             {
-                throw new InvalidOperationException(L(
+                throw new InvalidOperationException(SharedLocalization.Text(
                     "AppServerClient.Error.ThreadReferencedByFork",
                     "Cannot permanently delete this history because a forked conversation still references it. You can archive the conversation instead."), ex);
             }
@@ -292,7 +292,7 @@ namespace MyCodex.Infrastructure.AppServer
             var summary = AppServerThreadMapper.BuildThreadSummary(thread, _mapServerPathToClient);
             if (summary == null || string.IsNullOrWhiteSpace(summary.ThreadId))
             {
-                throw new InvalidOperationException(L("AppServerClient.Error.ForkedThreadIdMissing", "App Server did not return the forked thread ID."));
+                throw new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.ForkedThreadIdMissing", "App Server did not return the forked thread ID."));
             }
 
             _rememberLoadedThreadId(summary.ThreadId);
@@ -325,12 +325,12 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(request.ThreadId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ThreadIdRequired", "Thread ID cannot be empty."), nameof(request));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ThreadIdRequired", "Thread ID cannot be empty."), nameof(request));
             }
 
             if (request.Event == null)
             {
-                throw new ArgumentException(L("AppServerClient.Error.GuardianEventRequired", "Guardian assessment event cannot be empty."), nameof(request));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.GuardianEventRequired", "Guardian assessment event cannot be empty."), nameof(request));
             }
 
             return SendRequestAsync(
@@ -367,7 +367,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ThreadNameRequired", "Thread name cannot be empty."), nameof(name));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ThreadNameRequired", "Thread name cannot be empty."), nameof(name));
             }
 
             await SendRequestAsync("thread/name/set", new Dictionary<string, object>
@@ -391,7 +391,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(objective))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ThreadGoalObjectiveRequired", "Thread goal objective cannot be empty."), nameof(objective));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ThreadGoalObjectiveRequired", "Thread goal objective cannot be empty."), nameof(objective));
             }
 
             await _ensureThreadLoadedAsync(threadId, workspacePath, approvalMode).ConfigureAwait(false);
@@ -684,7 +684,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (string.IsNullOrWhiteSpace(threadId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ThreadIdRequired", "Thread ID cannot be empty."), nameof(threadId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ThreadIdRequired", "Thread ID cannot be empty."), nameof(threadId));
             }
         }
 
@@ -744,11 +744,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return text.Substring(0, maxLength) + "...";
-        }
-
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
         }
     }
 }

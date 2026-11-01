@@ -38,6 +38,44 @@ namespace MyCodex.WinForms.Theming
             return button;
         }
 
+        /// <summary>Creates a <see cref="CreateActionButton"/> style button that also keeps a small top margin.</summary>
+        internal static Button CreateRaisedActionButton(string text, string accessibleName, int tabIndex, int width)
+        {
+            var button = CreateActionButton(text, accessibleName, tabIndex, width);
+            button.Margin = new Padding(UiTheme.ControlSpacing, 4, 0, 0);
+            return button;
+        }
+
+        /// <summary>Creates a fixed-size button with a right margin, for button rows that flow left to right.</summary>
+        internal static Button CreateCompactButton(string text, string accessibleName, int width = 96, int tabIndex = 0)
+        {
+            return new Button
+            {
+                Text = text,
+                AccessibleName = accessibleName,
+                Width = width,
+                Height = UiTheme.ButtonHeight,
+                Margin = new Padding(0, 0, UiTheme.ControlSpacing, 0),
+                UseMnemonic = true,
+                TabIndex = tabIndex
+            };
+        }
+
+        /// <summary>Creates an auto-sized button with a minimum width, for the action rows of list windows.</summary>
+        internal static Button CreateListActionButton(string text, string accessibleName, int tabIndex)
+        {
+            return new Button
+            {
+                Text = text,
+                AccessibleName = accessibleName,
+                AutoSize = true,
+                MinimumSize = new Size(108, 0),
+                Margin = new Padding(0, 0, UiTheme.ControlSpacing, 0),
+                UseMnemonic = true,
+                TabIndex = tabIndex
+            };
+        }
+
         /// <summary>
         /// Creates an auto-sized dialog button with a glyph, styled by <see cref="UiTheme.ApplyDialogButton"/>.
         /// </summary>
@@ -73,6 +111,20 @@ namespace MyCodex.WinForms.Theming
                 Dock = DockStyle.Fill,
                 Text = text,
                 TextAlign = ContentAlignment.MiddleLeft,
+                TabStop = false
+            };
+            UiTheme.ApplyLabel(label, true);
+            return label;
+        }
+
+        /// <summary>Creates a display-only muted label that fills its cell and sizes to its text.</summary>
+        internal static Label CreateFillAutoSizeLabel(string text)
+        {
+            var label = new Label
+            {
+                Text = text,
+                Dock = DockStyle.Fill,
+                AutoSize = true,
                 TabStop = false
             };
             UiTheme.ApplyLabel(label, true);

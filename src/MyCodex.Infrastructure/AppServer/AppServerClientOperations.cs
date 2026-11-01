@@ -105,7 +105,7 @@ namespace MyCodex.Infrastructure.AppServer
             _ensureConnected();
             if (string.IsNullOrWhiteSpace(apiKey))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ApiKeyRequired", "API key cannot be empty."), nameof(apiKey));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ApiKeyRequired", "API key cannot be empty."), nameof(apiKey));
             }
 
             var result = await SendRequestAsync("account/login/start", new Dictionary<string, object>
@@ -127,7 +127,7 @@ namespace MyCodex.Infrastructure.AppServer
             _ensureConnected();
             if (string.IsNullOrWhiteSpace(loginId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.LoginIdRequired", "Login id cannot be empty."), nameof(loginId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.LoginIdRequired", "Login id cannot be empty."), nameof(loginId));
             }
 
             var result = await SendRequestAsync("account/login/cancel", new Dictionary<string, object>
@@ -168,7 +168,7 @@ namespace MyCodex.Infrastructure.AppServer
             _ensureConnected();
             if (string.IsNullOrWhiteSpace(idempotencyKey))
             {
-                throw new ArgumentException(L("AppServerClient.Error.RateLimitResetIdempotencyKeyRequired", "Rate limit reset idempotency key cannot be empty."), nameof(idempotencyKey));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.RateLimitResetIdempotencyKeyRequired", "Rate limit reset idempotency key cannot be empty."), nameof(idempotencyKey));
             }
 
             var parameters = new Dictionary<string, object>
@@ -236,7 +236,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (edits == null || edits.Count == 0)
             {
-                throw new ArgumentException(L("AppServerClient.Error.BatchConfigEditsRequired", "Batch config edits cannot be empty."), nameof(edits));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.BatchConfigEditsRequired", "Batch config edits cannot be empty."), nameof(edits));
             }
 
             var serializedEdits = new List<object>();
@@ -249,12 +249,12 @@ namespace MyCodex.Infrastructure.AppServer
 
                 if (string.IsNullOrWhiteSpace(edit.KeyPath))
                 {
-                    throw new ArgumentException(L("AppServerClient.Error.ConfigKeyPathRequired", "Config key path cannot be empty."), nameof(edits));
+                    throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ConfigKeyPathRequired", "Config key path cannot be empty."), nameof(edits));
                 }
 
                 if (string.IsNullOrWhiteSpace(edit.MergeStrategy))
                 {
-                    throw new ArgumentException(L("AppServerClient.Error.ConfigMergeStrategyRequired", "Config merge strategy cannot be empty."), nameof(edits));
+                    throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ConfigMergeStrategyRequired", "Config merge strategy cannot be empty."), nameof(edits));
                 }
 
                 serializedEdits.Add(new Dictionary<string, object>
@@ -267,7 +267,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (serializedEdits.Count == 0)
             {
-                throw new ArgumentException(L("AppServerClient.Error.BatchConfigEditsRequired", "Batch config edits cannot be empty."), nameof(edits));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.BatchConfigEditsRequired", "Batch config edits cannot be empty."), nameof(edits));
             }
 
             var parameters = new Dictionary<string, object>
@@ -314,7 +314,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(serverName))
             {
-                throw new ArgumentException(L("AppServerClient.Error.McpServerNameRequired", "MCP server name cannot be empty."), nameof(serverName));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.McpServerNameRequired", "MCP server name cannot be empty."), nameof(serverName));
             }
 
             var parameters = new Dictionary<string, object>
@@ -345,12 +345,12 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(server))
             {
-                throw new ArgumentException(L("AppServerClient.Error.McpServerNameRequired", "MCP server name cannot be empty."), nameof(server));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.McpServerNameRequired", "MCP server name cannot be empty."), nameof(server));
             }
 
             if (string.IsNullOrWhiteSpace(uri))
             {
-                throw new ArgumentException(L("AppServerClient.Error.McpResourceUriRequired", "MCP resource URI cannot be empty."), nameof(uri));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.McpResourceUriRequired", "MCP resource URI cannot be empty."), nameof(uri));
             }
 
             var parameters = new Dictionary<string, object>
@@ -378,17 +378,17 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(request.ThreadId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ThreadIdRequired", "Thread ID cannot be empty."), nameof(request));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ThreadIdRequired", "Thread ID cannot be empty."), nameof(request));
             }
 
             if (string.IsNullOrWhiteSpace(request.Server))
             {
-                throw new ArgumentException(L("AppServerClient.Error.McpServerNameRequired", "MCP server name cannot be empty."), nameof(request));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.McpServerNameRequired", "MCP server name cannot be empty."), nameof(request));
             }
 
             if (string.IsNullOrWhiteSpace(request.Tool))
             {
-                throw new ArgumentException(L("AppServerClient.Error.McpToolNameRequired", "MCP tool name cannot be empty."), nameof(request));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.McpToolNameRequired", "MCP tool name cannot be empty."), nameof(request));
             }
 
             var parameters = new Dictionary<string, object>
@@ -452,7 +452,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(path))
             {
-                throw new ArgumentException(L("AppServerClient.Error.SkillPathRequired", "Skill path cannot be empty."), nameof(path));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.SkillPathRequired", "Skill path cannot be empty."), nameof(path));
             }
 
             var result = await SendRequestAsync("skills/config/write", new Dictionary<string, object>
@@ -637,12 +637,12 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(marketplacePath))
             {
-                throw new ArgumentException(L("AppServerClient.Error.PluginMarketplacePathRequired", "Plugin marketplace path cannot be empty."), nameof(marketplacePath));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.PluginMarketplacePathRequired", "Plugin marketplace path cannot be empty."), nameof(marketplacePath));
             }
 
             if (string.IsNullOrWhiteSpace(pluginName))
             {
-                throw new ArgumentException(L("AppServerClient.Error.PluginNameRequired", "Plugin name cannot be empty."), nameof(pluginName));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.PluginNameRequired", "Plugin name cannot be empty."), nameof(pluginName));
             }
 
             var result = await SendRequestAsync("plugin/read", new Dictionary<string, object>
@@ -668,17 +668,17 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(remoteMarketplaceName))
             {
-                throw new ArgumentException(L("AppServerClient.Error.PluginMarketplaceNameRequired", "Plugin marketplace name cannot be empty."), nameof(remoteMarketplaceName));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.PluginMarketplaceNameRequired", "Plugin marketplace name cannot be empty."), nameof(remoteMarketplaceName));
             }
 
             if (string.IsNullOrWhiteSpace(remotePluginId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.PluginIdRequired", "Plugin ID cannot be empty."), nameof(remotePluginId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.PluginIdRequired", "Plugin ID cannot be empty."), nameof(remotePluginId));
             }
 
             if (string.IsNullOrWhiteSpace(skillName))
             {
-                throw new ArgumentException(L("AppServerClient.Error.SkillNameRequired", "Skill name cannot be empty."), nameof(skillName));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.SkillNameRequired", "Skill name cannot be empty."), nameof(skillName));
             }
 
             var result = await SendRequestAsync(
@@ -724,7 +724,7 @@ namespace MyCodex.Infrastructure.AppServer
             if (string.IsNullOrWhiteSpace(source))
             {
                 throw new ArgumentException(
-                    L("AppServerClient.Error.MarketplaceSourceRequired", "Marketplace source cannot be empty."),
+                    SharedLocalization.Text("AppServerClient.Error.MarketplaceSourceRequired", "Marketplace source cannot be empty."),
                     nameof(source));
             }
 
@@ -749,7 +749,7 @@ namespace MyCodex.Infrastructure.AppServer
             if (string.IsNullOrWhiteSpace(marketplaceName))
             {
                 throw new ArgumentException(
-                    L("AppServerClient.Error.PluginMarketplaceNameRequired", "Plugin marketplace name cannot be empty."),
+                    SharedLocalization.Text("AppServerClient.Error.PluginMarketplaceNameRequired", "Plugin marketplace name cannot be empty."),
                     nameof(marketplaceName));
             }
 
@@ -770,12 +770,12 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(marketplacePath))
             {
-                throw new ArgumentException(L("AppServerClient.Error.PluginMarketplacePathRequired", "Plugin marketplace path cannot be empty."), nameof(marketplacePath));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.PluginMarketplacePathRequired", "Plugin marketplace path cannot be empty."), nameof(marketplacePath));
             }
 
             if (string.IsNullOrWhiteSpace(pluginName))
             {
-                throw new ArgumentException(L("AppServerClient.Error.PluginNameRequired", "Plugin name cannot be empty."), nameof(pluginName));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.PluginNameRequired", "Plugin name cannot be empty."), nameof(pluginName));
             }
 
             var result = await SendRequestAsync("plugin/install", new Dictionary<string, object>
@@ -794,12 +794,12 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(remoteMarketplaceName))
             {
-                throw new ArgumentException(L("AppServerClient.Error.PluginMarketplaceNameRequired", "Plugin marketplace name cannot be empty."), nameof(remoteMarketplaceName));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.PluginMarketplaceNameRequired", "Plugin marketplace name cannot be empty."), nameof(remoteMarketplaceName));
             }
 
             if (string.IsNullOrWhiteSpace(remotePluginId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.PluginIdRequired", "Plugin ID cannot be empty."), nameof(remotePluginId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.PluginIdRequired", "Plugin ID cannot be empty."), nameof(remotePluginId));
             }
 
             var result = await SendRequestAsync("plugin/install", new Dictionary<string, object>
@@ -827,7 +827,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(pluginId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.PluginIdRequired", "Plugin ID cannot be empty."), nameof(pluginId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.PluginIdRequired", "Plugin ID cannot be empty."), nameof(pluginId));
             }
 
             await SendRequestAsync("plugin/uninstall", new Dictionary<string, object>
@@ -930,7 +930,7 @@ namespace MyCodex.Infrastructure.AppServer
             _ensureConnected();
             if (string.IsNullOrWhiteSpace(workspacePath))
             {
-                throw new ArgumentException(L("AppServerClient.Error.WorkspacePathRequired", "Workspace path cannot be empty."), nameof(workspacePath));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.WorkspacePathRequired", "Workspace path cannot be empty."), nameof(workspacePath));
             }
 
             var result = await SendRequestAsync(
@@ -1002,7 +1002,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                throw new ArgumentException(L("AppServerClient.Error.FileSystemPathRequired", "File system path cannot be empty."), nameof(path));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.FileSystemPathRequired", "File system path cannot be empty."), nameof(path));
             }
 
             return new Dictionary<string, object>
@@ -1062,12 +1062,12 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (string.IsNullOrWhiteSpace(sourcePath))
             {
-                throw new ArgumentException(L("AppServerClient.Error.FileSystemSourcePathRequired", "File system source path cannot be empty."), nameof(sourcePath));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.FileSystemSourcePathRequired", "File system source path cannot be empty."), nameof(sourcePath));
             }
 
             if (string.IsNullOrWhiteSpace(destinationPath))
             {
-                throw new ArgumentException(L("AppServerClient.Error.FileSystemDestinationPathRequired", "File system destination path cannot be empty."), nameof(destinationPath));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.FileSystemDestinationPathRequired", "File system destination path cannot be empty."), nameof(destinationPath));
             }
 
             return new Dictionary<string, object>
@@ -1085,7 +1085,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (string.IsNullOrWhiteSpace(watchId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.FileSystemWatchIdRequired", "File system watch ID cannot be empty."), nameof(watchId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.FileSystemWatchIdRequired", "File system watch ID cannot be empty."), nameof(watchId));
             }
 
             var normalizedPath = Convert.ToString(BuildFileSystemPathParameters(path, mapPath)["path"]);
@@ -1096,7 +1096,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (string.IsNullOrWhiteSpace(watchId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.FileSystemWatchIdRequired", "File system watch ID cannot be empty."), nameof(watchId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.FileSystemWatchIdRequired", "File system watch ID cannot be empty."), nameof(watchId));
             }
 
             return new Dictionary<string, object>
@@ -1116,14 +1116,14 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(request.Query))
             {
-                throw new ArgumentException(L("AppServerClient.Error.FuzzyFileSearchQueryRequired", "File search query cannot be empty."), nameof(request));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.FuzzyFileSearchQueryRequired", "File search query cannot be empty."), nameof(request));
             }
 
             var parameters = AppServerRequestParameterBuilder.BuildFuzzyFileSearchParameters(request, mapRoot);
             var roots = parameters["roots"] as string[];
             if (roots == null || roots.Length == 0)
             {
-                throw new ArgumentException(L("AppServerClient.Error.FuzzyFileSearchRootsRequired", "At least one file search root is required."), nameof(request));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.FuzzyFileSearchRootsRequired", "At least one file search root is required."), nameof(request));
             }
 
             return parameters;
@@ -1155,11 +1155,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             target[key] = value;
-        }
-
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
         }
     }
 }

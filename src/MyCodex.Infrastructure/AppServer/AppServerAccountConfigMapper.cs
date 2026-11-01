@@ -357,26 +357,26 @@ namespace MyCodex.Infrastructure.AppServer
                 return LF(
                     "AppServerClient.ConfigSource.Mdm.Template",
                     "MDM: {0}/{1}",
-                    AppServerJsonValue.GetString(source, "domain") ?? L("AppServerClient.Value.UnknownDomain", "(Unknown domain)"),
-                    AppServerJsonValue.GetString(source, "key") ?? L("AppServerClient.Value.UnknownKey", "(Unknown key)"));
+                    AppServerJsonValue.GetString(source, "domain") ?? SharedLocalization.Text("AppServerClient.Value.UnknownDomain", "(Unknown domain)"),
+                    AppServerJsonValue.GetString(source, "key") ?? SharedLocalization.Text("AppServerClient.Value.UnknownKey", "(Unknown key)"));
             }
 
             switch (sourceType)
             {
                 case "user":
-                    return L("AppServerClient.ConfigSource.User.Prefix", "User config: ") + AppServerPathUtilities.NormalizeDisplayPath(AppServerJsonValue.GetString(source, "file"));
+                    return SharedLocalization.Text("AppServerClient.ConfigSource.User.Prefix", "User config: ") + AppServerPathUtilities.NormalizeDisplayPath(AppServerJsonValue.GetString(source, "file"));
                 case "project":
-                    return L("AppServerClient.ConfigSource.Project.Prefix", "Project config: ") + AppServerPathUtilities.NormalizeDisplayPath(AppServerJsonValue.GetString(source, "dotCodexFolder"));
+                    return SharedLocalization.Text("AppServerClient.ConfigSource.Project.Prefix", "Project config: ") + AppServerPathUtilities.NormalizeDisplayPath(AppServerJsonValue.GetString(source, "dotCodexFolder"));
                 case "system":
-                    return L("AppServerClient.ConfigSource.System.Prefix", "System config: ") + AppServerPathUtilities.NormalizeDisplayPath(AppServerJsonValue.GetString(source, "file"));
+                    return SharedLocalization.Text("AppServerClient.ConfigSource.System.Prefix", "System config: ") + AppServerPathUtilities.NormalizeDisplayPath(AppServerJsonValue.GetString(source, "file"));
                 case "sessionFlags":
-                    return L("AppServerClient.ConfigSource.SessionArguments", "Session arguments");
+                    return SharedLocalization.Text("AppServerClient.ConfigSource.SessionArguments", "Session arguments");
                 case "legacyManagedConfigTomlFromFile":
-                    return L("AppServerClient.ConfigSource.LegacyManaged.Prefix", "Legacy managed config: ") + AppServerPathUtilities.NormalizeDisplayPath(AppServerJsonValue.GetString(source, "file"));
+                    return SharedLocalization.Text("AppServerClient.ConfigSource.LegacyManaged.Prefix", "Legacy managed config: ") + AppServerPathUtilities.NormalizeDisplayPath(AppServerJsonValue.GetString(source, "file"));
                 case "legacyManagedConfigTomlFromMdm":
-                    return L("AppServerClient.ConfigSource.LegacyMdmManaged", "Legacy MDM managed config");
+                    return SharedLocalization.Text("AppServerClient.ConfigSource.LegacyMdmManaged", "Legacy MDM managed config");
                 default:
-                    return L("AppServerClient.ConfigSource.UnknownLayer", "Unknown config layer");
+                    return SharedLocalization.Text("AppServerClient.ConfigSource.UnknownLayer", "Unknown config layer");
             }
         }
 
@@ -398,14 +398,9 @@ namespace MyCodex.Infrastructure.AppServer
             return null;
         }
 
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
-        }
-
         private static string LF(string key, string fallback, params object[] args)
         {
-            return string.Format(CultureInfo.CurrentCulture, L(key, fallback), args ?? Array.Empty<object>());
+            return string.Format(CultureInfo.CurrentCulture, SharedLocalization.Text(key, fallback), args ?? Array.Empty<object>());
         }
     }
 }

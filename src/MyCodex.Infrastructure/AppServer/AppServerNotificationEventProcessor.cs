@@ -243,7 +243,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             _context.RaiseEvent(new AppServerEventArgs(
                 "external_agent_config_import_completed",
-                L("AppServerClient.ExternalAgentConfig.ImportCompleted", "External agent configuration import completed.")));
+                SharedLocalization.Text("AppServerClient.ExternalAgentConfig.ImportCompleted", "External agent configuration import completed.")));
         }
 
         private void HandleFileSystemChanged(IDictionary<string, object> parameters)
@@ -251,7 +251,7 @@ namespace MyCodex.Infrastructure.AppServer
             var changedEvent = AppServerFileSystemMapper.BuildChangedEvent(parameters);
             _context.RaiseEvent(new AppServerEventArgs(
                 "file_system_changed",
-                L("AppServerClient.FileSystem.Changed", "File system changed."),
+                SharedLocalization.Text("AppServerClient.FileSystem.Changed", "File system changed."),
                 requestId: changedEvent.WatchId,
                 changedFiles: changedEvent.ChangedPaths,
                 fileSystemChanged: changedEvent));
@@ -262,7 +262,7 @@ namespace MyCodex.Infrastructure.AppServer
             var session = AppServerFuzzyFileSearchMapper.BuildSessionUpdated(parameters);
             _context.RaiseEvent(new AppServerEventArgs(
                 "fuzzy_file_search_session_updated",
-                L("AppServerClient.FuzzyFileSearch.SessionUpdated", "File search results updated."),
+                SharedLocalization.Text("AppServerClient.FuzzyFileSearch.SessionUpdated", "File search results updated."),
                 requestId: session.SessionId,
                 fuzzyFileSearchSession: session));
         }
@@ -272,7 +272,7 @@ namespace MyCodex.Infrastructure.AppServer
             var session = AppServerFuzzyFileSearchMapper.BuildSessionCompleted(parameters);
             _context.RaiseEvent(new AppServerEventArgs(
                 "fuzzy_file_search_session_completed",
-                L("AppServerClient.FuzzyFileSearch.SessionCompleted", "File search completed."),
+                SharedLocalization.Text("AppServerClient.FuzzyFileSearch.SessionCompleted", "File search completed."),
                 requestId: session.SessionId,
                 fuzzyFileSearchSession: session));
         }
@@ -283,9 +283,9 @@ namespace MyCodex.Infrastructure.AppServer
             _context.RaiseEvent(new AppServerEventArgs(
                 "windows_sandbox_setup_completed",
                 result.Success
-                    ? L("AppServerClient.WindowsSandbox.SetupCompleted", "Windows Sandbox setup completed.")
+                    ? SharedLocalization.Text("AppServerClient.WindowsSandbox.SetupCompleted", "Windows Sandbox setup completed.")
                     : (string.IsNullOrWhiteSpace(result.Error)
-                        ? L("AppServerClient.WindowsSandbox.SetupFailed", "Windows Sandbox setup failed.")
+                        ? SharedLocalization.Text("AppServerClient.WindowsSandbox.SetupFailed", "Windows Sandbox setup failed.")
                         : result.Error),
                 itemStatus: result.Success ? "success" : "failed",
                 windowsSandboxSetupCompleted: result));
@@ -430,7 +430,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             _context.RaiseEvent(new AppServerEventArgs(
                 "thread_goal_cleared",
-                L("AppServerClient.ThreadGoal.Cleared", "Thread goal cleared."),
+                SharedLocalization.Text("AppServerClient.ThreadGoal.Cleared", "Thread goal cleared."),
                 threadId: threadId));
         }
 
@@ -456,7 +456,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             _context.RaiseEvent(new AppServerEventArgs(
                 "turn_plan_updated",
-                L("AppServerClient.Turn.PlanUpdated", "Plan updated."),
+                SharedLocalization.Text("AppServerClient.Turn.PlanUpdated", "Plan updated."),
                 threadId: AppServerJsonValueReader.GetString(parameters, "threadId"),
                 turnId: AppServerJsonValueReader.GetString(parameters, "turnId"),
                 explanation: AppServerJsonValueReader.GetString(parameters, "explanation"),
@@ -474,7 +474,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             _context.RaiseEvent(new AppServerEventArgs(
                 "turn_diff_updated",
-                L("AppServerClient.Turn.DiffUpdated", "Change summary updated."),
+                SharedLocalization.Text("AppServerClient.Turn.DiffUpdated", "Change summary updated."),
                 threadId: AppServerJsonValueReader.GetString(parameters, "threadId"),
                 turnId: AppServerJsonValueReader.GetString(parameters, "turnId"),
                 diffText: diffText,
@@ -550,7 +550,7 @@ namespace MyCodex.Infrastructure.AppServer
 
                     _context.RaiseEvent(new AppServerEventArgs(
                         "reasoning_started",
-                        L("AppServerClient.Reasoning.Started", "Analyzing"),
+                        SharedLocalization.Text("AppServerClient.Reasoning.Started", "Analyzing"),
                         threadId: threadId,
                         turnId: turnId,
                         itemId: itemId));
@@ -566,7 +566,7 @@ namespace MyCodex.Infrastructure.AppServer
 
                     _context.RaiseEvent(new AppServerEventArgs(
                         "file_change_progress",
-                        L("AppServerClient.FileChange.Summarizing", "Summarizing file changes"),
+                        SharedLocalization.Text("AppServerClient.FileChange.Summarizing", "Summarizing file changes"),
                         threadId: threadId,
                         turnId: turnId,
                         itemId: itemId));
@@ -638,7 +638,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             _context.RaiseEvent(new AppServerEventArgs(
                 "plan_delta",
-                L("AppServerClient.Turn.PlanUpdating", "Plan is being updated."),
+                SharedLocalization.Text("AppServerClient.Turn.PlanUpdating", "Plan is being updated."),
                 threadId: threadId,
                 turnId: turnId,
                 itemId: itemId,
@@ -787,7 +787,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                content = L("AppServerClient.Command.TerminalInteraction", "Command requires input.");
+                content = SharedLocalization.Text("AppServerClient.Command.TerminalInteraction", "Command requires input.");
             }
 
             _context.RaiseEvent(new AppServerEventArgs(
@@ -1075,9 +1075,9 @@ namespace MyCodex.Infrastructure.AppServer
                     var status = AppServerJsonValueReader.GetString(item, "status");
                     var exitCode = AppServerJsonValueReader.GetNullableInt(item, "exitCode");
                     var summary = string.Format(
-                        L("AppServerClient.Command.CompletedSummary.Template", "Command finished: {0}, status: {1}{2}"),
-                        string.IsNullOrWhiteSpace(command) ? L("AppServerClient.Value.UnknownCommand", "(Unknown command)") : command,
-                        string.IsNullOrWhiteSpace(status) ? L("AppServerClient.Value.Unknown", "(Unknown)") : status,
+                        SharedLocalization.Text("AppServerClient.Command.CompletedSummary.Template", "Command finished: {0}, status: {1}{2}"),
+                        string.IsNullOrWhiteSpace(command) ? SharedLocalization.Text("AppServerClient.Value.UnknownCommand", "(Unknown command)") : command,
+                        string.IsNullOrWhiteSpace(status) ? SharedLocalization.Text("AppServerClient.Value.Unknown", "(Unknown)") : status,
                         exitCode.HasValue
                             ? LF("AppServerClient.Command.ExitCodeSuffix.Template", ", exit code: {0}", exitCode.Value)
                             : string.Empty);
@@ -1103,7 +1103,7 @@ namespace MyCodex.Infrastructure.AppServer
                             ? finalReasoningSummary
                             : (!string.IsNullOrWhiteSpace(finalReasoningPreview)
                                 ? finalReasoningPreview
-                                : L("AppServerClient.Reasoning.Completed", "Analysis completed")),
+                                : SharedLocalization.Text("AppServerClient.Reasoning.Completed", "Analysis completed")),
                         threadId: threadId,
                         turnId: turnId,
                         itemId: itemId,
@@ -1114,7 +1114,7 @@ namespace MyCodex.Infrastructure.AppServer
                     var fileChangeDetails = AppServerProtocolTextComposer.BuildFileChangeSummaryText(item, bufferedFileChangeOutput, out changedFiles);
                     _context.RaiseEvent(new AppServerEventArgs(
                         "file_change_completed",
-                        L("AppServerClient.FileChange.Completed", "File changes completed"),
+                        SharedLocalization.Text("AppServerClient.FileChange.Completed", "File changes completed"),
                         threadId: threadId,
                         turnId: turnId,
                         itemId: itemId,
@@ -1134,10 +1134,10 @@ namespace MyCodex.Infrastructure.AppServer
                         !string.IsNullOrWhiteSpace(errorMessage)
                             ? errorMessage
                             : (isCompleted
-                                ? L("AppServerClient.Status.Completed", "Completed")
+                                ? SharedLocalization.Text("AppServerClient.Status.Completed", "Completed")
                                 : (isFailed
-                                    ? L("AppServerClient.Status.Failed", "Failed")
-                                    : L("AppServerClient.Status.Ended", "Ended"))),
+                                    ? SharedLocalization.Text("AppServerClient.Status.Failed", "Failed")
+                                    : SharedLocalization.Text("AppServerClient.Status.Ended", "Ended"))),
                         threadId: threadId,
                         turnId: turnId,
                         itemId: itemId,
@@ -1162,8 +1162,8 @@ namespace MyCodex.Infrastructure.AppServer
         {
             var details = ExtractWebSearchDetails(item);
             var prefix = started
-                ? L("AppServerClient.Network.WebSearchStarted", "Web search started")
-                : L("AppServerClient.Network.WebSearchCompleted", "Web search completed");
+                ? SharedLocalization.Text("AppServerClient.Network.WebSearchStarted", "Web search started")
+                : SharedLocalization.Text("AppServerClient.Network.WebSearchCompleted", "Web search completed");
             return string.IsNullOrWhiteSpace(details)
                 ? prefix
                 : prefix + ": " + details;
@@ -1265,7 +1265,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             _context.RaiseEvent(new AppServerEventArgs(
                 "skills_changed",
-                L("AppServerClient.Skills.Changed", "Detected changes in skill files.")));
+                SharedLocalization.Text("AppServerClient.Skills.Changed", "Detected changes in skill files.")));
         }
 
         private void HandleRateLimitsUpdated()
@@ -1447,14 +1447,9 @@ namespace MyCodex.Infrastructure.AppServer
             return text.Substring(0, maxLength) + "...";
         }
 
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
-        }
-
         private static string LF(string key, string fallback, params object[] args)
         {
-            return string.Format(CultureInfo.CurrentCulture, L(key, fallback), args ?? Array.Empty<object>());
+            return string.Format(CultureInfo.CurrentCulture, SharedLocalization.Text(key, fallback), args ?? Array.Empty<object>());
         }
 
         private sealed class PendingMcpToolCallItem

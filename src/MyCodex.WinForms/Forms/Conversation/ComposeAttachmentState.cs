@@ -226,6 +226,61 @@ namespace MyCodex.WinForms.Forms
             return false;
         }
 
+        internal static List<string> CollectTurnSkillNames(IReadOnlyList<PendingAttachmentItem> attachments)
+        {
+            var skillNames = new List<string>();
+            if (attachments == null || attachments.Count == 0)
+            {
+                return skillNames;
+            }
+
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < attachments.Count; i++)
+            {
+                var attachment = attachments[i];
+                if (attachment == null || attachment.Kind != AttachmentKind.Skill)
+                {
+                    continue;
+                }
+
+                var skillName = GetTurnSkillDisplayName(attachment);
+                if (string.IsNullOrWhiteSpace(skillName) || !seen.Add(skillName))
+                {
+                    continue;
+                }
+
+                skillNames.Add(skillName);
+            }
+
+            return skillNames;
+        }
+
+        private static string GetTurnSkillDisplayName(PendingAttachmentItem attachment)
+        {
+            var skillName = !string.IsNullOrWhiteSpace(attachment.DisplayName)
+                ? attachment.DisplayName.Trim()
+                : string.Empty;
+            if (skillName.Length > 0)
+            {
+                return skillName;
+            }
+
+            skillName = !string.IsNullOrWhiteSpace(attachment.InputName)
+                ? attachment.InputName.Trim()
+                : string.Empty;
+            if (skillName.Length > 0)
+            {
+                return skillName;
+            }
+
+            if (string.IsNullOrWhiteSpace(attachment.LocalPath))
+            {
+                return string.Empty;
+            }
+
+            return Path.GetFileName(attachment.LocalPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        }
+
         internal static int CountAttachmentsByKind(IEnumerable<PendingAttachmentItem> attachments, AttachmentKind kind)
         {
             return (attachments ?? Array.Empty<PendingAttachmentItem>()).Count(item => item != null && item.Kind == kind);

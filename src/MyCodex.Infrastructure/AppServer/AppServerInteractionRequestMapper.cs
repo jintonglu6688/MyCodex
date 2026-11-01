@@ -238,13 +238,13 @@ namespace MyCodex.Infrastructure.AppServer
             switch (decision)
             {
                 case AppServerApprovalDecision.AllowForSession:
-                    actionText = L("AppServerClient.Approval.Action.AllowForSession", "Allowed for this session");
+                    actionText = SharedLocalization.Text("AppServerClient.Approval.Action.AllowForSession", "Allowed for this session");
                     break;
                 case AppServerApprovalDecision.Decline:
-                    actionText = L("AppServerClient.Approval.Action.Rejected", "Rejected");
+                    actionText = SharedLocalization.Text("AppServerClient.Approval.Action.Rejected", "Rejected");
                     break;
                 default:
-                    actionText = L("AppServerClient.Approval.Action.AllowOnce", "Allowed once");
+                    actionText = SharedLocalization.Text("AppServerClient.Approval.Action.AllowOnce", "Allowed once");
                     break;
             }
 
@@ -256,14 +256,14 @@ namespace MyCodex.Infrastructure.AppServer
                         "{0} command approval: {1}",
                         actionText,
                         string.IsNullOrWhiteSpace(pendingRequest.CommandText)
-                            ? L("AppServerClient.Value.UnknownCommand", "(Unknown command)")
+                            ? SharedLocalization.Text("AppServerClient.Value.UnknownCommand", "(Unknown command)")
                             : pendingRequest.CommandText);
                 case AppServerApprovalRequestKind.FileChange:
-                    return actionText + L("AppServerClient.Approval.FileChange.ResolvedSuffix", " file-change approval.");
+                    return actionText + SharedLocalization.Text("AppServerClient.Approval.FileChange.ResolvedSuffix", " file-change approval.");
                 case AppServerApprovalRequestKind.Permissions:
-                    return actionText + L("AppServerClient.Approval.Permissions.ResolvedSuffix", " permission approval.");
+                    return actionText + SharedLocalization.Text("AppServerClient.Approval.Permissions.ResolvedSuffix", " permission approval.");
                 default:
-                    return actionText + L("AppServerClient.Approval.ResolvedSuffix", " approval request.");
+                    return actionText + SharedLocalization.Text("AppServerClient.Approval.ResolvedSuffix", " approval request.");
             }
         }
 
@@ -347,18 +347,18 @@ namespace MyCodex.Infrastructure.AppServer
                         "AppServerClient.Approval.Command.Requested.Template",
                         "Received command approval request: {0}",
                         string.IsNullOrWhiteSpace(commandText)
-                            ? L("AppServerClient.Value.UnknownCommand", "(Unknown command)")
+                            ? SharedLocalization.Text("AppServerClient.Value.UnknownCommand", "(Unknown command)")
                             : commandText);
                 case AppServerApprovalRequestKind.FileChange:
                     return string.IsNullOrWhiteSpace(reason)
-                        ? L("AppServerClient.Approval.FileChange.Requested", "Received file-change approval request.")
-                        : L("AppServerClient.Approval.FileChange.RequestedWithReason.Prefix", "Received file-change approval request: ") + reason;
+                        ? SharedLocalization.Text("AppServerClient.Approval.FileChange.Requested", "Received file-change approval request.")
+                        : SharedLocalization.Text("AppServerClient.Approval.FileChange.RequestedWithReason.Prefix", "Received file-change approval request: ") + reason;
                 case AppServerApprovalRequestKind.Permissions:
                     return string.IsNullOrWhiteSpace(reason)
-                        ? L("AppServerClient.Approval.Permissions.Requested", "Received permission approval request.")
-                        : L("AppServerClient.Approval.Permissions.RequestedWithReason.Prefix", "Received permission approval request: ") + reason;
+                        ? SharedLocalization.Text("AppServerClient.Approval.Permissions.Requested", "Received permission approval request.")
+                        : SharedLocalization.Text("AppServerClient.Approval.Permissions.RequestedWithReason.Prefix", "Received permission approval request: ") + reason;
                 default:
-                    return L("AppServerClient.Approval.Requested", "Received approval request.");
+                    return SharedLocalization.Text("AppServerClient.Approval.Requested", "Received approval request.");
             }
         }
 
@@ -369,7 +369,7 @@ namespace MyCodex.Infrastructure.AppServer
                 case AppServerApprovalRequestKind.Command:
                     var commandActions = GetList(parameters, "commandActions");
                     return commandActions != null && commandActions.Count > 0
-                        ? L("AppServerClient.Approval.CommandActions.Prefix", "Command actions: ") + commandActions.Count
+                        ? SharedLocalization.Text("AppServerClient.Approval.CommandActions.Prefix", "Command actions: ") + commandActions.Count
                         : string.Empty;
                 case AppServerApprovalRequestKind.FileChange:
                     return BuildFileChangeApprovalDetails(parameters);
@@ -397,13 +397,13 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 var remaining = lines.Count - 8;
                 lines = lines.GetRange(0, 8);
-                lines.Add(L("AppServerClient.FileChange.MoreFiles.Prefix", "And ") + remaining + L("AppServerClient.FileChange.MoreFiles.Suffix", " more files"));
+                lines.Add(SharedLocalization.Text("AppServerClient.FileChange.MoreFiles.Prefix", "And ") + remaining + SharedLocalization.Text("AppServerClient.FileChange.MoreFiles.Suffix", " more files"));
             }
 
             var grantRoot = AppServerJsonValue.GetString(parameters, "grantRoot");
             if (!string.IsNullOrWhiteSpace(grantRoot))
             {
-                lines.Add(L("AppServerClient.Approval.WriteRoot.Prefix", "Write root: ") + grantRoot);
+                lines.Add(SharedLocalization.Text("AppServerClient.Approval.WriteRoot.Prefix", "Write root: ") + grantRoot);
             }
 
             return string.Join(Environment.NewLine, lines.ToArray()).Trim();
@@ -475,7 +475,7 @@ namespace MyCodex.Infrastructure.AppServer
                 case "written":
                 case "write_file":
                 case "create_file":
-                    return L("AppServerClient.FileChange.LinePrefix.Added", "Added ") + (path ?? L("AppServerClient.Value.UnknownFile", "(Unknown file)"));
+                    return SharedLocalization.Text("AppServerClient.FileChange.LinePrefix.Added", "Added ") + (path ?? SharedLocalization.Text("AppServerClient.Value.UnknownFile", "(Unknown file)"));
                 case "delete":
                 case "deleted":
                 case "remove":
@@ -483,7 +483,7 @@ namespace MyCodex.Infrastructure.AppServer
                 case "unlink":
                 case "delete_file":
                 case "remove_file":
-                    return L("AppServerClient.FileChange.LinePrefix.Deleted", "Deleted ") + (path ?? L("AppServerClient.Value.UnknownFile", "(Unknown file)"));
+                    return SharedLocalization.Text("AppServerClient.FileChange.LinePrefix.Deleted", "Deleted ") + (path ?? SharedLocalization.Text("AppServerClient.Value.UnknownFile", "(Unknown file)"));
                 case "update":
                 case "updated":
                 case "modify":
@@ -494,17 +494,17 @@ namespace MyCodex.Infrastructure.AppServer
                 case "patched":
                 case "rewrite":
                     return !string.IsNullOrWhiteSpace(movePath)
-                        ? LF("AppServerClient.FileChange.Line.Moved.Template", "Moved {0} -> {1}", path ?? L("AppServerClient.Value.UnknownFile", "(Unknown file)"), movePath)
-                        : L("AppServerClient.FileChange.LinePrefix.Modified", "Modified ") + (path ?? L("AppServerClient.Value.UnknownFile", "(Unknown file)"));
+                        ? LF("AppServerClient.FileChange.Line.Moved.Template", "Moved {0} -> {1}", path ?? SharedLocalization.Text("AppServerClient.Value.UnknownFile", "(Unknown file)"), movePath)
+                        : SharedLocalization.Text("AppServerClient.FileChange.LinePrefix.Modified", "Modified ") + (path ?? SharedLocalization.Text("AppServerClient.Value.UnknownFile", "(Unknown file)"));
                 case "move":
                 case "moved":
                 case "rename":
                 case "renamed":
-                    return LF("AppServerClient.FileChange.Line.Moved.Template", "Moved {0} -> {1}", path ?? L("AppServerClient.Value.UnknownFile", "(Unknown file)"), string.IsNullOrWhiteSpace(movePath) ? L("AppServerClient.Value.UnknownFile", "(Unknown file)") : movePath);
+                    return LF("AppServerClient.FileChange.Line.Moved.Template", "Moved {0} -> {1}", path ?? SharedLocalization.Text("AppServerClient.Value.UnknownFile", "(Unknown file)"), string.IsNullOrWhiteSpace(movePath) ? SharedLocalization.Text("AppServerClient.Value.UnknownFile", "(Unknown file)") : movePath);
                 default:
                     return string.IsNullOrWhiteSpace(path)
                         ? string.Empty
-                        : L("AppServerClient.FileChange.LinePrefix.Processed", "Processed ") + path;
+                        : SharedLocalization.Text("AppServerClient.FileChange.LinePrefix.Processed", "Processed ") + path;
             }
         }
 
@@ -610,12 +610,12 @@ namespace MyCodex.Infrastructure.AppServer
                 {
                     question.Options.Add(new AppServerToolUserInputOption
                     {
-                        Label = L("AppServerClient.McpElicitation.Boolean.True", "True"),
+                        Label = SharedLocalization.Text("AppServerClient.McpElicitation.Boolean.True", "True"),
                         Value = "true"
                     });
                     question.Options.Add(new AppServerToolUserInputOption
                     {
-                        Label = L("AppServerClient.McpElicitation.Boolean.False", "False"),
+                        Label = SharedLocalization.Text("AppServerClient.McpElicitation.Boolean.False", "False"),
                         Value = "false"
                     });
                 }
@@ -641,7 +641,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (required)
             {
-                parts.Add(L("AppServerClient.McpElicitation.Required", "Required."));
+                parts.Add(SharedLocalization.Text("AppServerClient.McpElicitation.Required", "Required."));
             }
 
             var type = (AppServerJsonValue.GetString(schema, "type") ?? string.Empty).Trim().ToLowerInvariant();
@@ -650,10 +650,10 @@ namespace MyCodex.Infrastructure.AppServer
                 var allowedValues = GetMcpElicitationAllowedValues(AppServerJsonValue.GetDictionary(schema, "items"));
                 if (allowedValues.Count > 0)
                 {
-                    parts.Add(L("AppServerClient.McpElicitation.AllowedValues.Prefix", "Allowed values: ") + string.Join("; ", allowedValues.ToArray()));
+                    parts.Add(SharedLocalization.Text("AppServerClient.McpElicitation.AllowedValues.Prefix", "Allowed values: ") + string.Join("; ", allowedValues.ToArray()));
                 }
 
-                parts.Add(L("AppServerClient.McpElicitation.ArrayInputHint", "Enter multiple values separated by commas."));
+                parts.Add(SharedLocalization.Text("AppServerClient.McpElicitation.ArrayInputHint", "Enter multiple values separated by commas."));
             }
 
             return string.Join(Environment.NewLine, parts.ToArray());
@@ -845,7 +845,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (questions == null || questions.Count == 0)
             {
-                return L("AppServerClient.ToolInput.Requested", "Received tool input request.");
+                return SharedLocalization.Text("AppServerClient.ToolInput.Requested", "Received tool input request.");
             }
 
             var firstQuestion = questions[0];
@@ -859,7 +859,7 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return questions.Count == 1
-                ? L("AppServerClient.ToolInput.RequestedWithHeader.Prefix", "Received tool input request: ") + header
+                ? SharedLocalization.Text("AppServerClient.ToolInput.RequestedWithHeader.Prefix", "Received tool input request: ") + header
                 : LF(
                     "AppServerClient.ToolInput.RequestedWithHeaderAndMore.Template",
                     "Received tool input request: {0} and {1} more questions.",
@@ -874,12 +874,12 @@ namespace MyCodex.Infrastructure.AppServer
             bool isConfirmation)
         {
             var source = string.IsNullOrWhiteSpace(serverName)
-                ? L("AppServerClient.McpElicitation.UnknownServer", "MCP server")
+                ? SharedLocalization.Text("AppServerClient.McpElicitation.UnknownServer", "MCP server")
                 : serverName;
             var prompt = string.IsNullOrWhiteSpace(message)
                 ? isConfirmation
-                    ? L("AppServerClient.McpElicitation.NoConfirmationMessage", "Confirmation is required.")
-                    : L("AppServerClient.McpElicitation.NoMessage", "Additional input is required.")
+                    ? SharedLocalization.Text("AppServerClient.McpElicitation.NoConfirmationMessage", "Confirmation is required.")
+                    : SharedLocalization.Text("AppServerClient.McpElicitation.NoMessage", "Additional input is required.")
                 : message.Trim();
 
             return LF(
@@ -913,14 +913,14 @@ namespace MyCodex.Infrastructure.AppServer
                 var writeRoots = GetList(fileSystem, "write");
                 if (readRoots != null && readRoots.Count > 0)
                 {
-                    builder.Append(L("AppServerClient.Permissions.Read.Prefix", "Read: "))
+                    builder.Append(SharedLocalization.Text("AppServerClient.Permissions.Read.Prefix", "Read: "))
                         .Append(string.Join("; ", readRoots.Cast<object>()))
                         .AppendLine();
                 }
 
                 if (writeRoots != null && writeRoots.Count > 0)
                 {
-                    builder.Append(L("AppServerClient.Permissions.Write.Prefix", "Write: "))
+                    builder.Append(SharedLocalization.Text("AppServerClient.Permissions.Write.Prefix", "Write: "))
                         .Append(string.Join("; ", writeRoots.Cast<object>()))
                         .AppendLine();
                 }
@@ -928,7 +928,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (network.Count > 0 && AppServerJsonValueReader.GetNullableBool(network, "enabled").GetValueOrDefault())
             {
-                builder.Append(L("AppServerClient.Permissions.NetworkAllowed", "Network: allowed"));
+                builder.Append(SharedLocalization.Text("AppServerClient.Permissions.NetworkAllowed", "Network: allowed"));
             }
 
             return builder.ToString().Trim();
@@ -960,14 +960,9 @@ namespace MyCodex.Infrastructure.AppServer
             return mapServerPathToClient == null ? path : mapServerPathToClient(path);
         }
 
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
-        }
-
         private static string LF(string key, string fallback, params object[] args)
         {
-            return string.Format(CultureInfo.CurrentCulture, L(key, fallback), args ?? Array.Empty<object>());
+            return string.Format(CultureInfo.CurrentCulture, SharedLocalization.Text(key, fallback), args ?? Array.Empty<object>());
         }
     }
 

@@ -2152,44 +2152,6 @@ namespace MyCodex.WinForms.Forms
                 officeWorkspacePath);
         }
 
-        private static PlanSlashCommand ParsePlanSlashCommand(string text)
-        {
-            var trimmed = (text ?? string.Empty).TrimStart();
-            if (!trimmed.StartsWith("/", StringComparison.Ordinal))
-            {
-                return PlanSlashCommand.None;
-            }
-
-            string promptText;
-            if (TryParsePlanSlashCommand(trimmed, "/plan", out promptText) ||
-                TryParsePlanSlashCommand(trimmed, "/plan-mode", out promptText))
-            {
-                return new PlanSlashCommand(true, promptText);
-            }
-
-            return PlanSlashCommand.None;
-        }
-
-        private static bool TryParsePlanSlashCommand(string text, string command, out string promptText)
-        {
-            promptText = null;
-            if (text.Equals(command, StringComparison.OrdinalIgnoreCase))
-            {
-                promptText = string.Empty;
-                return true;
-            }
-
-            if (text.Length <= command.Length ||
-                !text.StartsWith(command, StringComparison.OrdinalIgnoreCase) ||
-                !char.IsWhiteSpace(text[command.Length]))
-            {
-                return false;
-            }
-
-            promptText = text.Substring(command.Length).TrimStart();
-            return true;
-        }
-
         private async void OnStopButtonClick(object sender, EventArgs e)
         {
             if (_currentSession == null || string.IsNullOrWhiteSpace(_currentSession.ThreadId))
@@ -3307,21 +3269,6 @@ namespace MyCodex.WinForms.Forms
             return string.IsNullOrWhiteSpace(thread.ThreadId)
                 ? UiLocalization.Text("MainForm.Value.UnnamedSession", "Unnamed session")
                 : thread.ThreadId;
-        }
-
-        private sealed class PlanSlashCommand
-        {
-            public static readonly PlanSlashCommand None = new PlanSlashCommand(false, null);
-
-            public PlanSlashCommand(bool isPlanCommand, string promptText)
-            {
-                IsPlanCommand = isPlanCommand;
-                PromptText = promptText;
-            }
-
-            public bool IsPlanCommand { get; }
-
-            public string PromptText { get; }
         }
 
         private sealed class PendingExecutablePlan

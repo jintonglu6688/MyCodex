@@ -91,7 +91,7 @@ namespace MyCodex.Infrastructure.AppServer
                         sessionPath);
                 }
 
-                throw new InvalidOperationException(L(
+                throw new InvalidOperationException(SharedLocalization.Text(
                     "AppServerClient.Error.WslThreadFilePathUnsupported",
                     "WSL session files cannot be deleted through Windows file access."));
             }
@@ -104,7 +104,7 @@ namespace MyCodex.Infrastructure.AppServer
             if (string.IsNullOrWhiteSpace(sessionPath))
             {
                 throw new ArgumentException(
-                    L("AppServerClient.Error.ThreadFilePathRequired", "Thread file path cannot be empty."),
+                    SharedLocalization.Text("AppServerClient.Error.ThreadFilePathRequired", "Thread file path cannot be empty."),
                     nameof(sessionPath));
             }
         }
@@ -158,11 +158,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return roots;
-        }
-
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
         }
     }
 }

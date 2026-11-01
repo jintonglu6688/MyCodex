@@ -89,22 +89,22 @@ namespace MyCodex.WinForms.Forms
                 TextAlign = ContentAlignment.MiddleLeft,
                 TabStop = false
             };
-            _refreshButton = CreateButton(
+            _refreshButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ThreadImportForm.Button.Refresh", "Refresh(&R)"),
                 UiLocalization.Text("ThreadImportForm.Accessible.Refresh", "Refresh"));
-            _selectAllButton = CreateButton(
+            _selectAllButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ThreadImportForm.Button.SelectAll", "Select All(&A)"),
                 UiLocalization.Text("ThreadImportForm.Accessible.SelectAll", "Select All"));
-            _clearSelectionButton = CreateButton(
+            _clearSelectionButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ThreadImportForm.Button.ClearSelection", "Clear Selection(&N)"),
                 UiLocalization.Text("ThreadImportForm.Accessible.ClearSelection", "Clear Selection"));
-            _currentWorkspaceButton = CreateButton(
+            _currentWorkspaceButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ThreadImportForm.Button.CurrentWorkspace", "Current Workspace(&W)"),
                 UiLocalization.Text("ThreadImportForm.Accessible.CurrentWorkspace", "Current Workspace"));
-            _importButton = CreateButton(
+            _importButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ThreadImportForm.Button.Import", "Sync(&S)"),
                 UiLocalization.Text("ThreadImportForm.Accessible.Import", "Sync"));
-            _cancelButton = CreateButton(
+            _cancelButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ThreadImportForm.Button.Close", "Close(&C)"),
                 UiLocalization.Text("ThreadImportForm.Accessible.Close", "Close"));
             FormInteractionConventions.ConfigureRefreshButton(_refreshButton);
@@ -502,19 +502,6 @@ namespace MyCodex.WinForms.Forms
         private static bool IsLocalWorkspacePathAvailable(string path)
         {
             return !string.IsNullOrWhiteSpace(path) && Directory.Exists(WorkspacePathUtilities.NormalizeLocalOrUnixPath(path));
-        }
-
-        private static Button CreateButton(string text, string accessibleName)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 96,
-                Height = 32,
-                Margin = new Padding(0, 0, 8, 0),
-                UseMnemonic = true
-            };
         }
 
         private static ListView CreateThreadListView()

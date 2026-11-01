@@ -204,7 +204,7 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 result = new AppServerMcpServerStatus
                 {
-                    ServerName = normalizedServerName ?? L("AppServerClient.Value.UnnamedServer", "Unnamed server")
+                    ServerName = normalizedServerName ?? SharedLocalization.Text("AppServerClient.Value.UnnamedServer", "Unnamed server")
                 };
                 target[key] = result;
             }
@@ -230,7 +230,7 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 target.ServerName = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "serverName", "name", "id") ??
                                     fallbackServerName ??
-                                    L("AppServerClient.Value.UnnamedServer", "Unnamed server");
+                                    SharedLocalization.Text("AppServerClient.Value.UnnamedServer", "Unnamed server");
             }
 
             var status = ExtractMcpServerStatusText(payload);
@@ -288,7 +288,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(target.ServerName))
             {
-                target.ServerName = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "serverName", "name", "id") ?? L("AppServerClient.Value.UnnamedServer", "Unnamed server");
+                target.ServerName = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "serverName", "name", "id") ?? SharedLocalization.Text("AppServerClient.Value.UnnamedServer", "Unnamed server");
             }
 
             target.ConfigValues = CloneDictionary(payload);
@@ -311,14 +311,14 @@ namespace MyCodex.Infrastructure.AppServer
 
             var commandText = BuildMcpServerCommandText(payload);
             var sourceDetail = commandText;
-            var sourceSummary = string.IsNullOrWhiteSpace(commandText) ? null : L("AppServerClient.Mcp.SourceSummary.Command", "Command");
+            var sourceSummary = string.IsNullOrWhiteSpace(commandText) ? null : SharedLocalization.Text("AppServerClient.Mcp.SourceSummary.Command", "Command");
 
             if (string.IsNullOrWhiteSpace(sourceDetail))
             {
                 sourceDetail = AppServerJsonValueReader.GetFirstNonEmptyString(payload, "url", "baseUrl", "serverUrl", "endpoint");
                 if (!string.IsNullOrWhiteSpace(sourceDetail))
                 {
-                    sourceSummary = L("AppServerClient.Mcp.SourceSummary.Http", "HTTP");
+                    sourceSummary = SharedLocalization.Text("AppServerClient.Mcp.SourceSummary.Http", "HTTP");
                 }
             }
 
@@ -629,7 +629,7 @@ namespace MyCodex.Infrastructure.AppServer
                 .ToArray();
             if (keys.Length == 0)
             {
-                return L("AppServerClient.Mcp.Environment.Configured", "Configured");
+                return SharedLocalization.Text("AppServerClient.Mcp.Environment.Configured", "Configured");
             }
 
             var summary = string.Join(", ", keys);
@@ -641,7 +641,7 @@ namespace MyCodex.Infrastructure.AppServer
         private static string BuildMcpServerDetailText(AppServerMcpServerStatus item)
         {
             var builder = new StringBuilder();
-            builder.AppendLine(LF("AppServerClient.Mcp.Detail.Server.Template", "Server: {0}", item.ServerName ?? L("AppServerClient.Value.UnnamedServer", "Unnamed server")));
+            builder.AppendLine(LF("AppServerClient.Mcp.Detail.Server.Template", "Server: {0}", item.ServerName ?? SharedLocalization.Text("AppServerClient.Value.UnnamedServer", "Unnamed server")));
             builder.AppendLine(LF("AppServerClient.Mcp.Detail.Enabled.Template", "Enabled: {0}", DescribeMcpServerEnabled(item.Enabled)));
             builder.AppendLine(LF("AppServerClient.Mcp.Detail.Auth.Template", "Auth: {0}", DescribeMcpServerAuthStatus(item.AuthStatus)));
 
@@ -653,10 +653,10 @@ namespace MyCodex.Infrastructure.AppServer
             if (item.ToolCount.HasValue || item.ResourceCount.HasValue || item.ResourceTemplateCount.HasValue)
             {
                 builder.AppendLine(string.Format(
-                    L("AppServerClient.Mcp.Detail.Capabilities.Template", "Capabilities: tools {0}, resources {1}, templates {2}"),
-                    item.ToolCount.HasValue ? item.ToolCount.Value.ToString() : L("AppServerClient.Value.Unknown", "Unknown"),
-                    item.ResourceCount.HasValue ? item.ResourceCount.Value.ToString() : L("AppServerClient.Value.Unknown", "Unknown"),
-                    item.ResourceTemplateCount.HasValue ? item.ResourceTemplateCount.Value.ToString() : L("AppServerClient.Value.Unknown", "Unknown")));
+                    SharedLocalization.Text("AppServerClient.Mcp.Detail.Capabilities.Template", "Capabilities: tools {0}, resources {1}, templates {2}"),
+                    item.ToolCount.HasValue ? item.ToolCount.Value.ToString() : SharedLocalization.Text("AppServerClient.Value.Unknown", "Unknown"),
+                    item.ResourceCount.HasValue ? item.ResourceCount.Value.ToString() : SharedLocalization.Text("AppServerClient.Value.Unknown", "Unknown"),
+                    item.ResourceTemplateCount.HasValue ? item.ResourceTemplateCount.Value.ToString() : SharedLocalization.Text("AppServerClient.Value.Unknown", "Unknown")));
             }
 
             if (!string.IsNullOrWhiteSpace(item.SourceSummary))
@@ -675,8 +675,8 @@ namespace MyCodex.Infrastructure.AppServer
                     "AppServerClient.Mcp.Detail.Required.Template",
                     "Required: {0}",
                     item.IsRequired.Value
-                        ? L("AppServerClient.Value.Yes", "Yes")
-                        : L("AppServerClient.Value.No", "No")));
+                        ? SharedLocalization.Text("AppServerClient.Value.Yes", "Yes")
+                        : SharedLocalization.Text("AppServerClient.Value.No", "No")));
             }
 
             if (!string.IsNullOrWhiteSpace(item.OAuthResource))
@@ -711,10 +711,10 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (!enabled.HasValue)
             {
-                return L("AppServerClient.Value.Unknown", "Unknown");
+                return SharedLocalization.Text("AppServerClient.Value.Unknown", "Unknown");
             }
 
-            return enabled.Value ? L("AppServerClient.Value.Enabled", "Enabled") : L("AppServerClient.Value.Disabled", "Disabled");
+            return enabled.Value ? SharedLocalization.Text("AppServerClient.Value.Enabled", "Enabled") : SharedLocalization.Text("AppServerClient.Value.Disabled", "Disabled");
         }
 
         private static string DescribeMcpServerStatus(string status)
@@ -722,15 +722,15 @@ namespace MyCodex.Infrastructure.AppServer
             switch ((status ?? string.Empty).Trim())
             {
                 case "active":
-                    return L("AppServerClient.Mcp.Status.Active", "Active");
+                    return SharedLocalization.Text("AppServerClient.Mcp.Status.Active", "Active");
                 case "idle":
-                    return L("AppServerClient.Mcp.Status.Idle", "Idle");
+                    return SharedLocalization.Text("AppServerClient.Mcp.Status.Idle", "Idle");
                 case "notLoaded":
-                    return L("AppServerClient.Mcp.Status.Unloaded", "Unloaded");
+                    return SharedLocalization.Text("AppServerClient.Mcp.Status.Unloaded", "Unloaded");
                 case "systemError":
-                    return L("AppServerClient.Mcp.Status.SystemError", "System error");
+                    return SharedLocalization.Text("AppServerClient.Mcp.Status.SystemError", "System error");
                 default:
-                    return string.IsNullOrWhiteSpace(status) ? L("AppServerClient.Value.Unknown", "Unknown") : status;
+                    return string.IsNullOrWhiteSpace(status) ? SharedLocalization.Text("AppServerClient.Value.Unknown", "Unknown") : status;
             }
         }
 
@@ -739,19 +739,19 @@ namespace MyCodex.Infrastructure.AppServer
             switch ((authStatus ?? string.Empty).Trim())
             {
                 case "unsupported":
-                    return L("AppServerClient.Mcp.AuthStatus.Unsupported", "Unsupported");
+                    return SharedLocalization.Text("AppServerClient.Mcp.AuthStatus.Unsupported", "Unsupported");
                 case "notLoggedIn":
-                    return L("AppServerClient.Mcp.AuthStatus.NotLoggedIn", "Not logged in");
+                    return SharedLocalization.Text("AppServerClient.Mcp.AuthStatus.NotLoggedIn", "Not logged in");
                 case "bearerToken":
-                    return L("AppServerClient.Mcp.AuthStatus.BearerToken", "Bearer Token");
+                    return SharedLocalization.Text("AppServerClient.Mcp.AuthStatus.BearerToken", "Bearer Token");
                 case "oAuth":
-                    return L("AppServerClient.Mcp.AuthStatus.OAuth", "OAuth");
+                    return SharedLocalization.Text("AppServerClient.Mcp.AuthStatus.OAuth", "OAuth");
                 case "pendingInit":
-                    return L("AppServerClient.Mcp.AuthStatus.Initializing", "Initializing");
+                    return SharedLocalization.Text("AppServerClient.Mcp.AuthStatus.Initializing", "Initializing");
                 case "notFound":
-                    return L("AppServerClient.Mcp.AuthStatus.NotFound", "Not configured or not logged in");
+                    return SharedLocalization.Text("AppServerClient.Mcp.AuthStatus.NotFound", "Not configured or not logged in");
                 default:
-                    return string.IsNullOrWhiteSpace(authStatus) ? L("AppServerClient.Mcp.AuthStatus.NotProvided", "Not provided") : authStatus;
+                    return string.IsNullOrWhiteSpace(authStatus) ? SharedLocalization.Text("AppServerClient.Mcp.AuthStatus.NotProvided", "Not provided") : authStatus;
             }
         }
 
@@ -799,14 +799,9 @@ namespace MyCodex.Infrastructure.AppServer
             return value;
         }
 
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
-        }
-
         private static string LF(string key, string fallback, params object[] args)
         {
-            return string.Format(CultureInfo.CurrentCulture, L(key, fallback), args ?? Array.Empty<object>());
+            return string.Format(CultureInfo.CurrentCulture, SharedLocalization.Text(key, fallback), args ?? Array.Empty<object>());
         }
     }
 }

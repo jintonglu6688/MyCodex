@@ -116,39 +116,39 @@ namespace MyCodex.WinForms.Forms
                 Margin = new Padding(0, 8, 0, 0),
                 TabStop = false
             };
-            _refreshButton = CreateButton(
+            _refreshButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("McpManagementForm.Button.Refresh", "Refresh Status(&R)"),
                 UiLocalization.Text("McpManagementForm.Accessible.Refresh", "Refresh Status"),
                 0);
-            _addButton = CreateButton(
+            _addButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("McpManagementForm.Button.Add", "Add(&A)..."),
                 UiLocalization.Text("McpManagementForm.Accessible.Add", "Add"),
                 1);
-            _settingsButton = CreateButton(
+            _settingsButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("McpManagementForm.Button.Settings", "Settings(&S)..."),
                 UiLocalization.Text("McpManagementForm.Accessible.Settings", "Settings"),
                 2);
-            _advancedDiagnosticsButton = CreateButton(
+            _advancedDiagnosticsButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("McpManagementForm.Button.AdvancedDiagnostics", "Advanced Diagnostics(&V)..."),
                 UiLocalization.Text("McpManagementForm.Accessible.AdvancedDiagnostics", "Advanced Diagnostics"),
                 3);
-            _loginButton = CreateButton(
+            _loginButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("McpManagementForm.Button.Login", "Login(&G)"),
                 UiLocalization.Text("McpManagementForm.Accessible.Login", "Login"),
                 4);
-            _enableButton = CreateButton(
+            _enableButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("McpManagementForm.Button.Enable", "Enable(&E)"),
                 UiLocalization.Text("McpManagementForm.Accessible.Enable", "Enable"),
                 5);
-            _disableButton = CreateButton(
+            _disableButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("McpManagementForm.Button.Disable", "Disable(&D)"),
                 UiLocalization.Text("McpManagementForm.Accessible.Disable", "Disable"),
                 6);
-            _deleteButton = CreateButton(
+            _deleteButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("McpManagementForm.Button.Delete", "Delete(&X)"),
                 UiLocalization.Text("McpManagementForm.Accessible.Delete", "Delete"),
                 7);
-            _closeButton = CreateButton(
+            _closeButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("McpManagementForm.Button.Close", "Close(&C)"),
                 UiLocalization.Text("McpManagementForm.Accessible.Close", "Close"),
                 8);
@@ -1336,20 +1336,6 @@ namespace MyCodex.WinForms.Forms
             mainLayout.Controls.Add(_statusLabel, 0, 7);
 
             Controls.Add(mainLayout);
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                AutoSize = true,
-                MinimumSize = new Size(108, 0),
-                Margin = new Padding(0, 0, 8, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
 
         private static ListView CreateServerListView()

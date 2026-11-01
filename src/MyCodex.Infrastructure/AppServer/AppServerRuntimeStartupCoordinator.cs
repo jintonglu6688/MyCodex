@@ -169,7 +169,7 @@ namespace MyCodex.Infrastructure.AppServer
 
                 if (!process.Start())
                 {
-                    throw new InvalidOperationException(L("AppServerClient.Error.UnableToStartAppServer", "Unable to start codex app-server."));
+                    throw new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.UnableToStartAppServer", "Unable to start codex app-server."));
                 }
 
                 Trace.TraceInformation(
@@ -432,11 +432,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             return text.Substring(0, maxLength) + "...";
-        }
-
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
         }
     }
 

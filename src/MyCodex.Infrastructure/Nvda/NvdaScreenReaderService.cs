@@ -69,7 +69,7 @@ namespace MyCodex.Infrastructure.Nvda
                 if (!IsAvailable)
                 {
                     _lastError = string.Format(
-                        L("Nvda.Error.LibraryNotFound.Template", "{0} was not found."),
+                        SharedLocalization.Text("Nvda.Error.LibraryNotFound.Template", "{0} was not found."),
                         Path.GetFileName(GetLibraryFullPath()));
                     return false;
                 }
@@ -107,12 +107,12 @@ namespace MyCodex.Infrastructure.Nvda
 
                     _lastError = BuildWin32ErrorMessage(
                         result,
-                        L("Nvda.Error.CommunicationFailed", "Failed to communicate with NVDA"));
+                        SharedLocalization.Text("Nvda.Error.CommunicationFailed", "Failed to communicate with NVDA"));
                     return false;
                 }
                 catch (Exception ex)
                 {
-                    _lastError = L("Nvda.Error.ReadStateFailed.Prefix", "Failed to detect NVDA state: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("Nvda.Error.ReadStateFailed.Prefix", "Failed to detect NVDA state: ") + ex.Message;
                     return false;
                 }
             }
@@ -131,7 +131,7 @@ namespace MyCodex.Infrastructure.Nvda
             {
                 lock (_syncRoot)
                 {
-                    _lastError = L("Nvda.Error.SpeakTextRequired", "Text to read cannot be empty.");
+                    _lastError = SharedLocalization.Text("Nvda.Error.SpeakTextRequired", "Text to read cannot be empty.");
                 }
 
                 return false;
@@ -153,7 +153,7 @@ namespace MyCodex.Infrastructure.Nvda
                         {
                             _lastError = BuildWin32ErrorMessage(
                                 cancelResult,
-                                L("Nvda.Error.StopExistingSpeechFailed", "Failed to stop current NVDA speech"));
+                                SharedLocalization.Text("Nvda.Error.StopExistingSpeechFailed", "Failed to stop current NVDA speech"));
                             return false;
                         }
                     }
@@ -167,12 +167,12 @@ namespace MyCodex.Infrastructure.Nvda
 
                     _lastError = BuildWin32ErrorMessage(
                         result,
-                        L("Nvda.Error.SpeakInvokeFailed", "Failed to invoke NVDA speech"));
+                        SharedLocalization.Text("Nvda.Error.SpeakInvokeFailed", "Failed to invoke NVDA speech"));
                     return false;
                 }
                 catch (Exception ex)
                 {
-                    _lastError = L("Nvda.Error.SpeakInvokeFailed.Prefix", "Failed to invoke NVDA speech: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("Nvda.Error.SpeakInvokeFailed.Prefix", "Failed to invoke NVDA speech: ") + ex.Message;
                     return false;
                 }
             }
@@ -200,12 +200,12 @@ namespace MyCodex.Infrastructure.Nvda
 
                     _lastError = BuildWin32ErrorMessage(
                         result,
-                        L("Nvda.Error.StopFailed", "Failed to stop NVDA speech"));
+                        SharedLocalization.Text("Nvda.Error.StopFailed", "Failed to stop NVDA speech"));
                     return false;
                 }
                 catch (Exception ex)
                 {
-                    _lastError = L("Nvda.Error.StopFailed.Prefix", "Failed to stop NVDA speech: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("Nvda.Error.StopFailed.Prefix", "Failed to stop NVDA speech: ") + ex.Message;
                     return false;
                 }
             }
@@ -240,7 +240,7 @@ namespace MyCodex.Infrastructure.Nvda
             string loadError;
             if (!_nativeLibrary.EnsureLoaded(out loadError))
             {
-                _lastError = L("Nvda.Error.LoadFailed.Prefix", "Failed to load NVDA API: ") + loadError;
+                _lastError = SharedLocalization.Text("Nvda.Error.LoadFailed.Prefix", "Failed to load NVDA API: ") + loadError;
                 return false;
             }
 
@@ -256,12 +256,12 @@ namespace MyCodex.Infrastructure.Nvda
             }
             catch (EntryPointNotFoundException ex)
             {
-                _lastError = L("Nvda.Error.VersionMismatch.Prefix", "NVDA API version mismatch: ") + ex.Message;
+                _lastError = SharedLocalization.Text("Nvda.Error.VersionMismatch.Prefix", "NVDA API version mismatch: ") + ex.Message;
                 return false;
             }
             catch (BadImageFormatException ex)
             {
-                _lastError = L("Nvda.Error.BitnessMismatch.Prefix", "NVDA API bitness mismatch: ") + ex.Message;
+                _lastError = SharedLocalization.Text("Nvda.Error.BitnessMismatch.Prefix", "NVDA API bitness mismatch: ") + ex.Message;
                 return false;
             }
         }
@@ -271,22 +271,17 @@ namespace MyCodex.Infrastructure.Nvda
             try
             {
                 return string.Format(
-                    L("Nvda.Error.WithSystemMessage.Template", "{0}: {1}"),
+                    SharedLocalization.Text("Nvda.Error.WithSystemMessage.Template", "{0}: {1}"),
                     prefix,
                     new Win32Exception(code).Message);
             }
             catch
             {
                 return string.Format(
-                    L("Nvda.Error.WithCode.Template", "{0}: error code {1}"),
+                    SharedLocalization.Text("Nvda.Error.WithCode.Template", "{0}: error code {1}"),
                     prefix,
                     code);
             }
-        }
-
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
         }
 
         private void ThrowIfDisposed()

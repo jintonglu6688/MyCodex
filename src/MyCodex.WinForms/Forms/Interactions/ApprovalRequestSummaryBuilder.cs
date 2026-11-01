@@ -97,13 +97,13 @@ namespace MyCodex.WinForms.Forms
             {
                 dialogSummary
             };
-            AddOptionalLine(details, L("ApprovalRequestSummary.Label.WorkingDirectory", "Working directory"), request.WorkingDirectory);
-            AddOptionalLine(details, L("ApprovalRequestSummary.Label.Reason", "Reason"), request.Reason);
+            AddOptionalLine(details, UiLocalization.Text("ApprovalRequestSummary.Label.WorkingDirectory", "Working directory"), request.WorkingDirectory);
+            AddOptionalLine(details, UiLocalization.Text("ApprovalRequestSummary.Label.Reason", "Reason"), request.Reason);
             AddOptionalBlock(details, request.Details);
-            AddOptionalLine(details, L("ApprovalRequestSummary.Label.FullCommand", "Full command"), displayCommand);
+            AddOptionalLine(details, UiLocalization.Text("ApprovalRequestSummary.Label.FullCommand", "Full command"), displayCommand);
             if (!string.Equals(displayCommand, rawCommand, StringComparison.Ordinal))
             {
-                AddOptionalLine(details, L("ApprovalRequestSummary.Label.OriginalCommand", "Original command"), rawCommand);
+                AddOptionalLine(details, UiLocalization.Text("ApprovalRequestSummary.Label.OriginalCommand", "Original command"), rawCommand);
             }
 
             return BuildResult(
@@ -135,7 +135,7 @@ namespace MyCodex.WinForms.Forms
             else
             {
                 dialogSummary = string.IsNullOrWhiteSpace(writeRoot)
-                    ? L("ApprovalRequestSummary.FileChange.Dialog", "Approval request: file changes.")
+                    ? UiLocalization.Text("ApprovalRequestSummary.FileChange.Dialog", "Approval request: file changes.")
                     : LF("ApprovalRequestSummary.FileChange.DialogWithRoot.Template", "Approval request: change files. Write root: {0}.", writeRoot);
             }
 
@@ -144,7 +144,7 @@ namespace MyCodex.WinForms.Forms
             {
                 dialogSummary
             };
-            AddOptionalLine(details, L("ApprovalRequestSummary.Label.Reason", "Reason"), request.Reason);
+            AddOptionalLine(details, UiLocalization.Text("ApprovalRequestSummary.Label.Reason", "Reason"), request.Reason);
             AddOptionalBlock(details, request.Details);
             return BuildResult(
                 actionKey,
@@ -159,19 +159,19 @@ namespace MyCodex.WinForms.Forms
         {
             var compactDetails = BuildCompactDetails(request.Details);
             var dialogSummary = string.IsNullOrWhiteSpace(compactDetails)
-                ? L("ApprovalRequestSummary.Permissions.Dialog", "Approval request: permissions.")
+                ? UiLocalization.Text("ApprovalRequestSummary.Permissions.Dialog", "Approval request: permissions.")
                 : LF("ApprovalRequestSummary.Permissions.DialogWithDetails.Template", "Approval request: permissions. {0}.", compactDetails);
             var speech = AppendSentence(dialogSummary, NormalizeWhitespace(request.Reason));
             var details = new List<string>
             {
                 dialogSummary
             };
-            AddOptionalLine(details, L("ApprovalRequestSummary.Label.Reason", "Reason"), request.Reason);
+            AddOptionalLine(details, UiLocalization.Text("ApprovalRequestSummary.Label.Reason", "Reason"), request.Reason);
             AddOptionalBlock(details, request.Details);
             return BuildResult(
                 ApprovalRequestActionKey.Permissions,
                 BuildWindowTitle(ApprovalRequestActionKey.Permissions),
-                L("ApprovalRequestSummary.Question.Permissions", "Allow this permission request?"),
+                UiLocalization.Text("ApprovalRequestSummary.Question.Permissions", "Allow this permission request?"),
                 dialogSummary,
                 speech,
                 details);
@@ -181,12 +181,12 @@ namespace MyCodex.WinForms.Forms
         {
             var content = request == null ? null : request.Content;
             var dialogSummary = string.IsNullOrWhiteSpace(content)
-                ? L("ApprovalRequestSummary.Generic.Dialog", "Approval request.")
+                ? UiLocalization.Text("ApprovalRequestSummary.Generic.Dialog", "Approval request.")
                 : NormalizeWhitespace(content);
             return BuildResult(
                 ApprovalRequestActionKey.Generic,
                 BuildWindowTitle(ApprovalRequestActionKey.Generic),
-                L("ApprovalRequestSummary.Question.Generic", "Allow this request?"),
+                UiLocalization.Text("ApprovalRequestSummary.Question.Generic", "Allow this request?"),
                 dialogSummary,
                 dialogSummary,
                 new List<string> { dialogSummary });
@@ -273,39 +273,39 @@ namespace MyCodex.WinForms.Forms
             switch (actionKey)
             {
                 case ApprovalRequestActionKey.Read:
-                    return L("ApprovalRequestSummary.Command.Action.Read", "read files");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.Read", "read files");
                 case ApprovalRequestActionKey.Create:
-                    return L("ApprovalRequestSummary.Command.Action.Create", "create files");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.Create", "create files");
                 case ApprovalRequestActionKey.Build:
-                    return L("ApprovalRequestSummary.Command.Action.Build", "run build");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.Build", "run build");
                 case ApprovalRequestActionKey.Test:
-                    return L("ApprovalRequestSummary.Command.Action.Test", "run tests");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.Test", "run tests");
                 case ApprovalRequestActionKey.Install:
-                    return L("ApprovalRequestSummary.Command.Action.Install", "install dependencies");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.Install", "install dependencies");
                 case ApprovalRequestActionKey.GitInspect:
-                    return L("ApprovalRequestSummary.Command.Action.GitInspect", "inspect Git repository");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.GitInspect", "inspect Git repository");
                 case ApprovalRequestActionKey.GitStage:
-                    return L("ApprovalRequestSummary.Command.Action.GitStage", "stage Git changes");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.GitStage", "stage Git changes");
                 case ApprovalRequestActionKey.GitLocalCommit:
-                    return L("ApprovalRequestSummary.Command.Action.GitLocalCommit", "create local Git history");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.GitLocalCommit", "create local Git history");
                 case ApprovalRequestActionKey.GitLocalWorkingTreeChange:
-                    return L("ApprovalRequestSummary.Command.Action.GitLocalWorkingTreeChange", "change Git working tree");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.GitLocalWorkingTreeChange", "change Git working tree");
                 case ApprovalRequestActionKey.GitRemoteRead:
-                    return L("ApprovalRequestSummary.Command.Action.GitRemoteRead", "read Git remote");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.GitRemoteRead", "read Git remote");
                 case ApprovalRequestActionKey.GitRemoteWrite:
-                    return L("ApprovalRequestSummary.Command.Action.GitRemoteWrite", "write Git remote");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.GitRemoteWrite", "write Git remote");
                 case ApprovalRequestActionKey.GitDestructive:
-                    return L("ApprovalRequestSummary.Command.Action.GitDestructive", "run destructive Git operation");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.GitDestructive", "run destructive Git operation");
                 case ApprovalRequestActionKey.GitInitialize:
-                    return L("ApprovalRequestSummary.Command.Action.GitInitialize", "initialize Git repository");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.GitInitialize", "initialize Git repository");
                 case ApprovalRequestActionKey.GitLocalConfiguration:
-                    return L("ApprovalRequestSummary.Command.Action.GitLocalConfiguration", "change Git configuration");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.GitLocalConfiguration", "change Git configuration");
                 case ApprovalRequestActionKey.Delete:
-                    return L("ApprovalRequestSummary.Command.Action.Delete", "delete files");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.Delete", "delete files");
                 case ApprovalRequestActionKey.Write:
-                    return L("ApprovalRequestSummary.Command.Action.Write", "write files");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.Write", "write files");
                 default:
-                    return L("ApprovalRequestSummary.Command.Action.Generic", "execute command");
+                    return UiLocalization.Text("ApprovalRequestSummary.Command.Action.Generic", "execute command");
             }
         }
 
@@ -314,17 +314,17 @@ namespace MyCodex.WinForms.Forms
             switch (actionKey)
             {
                 case ApprovalRequestActionKey.Delete:
-                    return L("ApprovalRequestSummary.FileChange.Action.Delete", "delete files");
+                    return UiLocalization.Text("ApprovalRequestSummary.FileChange.Action.Delete", "delete files");
                 case ApprovalRequestActionKey.Create:
-                    return L("ApprovalRequestSummary.FileChange.Action.Create", "create files");
+                    return UiLocalization.Text("ApprovalRequestSummary.FileChange.Action.Create", "create files");
                 case ApprovalRequestActionKey.Write:
-                    return L("ApprovalRequestSummary.FileChange.Action.Write", "write files");
+                    return UiLocalization.Text("ApprovalRequestSummary.FileChange.Action.Write", "write files");
                 case ApprovalRequestActionKey.Modify:
-                    return L("ApprovalRequestSummary.FileChange.Action.Modify", "modify files");
+                    return UiLocalization.Text("ApprovalRequestSummary.FileChange.Action.Modify", "modify files");
                 case ApprovalRequestActionKey.Move:
-                    return L("ApprovalRequestSummary.FileChange.Action.Move", "move files");
+                    return UiLocalization.Text("ApprovalRequestSummary.FileChange.Action.Move", "move files");
                 default:
-                    return L("ApprovalRequestSummary.FileChange.Action.Change", "change files");
+                    return UiLocalization.Text("ApprovalRequestSummary.FileChange.Action.Change", "change files");
             }
         }
 
@@ -346,7 +346,7 @@ namespace MyCodex.WinForms.Forms
                     writeRoot);
             }
 
-            return L("ApprovalRequestSummary.Question.FileChange.ChangeGeneric", "Change files?");
+            return UiLocalization.Text("ApprovalRequestSummary.Question.FileChange.ChangeGeneric", "Change files?");
         }
 
         private static string BuildFileChangeTargetText(
@@ -435,21 +435,21 @@ namespace MyCodex.WinForms.Forms
             switch (actionKey)
             {
                 case ApprovalRequestActionKey.Read:
-                    return L("ApprovalRequestForm.Title.Read", "Read Request");
+                    return UiLocalization.Text("ApprovalRequestForm.Title.Read", "Read Request");
                 case ApprovalRequestActionKey.Create:
-                    return L("ApprovalRequestForm.Title.Create", "Create Request");
+                    return UiLocalization.Text("ApprovalRequestForm.Title.Create", "Create Request");
                 case ApprovalRequestActionKey.Delete:
-                    return L("ApprovalRequestForm.Title.Delete", "Delete Request");
+                    return UiLocalization.Text("ApprovalRequestForm.Title.Delete", "Delete Request");
                 case ApprovalRequestActionKey.Write:
-                    return L("ApprovalRequestForm.Title.Write", "Write Request");
+                    return UiLocalization.Text("ApprovalRequestForm.Title.Write", "Write Request");
                 case ApprovalRequestActionKey.Modify:
-                    return L("ApprovalRequestForm.Title.Modify", "Modify Request");
+                    return UiLocalization.Text("ApprovalRequestForm.Title.Modify", "Modify Request");
                 case ApprovalRequestActionKey.Change:
-                    return L("ApprovalRequestForm.Title.Change", "Change Request");
+                    return UiLocalization.Text("ApprovalRequestForm.Title.Change", "Change Request");
                 case ApprovalRequestActionKey.Move:
-                    return L("ApprovalRequestForm.Title.Move", "Move Request");
+                    return UiLocalization.Text("ApprovalRequestForm.Title.Move", "Move Request");
                 case ApprovalRequestActionKey.Permissions:
-                    return L("ApprovalRequestForm.Title.Permissions", "Permission Request");
+                    return UiLocalization.Text("ApprovalRequestForm.Title.Permissions", "Permission Request");
                 case ApprovalRequestActionKey.Command:
                 case ApprovalRequestActionKey.Build:
                 case ApprovalRequestActionKey.Test:
@@ -463,9 +463,9 @@ namespace MyCodex.WinForms.Forms
                 case ApprovalRequestActionKey.GitDestructive:
                 case ApprovalRequestActionKey.GitInitialize:
                 case ApprovalRequestActionKey.GitLocalConfiguration:
-                    return L("ApprovalRequestForm.Title.Command", "Command Request");
+                    return UiLocalization.Text("ApprovalRequestForm.Title.Command", "Command Request");
                 default:
-                    return L("ApprovalRequestForm.Title", "Approval Request");
+                    return UiLocalization.Text("ApprovalRequestForm.Title", "Approval Request");
             }
         }
 
@@ -475,45 +475,45 @@ namespace MyCodex.WinForms.Forms
             switch (actionKey)
             {
                 case ApprovalRequestActionKey.Read:
-                    return LF("ApprovalRequestSummary.Question.FileChange.Read.Template", "Read {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Files", "files") : value);
+                    return LF("ApprovalRequestSummary.Question.FileChange.Read.Template", "Read {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Files", "files") : value);
                 case ApprovalRequestActionKey.Delete:
-                    return LF("ApprovalRequestSummary.Question.FileChange.Delete.Template", "Delete {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Files", "files") : value);
+                    return LF("ApprovalRequestSummary.Question.FileChange.Delete.Template", "Delete {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Files", "files") : value);
                 case ApprovalRequestActionKey.Create:
-                    return LF("ApprovalRequestSummary.Question.FileChange.Create.Template", "Create {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Files", "files") : value);
+                    return LF("ApprovalRequestSummary.Question.FileChange.Create.Template", "Create {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Files", "files") : value);
                 case ApprovalRequestActionKey.Write:
-                    return LF("ApprovalRequestSummary.Question.FileChange.Write.Template", "Write {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Files", "files") : value);
+                    return LF("ApprovalRequestSummary.Question.FileChange.Write.Template", "Write {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Files", "files") : value);
                 case ApprovalRequestActionKey.Modify:
-                    return LF("ApprovalRequestSummary.Question.FileChange.Modify.Template", "Modify {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Files", "files") : value);
+                    return LF("ApprovalRequestSummary.Question.FileChange.Modify.Template", "Modify {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Files", "files") : value);
                 case ApprovalRequestActionKey.Move:
-                    return LF("ApprovalRequestSummary.Question.FileChange.Move.Template", "Move {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Files", "files") : value);
+                    return LF("ApprovalRequestSummary.Question.FileChange.Move.Template", "Move {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Files", "files") : value);
                 case ApprovalRequestActionKey.Build:
-                    return L("ApprovalRequestSummary.Question.Command.Build", "Run build?");
+                    return UiLocalization.Text("ApprovalRequestSummary.Question.Command.Build", "Run build?");
                 case ApprovalRequestActionKey.Test:
-                    return L("ApprovalRequestSummary.Question.Command.Test", "Run tests?");
+                    return UiLocalization.Text("ApprovalRequestSummary.Question.Command.Test", "Run tests?");
                 case ApprovalRequestActionKey.Install:
-                    return L("ApprovalRequestSummary.Question.Command.Install", "Install dependencies?");
+                    return UiLocalization.Text("ApprovalRequestSummary.Question.Command.Install", "Install dependencies?");
                 case ApprovalRequestActionKey.GitInspect:
-                    return LF("ApprovalRequestSummary.Question.Command.GitInspect.Template", "Inspect Git repository: {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Command", "command") : value);
+                    return LF("ApprovalRequestSummary.Question.Command.GitInspect.Template", "Inspect Git repository: {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Command", "command") : value);
                 case ApprovalRequestActionKey.GitStage:
-                    return LF("ApprovalRequestSummary.Question.Command.GitStage.Template", "Stage Git changes: {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Command", "command") : value);
+                    return LF("ApprovalRequestSummary.Question.Command.GitStage.Template", "Stage Git changes: {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Command", "command") : value);
                 case ApprovalRequestActionKey.GitLocalCommit:
-                    return LF("ApprovalRequestSummary.Question.Command.GitLocalCommit.Template", "Create local Git history: {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Command", "command") : value);
+                    return LF("ApprovalRequestSummary.Question.Command.GitLocalCommit.Template", "Create local Git history: {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Command", "command") : value);
                 case ApprovalRequestActionKey.GitLocalWorkingTreeChange:
-                    return LF("ApprovalRequestSummary.Question.Command.GitLocalWorkingTreeChange.Template", "Change Git working tree: {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Command", "command") : value);
+                    return LF("ApprovalRequestSummary.Question.Command.GitLocalWorkingTreeChange.Template", "Change Git working tree: {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Command", "command") : value);
                 case ApprovalRequestActionKey.GitRemoteRead:
-                    return LF("ApprovalRequestSummary.Question.Command.GitRemoteRead.Template", "Read Git remote: {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Command", "command") : value);
+                    return LF("ApprovalRequestSummary.Question.Command.GitRemoteRead.Template", "Read Git remote: {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Command", "command") : value);
                 case ApprovalRequestActionKey.GitRemoteWrite:
-                    return LF("ApprovalRequestSummary.Question.Command.GitRemoteWrite.Template", "Write Git remote: {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Command", "command") : value);
+                    return LF("ApprovalRequestSummary.Question.Command.GitRemoteWrite.Template", "Write Git remote: {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Command", "command") : value);
                 case ApprovalRequestActionKey.GitDestructive:
-                    return LF("ApprovalRequestSummary.Question.Command.GitDestructive.Template", "Run destructive Git operation: {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Command", "command") : value);
+                    return LF("ApprovalRequestSummary.Question.Command.GitDestructive.Template", "Run destructive Git operation: {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Command", "command") : value);
                 case ApprovalRequestActionKey.GitInitialize:
-                    return LF("ApprovalRequestSummary.Question.Command.GitInitialize.Template", "Initialize Git repository: {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Command", "command") : value);
+                    return LF("ApprovalRequestSummary.Question.Command.GitInitialize.Template", "Initialize Git repository: {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Command", "command") : value);
                 case ApprovalRequestActionKey.GitLocalConfiguration:
-                    return LF("ApprovalRequestSummary.Question.Command.GitLocalConfiguration.Template", "Change Git configuration: {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Command", "command") : value);
+                    return LF("ApprovalRequestSummary.Question.Command.GitLocalConfiguration.Template", "Change Git configuration: {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Command", "command") : value);
                 case ApprovalRequestActionKey.Change:
-                    return LF("ApprovalRequestSummary.Question.FileChange.Change.Template", "Change {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Files", "files") : value);
+                    return LF("ApprovalRequestSummary.Question.FileChange.Change.Template", "Change {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Files", "files") : value);
                 default:
-                    return LF("ApprovalRequestSummary.Question.Command.Generic.Template", "Run command: {0}?", string.IsNullOrWhiteSpace(value) ? L("ApprovalRequestSummary.Value.Command", "command") : value);
+                    return LF("ApprovalRequestSummary.Question.Command.Generic.Template", "Run command: {0}?", string.IsNullOrWhiteSpace(value) ? UiLocalization.Text("ApprovalRequestSummary.Value.Command", "command") : value);
             }
         }
 
@@ -738,11 +738,6 @@ namespace MyCodex.WinForms.Forms
             }
 
             return text.Substring(0, Math.Max(0, maximumLength - 3)).TrimEnd() + "...";
-        }
-
-        private static string L(string key, string fallback)
-        {
-            return UiLocalization.Text(key, fallback);
         }
 
         private static string LF(string key, string fallback, params object[] args)

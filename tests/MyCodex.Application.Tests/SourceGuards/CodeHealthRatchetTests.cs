@@ -16,8 +16,8 @@ namespace MyCodex.Application.Tests.SourceGuards
     [Category(SourceGuardCategory.Placement)]
     public sealed class CodeHealthRatchetTests
     {
-        private const int MainFormPartialNonEmptyLinesCeiling = 22758;
-        private const int MainFormCoreFileNonEmptyLinesCeiling = 2954;
+        private const int MainFormPartialNonEmptyLinesCeiling = 22604;
+        private const int MainFormCoreFileNonEmptyLinesCeiling = 2911;
         // One coordinator owns deferred browser setup; feature state stays outside MainForm.
         private const int MainFormFieldCeiling = 363;
         private const int MethodsOver150LinesCeiling = 13;
@@ -37,14 +37,14 @@ namespace MyCodex.Application.Tests.SourceGuards
 
         private static readonly DuplicateHelper[] DuplicateHelpers =
         {
-            new DuplicateHelper("CreateButton", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?Button\s+CreateButton\s*\(", null, 27),
-            new DuplicateHelper("CreateLabel", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?Label\s+CreateLabel\s*\(", null, 7),
+            new DuplicateHelper("CreateButton", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?Button\s+CreateButton\s*\(", null, 18),
+            new DuplicateHelper("CreateLabel", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?Label\s+CreateLabel\s*\(", null, 5),
             new DuplicateHelper("CreateTextBox", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?\w*TextBox\s+CreateTextBox\s*\(", null, 6),
             new DuplicateHelper("CreateComboBox", @"^\s+(?:private|internal|public|protected)\s+(?:static\s+)?ComboBox\s+CreateComboBox\s*\(", null, 2),
             new DuplicateHelper("Infrastructure JSON GetString", @"^\s+private\s+static\s+string\s+GetString\s*\(", "MyCodex.Infrastructure", 6),
             new DuplicateHelper("TrimToNull", @"^\s+(?:private|internal)\s+static\s+string\s+TrimToNull\s*\(", null, 0),
-            new DuplicateHelper("FirstNonEmpty", @"^\s+(?:private|internal)\s+static\s+string\s+FirstNonEmpty\s*\(", null, 4),
-            new DuplicateHelper("Localization alias L", @"^\s+(?:private|internal)\s+static\s+string\s+L\s*\(", null, 19)
+            new DuplicateHelper("FirstNonEmpty", @"^\s+(?:private|internal)\s+static\s+string\s+FirstNonEmpty\s*\(", null, 0),
+            new DuplicateHelper("Localization alias L", @"^\s+(?:private|internal)\s+static\s+string\s+L\s*\(", null, 0)
         };
 
         // Every test reads the same measurement, so the source tree is scanned once per run.

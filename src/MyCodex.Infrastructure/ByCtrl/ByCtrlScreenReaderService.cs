@@ -96,7 +96,7 @@ namespace MyCodex.Infrastructure.ByCtrl
                 if (!IsAvailable)
                 {
                     _lastError = string.Format(
-                        L("ByCtrl.Error.LibraryNotFound.Template", "{0} was not found."),
+                        SharedLocalization.Text("ByCtrl.Error.LibraryNotFound.Template", "{0} was not found."),
                         GetLibraryFileName());
                     return false;
                 }
@@ -116,22 +116,22 @@ namespace MyCodex.Infrastructure.ByCtrl
                         return true;
                     }
 
-                    _lastError = BuildErrorMessage(L("ByCtrl.Operation.Initialize", "Initialize"), result);
+                    _lastError = BuildErrorMessage(SharedLocalization.Text("ByCtrl.Operation.Initialize", "Initialize"), result);
                     return false;
                 }
                 catch (DllNotFoundException ex)
                 {
-                    _lastError = L("ByCtrl.Error.LoadFailed.Prefix", "Failed to load byctrl: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("ByCtrl.Error.LoadFailed.Prefix", "Failed to load byctrl: ") + ex.Message;
                     return false;
                 }
                 catch (EntryPointNotFoundException ex)
                 {
-                    _lastError = L("ByCtrl.Error.VersionMismatch.Prefix", "byctrl API version mismatch: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("ByCtrl.Error.VersionMismatch.Prefix", "byctrl API version mismatch: ") + ex.Message;
                     return false;
                 }
                 catch (BadImageFormatException ex)
                 {
-                    _lastError = L("ByCtrl.Error.BitnessMismatch.Prefix", "byctrl API bitness mismatch: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("ByCtrl.Error.BitnessMismatch.Prefix", "byctrl API bitness mismatch: ") + ex.Message;
                     return false;
                 }
             }
@@ -154,7 +154,7 @@ namespace MyCodex.Infrastructure.ByCtrl
                 }
                 catch (Exception ex)
                 {
-                    _lastError = L("ByCtrl.Error.ReadStateFailed.Prefix", "Failed to read screen reader state: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("ByCtrl.Error.ReadStateFailed.Prefix", "Failed to read screen reader state: ") + ex.Message;
                     return false;
                 }
             }
@@ -177,7 +177,7 @@ namespace MyCodex.Infrastructure.ByCtrl
                 }
                 catch (Exception ex)
                 {
-                    _lastError = L("ByCtrl.Error.ReadDetailStateFailed.Prefix", "Failed to read detailed screen reader state: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("ByCtrl.Error.ReadDetailStateFailed.Prefix", "Failed to read detailed screen reader state: ") + ex.Message;
                     return 0;
                 }
             }
@@ -191,7 +191,7 @@ namespace MyCodex.Infrastructure.ByCtrl
             {
                 lock (_syncRoot)
                 {
-                    _lastError = L("ByCtrl.Error.SpeakTextRequired", "Text to read cannot be empty.");
+                    _lastError = SharedLocalization.Text("ByCtrl.Error.SpeakTextRequired", "Text to read cannot be empty.");
                 }
 
                 return false;
@@ -209,7 +209,7 @@ namespace MyCodex.Infrastructure.ByCtrl
                     var chunks = SplitSpeakText(text);
                     if (chunks.Length == 0)
                     {
-                        _lastError = L("ByCtrl.Error.SpeakTextRequired", "Text to read cannot be empty.");
+                        _lastError = SharedLocalization.Text("ByCtrl.Error.SpeakTextRequired", "Text to read cannot be empty.");
                         return false;
                     }
 
@@ -228,7 +228,7 @@ namespace MyCodex.Infrastructure.ByCtrl
                             continue;
                         }
 
-                        _lastError = BuildErrorMessage(L("ByCtrl.Operation.Speak", "Speak"), result);
+                        _lastError = BuildErrorMessage(SharedLocalization.Text("ByCtrl.Operation.Speak", "Speak"), result);
                         return false;
                     }
 
@@ -237,7 +237,7 @@ namespace MyCodex.Infrastructure.ByCtrl
                 }
                 catch (Exception ex)
                 {
-                    _lastError = L("ByCtrl.Error.SpeakInvokeFailed.Prefix", "Failed to invoke screen reader: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("ByCtrl.Error.SpeakInvokeFailed.Prefix", "Failed to invoke screen reader: ") + ex.Message;
                     return false;
                 }
             }
@@ -263,12 +263,12 @@ namespace MyCodex.Infrastructure.ByCtrl
                         return true;
                     }
 
-                    _lastError = BuildErrorMessage(L("ByCtrl.Operation.Stop", "Stop reading"), result);
+                    _lastError = BuildErrorMessage(SharedLocalization.Text("ByCtrl.Operation.Stop", "Stop reading"), result);
                     return false;
                 }
                 catch (Exception ex)
                 {
-                    _lastError = L("ByCtrl.Error.StopFailed.Prefix", "Failed to stop reading: ") + ex.Message;
+                    _lastError = SharedLocalization.Text("ByCtrl.Error.StopFailed.Prefix", "Failed to stop reading: ") + ex.Message;
                     return false;
                 }
             }
@@ -329,7 +329,7 @@ namespace MyCodex.Infrastructure.ByCtrl
             string loadError;
             if (!_nativeLibrary.EnsureLoaded(out loadError))
             {
-                _lastError = L("ByCtrl.Error.LoadFailed.Prefix", "Failed to load byctrl: ") + loadError;
+                _lastError = SharedLocalization.Text("ByCtrl.Error.LoadFailed.Prefix", "Failed to load byctrl: ") + loadError;
                 return false;
             }
 
@@ -345,12 +345,12 @@ namespace MyCodex.Infrastructure.ByCtrl
             }
             catch (EntryPointNotFoundException ex)
             {
-                _lastError = L("ByCtrl.Error.VersionMismatch.Prefix", "byctrl API version mismatch: ") + ex.Message;
+                _lastError = SharedLocalization.Text("ByCtrl.Error.VersionMismatch.Prefix", "byctrl API version mismatch: ") + ex.Message;
                 return false;
             }
             catch (BadImageFormatException ex)
             {
-                _lastError = L("ByCtrl.Error.BitnessMismatch.Prefix", "byctrl API bitness mismatch: ") + ex.Message;
+                _lastError = SharedLocalization.Text("ByCtrl.Error.BitnessMismatch.Prefix", "byctrl API bitness mismatch: ") + ex.Message;
                 return false;
             }
         }
@@ -368,15 +368,15 @@ namespace MyCodex.Infrastructure.ByCtrl
                     return null;
                 case ByCtrlError.Arg:
                     return string.Format(
-                        L("ByCtrl.Error.OperationInvalidArgument.Template", "{0} failed: invalid argument."),
+                        SharedLocalization.Text("ByCtrl.Error.OperationInvalidArgument.Template", "{0} failed: invalid argument."),
                         operation);
                 case ByCtrlError.Unavailable:
                     return string.Format(
-                        L("ByCtrl.Error.OperationUnavailable.Template", "{0} failed: byctrl service is unavailable."),
+                        SharedLocalization.Text("ByCtrl.Error.OperationUnavailable.Template", "{0} failed: byctrl service is unavailable."),
                         operation);
                 default:
                     return string.Format(
-                        L("ByCtrl.Error.OperationFailed.Template", "{0} failed."),
+                        SharedLocalization.Text("ByCtrl.Error.OperationFailed.Template", "{0} failed."),
                         operation);
             }
         }
@@ -558,11 +558,6 @@ namespace MyCodex.Infrastructure.ByCtrl
                 default:
                     return false;
             }
-        }
-
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
         }
 
         private void ThrowIfDisposed()

@@ -97,7 +97,7 @@ namespace MyCodex.WinForms.Forms
                 UiLocalization.Text("PluginManagementForm.Column.Source", "Source"));
 
             _marketSearchTextBox = CreateMarketSearchTextBox();
-            _marketSearchButton = CreateButton(
+            _marketSearchButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("PluginManagementForm.Button.SearchMarket", "&Search"),
                 UiLocalization.Text("PluginManagementForm.Accessible.MarketSearch", "Market Search"),
                 1);
@@ -111,35 +111,35 @@ namespace MyCodex.WinForms.Forms
                 Margin = new Padding(0, 8, 0, 0),
                 TabStop = false
             };
-            _refreshButton = CreateButton(
+            _refreshButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("PluginManagementForm.Button.Refresh", "&Refresh"),
                 UiLocalization.Text("PluginManagementForm.Accessible.Refresh", "Refresh"),
                 0);
-            _refreshMarketplaceButton = CreateButton(
+            _refreshMarketplaceButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("PluginManagementForm.Button.RefreshMarketplace", "Refresh &Marketplace"),
                 UiLocalization.Text("PluginManagementForm.Accessible.RefreshMarketplace", "Refresh marketplace"),
                 1);
-            _registerMarketplaceButton = CreateButton(
+            _registerMarketplaceButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("PluginManagementForm.Button.RegisterMarketplace", "Re&gister Marketplace"),
                 UiLocalization.Text("PluginManagementForm.Accessible.RegisterMarketplace", "Register marketplace"),
                 2);
-            _installButton = CreateButton(
+            _installButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("PluginManagementForm.Button.Install", "&Install"),
                 UiLocalization.Text("PluginManagementForm.Accessible.Install", "Install"),
                 3);
-            _uninstallButton = CreateButton(
+            _uninstallButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("PluginManagementForm.Button.Uninstall", "&Uninstall"),
                 UiLocalization.Text("PluginManagementForm.Accessible.Uninstall", "Uninstall"),
                 4);
-            _openAuthButton = CreateButton(
+            _openAuthButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("PluginManagementForm.Button.OpenAuth", "Open &Auth"),
                 UiLocalization.Text("PluginManagementForm.Accessible.OpenAuth", "Authorization"),
                 5);
-            _openFolderButton = CreateButton(
+            _openFolderButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("PluginManagementForm.Button.OpenFolder", "Open F&older"),
                 UiLocalization.Text("PluginManagementForm.Accessible.OpenFolder", "Open Folder"),
                 6);
-            _closeButton = CreateButton(
+            _closeButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("PluginManagementForm.Button.Close", "&Close"),
                 UiLocalization.Text("PluginManagementForm.Accessible.Close", "Close"),
                 7);
@@ -2687,19 +2687,6 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 1
             };
             return treeView;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AutoSize = true,
-                MinimumSize = new Size(108, 0),
-                Margin = new Padding(0, 0, 8, 0),
-                AccessibleName = accessibleName,
-                TabIndex = tabIndex
-            };
         }
 
         private static Control BuildMarketSectionPanel(string title, Control content)

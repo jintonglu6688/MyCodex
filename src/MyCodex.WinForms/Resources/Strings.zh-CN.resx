@@ -10131,9 +10131,6 @@ MyCodex 桌面客户端。</value>
   <data name="GitHubStoreForm.Menu.Pull" xml:space="preserve">
     <value>拉取(&amp;P)</value>
   </data>
-  <data name="GitHubStoreForm.Value.RepositoryWebUrl" xml:space="preserve">
-    <value>https://github.com/{0}</value>
-  </data>
   <data name="GitHubStoreForm.Value.NotAvailable" xml:space="preserve">
     <value>-</value>
   </data>
@@ -11064,6 +11061,9 @@ MyCodex 桌面客户端。</value>
   </data>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           <data name="ExternalUrlLauncher.Error.UrlNotAllowed" xml:space="preserve">
     <value>只能自动打开 HTTPS URL 和本机 HTTP 回调 URL。</value>
+  </data>
+  <data name="ExternalUrlLauncher.Error.MessageLinkNotAllowed" xml:space="preserve">
+    <value>只能从消息中打开 HTTP、HTTPS 和电子邮件链接。</value>
   </data>
   <data name="MainForm.Status.SendCancelledContextChanged" xml:space="preserve">
     <value>由于活动运行时或身份验证来源已更改，发送已取消。</value>

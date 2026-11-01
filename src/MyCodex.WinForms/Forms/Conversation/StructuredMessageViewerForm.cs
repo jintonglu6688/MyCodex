@@ -497,7 +497,7 @@ namespace MyCodex.WinForms.Forms
             var span = _currentInteractiveSpan ?? FindCurrentInteractiveSpan();
             if (span != null && span.Kind == InteractiveKind.Link)
             {
-                OpenExternalUri(span.Payload);
+                ExternalUrlLauncher.OpenMessageLink(this, span.Payload);
             }
         }
 
@@ -546,7 +546,7 @@ namespace MyCodex.WinForms.Forms
             {
                 if (span.Kind == InteractiveKind.Link)
                 {
-                    OpenExternalUri(span.Payload);
+                    ExternalUrlLauncher.OpenMessageLink(this, span.Payload);
                 }
                 else
                 {
@@ -756,17 +756,6 @@ namespace MyCodex.WinForms.Forms
         private static string NormalizeForViewer(string text)
         {
             return (text ?? string.Empty).Replace("\r\n", "\n").Replace("\r", "\n");
-        }
-
-        private static void OpenExternalUri(string uri)
-        {
-            try
-            {
-                Process.Start(new ProcessStartInfo { FileName = uri, UseShellExecute = true });
-            }
-            catch
-            {
-            }
         }
 
         private static void CopyTextToClipboard(string text)

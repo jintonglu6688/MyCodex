@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Shared.Constants;
+using MyCodex.Shared.Helpers;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
 
@@ -504,28 +505,10 @@ namespace MyCodex.WinForms.Forms
                 return string.Empty;
             }
 
-            var output = FirstNonEmpty(result.StandardOutput, result.StandardError);
+            var output = TextValueHelper.FirstNonEmptyTrimmed(result.StandardOutput, result.StandardError);
             return string.IsNullOrWhiteSpace(output)
                 ? result.DisplayMessage
                 : result.DisplayMessage + Environment.NewLine + output;
-        }
-
-        private static string FirstNonEmpty(params string[] values)
-        {
-            if (values == null)
-            {
-                return string.Empty;
-            }
-
-            for (var i = 0; i < values.Length; i++)
-            {
-                if (!string.IsNullOrWhiteSpace(values[i]))
-                {
-                    return values[i];
-                }
-            }
-
-            return string.Empty;
         }
     }
 }

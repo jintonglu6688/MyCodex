@@ -70,20 +70,20 @@ namespace MyCodex.WinForms.Forms
 
             _githubStatusListBox = CreateListBox(UiLocalization.Text("GitRemoteAccountsForm.Accessible.Status", "Status"), 0);
             _githubDetailsTextBox = CreateDetailsTextBox(UiLocalization.Text("GitRemoteAccountsForm.Accessible.Details", "Details"), 1);
-            _githubRefreshButton = CreateButton(UiLocalization.Text("GitRemoteAccountsForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitRemoteAccountsForm.Accessible.Refresh", "Refresh"), 0, 112);
-            _githubLoginButton = CreateButton(UiLocalization.Text("GitRemoteAccountsForm.Button.Login", "gh Login(&L)"), UiLocalization.Text("GitRemoteAccountsForm.Accessible.Login", "gh login"), 1, 112);
-            _githubDownloadButton = CreateButton(UiLocalization.Text("GitRemoteAccountsForm.Button.DownloadGh", "Download gh(&D)"), UiLocalization.Text("GitRemoteAccountsForm.Accessible.DownloadGh", "Download gh"), 2, 130);
-            _githubCopySummaryButton = CreateButton(UiLocalization.Text("GitRemoteAccountsForm.Button.CopySummary", "Copy Summary(&S)"), UiLocalization.Text("GitRemoteAccountsForm.Accessible.CopySummary", "Copy summary"), 3, 140);
-            _githubCopyDetailsButton = CreateButton(UiLocalization.Text("GitRemoteAccountsForm.Button.CopyDetails", "Copy Details(&E)"), UiLocalization.Text("GitRemoteAccountsForm.Accessible.CopyDetails", "Copy details"), 4, 132);
+            _githubRefreshButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitRemoteAccountsForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitRemoteAccountsForm.Accessible.Refresh", "Refresh"), 0, 112);
+            _githubLoginButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitRemoteAccountsForm.Button.Login", "gh Login(&L)"), UiLocalization.Text("GitRemoteAccountsForm.Accessible.Login", "gh login"), 1, 112);
+            _githubDownloadButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitRemoteAccountsForm.Button.DownloadGh", "Download gh(&D)"), UiLocalization.Text("GitRemoteAccountsForm.Accessible.DownloadGh", "Download gh"), 2, 130);
+            _githubCopySummaryButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitRemoteAccountsForm.Button.CopySummary", "Copy Summary(&S)"), UiLocalization.Text("GitRemoteAccountsForm.Accessible.CopySummary", "Copy summary"), 3, 140);
+            _githubCopyDetailsButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitRemoteAccountsForm.Button.CopyDetails", "Copy Details(&E)"), UiLocalization.Text("GitRemoteAccountsForm.Accessible.CopyDetails", "Copy details"), 4, 132);
 
             _sshKeysListView = CreateSshKeysListView();
             _sshDetailsTextBox = CreateDetailsTextBox(UiLocalization.Text("GitSshKeyForm.Accessible.Details", "Details"), 1);
-            _sshRefreshButton = CreateButton(UiLocalization.Text("GitSshKeyForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitSshKeyForm.Accessible.Refresh", "Refresh"), 0, 112);
-            _sshCopyPublicKeyButton = CreateButton(UiLocalization.Text("GitSshKeyForm.Button.CopyPublicKey", "Copy Public Key(&C)"), UiLocalization.Text("GitSshKeyForm.Accessible.CopyPublicKey", "Copy public key"), 1, 152);
-            _sshOpenFolderButton = CreateButton(UiLocalization.Text("GitSshKeyForm.Button.OpenSshFolder", "Open .ssh(&O)"), UiLocalization.Text("GitSshKeyForm.Accessible.OpenSshFolder", "Open .ssh"), 2, 120);
-            _sshOpenGitHubSettingsButton = CreateButton(UiLocalization.Text("GitSshKeyForm.Button.OpenGitHubSettings", "GitHub Settings(&G)"), UiLocalization.Text("GitSshKeyForm.Accessible.OpenGitHubSettings", "GitHub settings"), 3, 150);
-            _sshTestGitHubButton = CreateButton(UiLocalization.Text("GitSshKeyForm.Button.TestGitHub", "Test GitHub(&T)"), UiLocalization.Text("GitSshKeyForm.Accessible.TestGitHub", "Test GitHub"), 4, 132);
-            _sshCopyDetailsButton = CreateButton(UiLocalization.Text("GitSshKeyForm.Button.CopyDetails", "Copy Details(&D)"), UiLocalization.Text("GitSshKeyForm.Accessible.CopyDetails", "Copy details"), 5, 132);
+            _sshRefreshButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitSshKeyForm.Button.Refresh", "Refresh(&R)"), UiLocalization.Text("GitSshKeyForm.Accessible.Refresh", "Refresh"), 0, 112);
+            _sshCopyPublicKeyButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitSshKeyForm.Button.CopyPublicKey", "Copy Public Key(&C)"), UiLocalization.Text("GitSshKeyForm.Accessible.CopyPublicKey", "Copy public key"), 1, 152);
+            _sshOpenFolderButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitSshKeyForm.Button.OpenSshFolder", "Open .ssh(&O)"), UiLocalization.Text("GitSshKeyForm.Accessible.OpenSshFolder", "Open .ssh"), 2, 120);
+            _sshOpenGitHubSettingsButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitSshKeyForm.Button.OpenGitHubSettings", "GitHub Settings(&G)"), UiLocalization.Text("GitSshKeyForm.Accessible.OpenGitHubSettings", "GitHub settings"), 3, 150);
+            _sshTestGitHubButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitSshKeyForm.Button.TestGitHub", "Test GitHub(&T)"), UiLocalization.Text("GitSshKeyForm.Accessible.TestGitHub", "Test GitHub"), 4, 132);
+            _sshCopyDetailsButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitSshKeyForm.Button.CopyDetails", "Copy Details(&D)"), UiLocalization.Text("GitSshKeyForm.Accessible.CopyDetails", "Copy details"), 5, 132);
 
             _statusLabel = new Label
             {
@@ -95,7 +95,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyLabel(_statusLabel, true);
 
-            _closeButton = CreateButton(UiLocalization.Text("GitRemoteCredentialsForm.Button.Close", "Close(&X)"), UiLocalization.Text("GitRemoteCredentialsForm.Accessible.Close", "Close"), 10, 112);
+            _closeButton = UiControlFactory.CreateRaisedActionButton(UiLocalization.Text("GitRemoteCredentialsForm.Button.Close", "Close(&X)"), UiLocalization.Text("GitRemoteCredentialsForm.Accessible.Close", "Close"), 10, 112);
             FormInteractionConventions.ConfigureRefreshButton(_githubRefreshButton);
             FormInteractionConventions.ConfigureRefreshButton(_sshRefreshButton);
 
@@ -613,18 +613,26 @@ namespace MyCodex.WinForms.Forms
 
         private void OpenUrl(string url, string status, TextBox detailsTextBox)
         {
-            OpenPath(url, status, detailsTextBox);
+            OpenWith(() => ExternalUrlLauncher.Open(url), status, detailsTextBox);
         }
 
         private void OpenPath(string path, string status, TextBox detailsTextBox)
         {
-            try
-            {
-                Process.Start(new ProcessStartInfo
+            OpenWith(
+                () => Process.Start(new ProcessStartInfo
                 {
                     FileName = path,
                     UseShellExecute = true
-                });
+                }),
+                status,
+                detailsTextBox);
+        }
+
+        private void OpenWith(Action open, string status, TextBox detailsTextBox)
+        {
+            try
+            {
+                open();
                 SetStatus(status, true);
             }
             catch (Exception ex)
@@ -801,20 +809,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(textBox, true, true);
             return textBox;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex, int width)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = width,
-                Height = UiTheme.ButtonHeight,
-                Margin = new Padding(8, 4, 0, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
     }
 }

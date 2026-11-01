@@ -64,9 +64,9 @@ namespace MyCodex.Infrastructure.AppServer
                 _sendErrorResponseAsync(
                     rawRequestId,
                     -32601,
-                    L("AppServerClient.Error.ServerRequestNotImplemented", "This server request is not implemented in the current version."),
+                    SharedLocalization.Text("AppServerClient.Error.ServerRequestNotImplemented", "This server request is not implemented in the current version."),
                     connectionEpoch)
-                    .Forget(L("AppServerClient.Operation.ReplyUnimplementedServerRequest", "Reply to unimplemented server request"));
+                    .Forget(SharedLocalization.Text("AppServerClient.Operation.ReplyUnimplementedServerRequest", "Reply to unimplemented server request"));
                 _raiseEvent(AppServerNotificationFactory.CreateUnhandledServerRequest(method, parameters));
             }
         }
@@ -112,7 +112,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (string.IsNullOrWhiteSpace(requestId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ApprovalRequestIdRequired", "Approval request ID cannot be empty."), nameof(requestId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ApprovalRequestIdRequired", "Approval request ID cannot be empty."), nameof(requestId));
             }
 
             AppServerPendingApprovalRequest pendingRequest;
@@ -121,7 +121,7 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 if (!_pendingRequestRegistry.TryTakeApproval(requestId, out pendingRequest, out connectionEpoch))
                 {
-                    throw new InvalidOperationException(L("AppServerClient.Error.PendingApprovalRequestNotFound", "Pending approval request was not found."));
+                    throw new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.PendingApprovalRequestNotFound", "Pending approval request was not found."));
                 }
             }
 
@@ -146,12 +146,12 @@ namespace MyCodex.Infrastructure.AppServer
                         await _sendErrorResponseAsync(
                             pendingRequest.RawRequestId,
                             4001,
-                            L("AppServerClient.Error.PermissionRequestRejectedByUser", "The user rejected the permission request."),
+                            SharedLocalization.Text("AppServerClient.Error.PermissionRequestRejectedByUser", "The user rejected the permission request."),
                             connectionEpoch)
                             .ConfigureAwait(false);
                         _raiseEvent(new AppServerEventArgs(
                             "approval_resolved",
-                            L("AppServerClient.Approval.PermissionRequestRejected", "Permission request rejected."),
+                            SharedLocalization.Text("AppServerClient.Approval.PermissionRequestRejected", "Permission request rejected."),
                             pendingRequest.ThreadId,
                             pendingRequest.TurnId,
                             pendingRequest.ItemId,
@@ -167,7 +167,7 @@ namespace MyCodex.Infrastructure.AppServer
                     result = AppServerInteractionRequestMapper.BuildPermissionsApprovalResponse(pendingRequest.Parameters, decision);
                     break;
                 default:
-                    throw new InvalidOperationException(L("AppServerClient.Error.UnsupportedApprovalRequestType", "Unsupported approval request type."));
+                    throw new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.UnsupportedApprovalRequestType", "Unsupported approval request type."));
             }
 
             await _sendServerRequestResponseAsync(pendingRequest.RawRequestId, result, connectionEpoch).ConfigureAwait(false);
@@ -191,7 +191,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (string.IsNullOrWhiteSpace(requestId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ToolInputRequestIdRequired", "Tool input request ID cannot be empty."), nameof(requestId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ToolInputRequestIdRequired", "Tool input request ID cannot be empty."), nameof(requestId));
             }
 
             AppServerPendingToolUserInputRequest pendingRequest;
@@ -200,7 +200,7 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 if (!_pendingRequestRegistry.TryTakeToolInput(requestId, out pendingRequest, out connectionEpoch))
                 {
-                    throw new InvalidOperationException(L("AppServerClient.Error.PendingToolInputRequestNotFound", "Pending tool input request was not found."));
+                    throw new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.PendingToolInputRequestNotFound", "Pending tool input request was not found."));
                 }
             }
 
@@ -212,7 +212,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             _raiseEvent(new AppServerEventArgs(
                 "tool_user_input_resolved",
-                L("AppServerClient.ToolInput.Submitted", "Tool input submitted."),
+                SharedLocalization.Text("AppServerClient.ToolInput.Submitted", "Tool input submitted."),
                 pendingRequest.ThreadId,
                 pendingRequest.TurnId,
                 pendingRequest.ItemId,
@@ -223,7 +223,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (string.IsNullOrWhiteSpace(requestId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ToolInputRequestIdRequired", "Tool input request ID cannot be empty."), nameof(requestId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ToolInputRequestIdRequired", "Tool input request ID cannot be empty."), nameof(requestId));
             }
 
             AppServerPendingToolUserInputRequest pendingRequest;
@@ -232,7 +232,7 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 if (!_pendingRequestRegistry.TryTakeToolInput(requestId, out pendingRequest, out connectionEpoch))
                 {
-                    throw new InvalidOperationException(L("AppServerClient.Error.PendingToolInputRequestNotFound", "Pending tool input request was not found."));
+                    throw new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.PendingToolInputRequestNotFound", "Pending tool input request was not found."));
                 }
             }
 
@@ -255,7 +255,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             _raiseEvent(new AppServerEventArgs(
                 "tool_user_input_resolved",
-                L("AppServerClient.ToolInput.Canceled", "Tool input canceled."),
+                SharedLocalization.Text("AppServerClient.ToolInput.Canceled", "Tool input canceled."),
                 pendingRequest.ThreadId,
                 pendingRequest.TurnId,
                 pendingRequest.ItemId,
@@ -275,7 +275,7 @@ namespace MyCodex.Infrastructure.AppServer
             long connectionEpoch)
         {
             HandleDynamicToolCallRequestAsync(rawRequestId, parameters, connectionEpoch)
-                .Forget(L("AppServerClient.Operation.HandleDynamicToolCall", "Handle internal tool call"));
+                .Forget(SharedLocalization.Text("AppServerClient.Operation.HandleDynamicToolCall", "Handle internal tool call"));
         }
 
         private async Task HandleDynamicToolCallRequestAsync(
@@ -472,7 +472,7 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             AutoApproveApprovalRequestAsync(requestId, request,
-                L("AppServerClient.Approval.Source.FullAccessAutoApprove", "automatically approved by Full Access setting"),
+                SharedLocalization.Text("AppServerClient.Approval.Source.FullAccessAutoApprove", "automatically approved by Full Access setting"),
                 connectionEpoch).Forget("Auto-approve by Full Access setting");
             return true;
         }
@@ -507,10 +507,10 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (evaluation != null && evaluation.Source == CustomApprovalPolicySource.CommandPrefix)
             {
-                return L("AppServerClient.Approval.Source.CustomCommandPrefix", "custom command prefix");
+                return SharedLocalization.Text("AppServerClient.Approval.Source.CustomCommandPrefix", "custom command prefix");
             }
 
-            return L("AppServerClient.Approval.Source.CustomPermission", "custom permission");
+            return SharedLocalization.Text("AppServerClient.Approval.Source.CustomPermission", "custom permission");
         }
 
         private async Task AutoApproveApprovalRequestAsync(
@@ -622,7 +622,7 @@ namespace MyCodex.Infrastructure.AppServer
                     { AppServerMcpToolApprovalMapper.QuestionId, new[] { "once" } }
                 }), connectionEpoch).ConfigureAwait(false);
             _raiseEvent(new AppServerEventArgs("approval_resolved",
-                request.Content + Environment.NewLine + L("AppServerClient.Approval.Source.FullAccessAutoApprove", "automatically approved by Full Access setting"),
+                request.Content + Environment.NewLine + SharedLocalization.Text("AppServerClient.Approval.Source.FullAccessAutoApprove", "automatically approved by Full Access setting"),
                 request.ThreadId, request.TurnId, request.ItemId, request.RequestId,
                 mcpServerName: request.McpServerName));
         }
@@ -666,11 +666,6 @@ namespace MyCodex.Infrastructure.AppServer
         private static string NormalizeRequestId(object requestId)
         {
             return requestId == null ? null : Convert.ToString(requestId);
-        }
-
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
         }
     }
 }

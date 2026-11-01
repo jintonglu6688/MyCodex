@@ -10183,9 +10183,6 @@ Suggestion:
   <data name="GitHubStoreForm.Menu.Pull" xml:space="preserve">
     <value>Pull(&amp;P)</value>
   </data>
-  <data name="GitHubStoreForm.Value.RepositoryWebUrl" xml:space="preserve">
-    <value>https://github.com/{0}</value>
-  </data>
   <data name="GitHubStoreForm.Value.NotAvailable" xml:space="preserve">
     <value>-</value>
   </data>
@@ -11125,6 +11122,9 @@ Describe what should be checked before considering work complete.</value>
   </data>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           <data name="ExternalUrlLauncher.Error.UrlNotAllowed" xml:space="preserve">
     <value>Only HTTPS URLs and local HTTP callback URLs can be opened automatically.</value>
+  </data>
+  <data name="ExternalUrlLauncher.Error.MessageLinkNotAllowed" xml:space="preserve">
+    <value>Only HTTP, HTTPS, and email links can be opened from a message.</value>
   </data>
   <data name="MainForm.Status.SendCancelledContextChanged" xml:space="preserve">
     <value>Send cancelled because the active runtime or authentication source changed.</value>

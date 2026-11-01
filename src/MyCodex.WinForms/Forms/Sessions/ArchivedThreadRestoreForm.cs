@@ -73,19 +73,19 @@ namespace MyCodex.WinForms.Forms
                 TextAlign = ContentAlignment.MiddleLeft,
                 TabStop = false
             };
-            _selectAllButton = CreateButton(
+            _selectAllButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ArchivedThreadRestoreForm.Button.SelectAll", "Select All(&A)"),
                 UiLocalization.Text("ArchivedThreadRestoreForm.Accessible.SelectAll", "Select All"));
-            _clearSelectionButton = CreateButton(
+            _clearSelectionButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ArchivedThreadRestoreForm.Button.ClearSelection", "Clear Selection(&N)"),
                 UiLocalization.Text("ArchivedThreadRestoreForm.Accessible.ClearSelection", "Clear Selection"));
-            _currentWorkspaceButton = CreateButton(
+            _currentWorkspaceButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ArchivedThreadRestoreForm.Button.CurrentWorkspace", "Current Workspace(&W)"),
                 UiLocalization.Text("ArchivedThreadRestoreForm.Accessible.CurrentWorkspace", "Current Workspace"));
-            _restoreButton = CreateButton(
+            _restoreButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ArchivedThreadRestoreForm.Button.Restore", "Restore(&R)"),
                 UiLocalization.Text("ArchivedThreadRestoreForm.Accessible.Restore", "Restore"));
-            _cancelButton = CreateButton(
+            _cancelButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("ArchivedThreadRestoreForm.Button.Cancel", "&Cancel"),
                 UiLocalization.Text("ArchivedThreadRestoreForm.Accessible.Cancel", "Cancel"));
             UiTheme.ApplyButton(_selectAllButton, UiGlyph.Ok);
@@ -503,19 +503,6 @@ namespace MyCodex.WinForms.Forms
         private static bool IsLocalWorkspacePathAvailable(string path)
         {
             return !string.IsNullOrWhiteSpace(path) && Directory.Exists(WorkspacePathUtilities.NormalizeLocalOrUnixPath(path));
-        }
-
-        private static Button CreateButton(string text, string accessibleName)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 96,
-                Height = 32,
-                Margin = new Padding(0, 0, 8, 0),
-                UseMnemonic = true
-            };
         }
 
         private static ListView CreateThreadListView()

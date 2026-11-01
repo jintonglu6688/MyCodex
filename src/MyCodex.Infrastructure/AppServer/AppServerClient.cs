@@ -246,8 +246,8 @@ namespace MyCodex.Infrastructure.AppServer
                 AppServerRuntimeStartupCoordinator.DeleteSensitiveTempFiles(launchInfo);
             }
 
-            var platformText = AppServerJsonValueReader.GetString(initializeResult, "platformOs") ?? L("AppServerClient.Value.Unknown", "Unknown");
-            var userAgentText = AppServerJsonValueReader.GetString(initializeResult, "userAgent") ?? L("AppServerClient.Value.Unknown", "Unknown");
+            var platformText = AppServerJsonValueReader.GetString(initializeResult, "platformOs") ?? SharedLocalization.Text("AppServerClient.Value.Unknown", "Unknown");
+            var userAgentText = AppServerJsonValueReader.GetString(initializeResult, "userAgent") ?? SharedLocalization.Text("AppServerClient.Value.Unknown", "Unknown");
             ProtocolCapabilities = AppServerProtocolMetadataMapper.BuildProtocolCapabilities(appConfig, launchInfo, initializeResult);
             lock (_processStartGate)
             {
@@ -312,7 +312,7 @@ namespace MyCodex.Infrastructure.AppServer
 
                 for (var i = 0; i < pendingRequests.Count; i++)
                 {
-                    pendingRequests[i].TrySetException(new InvalidOperationException(L("AppServerClient.Error.Restarted", "Codex App Server restarted.")));
+                    pendingRequests[i].TrySetException(new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.Restarted", "Codex App Server restarted.")));
                 }
 
                 await ConnectCoreAsync().ConfigureAwait(false);
@@ -345,7 +345,7 @@ namespace MyCodex.Infrastructure.AppServer
             var threadId = AppServerJsonValueReader.GetString(thread, "id");
             if (string.IsNullOrWhiteSpace(threadId))
             {
-                throw new InvalidOperationException(L("AppServerClient.Error.ThreadIdMissing", "App Server did not return a thread ID."));
+                throw new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.ThreadIdMissing", "App Server did not return a thread ID."));
             }
 
             lock (_syncRoot)
@@ -397,7 +397,7 @@ namespace MyCodex.Infrastructure.AppServer
             var serializedInputs = BuildUserInputs(inputItems);
             if (serializedInputs.Count == 0)
             {
-                throw new InvalidOperationException(L("AppServerClient.Error.ValidInputRequired", "At least one valid input item is required."));
+                throw new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.ValidInputRequired", "At least one valid input item is required."));
             }
 
             var parameters = new Dictionary<string, object>
@@ -613,7 +613,7 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 OnEventReceived(new AppServerEventArgs(
                     "status",
-                    L("AppServerClient.Status.NoInterruptibleResponse", "There is no in-progress response to interrupt."),
+                    SharedLocalization.Text("AppServerClient.Status.NoInterruptibleResponse", "There is no in-progress response to interrupt."),
                     threadId: threadId));
                 return;
             }
@@ -636,7 +636,7 @@ namespace MyCodex.Infrastructure.AppServer
                 ForgetActiveTurnId(threadId);
                 OnEventReceived(new AppServerEventArgs(
                     "status",
-                    L("AppServerClient.Status.NoInterruptibleResponse", "There is no in-progress response to interrupt."),
+                    SharedLocalization.Text("AppServerClient.Status.NoInterruptibleResponse", "There is no in-progress response to interrupt."),
                     threadId: threadId));
             }
         }
@@ -722,7 +722,7 @@ namespace MyCodex.Infrastructure.AppServer
                 }
             }
 
-            throw lastException ?? new InvalidOperationException(L("AppServerClient.Error.ServerReturnedError", "App Server returned an error."));
+            throw lastException ?? new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.ServerReturnedError", "App Server returned an error."));
         }
 
         public async Task<AppServerAccountTokenUsageSnapshot> GetAccountTokenUsageAsync(
@@ -776,12 +776,12 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(commandText))
             {
-                throw new ArgumentException(L("AppServerClient.Error.CommandRequired", "Command cannot be empty."), nameof(commandText));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.CommandRequired", "Command cannot be empty."), nameof(commandText));
             }
 
             if (string.IsNullOrWhiteSpace(processId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ProcessIdRequired", "Process ID cannot be empty."), nameof(processId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ProcessIdRequired", "Process ID cannot be empty."), nameof(processId));
             }
 
             var command = _commandLinePolicy.BuildStandaloneCommand(commandText);
@@ -848,7 +848,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (command == null || command.Length == 0 || string.IsNullOrWhiteSpace(command[0]))
             {
-                throw new ArgumentException(L("AppServerClient.Error.CommandRequired", "Command cannot be empty."), nameof(command));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.CommandRequired", "Command cannot be empty."), nameof(command));
             }
 
             var cancellation = new CancellationTokenSource();
@@ -875,7 +875,7 @@ namespace MyCodex.Infrastructure.AppServer
                     {
                         StartInfo = startInfo,
                         TimeoutMilliseconds = timeoutMs > 0 && timeoutMs < int.MaxValue ? (int)timeoutMs : 120000,
-                        TimeoutMessage = L("AppServerClient.Error.CommandTimedOut", "Command timed out."),
+                        TimeoutMessage = SharedLocalization.Text("AppServerClient.Error.CommandTimedOut", "Command timed out."),
                         CancellationToken = cancellation.Token,
                         OutputReceived = (text, isError) => outputReceived(text, isError ? "stderr" : "stdout")
                     }),
@@ -1030,7 +1030,7 @@ namespace MyCodex.Infrastructure.AppServer
             EnsureConnected();
             if (string.IsNullOrWhiteSpace(processId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ProcessIdRequired", "Process ID cannot be empty."), nameof(processId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ProcessIdRequired", "Process ID cannot be empty."), nameof(processId));
             }
 
             if (size == null)
@@ -1495,7 +1495,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (string.IsNullOrWhiteSpace(threadId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ThreadIdRequired", "Thread ID cannot be empty."), nameof(threadId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ThreadIdRequired", "Thread ID cannot be empty."), nameof(threadId));
             }
 
             if (inputItems == null)
@@ -1541,7 +1541,7 @@ namespace MyCodex.Infrastructure.AppServer
             var serializedInputs = BuildUserInputs(inputItems);
             if (serializedInputs.Count == 0)
             {
-                throw new InvalidOperationException(L("AppServerClient.Error.ValidInputRequired", "At least one valid input item is required."));
+                throw new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.ValidInputRequired", "At least one valid input item is required."));
             }
 
             lock (_syncRoot)
@@ -1600,7 +1600,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(threadId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ThreadIdRequired", "Thread ID cannot be empty."), nameof(threadId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ThreadIdRequired", "Thread ID cannot be empty."), nameof(threadId));
             }
 
             await EnsureThreadLoadedAsync(threadId, workspacePath, approvalMode).ConfigureAwait(false);
@@ -1877,7 +1877,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             for (var i = 0; i < pendingRequests.Count; i++)
             {
-                pendingRequests[i].TrySetException(new InvalidOperationException(L("AppServerClient.Error.RuntimeChanged", "Codex App Server runtime changed.")));
+                pendingRequests[i].TrySetException(new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.RuntimeChanged", "Codex App Server runtime changed.")));
             }
         }
 
@@ -1990,7 +1990,7 @@ namespace MyCodex.Infrastructure.AppServer
                     Trace.TraceWarning("App Server stderr received. Characters={0}", output.Length);
                     OnEventReceived(new AppServerEventArgs(
                         "system_notice",
-                        L("AppServerClient.SystemNotice.AppServerOutputPrefix", "App Server: ") + output));
+                        SharedLocalization.Text("AppServerClient.SystemNotice.AppServerOutputPrefix", "App Server: ") + output));
                 }
             }
             catch (Exception ex)
@@ -2000,7 +2000,7 @@ namespace MyCodex.Infrastructure.AppServer
                     Trace.TraceError("Failed to read App Server stderr. ErrorType={0}", ex.GetType().FullName);
                     OnEventReceived(new AppServerEventArgs(
                         "system_notice",
-                        L("AppServerClient.SystemNotice.ReadStderrFailed.Prefix", "Failed to read App Server stderr: ") + ex.Message));
+                        SharedLocalization.Text("AppServerClient.SystemNotice.ReadStderrFailed.Prefix", "Failed to read App Server stderr: ") + ex.Message));
                 }
             }
         }
@@ -2082,7 +2082,7 @@ namespace MyCodex.Infrastructure.AppServer
                 json == null ? 0 : json.Length);
             OnEventReceived(new AppServerEventArgs(
                 "system_notice",
-                L("AppServerClient.SystemNotice.UnparsableMessageIgnored", "Received an unparsable App Server message and ignored it.")));
+                SharedLocalization.Text("AppServerClient.SystemNotice.UnparsableMessageIgnored", "Received an unparsable App Server message and ignored it.")));
         }
 
         private void HandleResponse(IDictionary<string, object> message)
@@ -2186,7 +2186,7 @@ namespace MyCodex.Infrastructure.AppServer
             var resumedThreadId = AppServerJsonValueReader.GetString(thread, "id");
             if (string.IsNullOrWhiteSpace(resumedThreadId))
             {
-                throw new InvalidOperationException(L("AppServerClient.Error.ResumeThreadIdMissing", "Failed to restore thread: thread ID was not returned."));
+                throw new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.ResumeThreadIdMissing", "Failed to restore thread: thread ID was not returned."));
             }
 
             lock (_syncRoot)
@@ -2443,8 +2443,8 @@ namespace MyCodex.Infrastructure.AppServer
         private static string BuildConnectionLostMessage(Exception ex)
         {
             return ex == null || string.IsNullOrWhiteSpace(ex.Message)
-                ? L("AppServerClient.Error.ConnectionLost", "Connection to Codex App Server was lost.")
-                : L("AppServerClient.Error.ConnectionLostWithDetail.Prefix", "Connection to Codex App Server was lost: ") + ex.Message;
+                ? SharedLocalization.Text("AppServerClient.Error.ConnectionLost", "Connection to Codex App Server was lost.")
+                : SharedLocalization.Text("AppServerClient.Error.ConnectionLostWithDetail.Prefix", "Connection to Codex App Server was lost: ") + ex.Message;
         }
 
         private Task SendNotificationAsync(string method)
@@ -2912,7 +2912,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (string.IsNullOrWhiteSpace(processId))
             {
-                throw new ArgumentException(L("AppServerClient.Error.ProcessIdRequired", "Process ID cannot be empty."), nameof(processId));
+                throw new ArgumentException(SharedLocalization.Text("AppServerClient.Error.ProcessIdRequired", "Process ID cannot be empty."), nameof(processId));
             }
 
             return AppServerRequestParameterBuilder.BuildCommandInputWriteParameters(processId.Trim(), input);
@@ -2922,7 +2922,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (!_isConnected || _process == null || _process.HasExited)
             {
-                throw new InvalidOperationException(L("AppServerClient.Error.NotConnected", "App Server is not connected."));
+                throw new InvalidOperationException(SharedLocalization.Text("AppServerClient.Error.NotConnected", "App Server is not connected."));
             }
         }
 
@@ -2934,14 +2934,9 @@ namespace MyCodex.Infrastructure.AppServer
             return AppServerProtocolMetadataMapper.BuildProtocolCapabilities(appConfig, launchInfo, initializeResult);
         }
 
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
-        }
-
         private static string LF(string key, string fallback, params object[] args)
         {
-            return string.Format(CultureInfo.CurrentCulture, L(key, fallback), args ?? Array.Empty<object>());
+            return string.Format(CultureInfo.CurrentCulture, SharedLocalization.Text(key, fallback), args ?? Array.Empty<object>());
         }
 
         private static void AddOptionalString(IDictionary<string, object> target, string key, string value)
@@ -2972,7 +2967,7 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             HandleAppServerConnectionLost(
-                L("AppServerClient.Error.AppServerExited", "Codex App Server exited."),
+                SharedLocalization.Text("AppServerClient.Error.AppServerExited", "Codex App Server exited."),
                 GetConnectionEpoch(),
                 process);
         }

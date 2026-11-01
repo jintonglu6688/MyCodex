@@ -1030,9 +1030,8 @@ namespace MyCodex.Application.Tests
 
             Assert.That(toolInputBlock, Does.Contain("request.IsMcpElicitationConfirmation"));
             Assert.That(toolInputBlock, Does.Contain("CancelToolUserInputRequestAsync(request.RequestId)"));
+            Assert.That(confirmationBlock, Does.Contain("McpElicitationFlow.RunConfirmationAsync("));
             Assert.That(confirmationBlock, Does.Contain("MessageBoxDefaultButton.Button2"));
-            Assert.That(confirmationBlock, Does.Contain("ResolveToolUserInputRequestAsync("));
-            Assert.That(confirmationBlock, Does.Contain("CancelToolUserInputRequestAsync(request.RequestId)"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]

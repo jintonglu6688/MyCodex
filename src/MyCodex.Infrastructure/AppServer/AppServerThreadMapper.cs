@@ -165,14 +165,14 @@ namespace MyCodex.Infrastructure.AppServer
                     var enteredReviewText = AppServerJsonValueReader.GetString(item, "review");
                     if (!string.IsNullOrWhiteSpace(enteredReviewText))
                     {
-                        details.Messages.Add(CreateMessage(threadId, turnId, turnIndex, turnItemIndex, item, "System", L("AppServerClient.Review.Entered.Prefix", "Entered review mode: ") + enteredReviewText));
+                        details.Messages.Add(CreateMessage(threadId, turnId, turnIndex, turnItemIndex, item, "System", SharedLocalization.Text("AppServerClient.Review.Entered.Prefix", "Entered review mode: ") + enteredReviewText));
                     }
                     break;
                 case "exitedReviewMode":
                     var exitedReviewText = AppServerJsonValueReader.GetString(item, "review");
                     if (!string.IsNullOrWhiteSpace(exitedReviewText))
                     {
-                        details.Messages.Add(CreateMessage(threadId, turnId, turnIndex, turnItemIndex, item, "System", L("AppServerClient.Review.Exited.Prefix", "Exited review mode: ") + exitedReviewText));
+                        details.Messages.Add(CreateMessage(threadId, turnId, turnIndex, turnItemIndex, item, "System", SharedLocalization.Text("AppServerClient.Review.Exited.Prefix", "Exited review mode: ") + exitedReviewText));
                     }
                     break;
             }
@@ -278,7 +278,7 @@ namespace MyCodex.Infrastructure.AppServer
 
         private static string BuildPlanMessageText(string planText)
         {
-            return L("AppServerClient.Plan.MessagePrefix", "Plan:") +
+            return SharedLocalization.Text("AppServerClient.Plan.MessagePrefix", "Plan:") +
                 Environment.NewLine +
                 (planText ?? string.Empty).Trim();
         }
@@ -287,7 +287,7 @@ namespace MyCodex.Infrastructure.AppServer
         {
             if (string.IsNullOrWhiteSpace(imageReference))
             {
-                return L("AppServerClient.Attachment.Image.DefaultName", "Image");
+                return SharedLocalization.Text("AppServerClient.Attachment.Image.DefaultName", "Image");
             }
 
             Uri uri;
@@ -332,7 +332,7 @@ namespace MyCodex.Infrastructure.AppServer
 
             if (string.IsNullOrWhiteSpace(path))
             {
-                return L("AppServerClient.Attachment.File.DefaultName", "File");
+                return SharedLocalization.Text("AppServerClient.Attachment.File.DefaultName", "File");
             }
 
             var fileName = Path.GetFileName(path);
@@ -409,14 +409,9 @@ namespace MyCodex.Infrastructure.AppServer
             return null;
         }
 
-        private static string L(string key, string fallback)
-        {
-            return SharedLocalization.Text(key, fallback);
-        }
-
         private static string LF(string key, string fallback, params object[] args)
         {
-            return string.Format(CultureInfo.CurrentCulture, L(key, fallback), args ?? Array.Empty<object>());
+            return string.Format(CultureInfo.CurrentCulture, SharedLocalization.Text(key, fallback), args ?? Array.Empty<object>());
         }
     }
 }

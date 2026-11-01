@@ -55,7 +55,7 @@ namespace MyCodex.WinForms.Forms
                 includePendingAttachments,
                 rawText.Length,
                 BuildSendDiagnosticContext()));
-            var planCommand = ParsePlanSlashCommand(rawText);
+            var planCommand = PlanSlashCommandParser.Parse(rawText);
             var pendingDraftState = _currentSession == null && !hasOverrideText ? CaptureCurrentComposeDraftState() : null;
             var sessionBootstrap = SendInputPreflight.EvaluateSessionBootstrap(_currentSession != null, _currentWorkspace != null);
             if (sessionBootstrap.IsBlocked)
@@ -97,7 +97,7 @@ namespace MyCodex.WinForms.Forms
             var attachmentsSnapshot = includePendingAttachments
                 ? _pendingAttachments.ToArray()
                 : new PendingAttachmentItem[0];
-            var previewText = BuildOutgoingMessagePreview(dispatchText, attachmentsSnapshot);
+            var previewText = OutgoingInputItemBuilder.BuildPreviewText(dispatchText, attachmentsSnapshot);
 
             List<PendingAttachmentItem> unavailableAttachments;
             try
@@ -295,7 +295,7 @@ namespace MyCodex.WinForms.Forms
                 }
 
                 InvalidateSessionHistoryCache(targetSession.ThreadId);
-                ResetTurnProgressSummaryBeforeSend(targetSession.ThreadId, CollectTurnSkillNames(attachmentsSnapshot));
+                ResetTurnProgressSummaryBeforeSend(targetSession.ThreadId, ComposeAttachmentState.CollectTurnSkillNames(attachmentsSnapshot));
                 if (dispatchDecision.Mode == MainFormSendDispatchMode.TurnSteer)
                 {
                     TraceSendDiagnostic("Dispatch", "sending turn/steer; thread=" + FormatDiagnosticValue(targetSession.ThreadId));

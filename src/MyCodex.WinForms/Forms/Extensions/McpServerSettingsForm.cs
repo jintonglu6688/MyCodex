@@ -93,14 +93,14 @@ namespace MyCodex.WinForms.Forms
             _argumentsTextBox = CreateMultiLineTextBox(UiLocalization.Text("McpServerSettingsForm.Accessible.Arguments", "Arguments"), 6, 88);
             _workingDirectoryTextBox = CreateTextBox(UiLocalization.Text("McpServerSettingsForm.Accessible.WorkingDirectory", "Working Directory"), 7);
             _environmentTextBox = CreateMultiLineTextBox(UiLocalization.Text("McpServerSettingsForm.Accessible.Environment", "Environment Variables"), 8, 128);
-            _saveButton = CreateButton(
+            _saveButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("McpServerSettingsForm.Button.Save", "Save(&S)"),
                 UiLocalization.Text("McpServerSettingsForm.Accessible.Save", "Save"),
-                9);
-            _cancelButton = CreateButton(
+                tabIndex: 9);
+            _cancelButton = UiControlFactory.CreateCompactButton(
                 UiLocalization.Text("McpServerSettingsForm.Button.Cancel", "&Cancel"),
                 UiLocalization.Text("McpServerSettingsForm.Accessible.Cancel", "Cancel"),
-                10);
+                tabIndex: 10);
             UiTheme.ApplyButton(_saveButton, UiGlyph.Ok);
             UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
 
@@ -481,20 +481,6 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(textBox, true, false);
             return textBox;
-        }
-
-        private static Button CreateButton(string text, string accessibleName, int tabIndex)
-        {
-            return new Button
-            {
-                Text = text,
-                AccessibleName = accessibleName,
-                Width = 96,
-                Height = 32,
-                Margin = new Padding(0, 0, 8, 0),
-                UseMnemonic = true,
-                TabIndex = tabIndex
-            };
         }
 
         private static string[] ParseArguments(string text)

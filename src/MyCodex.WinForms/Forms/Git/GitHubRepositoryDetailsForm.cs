@@ -1435,7 +1435,7 @@ namespace MyCodex.WinForms.Forms
         private void OpenSelectedBranch()
         {
             var entry = GetSelectedTag<GitHubBranchEntry>(_branchesListView);
-            var url = BuildRepositoryWebUrl(_repository, "tree/" + EscapeBranchPath(entry == null ? null : entry.Name));
+            var url = GitHubRepositoryWebUrl.Build(_repository, "tree/" + EscapeBranchPath(entry == null ? null : entry.Name));
             if (string.IsNullOrWhiteSpace(url))
             {
                 FocusCurrentTabPrimaryControl();
@@ -1477,7 +1477,7 @@ namespace MyCodex.WinForms.Forms
         private void OpenSelectedTag()
         {
             var entry = GetSelectedTag<GitHubTagEntry>(_tagsListView);
-            var url = BuildRepositoryWebUrl(_repository, "tree/" + EscapeBranchPath(entry == null ? null : entry.Name));
+            var url = GitHubRepositoryWebUrl.Build(_repository, "tree/" + EscapeBranchPath(entry == null ? null : entry.Name));
             if (string.IsNullOrWhiteSpace(url))
             {
                 FocusCurrentTabPrimaryControl();
@@ -1508,11 +1508,7 @@ namespace MyCodex.WinForms.Forms
         {
             try
             {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = url,
-                    UseShellExecute = true
-                });
+                ExternalUrlLauncher.Open(url);
                 SetStatus(successStatus, true);
             }
             catch (Exception ex)
@@ -2582,33 +2578,6 @@ namespace MyCodex.WinForms.Forms
                 : _repository.DefaultBranch.Trim();
         }
 
-        private static string BuildRepositoryWebUrl(GitHubRepositoryEntry repository, string relativePath)
-        {
-            if (repository == null)
-            {
-                return string.Empty;
-            }
-
-            var baseUrl = NormalizeGitHubHttpsUrl(repository.HttpsUrl);
-            if (string.IsNullOrWhiteSpace(baseUrl) && !string.IsNullOrWhiteSpace(repository.NameWithOwner))
-            {
-                var fullName = repository.NameWithOwner.Trim().Trim('/');
-                if (fullName.IndexOf('/') > 0)
-                {
-                    baseUrl = "https://github.com/" + fullName;
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(baseUrl))
-            {
-                return string.Empty;
-            }
-
-            return string.IsNullOrWhiteSpace(relativePath)
-                ? baseUrl
-                : baseUrl.TrimEnd('/') + "/" + relativePath.TrimStart('/');
-        }
-
         private bool RepositoryMatchesRemote(string remoteUrl)
         {
             var repositoryFullName = NormalizeRepositoryFullName(_repository == null ? null : _repository.NameWithOwner);
@@ -2664,24 +2633,6 @@ namespace MyCodex.WinForms.Forms
             return trimmed.EndsWith(".git", StringComparison.OrdinalIgnoreCase)
                 ? trimmed.Substring(0, trimmed.Length - 4)
                 : trimmed;
-        }
-
-        private static string NormalizeGitHubHttpsUrl(string url)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                return string.Empty;
-            }
-
-            var value = url.Trim();
-            if (!value.StartsWith("https://github.com/", StringComparison.OrdinalIgnoreCase))
-            {
-                return string.Empty;
-            }
-
-            return value.EndsWith(".git", StringComparison.OrdinalIgnoreCase)
-                ? value.Substring(0, value.Length - 4)
-                : value;
         }
 
         private static string EscapeBranchPath(string branchName)

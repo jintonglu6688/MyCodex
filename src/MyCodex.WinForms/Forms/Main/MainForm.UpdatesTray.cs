@@ -12,6 +12,7 @@ using MyCodex.Domain.Enums;
 using MyCodex.Infrastructure.Instances;
 using MyCodex.Infrastructure.Updates;
 using MyCodex.Shared.Constants;
+using MyCodex.Shared.Helpers;
 using MyCodex.WinForms;
 using MyCodex.WinForms.Localization;
 
@@ -240,28 +241,10 @@ namespace MyCodex.WinForms.Forms
                 StringComparison.OrdinalIgnoreCase);
             if (preferChinese)
             {
-                return FirstNonEmpty(check.ReleaseNotesZhCn, check.ReleaseNotesEnUs, check.ReleaseNotes);
+                return TextValueHelper.TrimToNull(TextValueHelper.FirstNonEmptyTrimmed(check.ReleaseNotesZhCn, check.ReleaseNotesEnUs, check.ReleaseNotes));
             }
 
-            return FirstNonEmpty(check.ReleaseNotesEnUs, check.ReleaseNotesZhCn, check.ReleaseNotes);
-        }
-
-        private static string FirstNonEmpty(params string[] values)
-        {
-            if (values == null)
-            {
-                return null;
-            }
-
-            for (var i = 0; i < values.Length; i++)
-            {
-                if (!string.IsNullOrWhiteSpace(values[i]))
-                {
-                    return values[i];
-                }
-            }
-
-            return null;
+            return TextValueHelper.TrimToNull(TextValueHelper.FirstNonEmptyTrimmed(check.ReleaseNotesEnUs, check.ReleaseNotesZhCn, check.ReleaseNotes));
         }
 
         private void ShowMainWindowTrayMenuItem_Click(object sender, EventArgs e)

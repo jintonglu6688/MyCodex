@@ -193,7 +193,7 @@ namespace MyCodex.WinForms.Forms
                             : Enumerable.Empty<AppServerSkillInfo>())
                         .Where(skill => skill != null && !string.IsNullOrWhiteSpace(skill.Path))
                         .OrderByDescending(skill => skill.Enabled)
-                        .ThenBy(skill => GetSkillInsertionDisplayName(skill), StringComparer.CurrentCultureIgnoreCase)
+                        .ThenBy(skill => ComposeAttachmentState.GetSkillInsertionDisplayName(skill), StringComparer.CurrentCultureIgnoreCase)
                         .ToList();
 
                 if (skills.Count == 0)
@@ -306,7 +306,7 @@ namespace MyCodex.WinForms.Forms
                             new AttachmentCandidate(tempPath, true, AttachmentKind.Image, imageBytes)
                         });
                         InsertAttachmentMarkersAtCursor(addedAttachments);
-                        var addedImageCount = CountAttachmentsByKind(addedAttachments, AttachmentKind.Image);
+                        var addedImageCount = ComposeAttachmentState.CountAttachmentsByKind(addedAttachments, AttachmentKind.Image);
                         AnnounceAddedAttachments(addedImageCount, 0);
                         return addedImageCount > 0;
                     }
@@ -339,9 +339,9 @@ namespace MyCodex.WinForms.Forms
                     }
 
                     var addedAttachments = AddAttachments(candidates);
-                    var addedImageCount = CountAttachmentsByKind(addedAttachments, AttachmentKind.Image);
-                    var addedFileCount = CountFileAttachments(addedAttachments);
-                    var addedFolderCount = CountFolderAttachments(addedAttachments);
+                    var addedImageCount = ComposeAttachmentState.CountAttachmentsByKind(addedAttachments, AttachmentKind.Image);
+                    var addedFileCount = ComposeAttachmentState.CountFileAttachments(addedAttachments);
+                    var addedFolderCount = ComposeAttachmentState.CountFolderAttachments(addedAttachments);
                     if (addedImageCount > 0 || addedFileCount > 0 || addedFolderCount > 0)
                     {
                         InsertAttachmentMarkersAtCursor(addedAttachments);
@@ -445,7 +445,7 @@ namespace MyCodex.WinForms.Forms
 
             var addedAttachments = AddAttachments(paths.Select(path => new AttachmentCandidate(path, false, AttachmentKind.File, null, isFolder, true)));
             InsertAttachmentMarkersAtCursor(addedAttachments);
-            AnnounceAddedAttachments(0, CountFileAttachments(addedAttachments), 0, CountFolderAttachments(addedAttachments));
+            AnnounceAddedAttachments(0, ComposeAttachmentState.CountFileAttachments(addedAttachments), 0, ComposeAttachmentState.CountFolderAttachments(addedAttachments));
         }
 
         private async Task AddAppServerFileBrowserAttachmentsAsync(IReadOnlyList<RuntimeFileBrowserSelectedPath> selectedPaths)
@@ -500,7 +500,7 @@ namespace MyCodex.WinForms.Forms
 
                 var remoteAttachments = AddAttachments(paths.Select(item => new AttachmentCandidate(item.Path, false, AttachmentKind.File, null, item.IsDirectory, true)));
                 InsertAttachmentMarkersAtCursor(remoteAttachments);
-                AnnounceAddedAttachments(0, CountFileAttachments(remoteAttachments), 0, CountFolderAttachments(remoteAttachments));
+                AnnounceAddedAttachments(0, ComposeAttachmentState.CountFileAttachments(remoteAttachments), 0, ComposeAttachmentState.CountFolderAttachments(remoteAttachments));
                 return;
             }
 
@@ -513,10 +513,10 @@ namespace MyCodex.WinForms.Forms
                 false)));
             InsertAttachmentMarkersAtCursor(addedAttachments);
             AnnounceAddedAttachments(
-                CountAttachmentsByKind(addedAttachments, AttachmentKind.Image),
-                CountFileAttachments(addedAttachments),
+                ComposeAttachmentState.CountAttachmentsByKind(addedAttachments, AttachmentKind.Image),
+                ComposeAttachmentState.CountFileAttachments(addedAttachments),
                 0,
-                CountFolderAttachments(addedAttachments));
+                ComposeAttachmentState.CountFolderAttachments(addedAttachments));
         }
 
         private PendingAttachmentItem AddSkillAttachment(AppServerSkillInfo skill)
@@ -531,7 +531,7 @@ namespace MyCodex.WinForms.Forms
                 return null;
             }
 
-            var displayName = GetSkillInsertionDisplayName(skill);
+            var displayName = ComposeAttachmentState.GetSkillInsertionDisplayName(skill);
             var markerText = BuildAttachmentMarkerText(AttachmentKind.Skill, displayName, skill.Path);
             var attachment = new PendingAttachmentItem(
                 skill.Path,
@@ -560,7 +560,7 @@ namespace MyCodex.WinForms.Forms
                 return null;
             }
 
-            var displayName = GetPluginInsertionDisplayName(plugin);
+            var displayName = ComposeAttachmentState.GetPluginInsertionDisplayName(plugin);
             var markerText = BuildAttachmentMarkerText(AttachmentKind.Plugin, displayName, plugin.SourcePath);
             var attachment = new PendingAttachmentItem(
                 plugin.SourcePath,
@@ -604,7 +604,7 @@ namespace MyCodex.WinForms.Forms
 
         private PendingAttachmentItem AddAttachment(AttachmentCandidate candidate)
         {
-            if (candidate == null || (!candidate.IsRemotePath && !AttachmentPathExists(candidate.Kind, candidate.Path)))
+            if (candidate == null || (!candidate.IsRemotePath && !PendingAttachmentSendValidator.PathExists(candidate.Kind, candidate.Path)))
             {
                 return null;
             }
@@ -640,7 +640,7 @@ namespace MyCodex.WinForms.Forms
             var addedAttachments = AddAttachments((paths ?? Array.Empty<string>())
                 .Select(path => new AttachmentCandidate(path, temporaryFiles, AttachmentKind.Image, null)));
             InsertAttachmentMarkersAtCursor(addedAttachments);
-            return CountAttachmentsByKind(addedAttachments, AttachmentKind.Image);
+            return ComposeAttachmentState.CountAttachmentsByKind(addedAttachments, AttachmentKind.Image);
         }
 
         private int AddFileAttachments(IEnumerable<string> paths)
@@ -648,7 +648,7 @@ namespace MyCodex.WinForms.Forms
             var addedAttachments = AddAttachments((paths ?? Array.Empty<string>())
                 .Select(path => new AttachmentCandidate(path, false, AttachmentKind.File, null)));
             InsertAttachmentMarkersAtCursor(addedAttachments);
-            return CountFileAttachments(addedAttachments);
+            return ComposeAttachmentState.CountFileAttachments(addedAttachments);
         }
 
         private int AddFolderAttachments(IEnumerable<string> paths)
@@ -656,7 +656,7 @@ namespace MyCodex.WinForms.Forms
             var addedAttachments = AddAttachments((paths ?? Array.Empty<string>())
                 .Select(path => new AttachmentCandidate(path, false, AttachmentKind.File, null, true, false)));
             InsertAttachmentMarkersAtCursor(addedAttachments);
-            return CountFolderAttachments(addedAttachments);
+            return ComposeAttachmentState.CountFolderAttachments(addedAttachments);
         }
 
         private string GetDefaultAttachmentSelectionPath()
@@ -761,9 +761,9 @@ namespace MyCodex.WinForms.Forms
             RefreshPendingAttachmentState();
             AnnounceRemovedAttachments(
                 selectedItem.Kind == AttachmentKind.Image ? 1 : 0,
-                selectedItem.Kind == AttachmentKind.File && !IsFolderAttachment(selectedItem) ? 1 : 0,
+                selectedItem.Kind == AttachmentKind.File && !ComposeAttachmentState.IsFolderAttachment(selectedItem) ? 1 : 0,
                 selectedItem.Kind == AttachmentKind.Skill ? 1 : 0,
-                IsFolderAttachment(selectedItem) ? 1 : 0,
+                ComposeAttachmentState.IsFolderAttachment(selectedItem) ? 1 : 0,
                 selectedItem.Kind == AttachmentKind.Plugin ? 1 : 0);
         }
 
@@ -1246,7 +1246,7 @@ namespace MyCodex.WinForms.Forms
                             : Enumerable.Empty<AppServerSkillInfo>())
                         .Where(skill => skill != null && !string.IsNullOrWhiteSpace(skill.Path))
                         .OrderByDescending(skill => skill.Enabled)
-                        .ThenBy(skill => GetSkillInsertionDisplayName(skill), StringComparer.CurrentCultureIgnoreCase)
+                        .ThenBy(skill => ComposeAttachmentState.GetSkillInsertionDisplayName(skill), StringComparer.CurrentCultureIgnoreCase)
                         .ToList();
 
                 if (skills.Count == 0)
@@ -1288,7 +1288,7 @@ namespace MyCodex.WinForms.Forms
                 return new PendingAttachmentItem[0];
             }
 
-            var displayName = GetPluginInsertionDisplayName(plugin);
+            var displayName = ComposeAttachmentState.GetPluginInsertionDisplayName(plugin);
             return new[]
             {
                 new PendingAttachmentItem(
@@ -1420,7 +1420,7 @@ namespace MyCodex.WinForms.Forms
                 return new PendingAttachmentItem[0];
             }
 
-            var displayName = GetSkillInsertionDisplayName(skill);
+            var displayName = ComposeAttachmentState.GetSkillInsertionDisplayName(skill);
             return new[]
             {
                 new PendingAttachmentItem(
@@ -1461,7 +1461,7 @@ namespace MyCodex.WinForms.Forms
             {
                 if (candidate == null ||
                     string.IsNullOrWhiteSpace(candidate.Path) ||
-                    (!candidate.IsRemotePath && !AttachmentPathExists(candidate.Kind, candidate.Path)))
+                    (!candidate.IsRemotePath && !PendingAttachmentSendValidator.PathExists(candidate.Kind, candidate.Path)))
                 {
                     continue;
                 }
@@ -1528,66 +1528,6 @@ namespace MyCodex.WinForms.Forms
             return OutgoingInputItemBuilder.Build(text, attachments, GetImageAttachmentBytes);
         }
 
-        private static List<string> CollectTurnSkillNames(IReadOnlyList<PendingAttachmentItem> attachments)
-        {
-            var skillNames = new List<string>();
-            if (attachments == null || attachments.Count == 0)
-            {
-                return skillNames;
-            }
-
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            for (var i = 0; i < attachments.Count; i++)
-            {
-                var attachment = attachments[i];
-                if (attachment == null || attachment.Kind != AttachmentKind.Skill)
-                {
-                    continue;
-                }
-
-                var skillName = GetTurnSkillDisplayName(attachment);
-                if (string.IsNullOrWhiteSpace(skillName) || !seen.Add(skillName))
-                {
-                    continue;
-                }
-
-                skillNames.Add(skillName);
-            }
-
-            return skillNames;
-        }
-
-        private static string GetTurnSkillDisplayName(PendingAttachmentItem attachment)
-        {
-            if (attachment == null)
-            {
-                return string.Empty;
-            }
-
-            var skillName = !string.IsNullOrWhiteSpace(attachment.DisplayName)
-                ? attachment.DisplayName.Trim()
-                : string.Empty;
-            if (skillName.Length > 0)
-            {
-                return skillName;
-            }
-
-            skillName = !string.IsNullOrWhiteSpace(attachment.InputName)
-                ? attachment.InputName.Trim()
-                : string.Empty;
-            if (skillName.Length > 0)
-            {
-                return skillName;
-            }
-
-            if (string.IsNullOrWhiteSpace(attachment.LocalPath))
-            {
-                return string.Empty;
-            }
-
-            return Path.GetFileName(attachment.LocalPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-        }
-
         private byte[] GetImageAttachmentBytes(PendingAttachmentItem attachment)
         {
             if (attachment == null)
@@ -1613,11 +1553,6 @@ namespace MyCodex.WinForms.Forms
             {
                 return null;
             }
-        }
-
-        private static string BuildOutgoingMessagePreview(string text, IReadOnlyList<PendingAttachmentItem> attachments)
-        {
-            return OutgoingInputItemBuilder.BuildPreviewText(text, attachments);
         }
 
         private string BuildAttachmentMarkerText(AttachmentKind kind, string displayName, string path, bool isDirectory = false)
@@ -1664,11 +1599,6 @@ namespace MyCodex.WinForms.Forms
             return ComposeAttachmentState.SortByInputText(_pendingAttachments, inputText);
         }
 
-        private static bool AttachmentPathExists(AttachmentKind kind, string path)
-        {
-            return PendingAttachmentSendValidator.PathExists(kind, path);
-        }
-
         private static string GetAttachmentDisplayName(string path)
         {
             if (string.IsNullOrWhiteSpace(path))
@@ -1684,36 +1614,6 @@ namespace MyCodex.WinForms.Forms
 
             var displayName = Path.GetFileName(trimmedPath);
             return string.IsNullOrWhiteSpace(displayName) ? trimmedPath : displayName;
-        }
-
-        private static int CountAttachmentsByKind(IEnumerable<PendingAttachmentItem> attachments, AttachmentKind kind)
-        {
-            return ComposeAttachmentState.CountAttachmentsByKind(attachments, kind);
-        }
-
-        private static int CountFileAttachments(IEnumerable<PendingAttachmentItem> attachments)
-        {
-            return ComposeAttachmentState.CountFileAttachments(attachments);
-        }
-
-        private static int CountFolderAttachments(IEnumerable<PendingAttachmentItem> attachments)
-        {
-            return ComposeAttachmentState.CountFolderAttachments(attachments);
-        }
-
-        private static bool IsFolderAttachment(PendingAttachmentItem item)
-        {
-            return ComposeAttachmentState.IsFolderAttachment(item);
-        }
-
-        private static string GetSkillInsertionDisplayName(AppServerSkillInfo skill)
-        {
-            return ComposeAttachmentState.GetSkillInsertionDisplayName(skill);
-        }
-
-        private static string GetPluginInsertionDisplayName(AppServerPluginSummary plugin)
-        {
-            return ComposeAttachmentState.GetPluginInsertionDisplayName(plugin);
         }
 
         private static byte[] ConvertImageToPngBytes(Image image)
