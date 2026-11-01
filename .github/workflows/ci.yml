@@ -9,8 +9,6 @@ on:
       - "docs/**"
       - "**/*.md"
   workflow_dispatch:
-  push:
-    branches: [ci/windows-tests]
 
 permissions:
   contents: read
