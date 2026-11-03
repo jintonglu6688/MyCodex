@@ -15,40 +15,25 @@ namespace MyCodex.WinForms.Theming
                 true);
         }
 
-        internal void RefreshTabLayout()
+        protected override void OnHandleCreated(System.EventArgs e)
         {
-            if (TabCount == 0 || !IsHandleCreated)
-            {
-                return;
-            }
-
-            var width = 0;
-            var height = 0;
-            using (var graphics = CreateGraphics())
-            {
-                for (var index = 0; index < TabCount; index++)
-                {
-                    var textSize = TextRenderer.MeasureText(
-                        graphics,
-                        GetTabText(index),
-                        Font,
-                        Size.Empty,
-                        TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
-                    width = System.Math.Max(width, textSize.Width + UiTheme.Scale(30));
-                    height = System.Math.Max(height, textSize.Height + UiTheme.Scale(12));
-                }
-            }
-
-            SizeMode = TabSizeMode.Fixed;
-            ItemSize = new Size(System.Math.Max(UiTheme.Scale(84), width), System.Math.Max(UiTheme.Scale(28), height));
+            base.OnHandleCreated(e);
+            UpdateItemHeight();
         }
 
         protected override void OnFontChanged(System.EventArgs e)
         {
             base.OnFontChanged(e);
-            if (IsHandleCreated)
+            UpdateItemHeight();
+        }
+
+        // User painting drops the visual-style padding, so set a height close to the native tab; widths stay native.
+        private void UpdateItemHeight()
+        {
+            var height = TextRenderer.MeasureText("Ag", Font).Height + UiTheme.Scale(6);
+            if (ItemSize.Height != height)
             {
-                RefreshTabLayout();
+                ItemSize = new Size(0, height);
             }
         }
 
@@ -107,7 +92,8 @@ namespace MyCodex.WinForms.Theming
                     var selected = index == SelectedIndex;
                     graphics.FillRectangle(selected ? selectedBrush : normalBrush, bounds);
                     graphics.DrawRectangle(borderPen, bounds.Left, bounds.Top, bounds.Width - 1, bounds.Height - 1);
-                    var textBounds = Rectangle.Inflate(bounds, -UiTheme.Scale(10), -UiTheme.Scale(2));
+                    // Native sizing keeps each tab only slightly wider than its text, so keep the inset small.
+                    var textBounds = Rectangle.Inflate(bounds, -UiTheme.Scale(2), -UiTheme.Scale(1));
                     TextRenderer.DrawText(
                         graphics,
                         GetTabText(index),

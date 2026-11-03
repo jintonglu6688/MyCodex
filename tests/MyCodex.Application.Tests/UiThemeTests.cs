@@ -400,10 +400,21 @@ namespace MyCodex.Application.Tests
 
         private static void AssertContrast(Color foreground, Color background, double minimum, string label)
         {
+            Assert.That(ContrastRatio(foreground, background), Is.GreaterThanOrEqualTo(minimum), label + ": " + foreground + " on " + background);
+        }
+
+        private static double ContrastRatio(Color foreground, Color background)
+        {
             var first = RelativeLuminance(foreground);
             var second = RelativeLuminance(background);
-            var ratio = (Math.Max(first, second) + 0.05) / (Math.Min(first, second) + 0.05);
-            Assert.That(ratio, Is.GreaterThanOrEqualTo(minimum), label + ": " + foreground + " on " + background);
+            return (Math.Max(first, second) + 0.05) / (Math.Min(first, second) + 0.05);
+        }
+
+        private static object InvokeTheme(string methodName, params object[] arguments)
+        {
+            var method = typeof(UiTheme).GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.That(method, Is.Not.Null, methodName);
+            return method.Invoke(null, arguments);
         }
 
         private static double RelativeLuminance(Color color)
@@ -642,6 +653,189 @@ namespace MyCodex.Application.Tests
                         new Rectangle(0, 0, 240, 24),
                         TreeNodeStates.Selected));
                 Assert.That(bitmap.GetPixel(230, 5), Is.EqualTo(UiTheme.SelectedBackColor));
+            }
+        }
+
+        [Test]
+        public void TreeNodes_DrawAtTheirNativeLevelIndent()
+        {
+            UiTheme.SetCurrentModeForTesting(UiThemeMode.Dark);
+            using (var tree = new TreeView { Size = new Size(300, 200), ShowRootLines = true })
+            {
+                var root = tree.Nodes.Add("Root");
+                var child = root.Nodes.Add("Child");
+                var grandchild = child.Nodes.Add("Grandchild");
+                root.ExpandAll();
+                Assert.That(tree.Handle, Is.Not.EqualTo(IntPtr.Zero));
+                UiTheme.ApplyTreeView(tree);
+
+                var row = new Rectangle(0, 0, 300, 20);
+                var lefts = new[] { root, child, grandchild }
+                    .Select(node => (int)InvokeTheme("GetTreeNodeLabelLeft", tree, node, row))
+                    .ToArray();
+
+                Assert.That(lefts[1] - lefts[0], Is.EqualTo(tree.Indent));
+                Assert.That(lefts[2] - lefts[1], Is.EqualTo(tree.Indent));
+                Assert.That(lefts[0], Is.GreaterThan(0));
+            }
+        }
+
+        [Test]
+        public void ApplyTreeView_KeepsExpansionWithoutRaisingTreeEvents()
+        {
+            UiTheme.SetCurrentModeForTesting(UiThemeMode.Dark);
+            using (var tree = new TreeView { Size = new Size(300, 200) })
+            {
+                var root = tree.Nodes.Add("Root");
+                var child = root.Nodes.Add("Child");
+                child.Nodes.Add("Grandchild");
+                root.ExpandAll();
+                tree.SelectedNode = child;
+                Assert.That(tree.Handle, Is.Not.EqualTo(IntPtr.Zero));
+                var events = 0;
+                tree.AfterSelect += (sender, args) => events++;
+                tree.AfterCollapse += (sender, args) => events++;
+                tree.AfterExpand += (sender, args) => events++;
+
+                UiTheme.ApplyTreeView(tree);
+
+                Assert.That(events, Is.EqualTo(0));
+                Assert.That(root.IsExpanded && child.IsExpanded, Is.True);
+                Assert.That(tree.SelectedNode, Is.SameAs(child));
+            }
+        }
+
+        [Test]
+        public void ListViewFirstColumn_IsClippedToItsColumnWidth()
+        {
+            UiTheme.SetCurrentModeForTesting(UiThemeMode.Dark);
+            using (var list = new ListView { View = View.Details, Size = new Size(460, 200) })
+            {
+                list.Columns.Add("Name", 120);
+                list.Columns.Add("Status", 150);
+                var item = list.Items.Add(new ListViewItem(new[] { "A first column value that is much wider than its column", "Second" }));
+                Assert.That(list.Handle, Is.Not.EqualTo(IntPtr.Zero));
+
+                var first = (Rectangle)InvokeTheme("GetListViewCellBounds", list, item.SubItems[0], 0);
+                var second = (Rectangle)InvokeTheme("GetListViewCellBounds", list, item.SubItems[1], 1);
+
+                Assert.That(item.SubItems[0].Bounds.Width, Is.GreaterThan(120), "precondition: the native first cell spans the row");
+                Assert.That(first.Width, Is.EqualTo(120));
+                Assert.That(first.Right, Is.LessThanOrEqualTo(second.Left));
+            }
+        }
+
+        [TestCase(0)]
+        [TestCase(1)]
+        public void AutoSizeToggles_AreWideEnoughForThemedGlyphAndText(int mode)
+        {
+            UiTheme.SetCurrentModeForTesting((UiThemeMode)mode);
+            using (var panel = new FlowLayoutPanel { Size = new Size(800, 200), FlowDirection = FlowDirection.TopDown, WrapContents = false })
+            using (var checkBox = new ThemedCheckBox { Text = "Fetch remote updates first(&F)", AutoSize = true })
+            using (var radioButton = new ThemedRadioButton { Text = "自动朗读新回复(&A)", AutoSize = true })
+            {
+                panel.Controls.Add(checkBox);
+                panel.Controls.Add(radioButton);
+                Assert.That(panel.Handle, Is.Not.EqualTo(IntPtr.Zero));
+                UiTheme.ApplyToControlTree(panel);
+                panel.PerformLayout();
+
+                foreach (ButtonBase control in new ButtonBase[] { checkBox, radioButton })
+                {
+                    var text = TextRenderer.MeasureText(control.Text, control.Font, Size.Empty, TextFormatFlags.SingleLine);
+                    var chrome = UiTheme.Scale(4) + UiTheme.Scale(16) + UiTheme.Scale(6) + UiTheme.Scale(4);
+                    Assert.That(control.Width, Is.GreaterThanOrEqualTo(chrome + text.Width), control.Text);
+                }
+            }
+        }
+
+        [TestCase(0)]
+        [TestCase(1)]
+        public void DisabledText_IsDimmerThanEnabledText(int mode)
+        {
+            UiTheme.SetCurrentModeForTesting((UiThemeMode)mode);
+
+            var enabled = ContrastRatio(UiTheme.TextColor, UiTheme.CardBackColor);
+            var disabled = ContrastRatio(UiTheme.DisabledTextColor, UiTheme.CardBackColor);
+            var muted = ContrastRatio(UiTheme.MutedTextColor, UiTheme.CardBackColor);
+
+            Assert.That(disabled, Is.LessThan(muted));
+            Assert.That(disabled, Is.LessThan(enabled / 1.5));
+            Assert.That(disabled, Is.GreaterThanOrEqualTo(2.5), "disabled text must stay legible");
+        }
+
+        [Test]
+        public void ComboBoxChrome_CoversTheNativeFlatFrameWhenDisabled()
+        {
+            UiTheme.SetCurrentModeForTesting(UiThemeMode.Dark);
+            using (var comboBox = new ThemedComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 220, Enabled = false })
+            {
+                comboBox.Items.Add("Monday");
+                comboBox.SelectedIndex = 0;
+                UiTheme.ApplyComboBox(comboBox);
+                Assert.That(comboBox.Handle, Is.Not.EqualTo(IntPtr.Zero));
+                Rectangle item;
+                Rectangle button;
+                Assert.That(NativeWindowTheme.TryGetComboBoxParts(comboBox, out item, out button), Is.True);
+
+                using (var bitmap = new Bitmap(comboBox.Width, comboBox.Height))
+                using (var graphics = Graphics.FromImage(bitmap))
+                {
+                    graphics.Clear(Color.White);
+                    UiTheme.PaintComboBoxChrome(comboBox, graphics);
+
+                    var middle = comboBox.ClientSize.Height / 2;
+                    Assert.That(bitmap.GetPixel(1, middle).ToArgb(), Is.EqualTo(UiTheme.CardBackColor.ToArgb()), "inner frame");
+                    Assert.That(bitmap.GetPixel(item.Left + 2, 1).ToArgb(), Is.EqualTo(UiTheme.CardBackColor.ToArgb()), "top frame");
+                    if (button.Left - item.Right > 0)
+                    {
+                        Assert.That(bitmap.GetPixel(button.Left - 1, middle).ToArgb(), Is.EqualTo(UiTheme.CardBackColor.ToArgb()), "gap before the button");
+                    }
+                }
+            }
+        }
+
+        [Test]
+        public void ThemedTabControl_KeepsNativeTabSizes()
+        {
+            UiTheme.SetCurrentModeForTesting(UiThemeMode.Dark);
+            using (var themed = new ThemedTabControl { Size = new Size(500, 200) })
+            using (var native = new TabControl { Size = new Size(500, 200), Font = themed.Font })
+            {
+                foreach (var text in new[] { "General", "A much longer tab title" })
+                {
+                    themed.TabPages.Add(new TabPage(text));
+                    native.TabPages.Add(new TabPage(text));
+                }
+
+                Assert.That(themed.Handle, Is.Not.EqualTo(IntPtr.Zero));
+                Assert.That(native.Handle, Is.Not.EqualTo(IntPtr.Zero));
+                UiTheme.ApplyToControlTree(themed);
+
+                var textHeight = TextRenderer.MeasureText("Ag", themed.Font).Height;
+                Assert.That(themed.SizeMode, Is.EqualTo(TabSizeMode.Normal));
+                Assert.That(themed.GetTabRect(0).Height, Is.GreaterThanOrEqualTo(textHeight + 4));
+                Assert.That(themed.GetTabRect(0).Height, Is.LessThanOrEqualTo(native.GetTabRect(0).Height + UiTheme.Scale(3)));
+                Assert.That(themed.GetTabRect(0).Width, Is.LessThan(themed.GetTabRect(1).Width));
+            }
+        }
+
+        [Test]
+        public void ThemedProgressBar_AnimatesOnlyWhileVisibleInMarqueeStyle()
+        {
+            UiTheme.SetCurrentModeForTesting(UiThemeMode.Dark);
+            using (var form = new Form { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-2000, -2000) })
+            using (var progressBar = new ThemedProgressBar { Style = ProgressBarStyle.Continuous })
+            {
+                form.Controls.Add(progressBar);
+                form.Show();
+                Assert.That(progressBar.IsAnimatingForTests, Is.False);
+
+                progressBar.Style = ProgressBarStyle.Marquee;
+                Assert.That(progressBar.IsAnimatingForTests, Is.True);
+
+                progressBar.Visible = false;
+                Assert.That(progressBar.IsAnimatingForTests, Is.False);
             }
         }
 

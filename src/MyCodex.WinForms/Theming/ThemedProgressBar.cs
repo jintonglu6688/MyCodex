@@ -20,12 +20,40 @@ namespace MyCodex.WinForms.Theming
             _marqueeTimer = new Timer { Interval = 33 };
             _marqueeTimer.Tick += (s, e) =>
             {
-                if (IsHandleCreated && Visible && Style == ProgressBarStyle.Marquee)
+                if (Visible)
                 {
                     Invalidate();
                 }
             };
-            _marqueeTimer.Start();
+        }
+
+        internal bool IsAnimatingForTests
+        {
+            get { return _marqueeTimer.Enabled; }
+        }
+
+        // Changing Style recreates the handle, so these hooks also catch a switch to or from Marquee.
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            UpdateMarqueeTimer();
+        }
+
+        protected override void OnHandleDestroyed(EventArgs e)
+        {
+            base.OnHandleDestroyed(e);
+            UpdateMarqueeTimer();
+        }
+
+        protected override void OnVisibleChanged(EventArgs e)
+        {
+            base.OnVisibleChanged(e);
+            UpdateMarqueeTimer();
+        }
+
+        private void UpdateMarqueeTimer()
+        {
+            _marqueeTimer.Enabled = !IsDisposed && IsHandleCreated && Visible && Style == ProgressBarStyle.Marquee;
         }
 
         protected override void WndProc(ref Message m)

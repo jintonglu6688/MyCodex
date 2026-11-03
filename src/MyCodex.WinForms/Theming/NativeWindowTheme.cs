@@ -58,9 +58,10 @@ namespace MyCodex.WinForms.Theming
             }
         }
 
-        internal static bool TryGetComboBoxButtonBounds(ComboBox comboBox, out Rectangle bounds)
+        internal static bool TryGetComboBoxParts(ComboBox comboBox, out Rectangle itemBounds, out Rectangle buttonBounds)
         {
-            bounds = Rectangle.Empty;
+            itemBounds = Rectangle.Empty;
+            buttonBounds = Rectangle.Empty;
             if (comboBox == null || !comboBox.IsHandleCreated)
             {
                 return false;
@@ -73,12 +74,17 @@ namespace MyCodex.WinForms.Theming
                 return false;
             }
 
-            bounds = Rectangle.FromLTRB(
+            itemBounds = Rectangle.FromLTRB(
+                info.ItemRectangle.Left,
+                info.ItemRectangle.Top,
+                info.ItemRectangle.Right,
+                info.ItemRectangle.Bottom);
+            buttonBounds = Rectangle.FromLTRB(
                 info.ButtonRectangle.Left,
                 info.ButtonRectangle.Top,
                 info.ButtonRectangle.Right,
                 info.ButtonRectangle.Bottom);
-            return bounds.Width > 0 && bounds.Height > 0;
+            return buttonBounds.Width > 0 && buttonBounds.Height > 0;
         }
 
         private static void ApplyHandle(Control control, bool dark)
@@ -164,6 +170,7 @@ namespace MyCodex.WinForms.Theming
             public int Size;
             public NativeRectangle ItemRectangle;
             public NativeRectangle ButtonRectangle;
+            public int ButtonState;
             public IntPtr ComboHandle;
             public IntPtr ItemHandle;
             public IntPtr ListHandle;

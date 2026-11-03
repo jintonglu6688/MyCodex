@@ -239,7 +239,8 @@ namespace MyCodex.WinForms.Theming
                         return;
                     }
 
-                    var brush = CreateSolidBrush(ColorTranslator.ToWin32(UiTheme.PanelBackColor));
+                    // Match the top-level menu items, which DrawMenuItem fills with the window colour.
+                    var brush = CreateSolidBrush(ColorTranslator.ToWin32(UiTheme.WindowBackColor));
                     if (brush != IntPtr.Zero)
                     {
                         FillRect(windowDc, ref fillRectangle, brush);

@@ -204,6 +204,8 @@ namespace MyCodex.WinForms.Forms
             _modeTabControl = new ThemedTabControl
             {
                 Dock = DockStyle.Fill,
+                // Tall enough for the first two filter rows; the advanced rows still scroll.
+                Height = 112,
                 AccessibleName = string.Empty,
                 TabIndex = 0
             };

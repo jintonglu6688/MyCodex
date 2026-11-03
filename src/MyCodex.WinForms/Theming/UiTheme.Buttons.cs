@@ -154,10 +154,14 @@ namespace MyCodex.WinForms.Theming
                     ? SelectedBackColor
                     : state.Hovered ? AccentSoftBackColor : CardBackColor;
             var foreground = !button.Enabled
-                ? MutedTextColor
+                ? DisabledTextColor
                 : state.Pressed ? SelectedTextColor : TextColor;
+            // A disabled button drops its border and icon colour so it does not read as available.
+            var borderColor = !button.Enabled
+                ? SubtleBackColor
+                : button.Focused ? ActiveBorderColor : BorderColor;
             using (var backgroundBrush = new SolidBrush(background))
-            using (var borderPen = new Pen(button.Focused ? ActiveBorderColor : BorderColor))
+            using (var borderPen = new Pen(borderColor))
             {
                 e.Graphics.FillRectangle(backgroundBrush, button.ClientRectangle);
                 e.Graphics.DrawRectangle(
@@ -171,22 +175,26 @@ namespace MyCodex.WinForms.Theming
             var image = button.Image;
             var imageWidth = image == null ? 0 : image.Width + Scale(6);
             var text = button.Text ?? string.Empty;
+            var prefixFlag = button.UseMnemonic ? TextFormatFlags.Default : TextFormatFlags.NoPrefix;
             var textSize = TextRenderer.MeasureText(
                 e.Graphics,
                 text,
                 button.Font,
                 Size.Empty,
-                TextFormatFlags.SingleLine);
+                TextFormatFlags.SingleLine | prefixFlag);
             var totalWidth = imageWidth + textSize.Width;
             var startX = Math.Max(Scale(5), (button.ClientSize.Width - totalWidth) / 2);
             if (image != null)
             {
-                e.Graphics.DrawImage(
-                    image,
-                    startX,
-                    Math.Max(0, (button.ClientSize.Height - image.Height) / 2),
-                    image.Width,
-                    image.Height);
+                var imageTop = Math.Max(0, (button.ClientSize.Height - image.Height) / 2);
+                if (button.Enabled)
+                {
+                    e.Graphics.DrawImage(image, startX, imageTop, image.Width, image.Height);
+                }
+                else
+                {
+                    ControlPaint.DrawImageDisabled(e.Graphics, image, startX, imageTop, background);
+                }
             }
 
             var textBounds = new Rectangle(
@@ -203,7 +211,8 @@ namespace MyCodex.WinForms.Theming
                 TextFormatFlags.Left |
                 TextFormatFlags.VerticalCenter |
                 TextFormatFlags.SingleLine |
-                TextFormatFlags.EndEllipsis);
+                TextFormatFlags.EndEllipsis |
+                prefixFlag);
             if (button.Focused)
             {
                 ControlPaint.DrawFocusRectangle(

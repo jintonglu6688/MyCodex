@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
@@ -24,8 +23,6 @@ namespace MyCodex.WinForms.Theming
             new ConditionalWeakTable<GroupBox, object>();
         private static readonly ConditionalWeakTable<SplitContainer, object> SplitContainerStates =
             new ConditionalWeakTable<SplitContainer, object>();
-        private static readonly ConditionalWeakTable<TabPage, object> TabPageLayoutSubscriptions =
-            new ConditionalWeakTable<TabPage, object>();
 
         public static void ApplyStatusStrip(StatusStrip statusStrip)
         {
@@ -299,17 +296,36 @@ namespace MyCodex.WinForms.Theming
                 return;
             }
 
+            Rectangle itemBounds;
             Rectangle buttonBounds;
-            if (!NativeWindowTheme.TryGetComboBoxButtonBounds(comboBox, out buttonBounds))
+            if (!NativeWindowTheme.TryGetComboBoxParts(comboBox, out itemBounds, out buttonBounds))
             {
                 return;
+            }
+
+            // The flat native frame paints the ring around the field and the gap before the button
+            // in system colors (white when disabled), so cover everything except the item text.
+            using (var surface = new Region(Rectangle.Inflate(new Rectangle(Point.Empty, comboBox.ClientSize), -1, -1)))
+            using (var surfaceBrush = new SolidBrush(CardBackColor))
+            {
+                if (comboBox.DropDownStyle == ComboBoxStyle.DropDownList)
+                {
+                    surface.Exclude(itemBounds);
+                }
+                else
+                {
+                    surface.Exclude(Rectangle.FromLTRB(itemBounds.Left, itemBounds.Top, buttonBounds.Left, itemBounds.Bottom));
+                }
+
+                surface.Exclude(buttonBounds);
+                graphics.FillRegion(surfaceBrush, surface);
             }
 
             var buttonBack = comboBox.DroppedDown
                 ? AccentSoftBackColor
                 : comboBox.Enabled ? CardBackColor : SubtleBackColor;
             using (var backgroundBrush = new SolidBrush(buttonBack))
-            using (var borderPen = new Pen(comboBox.Focused ? ActiveBorderColor : BorderColor))
+            using (var borderPen = new Pen(comboBox.Enabled && comboBox.Focused ? ActiveBorderColor : BorderColor))
             {
                 graphics.FillRectangle(backgroundBrush, buttonBounds);
                 graphics.DrawLine(borderPen, buttonBounds.Left, buttonBounds.Top + 2, buttonBounds.Left, buttonBounds.Bottom - 2);
@@ -321,7 +337,7 @@ namespace MyCodex.WinForms.Theming
                     Math.Max(0, comboBox.ClientSize.Height - 1));
             }
 
-            var arrowColor = comboBox.Enabled ? TextColor : MutedTextColor;
+            var arrowColor = comboBox.Enabled ? TextColor : DisabledTextColor;
             var centerX = buttonBounds.Left + buttonBounds.Width / 2;
             var centerY = buttonBounds.Top + buttonBounds.Height / 2;
             using (var arrowPen = new Pen(arrowColor, Math.Max(1.4F, (float)Scale(2))))
@@ -344,9 +360,9 @@ namespace MyCodex.WinForms.Theming
             }
 
             var selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-            var background = selected ? SelectedBackColor : CardBackColor;
+            var background = selected && comboBox.Enabled ? SelectedBackColor : CardBackColor;
             var foreground = !comboBox.Enabled
-                ? MutedTextColor
+                ? DisabledTextColor
                 : selected ? SelectedTextColor : TextColor;
             using (var backgroundBrush = new SolidBrush(background))
             {
@@ -492,12 +508,6 @@ namespace MyCodex.WinForms.Theming
                 ApplyTabPage(page);
             }
 
-            var themedTabControl = tabControl as ThemedTabControl;
-            if (themedTabControl != null)
-            {
-                themedTabControl.RefreshTabLayout();
-            }
-
             if (!(tabControl is ThemedTabControl))
             {
                 NativeWindowTheme.Apply(tabControl, _currentMode == UiThemeMode.Dark);
@@ -508,20 +518,6 @@ namespace MyCodex.WinForms.Theming
 
         private static void ApplyTabPage(TabPage tabPage)
         {
-            if (!TabPageLayoutSubscriptions.TryGetValue(tabPage, out _))
-            {
-                TabPageLayoutSubscriptions.Add(tabPage, new object());
-                tabPage.TextChanged += (s, e) =>
-                {
-                    var tabControl = tabPage.Parent as ThemedTabControl;
-                    if (tabControl != null)
-                    {
-                        tabControl.RefreshTabLayout();
-                        tabControl.Invalidate();
-                    }
-                };
-            }
-
             tabPage.BackColor = WindowBackColor;
             tabPage.ForeColor = TextColor;
             tabPage.UseVisualStyleBackColor = _currentMode != UiThemeMode.Dark;
@@ -538,52 +534,30 @@ namespace MyCodex.WinForms.Theming
                 treeView.DrawNode += DrawTreeNode;
             }
 
-            var expandedNodes = new List<TreeNode>();
-            var selectedNode = treeView.SelectedNode;
-            var topNode = treeView.TopNode;
-            foreach (TreeNode node in treeView.Nodes)
-            {
-                CollectExpandedNodes(node, expandedNodes);
-            }
-
             treeView.BorderStyle = BorderStyle.FixedSingle;
             NativeWindowTheme.Apply(treeView, _currentMode == UiThemeMode.Dark);
             treeView.BackColor = CardBackColor;
             treeView.ForeColor = TextColor;
             treeView.LineColor = BorderColor;
+            // Repainting is enough; collapsing and re-expanding nodes would raise selection and expansion events.
             treeView.DrawMode = _currentMode == UiThemeMode.HighContrast
                 ? state.DrawMode
                 : TreeViewDrawMode.OwnerDrawAll;
-            if (expandedNodes.Count == 0)
-            {
-                return;
-            }
-
-            treeView.BeginUpdate();
-            try
-            {
-                foreach (var node in expandedNodes)
-                {
-                    node.Collapse();
-                    node.Expand();
-                }
-
-                if (selectedNode != null)
-                {
-                    treeView.SelectedNode = selectedNode;
-                }
-
-                if (topNode != null)
-                {
-                    treeView.TopNode = topNode;
-                }
-            }
-            finally
-            {
-                treeView.EndUpdate();
-            }
             treeView.Invalidate();
-            treeView.Refresh();
+        }
+
+        // OwnerDrawAll passes the whole row, so the native label position supplies the level indent.
+        private static int GetTreeNodeLabelLeft(TreeView treeView, TreeNode node, Rectangle rowBounds)
+        {
+            var label = node.Bounds;
+            if (label.Width > 0)
+            {
+                return label.Left;
+            }
+
+            var slots = node.Level + (treeView.ShowRootLines ? 1 : 0);
+            var imageWidth = treeView.ImageList == null ? 0 : treeView.ImageList.ImageSize.Width;
+            return rowBounds.Left + slots * treeView.Indent + imageWidth;
         }
 
         private static void DrawTreeNode(object sender, DrawTreeNodeEventArgs e)
@@ -612,14 +586,19 @@ namespace MyCodex.WinForms.Theming
                 }
             }
 
-            var textLeft = e.Bounds.Left + Scale(3);
-            if (e.Node.Nodes.Count > 0)
+            var textLeft = GetTreeNodeLabelLeft(treeView, e.Node, e.Bounds);
+            var imageList = treeView.ImageList;
+            var imageLeft = imageList == null ? textLeft : textLeft - imageList.ImageSize.Width;
+            var hasGlyph = e.Node.Nodes.Count > 0 && treeView.ShowPlusMinus && (e.Node.Level > 0 || treeView.ShowRootLines);
+            if (hasGlyph)
             {
+                // Centre the glyph in the indent slot where the native control hit-tests it.
+                var glyphSize = Math.Min(Scale(11), Math.Max(7, treeView.Indent - 4));
                 var glyphBounds = new Rectangle(
-                    textLeft,
-                    e.Bounds.Top + Math.Max(1, (e.Bounds.Height - Scale(11)) / 2),
-                    Scale(11),
-                    Scale(11));
+                    imageLeft - treeView.Indent + (treeView.Indent - glyphSize) / 2,
+                    e.Bounds.Top + Math.Max(1, (e.Bounds.Height - glyphSize) / 2),
+                    glyphSize,
+                    glyphSize);
                 using (var glyphPen = new Pen(foreground))
                 {
                     e.Graphics.DrawRectangle(glyphPen, glyphBounds.Left, glyphBounds.Top, glyphBounds.Width - 1, glyphBounds.Height - 1);
@@ -631,21 +610,17 @@ namespace MyCodex.WinForms.Theming
                         e.Graphics.DrawLine(glyphPen, middleX, glyphBounds.Top + Scale(3), middleX, glyphBounds.Bottom - Scale(3));
                     }
                 }
-
-                textLeft = glyphBounds.Right + Scale(5);
             }
 
-            var imageList = treeView.ImageList;
             if (imageList != null && e.Node.ImageIndex >= 0 && e.Node.ImageIndex < imageList.Images.Count)
             {
                 var image = imageList.Images[e.Node.ImageIndex];
                 e.Graphics.DrawImage(
                     image,
-                    textLeft,
+                    imageLeft,
                     e.Bounds.Top + Math.Max(1, (e.Bounds.Height - image.Height) / 2),
                     image.Width,
                     image.Height);
-                textLeft += image.Width + Scale(5);
             }
 
             var textBounds = new Rectangle(
@@ -667,19 +642,6 @@ namespace MyCodex.WinForms.Theming
             if ((e.State & TreeNodeStates.Focused) == TreeNodeStates.Focused && treeView.Focused)
             {
                 ControlPaint.DrawFocusRectangle(e.Graphics, Rectangle.Inflate(e.Bounds, -Scale(1), -Scale(2)), foreground, background);
-            }
-        }
-
-        private static void CollectExpandedNodes(TreeNode node, List<TreeNode> expandedNodes)
-        {
-            if (node.IsExpanded)
-            {
-                expandedNodes.Add(node);
-            }
-
-            foreach (TreeNode child in node.Nodes)
-            {
-                CollectExpandedNodes(child, expandedNodes);
             }
         }
 
@@ -937,7 +899,7 @@ namespace MyCodex.WinForms.Theming
                 for (var index = 0; index < listView.Columns.Count && index < e.Item.SubItems.Count; index++)
                 {
                     var subItem = e.Item.SubItems[index];
-                    var bounds = subItem.Bounds;
+                    var bounds = GetListViewCellBounds(listView, subItem, index);
                     if (bounds.Width <= 0)
                     {
                         continue;
@@ -996,6 +958,15 @@ namespace MyCodex.WinForms.Theming
             {
                 ControlPaint.DrawFocusRectangle(e.Graphics, Rectangle.Inflate(e.Bounds, -Scale(2), -Scale(2)), defaultForeground, background);
             }
+        }
+
+        // The first sub-item reports the whole row, so clip it to its own column.
+        private static Rectangle GetListViewCellBounds(ListView listView, ListViewItem.ListViewSubItem subItem, int index)
+        {
+            var bounds = subItem.Bounds;
+            return index == 0
+                ? new Rectangle(bounds.Left, bounds.Top, Math.Min(bounds.Width, listView.Columns[0].Width), bounds.Height)
+                : bounds;
         }
 
         private static void DrawListCheckBox(Graphics graphics, Rectangle bounds, bool isChecked)

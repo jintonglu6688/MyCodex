@@ -107,6 +107,11 @@ namespace MyCodex.WinForms.Theming
             get { return GetPalette(_currentMode).MutedTextColor; }
         }
 
+        public static Color DisabledTextColor
+        {
+            get { return GetPalette(_currentMode).DisabledTextColor; }
+        }
+
         public static Color AccentColor
         {
             get { return GetPalette(_currentMode).AccentColor; }
@@ -919,6 +924,7 @@ namespace MyCodex.WinForms.Theming
                 SelectedTextColor = Color.FromArgb(16, 58, 52),
                 TextColor = Color.FromArgb(31, 41, 51),
                 MutedTextColor = Color.FromArgb(88, 101, 111),
+                DisabledTextColor = Color.FromArgb(132, 140, 144),
                 AccentColor = Color.FromArgb(46, 111, 115),
                 AccentSoftBackColor = Color.FromArgb(226, 239, 234),
                 GlyphBlueColor = Color.FromArgb(36, 94, 156),
@@ -962,6 +968,7 @@ namespace MyCodex.WinForms.Theming
                 SelectedTextColor = Color.FromArgb(255, 255, 255),
                 TextColor = Color.FromArgb(244, 247, 250),
                 MutedTextColor = Color.FromArgb(196, 207, 219),
+                DisabledTextColor = Color.FromArgb(142, 151, 163),
                 AccentColor = Color.FromArgb(113, 197, 214),
                 AccentSoftBackColor = Color.FromArgb(18, 41, 54),
                 GlyphBlueColor = Color.FromArgb(130, 185, 255),
@@ -1005,6 +1012,7 @@ namespace MyCodex.WinForms.Theming
                 SelectedTextColor = SystemColors.HighlightText,
                 TextColor = SystemColors.ControlText,
                 MutedTextColor = SystemColors.ControlText,
+                DisabledTextColor = SystemColors.GrayText,
                 AccentColor = SystemColors.Highlight,
                 AccentSoftBackColor = SystemColors.Window,
                 GlyphBlueColor = SystemColors.ControlText,
@@ -1087,6 +1095,7 @@ namespace MyCodex.WinForms.Theming
             {
                 control.BackColor = MapSurfaceColor(control.BackColor);
                 control.ForeColor = TextColor;
+                ApplyScrollBarTheme((ScrollableControl)control);
                 return;
             }
 
@@ -1097,6 +1106,15 @@ namespace MyCodex.WinForms.Theming
                 {
                     control.BackColor = MapSurfaceColor(control.BackColor);
                 }
+            }
+        }
+
+        // Auto-scroll containers draw native scroll bars, which stay light unless the window gets the dark theme.
+        private static void ApplyScrollBarTheme(ScrollableControl control)
+        {
+            if (control.AutoScroll)
+            {
+                NativeWindowTheme.Apply(control, _currentMode == UiThemeMode.Dark);
             }
         }
 

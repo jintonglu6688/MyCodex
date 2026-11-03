@@ -24,6 +24,9 @@ namespace MyCodex.WinForms.Theming
 
         public Color MutedTextColor { get; set; }
 
+        // Dimmer than MutedTextColor so disabled controls do not read as available.
+        public Color DisabledTextColor { get; set; }
+
         public Color AccentColor { get; set; }
 
         public Color AccentSoftBackColor { get; set; }

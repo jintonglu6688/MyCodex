@@ -15,6 +15,11 @@ namespace MyCodex.WinForms.Theming
                 true);
         }
 
+        public override Size GetPreferredSize(Size proposedSize)
+        {
+            return UiTheme.GetTogglePreferredSize(this, base.GetPreferredSize(proposedSize));
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             if (Appearance == Appearance.Button || !UiTheme.PaintToggleControl(this, e))
