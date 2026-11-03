@@ -40,6 +40,9 @@ namespace MyCodex.Application.Tests
         [TestCase("dark", true, true, 2)]
         [TestCase("light", true, false, 2)]
         [TestCase("dark", true, false, 2)]
+        [TestCase("warm", false, false, 3)]
+        [TestCase("warm", false, true, 3)]
+        [TestCase("warm", true, false, 2)]
         public void ResolveMode_ReturnsExpectedMode(string preference, bool isHighContrast, bool systemUsesDarkTheme, int expected)
         {
             var mode = UiTheme.ResolveMode(preference, isHighContrast, systemUsesDarkTheme);
@@ -200,6 +203,7 @@ namespace MyCodex.Application.Tests
 
         [TestCase(0)]
         [TestCase(1)]
+        [TestCase(3)]
         public void Palette_TextAndSelectionMeetMinimumContrast(int mode)
         {
             var palette = UiTheme.GetPalette((UiThemeMode)mode);
@@ -214,6 +218,7 @@ namespace MyCodex.Application.Tests
 
         [TestCase(0)]
         [TestCase(1)]
+        [TestCase(3)]
         public void Palette_BordersMeetMinimumContrast(int mode)
         {
             var palette = UiTheme.GetPalette((UiThemeMode)mode);
@@ -223,6 +228,7 @@ namespace MyCodex.Application.Tests
 
         [TestCase(0)]
         [TestCase(1)]
+        [TestCase(3)]
         public void StatusIndicators_MeetMinimumContrastOnActualStatusStrip(int mode)
         {
             UiTheme.SetCurrentModeForTesting((UiThemeMode)mode);
@@ -241,6 +247,7 @@ namespace MyCodex.Application.Tests
 
         [TestCase(0)]
         [TestCase(1)]
+        [TestCase(3)]
         public void ButtonTextAndGlyphs_MeetMinimumContrastOnButtonSurface(int mode)
         {
             UiTheme.SetCurrentModeForTesting((UiThemeMode)mode);
@@ -270,6 +277,7 @@ namespace MyCodex.Application.Tests
 
         [TestCase(0)]
         [TestCase(1)]
+        [TestCase(3)]
         public void ChatCategories_TextStripeAndRenderedIconMeetMinimumContrast(int mode)
         {
             UiTheme.SetCurrentModeForTesting((UiThemeMode)mode);
@@ -325,9 +333,11 @@ namespace MyCodex.Application.Tests
         [Test]
         public void ThemeSource_CustomColorsStayInFactoriesAndMainSplittersUseWindowBackground()
         {
-            var source = RepositorySource.ReadSourceFile("UiTheme.cs");
+            var source = RepositorySource.ReadSourceFile("UiTheme.cs") +
+                Environment.NewLine +
+                RepositorySource.ReadSourceFile("UiTheme.Palettes.cs");
             var outsideFactories = Regex.Replace(source,
-                @"        private static UiThemePalette Create(Light|Dark|HighContrast)Palette\(\).*?\r?\n        }",
+                @"        private static UiThemePalette Create(Light|WarmLight|Dark|HighContrast)Palette\(\).*?\r?\n        }",
                 string.Empty, RegexOptions.Singleline);
             Assert.That(outsideFactories, Does.Not.Contain("Color.FromArgb"));
 
@@ -751,6 +761,7 @@ namespace MyCodex.Application.Tests
 
         [TestCase(0)]
         [TestCase(1)]
+        [TestCase(3)]
         public void DisabledText_IsDimmerThanEnabledText(int mode)
         {
             UiTheme.SetCurrentModeForTesting((UiThemeMode)mode);

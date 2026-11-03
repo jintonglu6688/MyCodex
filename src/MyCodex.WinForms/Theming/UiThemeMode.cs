@@ -4,6 +4,7 @@ namespace MyCodex.WinForms.Theming
     {
         Light,
         Dark,
-        HighContrast
+        HighContrast,
+        WarmLight
     }
 }

@@ -24,6 +24,9 @@
 <data name="OptionsForm.Theme.Light" xml:space="preserve">
     <value>浅色</value>
   </data>
+<data name="OptionsForm.Theme.Warm" xml:space="preserve">
+    <value>浅色（暖色）</value>
+  </data>
 <data name="OptionsForm.Theme.Dark" xml:space="preserve">
     <value>深色</value>
   </data>

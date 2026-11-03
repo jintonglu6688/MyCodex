@@ -981,6 +981,7 @@ namespace MyCodex.WinForms.Forms
         {
             _themeComboBox.Items.Add(new ChoiceItem(ThemePreference.Auto, UiLocalization.Text("OptionsForm.Theme.FollowSystem", "Follow System")));
             _themeComboBox.Items.Add(new ChoiceItem(ThemePreference.Light, UiLocalization.Text("OptionsForm.Theme.Light", "Light")));
+            _themeComboBox.Items.Add(new ChoiceItem(ThemePreference.Warm, UiLocalization.Text("OptionsForm.Theme.Warm", "Light (Warm)")));
             _themeComboBox.Items.Add(new ChoiceItem(ThemePreference.Dark, UiLocalization.Text("OptionsForm.Theme.Dark", "Dark")));
             SelectChoice(_themeComboBox, selectedPreference);
         }

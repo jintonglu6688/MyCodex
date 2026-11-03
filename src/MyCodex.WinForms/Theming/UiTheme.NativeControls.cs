@@ -767,6 +767,7 @@ namespace MyCodex.WinForms.Theming
         private static bool IsMutedLabelColor(Color color)
         {
             return color.ToArgb() == CreateLightPalette().MutedTextColor.ToArgb() ||
+                color.ToArgb() == CreateWarmLightPalette().MutedTextColor.ToArgb() ||
                 color.ToArgb() == CreateDarkPalette().MutedTextColor.ToArgb();
         }
 

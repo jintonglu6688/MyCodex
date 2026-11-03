@@ -20,6 +20,7 @@ namespace MyCodex.Application.Tests
 
             Assert.That(source.IndexOf("\"OptionsForm.Theme.FollowSystem\"", StringComparison.Ordinal), Is.GreaterThanOrEqualTo(0));
             Assert.That(source.IndexOf("\"OptionsForm.Theme.Light\"", StringComparison.Ordinal), Is.GreaterThanOrEqualTo(0));
+            Assert.That(source.IndexOf("\"OptionsForm.Theme.Warm\"", StringComparison.Ordinal), Is.GreaterThanOrEqualTo(0));
             Assert.That(source.IndexOf("\"OptionsForm.Theme.Dark\"", StringComparison.Ordinal), Is.GreaterThanOrEqualTo(0));
             Assert.That(source.IndexOf("new MenuStrip", StringComparison.Ordinal), Is.LessThan(0));
         }

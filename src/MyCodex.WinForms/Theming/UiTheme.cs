@@ -879,6 +879,11 @@ namespace MyCodex.WinForms.Theming
                 return UiThemeMode.Light;
             }
 
+            if (string.Equals(normalized, UiThemePreference.Warm, StringComparison.OrdinalIgnoreCase))
+            {
+                return UiThemeMode.WarmLight;
+            }
+
             if (string.Equals(normalized, UiThemePreference.Dark, StringComparison.OrdinalIgnoreCase))
             {
                 return UiThemeMode.Dark;
@@ -895,6 +900,8 @@ namespace MyCodex.WinForms.Theming
                     return CreateHighContrastPalette();
                 case UiThemeMode.Dark:
                     return CreateDarkPalette();
+                case UiThemeMode.WarmLight:
+                    return CreateWarmLightPalette();
                 default:
                     return CreateLightPalette();
             }
@@ -908,138 +915,6 @@ namespace MyCodex.WinForms.Theming
         internal static void SetCurrentModeForTesting(UiThemeMode mode)
         {
             _currentMode = mode;
-        }
-
-        private static UiThemePalette CreateLightPalette()
-        {
-            return new UiThemePalette
-            {
-                WindowBackColor = Color.FromArgb(244, 241, 232),
-                PanelBackColor = Color.FromArgb(251, 250, 245),
-                CardBackColor = Color.FromArgb(255, 253, 247),
-                SubtleBackColor = Color.FromArgb(236, 232, 220),
-                BorderColor = Color.FromArgb(122, 133, 142),
-                ActiveBorderColor = Color.FromArgb(45, 106, 116),
-                SelectedBackColor = Color.FromArgb(178, 211, 199),
-                SelectedTextColor = Color.FromArgb(16, 58, 52),
-                TextColor = Color.FromArgb(31, 41, 51),
-                MutedTextColor = Color.FromArgb(88, 101, 111),
-                DisabledTextColor = Color.FromArgb(132, 140, 144),
-                AccentColor = Color.FromArgb(46, 111, 115),
-                AccentSoftBackColor = Color.FromArgb(226, 239, 234),
-                GlyphBlueColor = Color.FromArgb(36, 94, 156),
-                GlyphRedColor = Color.FromArgb(168, 45, 68),
-                GlyphGreenColor = Color.FromArgb(36, 117, 76),
-                GlyphTealColor = Color.FromArgb(29, 117, 111),
-                GlyphAmberColor = Color.FromArgb(141, 90, 18),
-                GlyphIndigoColor = Color.FromArgb(91, 83, 183),
-                GlyphCyanColor = Color.FromArgb(36, 122, 140),
-                GlyphNeutralColor = Color.FromArgb(101, 113, 124),
-                ChatProcessingColor = Color.FromArgb(166, 101, 13),
-                ChatErrorBackColor = Color.FromArgb(252, 235, 236),
-                ChatApprovalBackColor = Color.FromArgb(250, 243, 218),
-                ChatCommandBackColor = Color.FromArgb(239, 237, 251),
-                ChatFileChangeBackColor = Color.FromArgb(233, 245, 236),
-                ChatAccountBackColor = Color.FromArgb(230, 243, 244),
-                ChatSystemBackColor = Color.FromArgb(241, 241, 236),
-                ChatProcessingBackColor = Color.FromArgb(250, 243, 228),
-                ChatCodexBackColor = Color.FromArgb(234, 242, 249),
-                ChatUserBackColor = Color.FromArgb(233, 244, 240),
-                StatusReadyColor = Color.FromArgb(31, 118, 74),
-                StatusProcessingColor = Color.FromArgb(151, 90, 18),
-                StatusErrorColor = Color.FromArgb(181, 45, 55),
-                ShadowColor = Color.FromArgb(26, 34, 29, 20),
-                ShadowCornerColor = Color.FromArgb(36, 34, 29, 20),
-                ShadowFadeColor = Color.FromArgb(0, 0, 0, 0)
-            };
-        }
-
-        private static UiThemePalette CreateDarkPalette()
-        {
-            return new UiThemePalette
-            {
-                WindowBackColor = Color.FromArgb(7, 10, 15),
-                PanelBackColor = Color.FromArgb(13, 17, 24),
-                CardBackColor = Color.FromArgb(21, 27, 36),
-                SubtleBackColor = Color.FromArgb(16, 22, 32),
-                BorderColor = Color.FromArgb(92, 105, 125),
-                ActiveBorderColor = Color.FromArgb(121, 199, 216),
-                SelectedBackColor = Color.FromArgb(40, 91, 112),
-                SelectedTextColor = Color.FromArgb(255, 255, 255),
-                TextColor = Color.FromArgb(244, 247, 250),
-                MutedTextColor = Color.FromArgb(196, 207, 219),
-                DisabledTextColor = Color.FromArgb(142, 151, 163),
-                AccentColor = Color.FromArgb(113, 197, 214),
-                AccentSoftBackColor = Color.FromArgb(18, 41, 54),
-                GlyphBlueColor = Color.FromArgb(130, 185, 255),
-                GlyphRedColor = Color.FromArgb(255, 135, 157),
-                GlyphGreenColor = Color.FromArgb(113, 226, 163),
-                GlyphTealColor = Color.FromArgb(95, 225, 204),
-                GlyphAmberColor = Color.FromArgb(255, 209, 102),
-                GlyphIndigoColor = Color.FromArgb(184, 181, 255),
-                GlyphCyanColor = Color.FromArgb(125, 230, 255),
-                GlyphNeutralColor = Color.FromArgb(169, 183, 200),
-                ChatProcessingColor = Color.FromArgb(255, 190, 92),
-                ChatErrorBackColor = Color.FromArgb(59, 17, 24),
-                ChatApprovalBackColor = Color.FromArgb(58, 43, 8),
-                ChatCommandBackColor = Color.FromArgb(37, 33, 75),
-                ChatFileChangeBackColor = Color.FromArgb(14, 52, 36),
-                ChatAccountBackColor = Color.FromArgb(11, 51, 64),
-                ChatSystemBackColor = Color.FromArgb(21, 27, 36),
-                ChatProcessingBackColor = Color.FromArgb(59, 40, 11),
-                ChatCodexBackColor = Color.FromArgb(16, 43, 74),
-                ChatUserBackColor = Color.FromArgb(13, 51, 49),
-                StatusReadyColor = Color.FromArgb(103, 230, 160),
-                StatusProcessingColor = Color.FromArgb(255, 209, 102),
-                StatusErrorColor = Color.FromArgb(255, 128, 150),
-                ShadowColor = Color.FromArgb(32, 0, 0, 0),
-                ShadowCornerColor = Color.FromArgb(48, 0, 0, 0),
-                ShadowFadeColor = Color.FromArgb(0, 0, 0, 0)
-            };
-        }
-
-        private static UiThemePalette CreateHighContrastPalette()
-        {
-            return new UiThemePalette
-            {
-                WindowBackColor = SystemColors.Control,
-                PanelBackColor = SystemColors.Control,
-                CardBackColor = SystemColors.Window,
-                SubtleBackColor = SystemColors.Control,
-                BorderColor = SystemColors.ControlDark,
-                ActiveBorderColor = SystemColors.Highlight,
-                SelectedBackColor = SystemColors.Highlight,
-                SelectedTextColor = SystemColors.HighlightText,
-                TextColor = SystemColors.ControlText,
-                MutedTextColor = SystemColors.ControlText,
-                DisabledTextColor = SystemColors.GrayText,
-                AccentColor = SystemColors.Highlight,
-                AccentSoftBackColor = SystemColors.Window,
-                GlyphBlueColor = SystemColors.ControlText,
-                GlyphRedColor = SystemColors.ControlText,
-                GlyphGreenColor = SystemColors.ControlText,
-                GlyphTealColor = SystemColors.ControlText,
-                GlyphAmberColor = SystemColors.ControlText,
-                GlyphIndigoColor = SystemColors.ControlText,
-                GlyphCyanColor = SystemColors.ControlText,
-                GlyphNeutralColor = SystemColors.ControlText,
-                ChatProcessingColor = SystemColors.Highlight,
-                ChatErrorBackColor = SystemColors.Window,
-                ChatApprovalBackColor = SystemColors.Window,
-                ChatCommandBackColor = SystemColors.Window,
-                ChatFileChangeBackColor = SystemColors.Window,
-                ChatAccountBackColor = SystemColors.Window,
-                ChatSystemBackColor = SystemColors.Window,
-                ChatProcessingBackColor = SystemColors.Window,
-                ChatCodexBackColor = SystemColors.Window,
-                ChatUserBackColor = SystemColors.Window,
-                StatusReadyColor = SystemColors.HighlightText,
-                StatusProcessingColor = SystemColors.HighlightText,
-                StatusErrorColor = SystemColors.HighlightText,
-                ShadowColor = SystemColors.Window,
-                ShadowCornerColor = SystemColors.Window,
-                ShadowFadeColor = SystemColors.Window
-            };
         }
 
         private static void ApplyControl(Control control)
@@ -1125,17 +1000,20 @@ namespace MyCodex.WinForms.Theming
                 return current;
             }
 
-            if (MatchesColor(current, CreateLightPalette().PanelBackColor, CreateDarkPalette().PanelBackColor))
+            var light = CreateLightPalette();
+            var warm = CreateWarmLightPalette();
+            var dark = CreateDarkPalette();
+            if (MatchesColor(current, light.PanelBackColor, warm.PanelBackColor, dark.PanelBackColor))
             {
                 return PanelBackColor;
             }
 
-            if (MatchesColor(current, CreateLightPalette().CardBackColor, CreateDarkPalette().CardBackColor, SystemColors.Window))
+            if (MatchesColor(current, light.CardBackColor, warm.CardBackColor, dark.CardBackColor, SystemColors.Window))
             {
                 return CardBackColor;
             }
 
-            if (MatchesColor(current, CreateLightPalette().SubtleBackColor, CreateDarkPalette().SubtleBackColor))
+            if (MatchesColor(current, light.SubtleBackColor, warm.SubtleBackColor, dark.SubtleBackColor))
             {
                 return SubtleBackColor;
             }
