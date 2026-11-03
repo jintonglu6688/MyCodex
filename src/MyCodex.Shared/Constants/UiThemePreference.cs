@@ -7,6 +7,7 @@ namespace MyCodex.Shared.Constants
         public const string Auto = "auto";
         public const string Light = "light";
         public const string Dark = "dark";
+        public const string Warm = "warm";
 
         public static string Normalize(string preference)
         {
@@ -14,6 +15,11 @@ namespace MyCodex.Shared.Constants
             if (string.Equals(value, Light, StringComparison.OrdinalIgnoreCase))
             {
                 return Light;
+            }
+
+            if (string.Equals(value, Warm, StringComparison.OrdinalIgnoreCase))
+            {
+                return Warm;
             }
 
             if (string.Equals(value, Dark, StringComparison.OrdinalIgnoreCase))

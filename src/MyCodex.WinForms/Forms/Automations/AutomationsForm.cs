@@ -75,7 +75,7 @@ namespace MyCodex.WinForms.Forms
             KeyPreview = true;
             UiTheme.ApplyForm(this);
 
-            _tabs = new TabControl
+            _tabs = new ThemedTabControl
             {
                 Dock = DockStyle.Fill,
                 Name = "automationsTabs",

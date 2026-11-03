@@ -31,7 +31,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(_messageTextBox, false, false);
 
-            _includeUntrackedCheckBox = new CheckBox
+            _includeUntrackedCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("GitStashCreateForm.Check.IncludeUntracked", "Include untracked files(&U)"),
                 AccessibleName = UiLocalization.Text("GitStashCreateForm.Accessible.IncludeUntracked", "Include untracked files"),

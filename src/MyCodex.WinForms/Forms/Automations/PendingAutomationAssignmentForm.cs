@@ -40,7 +40,7 @@ namespace MyCodex.WinForms.Forms
             _tasks.Columns.Add(UiLocalization.Text("Automation.Assignment.Task", "Task"), 280);
             _tasks.Columns.Add(UiLocalization.Text("Automation.Assignment.Directory", "Working directory"), 340);
             UiTheme.ApplyListView(_tasks);
-            _target = new ComboBox
+            _target = new ThemedComboBox
             {
                 Dock = DockStyle.Fill, DropDownStyle = ComboBoxStyle.DropDownList, TabIndex = 2,
                 AccessibleName = UiLocalization.Text("Automation.Assignment.Target", "Target"),

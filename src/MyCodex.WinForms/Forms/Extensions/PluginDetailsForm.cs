@@ -75,7 +75,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(_detailTextBox, true, true);
 
-            _skillComboBox = new ComboBox
+            _skillComboBox = new ThemedComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Width = 280,

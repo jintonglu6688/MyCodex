@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Threading;
 using System.Collections.Generic;
@@ -9,6 +9,7 @@ using MyCodex.Application.DTOs;
 using MyCodex.WinForms.Forms;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.WinForms.Controls;
+using MyCodex.WinForms.Theming;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -105,6 +106,34 @@ namespace MyCodex.Application.Tests
                 Assert.That(form.WasExternallyResolved, Is.True);
                 Assert.That(form.DialogResult, Is.EqualTo(DialogResult.Abort));
                 Assert.That(form.Answers, Is.Null);
+            }
+        }
+
+        [Test]
+        [Apartment(ApartmentState.STA)]
+        public void DialogButtons_UseReadableDarkSurfaceInDarkMode()
+        {
+            var originalMode = UiTheme.CurrentMode;
+            try
+            {
+                UiTheme.SetCurrentModeForTesting(UiThemeMode.Dark);
+                using (var form = new ToolUserInputForm(new[]
+                       {
+                           new AppServerToolUserInputQuestion { Id = "choice", Question = "Continue?" }
+                       }))
+                {
+                    foreach (var button in Descendants(form).OfType<Button>())
+                    {
+                        Assert.That(button.ForeColor, Is.EqualTo(UiTheme.TextColor));
+                        Assert.That(button.BackColor, Is.EqualTo(UiTheme.CardBackColor));
+                        Assert.That(button.FlatStyle, Is.EqualTo(FlatStyle.Flat));
+                        Assert.That(button.UseVisualStyleBackColor, Is.False);
+                    }
+                }
+            }
+            finally
+            {
+                UiTheme.SetCurrentModeForTesting(originalMode);
             }
         }
     }

@@ -448,7 +448,7 @@ namespace MyCodex.Application.Tests
         [TestCase("Git", "zh-CN")]
         public void RepresentativeForms_150Percent_TextAndControlsFit(string name, string culture)
         {
-            if (name == "Authentication" || name == "Automation")
+            if (name == "Authentication" || name == "Automation" || name == "Git")
             {
                 RequireDisplayForScaledMinimumSizes();
             }

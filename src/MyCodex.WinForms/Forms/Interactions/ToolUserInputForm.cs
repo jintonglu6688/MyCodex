@@ -118,6 +118,8 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 2001,
                 DialogResult = DialogResult.Cancel
             };
+            UiTheme.ApplyButtonSurface(_okButton);
+            UiTheme.ApplyButtonSurface(_cancelButton);
 
             buttonPanel.Controls.Add(_cancelButton);
             buttonPanel.Controls.Add(_okButton);
@@ -270,7 +272,7 @@ namespace MyCodex.WinForms.Forms
                 var hasOptionPicker = optionItems.Count > 0;
                 if (hasOptionPicker)
                 {
-                    _optionComboBox = new ComboBox
+                    _optionComboBox = new ThemedComboBox
                     {
                         Dock = DockStyle.Top,
                         DropDownStyle = ComboBoxStyle.DropDownList,

@@ -154,7 +154,7 @@ namespace MyCodex.WinForms.Forms
             _rankingLimitComboBox.Items.Add(new SearchSortItem(UiLocalization.Text("GitHubStoreForm.Limit.20", "20"), "20"));
             _rankingLimitComboBox.Items.Add(new SearchSortItem(UiLocalization.Text("GitHubStoreForm.Limit.30", "30"), "30"));
             _rankingLimitComboBox.SelectedIndex = 1;
-            _publicOnlyCheckBox = new CheckBox
+            _publicOnlyCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("GitHubStoreForm.Check.PublicOnly", "Public repositories(&U)"),
                 AccessibleName = UiLocalization.Text("GitHubStoreForm.Accessible.PublicOnly", "Public repositories"),
@@ -164,7 +164,7 @@ namespace MyCodex.WinForms.Forms
                 Margin = new Padding(0, 4, 0, 0)
             };
             UiTheme.ApplyCheckBox(_publicOnlyCheckBox);
-            _showAdvancedSearchCheckBox = new CheckBox
+            _showAdvancedSearchCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("GitHubStoreForm.Check.ShowAdvanced", "Show advanced filters(&A)"),
                 AccessibleName = UiLocalization.Text("GitHubStoreForm.Accessible.ShowAdvanced", "Show advanced filters"),
@@ -201,9 +201,11 @@ namespace MyCodex.WinForms.Forms
             UiTheme.ApplyLabel(_statusLabel, true);
 
             _repositoriesListView = CreateRepositoryListView();
-            _modeTabControl = new TabControl
+            _modeTabControl = new ThemedTabControl
             {
                 Dock = DockStyle.Fill,
+                // Tall enough for the first two filter rows; the advanced rows still scroll.
+                Height = 112,
                 AccessibleName = string.Empty,
                 TabIndex = 0
             };
@@ -1307,7 +1309,7 @@ namespace MyCodex.WinForms.Forms
 
         private static ComboBox CreateComboBox(string accessibleName)
         {
-            var comboBox = new ComboBox
+            var comboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Fill,
                 DropDownStyle = ComboBoxStyle.DropDownList,

@@ -38,7 +38,7 @@ namespace MyCodex.Application.Tests
             using (var form = CreateForm())
             {
                 Assert.That(form.SelectedServiceModeForTests, Is.EqualTo("Embedded"));
-                Assert.That(form.InitialFocusControlForTests, Is.TypeOf<ComboBox>());
+                Assert.That(form.InitialFocusControlForTests, Is.AssignableTo<ComboBox>());
             }
         }
 
@@ -508,7 +508,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(FindFocusableControlsWithoutAccessibleName(form), Is.Empty);
                 Assert.That(form.FormBorderStyle, Is.EqualTo(FormBorderStyle.Sizable));
                 Assert.That(form.MinimumSize.Width, Is.GreaterThanOrEqualTo(720));
-                Assert.That(form.InitialFocusControlForTests, Is.TypeOf<ComboBox>());
+                Assert.That(form.InitialFocusControlForTests, Is.AssignableTo<ComboBox>());
                 var modes = (ComboBox)form.InitialFocusControlForTests;
                 Assert.That(modes.Items.Cast<string>(), Is.EqualTo(new[]
                 {

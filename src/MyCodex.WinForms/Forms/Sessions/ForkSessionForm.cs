@@ -101,7 +101,7 @@ namespace MyCodex.WinForms.Forms
                 TabStop = false
             };
 
-            _createAfterComboBox = new ComboBox
+            _createAfterComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Fill,
                 DropDownStyle = ComboBoxStyle.DropDownList,

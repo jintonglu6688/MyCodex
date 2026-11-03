@@ -42,7 +42,7 @@ namespace MyCodex.Application.Tests
                     var handle = main.Handle;
                     var original = store.Snapshot;
                     var theme = (ComboBox)FormTestDriver.Field<object>(options, "_themeComboBox");
-                    theme.SelectedIndex = 2;
+                    theme.SelectedIndex = 3;
                     ((CheckBox)FormTestDriver.Field<object>(options, "_automaticChatReadingCheckBox")).Checked = true;
                     options.ValidateSelection = () =>
                     {

@@ -288,7 +288,7 @@ namespace MyCodex.Application.Tests
 
             using (var form = new OptionsForm(snapshot, null))
             {
-                SelectChoice(FormTestDriver.Field<ComboBox>(form, "_themeComboBox"), UiThemePreference.Dark);
+                SelectChoice(FormTestDriver.Field<ComboBox>(form, "_themeComboBox"), UiThemePreference.Warm);
                 SelectChoice(FormTestDriver.Field<ComboBox>(form, "_languageComboBox"), UiLanguagePreference.EnUs);
                 SelectChoice(FormTestDriver.Field<ComboBox>(form, "_messageDetailPreviewModeComboBox"), MessageDetailPreviewMode.Text);
                 SelectChoice(FormTestDriver.Field<ComboBox>(form, "_sendMessageShortcutModeComboBox"), SendMessageShortcutMode.CtrlEnterNewLineEnterSend);
@@ -306,7 +306,7 @@ namespace MyCodex.Application.Tests
                 SelectChoice(activeTurnFollowUpModeComboBox, ActiveTurnFollowUpMode.Queue);
                 FormTestDriver.ClickOk(form);
 
-                Assert.That(form.UiThemePreference, Is.EqualTo(UiThemePreference.Dark));
+                Assert.That(form.UiThemePreference, Is.EqualTo(UiThemePreference.Warm));
                 Assert.That(form.UiLanguagePreference, Is.EqualTo(UiLanguagePreference.EnUs));
                 Assert.That(form.MessageDetailPreviewMode, Is.EqualTo(MessageDetailPreviewMode.Text));
                 Assert.That(form.SendMessageShortcutMode, Is.EqualTo(SendMessageShortcutMode.CtrlEnterNewLineEnterSend));

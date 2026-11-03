@@ -151,7 +151,7 @@ namespace MyCodex.WinForms.Forms
             KeyPreview = true;
             UiTheme.ApplyForm(this);
 
-            _platformTabControl = new TabControl
+            _platformTabControl = new ThemedTabControl
             {
                 Dock = DockStyle.Fill,
                 AccessibleName = string.Empty,
@@ -1924,7 +1924,7 @@ namespace MyCodex.WinForms.Forms
 
         private static ComboBox CreateFilterComboBox()
         {
-            var comboBox = new ComboBox
+            var comboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Fill,
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -1941,7 +1941,7 @@ namespace MyCodex.WinForms.Forms
             string accessibleName,
             int tabIndex)
         {
-            var checkBox = new CheckBox
+            var checkBox = new ThemedCheckBox
             {
                 Text = text,
                 AccessibleName = accessibleName,
@@ -2342,7 +2342,7 @@ namespace MyCodex.WinForms.Forms
                 ClientSize = new Size(520, 142);
                 UiTheme.ApplyForm(this);
 
-                _branchComboBox = new ComboBox
+                _branchComboBox = new ThemedComboBox
                 {
                     Dock = DockStyle.Fill,
                     DropDownStyle = ComboBoxStyle.DropDownList,
@@ -2443,7 +2443,7 @@ namespace MyCodex.WinForms.Forms
                 ClientSize = new Size(520, 142);
                 UiTheme.ApplyForm(this);
 
-                _visibilityComboBox = new ComboBox
+                _visibilityComboBox = new ThemedComboBox
                 {
                     Dock = DockStyle.Fill,
                     DropDownStyle = ComboBoxStyle.DropDownList,

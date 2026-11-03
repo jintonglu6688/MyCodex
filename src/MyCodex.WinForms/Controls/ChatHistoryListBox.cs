@@ -300,12 +300,27 @@ namespace MyCodex.WinForms.Controls
             var foreColor = isSelected
                 ? UiTheme.SelectedTextColor
                 : ForeColor;
+            var stripeColor = isSelected
+                ? UiTheme.ActiveBorderColor
+                : UiTheme.GetChatCategoryColor(chatItem);
             using (var backBrush = new SolidBrush(backColor))
-            using (var stripeBrush = new SolidBrush(UiTheme.GetChatCategoryColor(chatItem)))
+            using (var stripeBrush = new SolidBrush(stripeColor))
             using (var icon = UiTheme.CreateChatCategoryGlyph(chatItem, 16))
             {
                 e.Graphics.FillRectangle(backBrush, e.Bounds);
                 e.Graphics.FillRectangle(stripeBrush, e.Bounds.Left, e.Bounds.Top, UiTheme.Scale(4), e.Bounds.Height);
+                if (isSelected)
+                {
+                    using (var selectionPen = new Pen(UiTheme.ActiveBorderColor))
+                    {
+                        e.Graphics.DrawRectangle(
+                            selectionPen,
+                            e.Bounds.Left,
+                            e.Bounds.Top,
+                            Math.Max(0, e.Bounds.Width - 1),
+                            Math.Max(0, e.Bounds.Height - 1));
+                    }
+                }
 
                 var iconRect = new Rectangle(
                     e.Bounds.Left + UiTheme.Scale(9),

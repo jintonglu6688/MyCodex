@@ -88,7 +88,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(_nameTextBox, false, false);
 
-            _hostPlatformComboBox = new ComboBox
+            _hostPlatformComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Fill,
                 AccessibleName = UiLocalization.Text("CommandDefinitionEditForm.Accessible.Target", "Target"),

@@ -13,18 +13,18 @@ namespace MyCodex.WinForms.Controls
     {
         private readonly Dictionary<string, object> _original;
         private readonly TableLayoutPanel _fields = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 2, TabStop = false };
-        private readonly CheckBox _full = new CheckBox { AutoSize = true };
-        private readonly ComboBox _auth = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
+        private readonly CheckBox _full = new ThemedCheckBox { AutoSize = true };
+        private readonly ComboBox _auth = new ThemedComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
         private readonly ThemedTextBox _max = new ThemedTextBox();
-        private readonly CheckBox _impersonate = new CheckBox { AutoSize = true };
+        private readonly CheckBox _impersonate = new ThemedCheckBox { AutoSize = true };
         private readonly ThemedTextBox _env = new ThemedTextBox();
         private readonly ThemedTextBox _agent = new ThemedTextBox();
-        private readonly ComboBox _cache = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
-        private readonly CheckBox _thinking = new CheckBox { ThreeState = true, AutoSize = true };
-        private readonly CheckBox _effort = new CheckBox { ThreeState = true, AutoSize = true };
+        private readonly ComboBox _cache = new ThemedComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
+        private readonly CheckBox _thinking = new ThemedCheckBox { ThreeState = true, AutoSize = true };
+        private readonly CheckBox _effort = new ThemedCheckBox { ThreeState = true, AutoSize = true };
         private readonly ThemedTextBox _effortParameter = new ThemedTextBox();
-        private readonly ComboBox _thinkingParameter = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
-        private readonly ComboBox _effortMode = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
+        private readonly ComboBox _thinkingParameter = new ThemedComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
+        private readonly ComboBox _effortMode = new ThemedComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
         private readonly Dictionary<string, AuthenticationKeyValueListControl> _maps = new Dictionary<string, AuthenticationKeyValueListControl>();
         private readonly AuthenticationKeyValueListControl _query;
         private string _kind;

@@ -22,7 +22,7 @@ namespace MyCodex.WinForms.Forms
                 TabStop = false,
                 Visible = false
             };
-            _mainWindowHotKeyEnabledCheckBox = new CheckBox
+            _mainWindowHotKeyEnabledCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("OptionsForm.Check.MainWindowHotKeyEnabled", "Enable this target's show/hide shortcut"),
                 AccessibleName = UiLocalization.Text("OptionsForm.Accessible.MainWindowHotKeyEnabled", "Enable target shortcut"),
@@ -44,7 +44,7 @@ namespace MyCodex.WinForms.Forms
                 Dock = DockStyle.Fill,
                 TabStop = false
             };
-            _automaticChatReadingCheckBox = new CheckBox
+            _automaticChatReadingCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("OptionsForm.Check.AutomaticChatReading", "Automatically read new replies"),
                 AccessibleName = UiLocalization.Text("OptionsForm.Accessible.AutomaticChatReading", "Automatically read new replies"),

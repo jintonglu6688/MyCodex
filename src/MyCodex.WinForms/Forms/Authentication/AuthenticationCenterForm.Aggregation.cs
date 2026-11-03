@@ -39,7 +39,7 @@ namespace MyCodex.WinForms.Forms
         private static CheckBox CreateClassicSubagentsCheckBox()
         {
             var caption = UiLocalization.Text("Aggregation.ClassicSubagents", "Classic sub-agent tools while aggregating (&K)");
-            var checkBox = new CheckBox
+            var checkBox = new ThemedCheckBox
             {
                 Text = caption, AccessibleName = AuthenticationCenterUiText.Name(caption),
                 AccessibleDescription = UiLocalization.Text("Aggregation.ClassicSubagents.Description", "Turn this on when a sub-agent on another provider cannot read its task. Tasks then pass as plain text, without follow-up and interrupt tools. Codex restarts to apply it."),

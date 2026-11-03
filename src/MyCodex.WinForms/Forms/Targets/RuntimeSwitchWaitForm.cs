@@ -44,7 +44,7 @@ namespace MyCodex.WinForms.Forms
             };
             UiTheme.ApplyTextBox(_messageTextBox, false, true);
 
-            _progressBar = new ProgressBar
+            _progressBar = new ThemedProgressBar
             {
                 AccessibleName = Text,
                 Dock = DockStyle.Fill,
@@ -74,6 +74,7 @@ namespace MyCodex.WinForms.Forms
         private async void RuntimeSwitchWaitForm_Shown(object sender, EventArgs e)
         {
             _messageTextBox.Focus();
+            _messageTextBox.Select(0, 0);
             await Task.Yield();
 
             try

@@ -12,8 +12,10 @@ namespace MyCodex.WinForms.Theming
     internal static partial class UiTheme
     {
         private static string _uiFontFamily;
-        private static readonly ConditionalWeakTable<Button, object> InitializedButtons = new ConditionalWeakTable<Button, object>();
+        private static readonly ConditionalWeakTable<Form, object> InitializedThemeForms = new ConditionalWeakTable<Form, object>();
         private static readonly ConditionalWeakTable<TextBox, object> InitializedTextBoxes = new ConditionalWeakTable<TextBox, object>();
+        private static readonly ConditionalWeakTable<Control, object> ControlAddedThemeSubscriptions =
+            new ConditionalWeakTable<Control, object>();
         private static UiThemeMode _currentMode = ResolveMode(
             UiThemePreference.Auto,
             SystemInformation.HighContrast,
@@ -105,6 +107,11 @@ namespace MyCodex.WinForms.Theming
             get { return GetPalette(_currentMode).MutedTextColor; }
         }
 
+        public static Color DisabledTextColor
+        {
+            get { return GetPalette(_currentMode).DisabledTextColor; }
+        }
+
         public static Color AccentColor
         {
             get { return GetPalette(_currentMode).AccentColor; }
@@ -153,7 +160,24 @@ namespace MyCodex.WinForms.Theming
             InitializeFormScaling(form);
             form.BackColor = WindowBackColor;
             form.ForeColor = TextColor;
-            WindowDarkMode.TryApply(form, _currentMode == UiThemeMode.Dark);
+            WindowDarkMode.TryApply(
+                form,
+                _currentMode == UiThemeMode.Dark,
+                _currentMode != UiThemeMode.HighContrast);
+            if (!InitializedThemeForms.TryGetValue(form, out _))
+            {
+                InitializedThemeForms.Add(form, new object());
+                form.Load += (s, e) =>
+                {
+                    ApplyToControlTree(form);
+                    form.Invalidate(true);
+                };
+                form.Shown += (s, e) =>
+                {
+                    ApplyToControlTree(form);
+                    form.Invalidate(true);
+                };
+            }
         }
 
         public static void ApplyListBox(ListBox listBox)
@@ -164,8 +188,10 @@ namespace MyCodex.WinForms.Theming
             }
 
             listBox.BorderStyle = BorderStyle.FixedSingle;
+            NativeWindowTheme.Apply(listBox, _currentMode == UiThemeMode.Dark);
             listBox.BackColor = CardBackColor;
             listBox.ForeColor = TextColor;
+            ApplyListBoxTheme(listBox);
         }
 
         public static void ApplyListView(ListView listView)
@@ -176,8 +202,10 @@ namespace MyCodex.WinForms.Theming
             }
 
             listView.BorderStyle = BorderStyle.FixedSingle;
+            NativeWindowTheme.Apply(listView, _currentMode == UiThemeMode.Dark);
             listView.BackColor = CardBackColor;
             listView.ForeColor = TextColor;
+            ApplyListViewTheme(listView);
         }
 
         public static void ApplyComboBox(ComboBox comboBox)
@@ -187,8 +215,7 @@ namespace MyCodex.WinForms.Theming
                 return;
             }
 
-            comboBox.BackColor = SystemColors.Window;
-            comboBox.ForeColor = _currentMode == UiThemeMode.HighContrast ? TextColor : SystemColors.WindowText;
+            ApplyComboBoxTheme(comboBox);
         }
 
         public static void ApplyCheckBox(CheckBox checkBox)
@@ -198,12 +225,7 @@ namespace MyCodex.WinForms.Theming
                 return;
             }
 
-            checkBox.ForeColor = TextColor;
-            checkBox.UseVisualStyleBackColor = _currentMode != UiThemeMode.Dark;
-            if (_currentMode == UiThemeMode.Dark)
-            {
-                checkBox.BackColor = WindowBackColor;
-            }
+            ApplyToggleTheme(checkBox, false);
         }
 
         public static void ApplyRadioButton(RadioButton radioButton)
@@ -213,12 +235,7 @@ namespace MyCodex.WinForms.Theming
                 return;
             }
 
-            radioButton.ForeColor = TextColor;
-            radioButton.UseVisualStyleBackColor = _currentMode != UiThemeMode.Dark;
-            if (_currentMode == UiThemeMode.Dark)
-            {
-                radioButton.BackColor = WindowBackColor;
-            }
+            ApplyToggleTheme(radioButton, true);
         }
 
         public static void ApplyLabel(Label label, bool isMuted)
@@ -238,6 +255,7 @@ namespace MyCodex.WinForms.Theming
                 return;
             }
 
+            NativeWindowTheme.Apply(textBox, _currentMode == UiThemeMode.Dark);
             textBox.BackColor = isReadOnly ? PanelBackColor : GetEditableTextBackColor();
             textBox.ForeColor = TextColor;
             if (InitializedTextBoxes.TryGetValue(textBox, out _))
@@ -247,6 +265,12 @@ namespace MyCodex.WinForms.Theming
 
             InitializedTextBoxes.Add(textBox, new object());
             textBox.BorderStyle = BorderStyle.FixedSingle;
+            textBox.HandleCreated += (s, e) =>
+            {
+                NativeWindowTheme.Apply(textBox, _currentMode == UiThemeMode.Dark);
+                textBox.BackColor = textBox.ReadOnly ? PanelBackColor : GetEditableTextBackColor();
+                textBox.ForeColor = TextColor;
+            };
             textBox.Font = isCode
                 ? CreateCodeFont(ReadingFontSize, FontStyle.Regular)
                 : CreateUiFont(ReadingFontSize, FontStyle.Regular);
@@ -272,74 +296,32 @@ namespace MyCodex.WinForms.Theming
             };
         }
 
-        public static void ApplyButton(Button button, UiGlyph glyph)
-        {
-            if (button == null)
-            {
-                return;
-            }
-
-            if (!InitializedButtons.TryGetValue(button, out _))
-            {
-                InitializedButtons.Add(button, new object());
-                button.Height = ButtonHeight;
-                button.Padding = new Padding(7, 0, 8, 0);
-            }
-            button.Image = CreateGlyph(glyph, ButtonIconSize, UiThemeMode.Light);
-            button.ImageAlign = ContentAlignment.MiddleLeft;
-            button.TextAlign = ContentAlignment.MiddleCenter;
-            button.TextImageRelation = TextImageRelation.ImageBeforeText;
-            button.FlatStyle = FlatStyle.Standard;
-            button.UseVisualStyleBackColor = true;
-        }
-
-        public static void ApplyStatusStrip(StatusStrip statusStrip)
-        {
-            if (statusStrip == null)
-            {
-                return;
-            }
-
-            statusStrip.Font = CreateUiFont(BodyFontSize, FontStyle.Regular);
-            statusStrip.BackColor = PanelBackColor;
-            statusStrip.ForeColor = TextColor;
-            foreach (ToolStripItem item in statusStrip.Items)
-            {
-                if (item == null)
-                {
-                    continue;
-                }
-
-                item.ForeColor = TextColor;
-            }
-        }
-
-        public static void ApplyToolStrip(ToolStrip toolStrip)
-        {
-            if (toolStrip == null)
-            {
-                return;
-            }
-
-            toolStrip.BackColor = PanelBackColor;
-            toolStrip.ForeColor = TextColor;
-            foreach (ToolStripItem item in toolStrip.Items)
-            {
-                if (item == null)
-                {
-                    continue;
-                }
-
-                item.ForeColor = TextColor;
-            }
-        }
-
         internal static void ApplyToOpenForms()
         {
             foreach (Form form in System.Windows.Forms.Application.OpenForms)
             {
                 ApplyToControlTree(form);
                 form.Invalidate(true);
+                form.Update();
+            }
+        }
+
+        internal static void ApplyToOpenForms(Form fallbackForm)
+        {
+            var fallbackApplied = false;
+            foreach (Form form in System.Windows.Forms.Application.OpenForms)
+            {
+                ApplyToControlTree(form);
+                form.Invalidate(true);
+                form.Update();
+                fallbackApplied = fallbackApplied || ReferenceEquals(form, fallbackForm);
+            }
+
+            if (!fallbackApplied && fallbackForm != null)
+            {
+                ApplyToControlTree(fallbackForm);
+                fallbackForm.Invalidate(true);
+                fallbackForm.Update();
             }
         }
 
@@ -350,20 +332,79 @@ namespace MyCodex.WinForms.Theming
                 return;
             }
 
-            ApplyControl(root);
-            foreach (Control child in root.Controls)
+            var form = root as Form;
+            var suspendRedraw = form != null && form.IsHandleCreated && !form.IsDisposed;
+            if (suspendRedraw)
             {
-                ApplyToControlTree(child);
+                form.SuspendLayout();
+                NativeWindowTheme.SuspendRedraw(form);
+            }
+
+            try
+            {
+                ApplyToControlTreeCore(root);
+            }
+            finally
+            {
+                if (suspendRedraw)
+                {
+                    form.ResumeLayout(false);
+                    form.PerformLayout();
+                    NativeWindowTheme.ResumeRedraw(form);
+                    form.Invalidate(true);
+                    form.Update();
+                }
             }
         }
 
-        public static void ApplyDialogButton(Button button, UiGlyph glyph)
+        private static void ApplyToControlTreeCore(Control root)
         {
-            ApplyButton(button, glyph);
-            button.AutoSize = true;
-            button.AutoSizeMode = AutoSizeMode.GrowOnly;
-            button.MinimumSize = new Size(ButtonWidth, ButtonHeight);
-            button.Margin = new Padding(8, 0, 0, 0);
+            SubscribeToControlAdded(root);
+            ApplyControl(root);
+            var form = root as Form;
+            if (form != null)
+            {
+                ApplyMainMenu(form.Menu);
+            }
+
+            ApplyContextMenu(root.ContextMenu);
+            foreach (Control child in root.Controls)
+            {
+                ApplyToControlTreeCore(child);
+            }
+        }
+
+        private static void SubscribeToControlAdded(Control parent)
+        {
+            if (ControlAddedThemeSubscriptions.TryGetValue(parent, out _))
+            {
+                return;
+            }
+
+            ControlAddedThemeSubscriptions.Add(parent, new object());
+            parent.ControlAdded += delegate(object sender, ControlEventArgs args)
+            {
+                var child = args == null ? null : args.Control;
+                if (child == null || child.IsDisposed || !parent.IsHandleCreated || parent.IsDisposed)
+                {
+                    return;
+                }
+
+                try
+                {
+                    parent.BeginInvoke((MethodInvoker)delegate
+                    {
+                        if (!parent.IsDisposed && !child.IsDisposed)
+                        {
+                            ApplyToControlTree(child);
+                            child.Invalidate(true);
+                        }
+                    });
+                }
+                catch (InvalidOperationException)
+                {
+                }
+            };
         }
 
         public static void DrawCardShadow(Graphics graphics, Rectangle bounds)
@@ -838,6 +879,11 @@ namespace MyCodex.WinForms.Theming
                 return UiThemeMode.Light;
             }
 
+            if (string.Equals(normalized, UiThemePreference.Warm, StringComparison.OrdinalIgnoreCase))
+            {
+                return UiThemeMode.WarmLight;
+            }
+
             if (string.Equals(normalized, UiThemePreference.Dark, StringComparison.OrdinalIgnoreCase))
             {
                 return UiThemeMode.Dark;
@@ -854,6 +900,8 @@ namespace MyCodex.WinForms.Theming
                     return CreateHighContrastPalette();
                 case UiThemeMode.Dark:
                     return CreateDarkPalette();
+                case UiThemeMode.WarmLight:
+                    return CreateWarmLightPalette();
                 default:
                     return CreateLightPalette();
             }
@@ -867,145 +915,6 @@ namespace MyCodex.WinForms.Theming
         internal static void SetCurrentModeForTesting(UiThemeMode mode)
         {
             _currentMode = mode;
-        }
-
-        private static UiThemePalette CreateLightPalette()
-        {
-            return new UiThemePalette
-            {
-                WindowBackColor = Color.FromArgb(240, 244, 248),
-                PanelBackColor = Color.FromArgb(248, 250, 253),
-                CardBackColor = Color.FromArgb(255, 255, 255),
-                SubtleBackColor = Color.FromArgb(238, 243, 249),
-                BorderColor = Color.FromArgb(120, 134, 155),
-                ActiveBorderColor = Color.FromArgb(30, 92, 162),
-                SelectedBackColor = Color.FromArgb(219, 234, 254),
-                SelectedTextColor = Color.FromArgb(30, 58, 138),
-                TextColor = Color.FromArgb(30, 41, 59),
-                MutedTextColor = Color.FromArgb(71, 85, 105),
-                AccentColor = Color.FromArgb(30, 92, 162),
-                AccentSoftBackColor = Color.FromArgb(228, 239, 252),
-                GlyphBlueColor = Color.FromArgb(30, 92, 162),
-                GlyphRedColor = Color.FromArgb(190, 18, 60),
-                GlyphGreenColor = Color.FromArgb(22, 132, 77),
-                GlyphTealColor = Color.FromArgb(15, 118, 110),
-                GlyphAmberColor = Color.FromArgb(180, 83, 9),
-                GlyphIndigoColor = Color.FromArgb(79, 70, 229),
-                GlyphCyanColor = Color.FromArgb(14, 116, 144),
-                GlyphNeutralColor = Color.FromArgb(100, 116, 139),
-                ChatProcessingColor = Color.FromArgb(217, 119, 6),
-                ChatErrorBackColor = Color.FromArgb(255, 241, 242),
-                ChatApprovalBackColor = Color.FromArgb(254, 252, 232),
-                ChatCommandBackColor = Color.FromArgb(245, 243, 255),
-                ChatFileChangeBackColor = Color.FromArgb(240, 253, 244),
-                ChatAccountBackColor = Color.FromArgb(236, 254, 255),
-                ChatSystemBackColor = Color.FromArgb(248, 250, 252),
-                ChatProcessingBackColor = Color.FromArgb(255, 251, 235),
-                ChatCodexBackColor = Color.FromArgb(239, 246, 255),
-                ChatUserBackColor = Color.FromArgb(240, 253, 250),
-                StatusReadyColor = Color.FromArgb(21, 128, 61),
-                StatusProcessingColor = Color.FromArgb(180, 83, 9),
-                StatusErrorColor = Color.FromArgb(220, 38, 38),
-                ShadowColor = Color.FromArgb(20, 0, 0, 0),
-                ShadowCornerColor = Color.FromArgb(30, 0, 0, 0),
-                ShadowFadeColor = Color.FromArgb(0, 0, 0, 0)
-            };
-        }
-
-        private static UiThemePalette CreateDarkPalette()
-        {
-            return new UiThemePalette
-            {
-                WindowBackColor = Color.FromArgb(15, 23, 42),
-                PanelBackColor = Color.FromArgb(17, 24, 39),
-                CardBackColor = Color.FromArgb(31, 41, 55),
-                SubtleBackColor = Color.FromArgb(24, 34, 53),
-                BorderColor = Color.FromArgb(100, 116, 139),
-                ActiveBorderColor = Color.FromArgb(96, 165, 250),
-                SelectedBackColor = Color.FromArgb(29, 78, 216),
-                SelectedTextColor = Color.FromArgb(248, 250, 252),
-                TextColor = Color.FromArgb(229, 231, 235),
-                MutedTextColor = Color.FromArgb(203, 213, 225),
-                AccentColor = Color.FromArgb(96, 165, 250),
-                AccentSoftBackColor = Color.FromArgb(23, 37, 84),
-                GlyphBlueColor = Color.FromArgb(96, 165, 250),
-                GlyphRedColor = Color.FromArgb(251, 113, 133),
-                GlyphGreenColor = Color.FromArgb(74, 222, 128),
-                GlyphTealColor = Color.FromArgb(45, 212, 191),
-                GlyphAmberColor = Color.FromArgb(250, 204, 21),
-                GlyphIndigoColor = Color.FromArgb(165, 180, 252),
-                GlyphCyanColor = Color.FromArgb(103, 232, 249),
-                GlyphNeutralColor = Color.FromArgb(148, 163, 184),
-                ChatProcessingColor = Color.FromArgb(251, 191, 36),
-                ChatErrorBackColor = Color.FromArgb(69, 10, 10),
-                ChatApprovalBackColor = Color.FromArgb(69, 26, 3),
-                ChatCommandBackColor = Color.FromArgb(49, 46, 129),
-                ChatFileChangeBackColor = Color.FromArgb(20, 83, 45),
-                ChatAccountBackColor = Color.FromArgb(22, 78, 99),
-                ChatSystemBackColor = Color.FromArgb(30, 41, 59),
-                ChatProcessingBackColor = Color.FromArgb(120, 53, 15),
-                ChatCodexBackColor = Color.FromArgb(30, 58, 138),
-                ChatUserBackColor = Color.FromArgb(19, 78, 74),
-                StatusReadyColor = Color.FromArgb(74, 222, 128),
-                StatusProcessingColor = Color.FromArgb(250, 204, 21),
-                StatusErrorColor = Color.FromArgb(251, 113, 133),
-                ShadowColor = Color.FromArgb(20, 0, 0, 0),
-                ShadowCornerColor = Color.FromArgb(30, 0, 0, 0),
-                ShadowFadeColor = Color.FromArgb(0, 0, 0, 0)
-            };
-        }
-
-        private static UiThemePalette CreateHighContrastPalette()
-        {
-            return new UiThemePalette
-            {
-                WindowBackColor = SystemColors.Control,
-                PanelBackColor = SystemColors.Control,
-                CardBackColor = SystemColors.Window,
-                SubtleBackColor = SystemColors.Control,
-                BorderColor = SystemColors.ControlDark,
-                ActiveBorderColor = SystemColors.Highlight,
-                SelectedBackColor = SystemColors.Highlight,
-                SelectedTextColor = SystemColors.HighlightText,
-                TextColor = SystemColors.ControlText,
-                MutedTextColor = SystemColors.ControlText,
-                AccentColor = SystemColors.Highlight,
-                AccentSoftBackColor = SystemColors.Window,
-                GlyphBlueColor = SystemColors.ControlText,
-                GlyphRedColor = SystemColors.ControlText,
-                GlyphGreenColor = SystemColors.ControlText,
-                GlyphTealColor = SystemColors.ControlText,
-                GlyphAmberColor = SystemColors.ControlText,
-                GlyphIndigoColor = SystemColors.ControlText,
-                GlyphCyanColor = SystemColors.ControlText,
-                GlyphNeutralColor = SystemColors.ControlText,
-                ChatProcessingColor = SystemColors.Highlight,
-                ChatErrorBackColor = SystemColors.Window,
-                ChatApprovalBackColor = SystemColors.Window,
-                ChatCommandBackColor = SystemColors.Window,
-                ChatFileChangeBackColor = SystemColors.Window,
-                ChatAccountBackColor = SystemColors.Window,
-                ChatSystemBackColor = SystemColors.Window,
-                ChatProcessingBackColor = SystemColors.Window,
-                ChatCodexBackColor = SystemColors.Window,
-                ChatUserBackColor = SystemColors.Window,
-                StatusReadyColor = SystemColors.HighlightText,
-                StatusProcessingColor = SystemColors.HighlightText,
-                StatusErrorColor = SystemColors.HighlightText,
-                ShadowColor = SystemColors.Window,
-                ShadowCornerColor = SystemColors.Window,
-                ShadowFadeColor = SystemColors.Window
-            };
-        }
-
-        private static Color GetEditableTextBackColor()
-        {
-            if (_currentMode == UiThemeMode.HighContrast)
-            {
-                return SystemColors.Window;
-            }
-
-            return _currentMode == UiThemeMode.Dark ? CardBackColor : SystemColors.Window;
         }
 
         private static void ApplyControl(Control control)
@@ -1031,52 +940,8 @@ namespace MyCodex.WinForms.Theming
                 return;
             }
 
-            var commandTerminalOutput = control as Forms.CommandTerminalOutputControl;
-            if (commandTerminalOutput != null)
+            if (TryApplySpecializedControl(control))
             {
-                commandTerminalOutput.ApplyTheme();
-                return;
-            }
-
-            var listView = control as ListView;
-            if (listView != null)
-            {
-                ApplyListView(listView);
-                return;
-            }
-
-            var listBox = control as ListBox;
-            if (listBox != null)
-            {
-                ApplyListBox(listBox);
-                return;
-            }
-
-            var comboBox = control as ComboBox;
-            if (comboBox != null)
-            {
-                ApplyComboBox(comboBox);
-                return;
-            }
-
-            var checkBox = control as CheckBox;
-            if (checkBox != null)
-            {
-                ApplyCheckBox(checkBox);
-                return;
-            }
-
-            var radioButton = control as RadioButton;
-            if (radioButton != null)
-            {
-                ApplyRadioButton(radioButton);
-                return;
-            }
-
-            var textBox = control as TextBox;
-            if (textBox != null)
-            {
-                ApplyTextBox(textBox, IsCodeFont(textBox.Font), textBox.ReadOnly);
                 return;
             }
 
@@ -1090,15 +955,22 @@ namespace MyCodex.WinForms.Theming
             var button = control as Button;
             if (button != null)
             {
-                button.ForeColor = TextColor;
-                button.Invalidate();
+                ApplyButtonSurface(button);
                 return;
             }
 
-            if (control is SplitContainer || control is Panel || control is TableLayoutPanel || control is FlowLayoutPanel)
+            var splitContainer = control as SplitContainer;
+            if (splitContainer != null)
+            {
+                ApplySplitContainer(splitContainer);
+                return;
+            }
+
+            if (control is Panel || control is TableLayoutPanel || control is FlowLayoutPanel)
             {
                 control.BackColor = MapSurfaceColor(control.BackColor);
                 control.ForeColor = TextColor;
+                ApplyScrollBarTheme((ScrollableControl)control);
                 return;
             }
 
@@ -1112,15 +984,13 @@ namespace MyCodex.WinForms.Theming
             }
         }
 
-        private static bool IsCodeFont(Font font)
+        // Auto-scroll containers draw native scroll bars, which stay light unless the window gets the dark theme.
+        private static void ApplyScrollBarTheme(ScrollableControl control)
         {
-            return font != null && string.Equals(font.Name, "Consolas", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool IsMutedLabelColor(Color color)
-        {
-            return color.ToArgb() == CreateLightPalette().MutedTextColor.ToArgb() ||
-                color.ToArgb() == CreateDarkPalette().MutedTextColor.ToArgb();
+            if (control.AutoScroll)
+            {
+                NativeWindowTheme.Apply(control, _currentMode == UiThemeMode.Dark);
+            }
         }
 
         private static Color MapSurfaceColor(Color current)
@@ -1130,17 +1000,20 @@ namespace MyCodex.WinForms.Theming
                 return current;
             }
 
-            if (MatchesColor(current, CreateLightPalette().PanelBackColor, CreateDarkPalette().PanelBackColor))
+            var light = CreateLightPalette();
+            var warm = CreateWarmLightPalette();
+            var dark = CreateDarkPalette();
+            if (MatchesColor(current, light.PanelBackColor, warm.PanelBackColor, dark.PanelBackColor))
             {
                 return PanelBackColor;
             }
 
-            if (MatchesColor(current, CreateLightPalette().CardBackColor, CreateDarkPalette().CardBackColor, SystemColors.Window))
+            if (MatchesColor(current, light.CardBackColor, warm.CardBackColor, dark.CardBackColor, SystemColors.Window))
             {
                 return CardBackColor;
             }
 
-            if (MatchesColor(current, CreateLightPalette().SubtleBackColor, CreateDarkPalette().SubtleBackColor))
+            if (MatchesColor(current, light.SubtleBackColor, warm.SubtleBackColor, dark.SubtleBackColor))
             {
                 return SubtleBackColor;
             }
@@ -1176,5 +1049,6 @@ namespace MyCodex.WinForms.Theming
             return string.Equals(sender, "codex", StringComparison.OrdinalIgnoreCase) ||
                    string.Equals(sender, "Codex", StringComparison.OrdinalIgnoreCase);
         }
+
     }
 }

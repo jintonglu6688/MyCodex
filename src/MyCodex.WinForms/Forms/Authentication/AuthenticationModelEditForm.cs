@@ -19,8 +19,8 @@ namespace MyCodex.WinForms.Forms
         private readonly ThemedTextBox _id = new ThemedTextBox();
         private readonly ThemedTextBox _context = new ThemedTextBox();
         private readonly CheckedListBox _levels = new CheckedListBox { CheckOnClick = true, Height = 150 };
-        private readonly ComboBox _default = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
-        private readonly CheckBox _parallel = new CheckBox { ThreeState = true, AutoSize = true };
+        private readonly ComboBox _default = new ThemedComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
+        private readonly CheckBox _parallel = new ThemedCheckBox { ThreeState = true, AutoSize = true };
         private readonly Label _status = new Label { AutoSize = true, TabStop = false };
 
         public AuthenticationModelEditForm(AuthenticationCatalogModel model = null, IScreenReaderService reader = null)

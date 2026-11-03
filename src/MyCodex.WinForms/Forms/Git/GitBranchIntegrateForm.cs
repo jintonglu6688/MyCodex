@@ -45,7 +45,7 @@ namespace MyCodex.WinForms.Forms
             _comparisonTextBox.Height = 88;
             _comparisonTextBox.Dock = DockStyle.Fill;
 
-            _modeComboBox = new ComboBox
+            _modeComboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Fill,
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -64,7 +64,7 @@ namespace MyCodex.WinForms.Forms
                 GitBranchIntegrationMode.Rebase));
             _modeComboBox.SelectedIndex = 0;
 
-            _fetchFirstCheckBox = new CheckBox
+            _fetchFirstCheckBox = new ThemedCheckBox
             {
                 AutoSize = true,
                 Text = UiLocalization.Text("GitBranchIntegrateForm.Check.FetchFirst", "Fetch remote updates first(&F)"),

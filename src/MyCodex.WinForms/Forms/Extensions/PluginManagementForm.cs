@@ -182,7 +182,7 @@ namespace MyCodex.WinForms.Forms
                 AccessibleName = UiLocalization.Text("PluginManagementForm.Accessible.MarketTab", "Market"),
                 BackColor = UiTheme.WindowBackColor
             };
-            _tabControl = new TabControl
+            _tabControl = new ThemedTabControl
             {
                 Dock = DockStyle.Fill,
                 TabIndex = 0
@@ -2759,6 +2759,7 @@ namespace MyCodex.WinForms.Forms
             marketSplit.Panel2.Controls.Add(BuildMarketSectionPanel(
                 UiLocalization.Text("PluginManagementForm.Label.MarketPlugins", "Available Plugins"),
                 _marketListView));
+            ConfigureMarketSplit(marketSplit);
 
             var marketPanel = new TableLayoutPanel
             {
@@ -2819,6 +2820,37 @@ namespace MyCodex.WinForms.Forms
             root.Controls.Add(_statusLabel, 0, 3);
 
             Controls.Add(root);
+        }
+
+        private static void ConfigureMarketSplit(SplitContainer split)
+        {
+            var initialized = false;
+            EventHandler initialize = delegate
+            {
+                if (initialized || split.Width <= 0)
+                {
+                    return;
+                }
+
+                var panel1Minimum = UiTheme.Scale(260);
+                var panel2Minimum = UiTheme.Scale(420);
+                var maximumDistance = split.Width - split.Panel2MinSize - split.SplitterWidth;
+                if (split.Width < panel1Minimum + panel2Minimum + split.SplitterWidth)
+                {
+                    return;
+                }
+
+                var preferredDistance = Math.Min(UiTheme.Scale(300), maximumDistance);
+                if (preferredDistance >= panel1Minimum)
+                {
+                    split.SplitterDistance = preferredDistance;
+                    split.Panel1MinSize = panel1Minimum;
+                    split.Panel2MinSize = panel2Minimum;
+                    initialized = true;
+                }
+            };
+            split.HandleCreated += initialize;
+            split.SizeChanged += initialize;
         }
 
         private static Label CreateSectionLabel(string text)

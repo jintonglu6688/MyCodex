@@ -28,6 +28,7 @@ namespace MyCodex.Application.Tests
             })
             using (var actual = UiControlFactory.CreateActionButton("Create(&C)", "Create", 4, width, dialogResult))
             {
+                UiTheme.ApplyButtonSurface(expected);
                 AssertSameButton(actual, expected);
                 Assert.That(actual.Size, Is.EqualTo(new Size(width, 32)));
             }
@@ -40,6 +41,27 @@ namespace MyCodex.Application.Tests
             {
                 Assert.That(button.DialogResult, Is.EqualTo(DialogResult.None));
                 Assert.That(button.TabIndex, Is.EqualTo(2));
+            }
+        }
+
+        [Test]
+        public void CreateActionButton_InDarkModeUsesReadableThemedSurface()
+        {
+            var originalMode = UiTheme.CurrentMode;
+            try
+            {
+                UiTheme.SetCurrentModeForTesting(UiThemeMode.Dark);
+                using (var button = UiControlFactory.CreateActionButton("Refresh(&R)", "Refresh", 2, 112))
+                {
+                    Assert.That(button.ForeColor, Is.EqualTo(UiTheme.TextColor));
+                    Assert.That(button.BackColor, Is.EqualTo(UiTheme.CardBackColor));
+                    Assert.That(button.FlatStyle, Is.EqualTo(FlatStyle.Flat));
+                    Assert.That(button.UseVisualStyleBackColor, Is.False);
+                }
+            }
+            finally
+            {
+                UiTheme.SetCurrentModeForTesting(originalMode);
             }
         }
 

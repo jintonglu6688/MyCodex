@@ -143,7 +143,7 @@ namespace MyCodex.WinForms.Forms
 
         private static CheckBox CreateSoundCheckBox(string text, string accessibleName, int tabIndex)
         {
-            var checkBox = new CheckBox
+            var checkBox = new ThemedCheckBox
             {
                 AutoSize = true,
                 Dock = DockStyle.Top,

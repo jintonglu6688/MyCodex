@@ -813,7 +813,7 @@ namespace MyCodex.WinForms.Forms
 
         private static ComboBox CreateResetCreditComboBox()
         {
-            var comboBox = new ComboBox
+            var comboBox = new ThemedComboBox
             {
                 AccessibleName = UiLocalization.Text("UserCenterForm.Accessible.ResetCredit", "Reset credit"),
                 DropDownStyle = ComboBoxStyle.DropDownList,

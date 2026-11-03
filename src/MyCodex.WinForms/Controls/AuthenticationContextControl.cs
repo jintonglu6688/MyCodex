@@ -12,8 +12,8 @@ namespace MyCodex.WinForms.Controls
     public sealed class AuthenticationContextControl : UserControl
     {
         private readonly bool _supported;
-        private readonly CheckBox _remote = new CheckBox { AutoSize = true, TabIndex = 0 };
-        private readonly CheckBox _window = new CheckBox { AutoSize = true, TabIndex = 1 };
+        private readonly CheckBox _remote = new ThemedCheckBox { AutoSize = true, TabIndex = 0 };
+        private readonly CheckBox _window = new ThemedCheckBox { AutoSize = true, TabIndex = 1 };
         private readonly ThemedTextBox _limit = new ThemedTextBox { Dock = DockStyle.Top, TabIndex = 3 };
         private bool _remoteChanged;
         private bool _windowChanged;

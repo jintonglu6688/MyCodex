@@ -25,7 +25,7 @@ namespace MyCodex.WinForms.Forms
             KeyPreview = true;
             UiTheme.ApplyForm(this);
 
-            _officeRadioButton = new RadioButton
+            _officeRadioButton = new ThemedRadioButton
             {
                 Text = UiLocalization.Text("StartupModeOnboardingForm.Option.OfficeMode", "Office Mode(&F)"),
                 AccessibleName = UiLocalization.Text("StartupModeOnboardingForm.Accessible.OfficeMode", "Office Mode"),
@@ -33,7 +33,7 @@ namespace MyCodex.WinForms.Forms
                 Dock = DockStyle.Top,
                 TabIndex = 0
             };
-            _codingRadioButton = new RadioButton
+            _codingRadioButton = new ThemedRadioButton
             {
                 Text = UiLocalization.Text("StartupModeOnboardingForm.Option.CodingMode", "Coding Mode(&C)"),
                 AccessibleName = UiLocalization.Text("StartupModeOnboardingForm.Accessible.CodingMode", "Coding Mode"),

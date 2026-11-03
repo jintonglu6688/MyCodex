@@ -3229,7 +3229,7 @@ namespace MyCodex.WinForms.Forms
 
         private static ComboBox CreateComboBox(string accessibleName, int tabIndex)
         {
-            var comboBox = new ComboBox
+            var comboBox = new ThemedComboBox
             {
                 Dock = DockStyle.Fill,
                 AccessibleName = accessibleName,

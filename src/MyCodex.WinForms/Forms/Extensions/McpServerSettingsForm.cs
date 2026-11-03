@@ -61,7 +61,7 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 0
             };
             UiTheme.ApplyTextBox(_nameTextBox, false, false);
-            _enabledCheckBox = new CheckBox
+            _enabledCheckBox = new ThemedCheckBox
             {
                 Text = UiLocalization.Text("McpServerSettingsForm.Button.Enabled", "Enabled(&E)"),
                 AccessibleName = UiLocalization.Text("McpServerSettingsForm.Accessible.Enabled", "Enabled"),
@@ -70,7 +70,7 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 1
             };
             UiTheme.ApplyCheckBox(_enabledCheckBox);
-            _httpRadioButton = new RadioButton
+            _httpRadioButton = new ThemedRadioButton
             {
                 Text = "HTTP(&H)",
                 AccessibleName = "HTTP",
@@ -79,7 +79,7 @@ namespace MyCodex.WinForms.Forms
                 TabIndex = 2
             };
             UiTheme.ApplyRadioButton(_httpRadioButton);
-            _commandRadioButton = new RadioButton
+            _commandRadioButton = new ThemedRadioButton
             {
                 Text = UiLocalization.Text("McpServerSettingsForm.Button.TransportCommand", "Command(&M)"),
                 AccessibleName = UiLocalization.Text("McpServerSettingsForm.Accessible.Command", "Command"),
