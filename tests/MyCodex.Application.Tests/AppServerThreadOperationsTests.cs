@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Services;
+using MyCodex.Domain.Entities;
 using MyCodex.Infrastructure.AppServer;
 using NUnit.Framework;
 
@@ -163,6 +165,9 @@ namespace MyCodex.Application.Tests
             Assert.That(details.TurnStatuses["two"], Is.EqualTo("inProgress"));
         }
 
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("   ")]
         [TestCase(@"C:\sessions\missing.jsonl")]
         [TestCase("/home/user/.codex/sessions/missing.jsonl")]
         [TestCase("/Users/user/.codex/sessions/missing.jsonl")]
@@ -170,6 +175,8 @@ namespace MyCodex.Application.Tests
         public async Task ConfirmMissing_UsesTargetMetadataAndAllSourcesOnEveryPage(string path)
         {
             var requests = 0;
+            var loadedRequests = 0;
+            var metadataCalls = 0;
             var operations = CreateOperations(new AppServerProtocolCapabilities(), (method, args, ct, timeout) =>
             {
                 var parameters = (IDictionary<string, object>)args;
@@ -180,19 +187,111 @@ namespace MyCodex.Application.Tests
                     Assert.That(parameters.ContainsKey("cwd"), Is.False);
                     Assert.That((string[])parameters["modelProviders"], Is.Empty);
                 }
+                else if (method == "thread/loaded/list") loadedRequests++;
                 return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>
                 {
                     { "data", new object[0] },
-                    { "nextCursor", method == "thread/list" && !parameters.ContainsKey("cursor") ? "next" : null }
+                    { "nextCursor", !parameters.ContainsKey("cursor") ? "next" : null }
                 });
             });
             var missing = await operations.ConfirmThreadMissingAsync("missing", path, actual =>
             {
+                metadataCalls++;
                 Assert.That(actual, Is.EqualTo(path));
                 throw new InvalidOperationException("not found (os error 2)");
             });
             Assert.That(missing, Is.True);
             Assert.That(requests, Is.EqualTo(4));
+            Assert.That(loadedRequests, Is.EqualTo(2));
+            Assert.That(metadataCalls, Is.EqualTo(string.IsNullOrWhiteSpace(path) ? 0 : 1));
+        }
+
+        [TestCase("windows")]
+        [TestCase("wsl:Ubuntu")]
+        [TestCase("remote-mac:test")]
+        [TestCase("remote-unix:test")]
+        public async Task MissingPathlessThread_CanRemoveLocalRecordWithoutDeletingServerHistory(string runtime)
+        {
+            var operations = CreateOperations(new AppServerProtocolCapabilities(), (method, args, ct, timeout) =>
+            {
+                if (method == "thread/read") throw new InvalidOperationException("thread not loaded: missing");
+                Assert.That(method, Is.EqualTo("thread/list").Or.EqualTo("thread/loaded/list"));
+                return Task.FromResult<IDictionary<string, object>>(
+                    new Dictionary<string, object> { { "data", new object[0] } });
+            });
+            var session = new ChatSession { ThreadId = "missing", RuntimeProfileId = runtime };
+            var root = await SessionPermanentDeletionPlanner.ReadDeletionRootAsync(session,
+                new AppServerThreadSummary[0], id => operations.ReadThreadAsync(id, CancellationToken.None),
+                (id, path) => operations.ConfirmThreadMissingAsync(id, path,
+                    _ => throw new InvalidOperationException("A pathless record has no file to inspect.")));
+            Assert.That(root, Is.Null);
+            var plan = SessionPermanentDeletionPlanner.Build(new[] { session }, new[]
+            {
+                new AppServerThreadSummary { ThreadId = session.ThreadId, ThreadStatus = new AppServerThreadStatus { Type = "notLoaded" } }
+            });
+            plan.MissingThreadIds.Add(session.ThreadId);
+            var confirmed = new List<string>();
+            var result = await SessionPermanentDeletionPlanner.ExecuteAsync(plan,
+                _ => throw new InvalidOperationException("Confirmed missing history must not be deleted again."),
+                ids => confirmed.AddRange(ids), () => true);
+            Assert.That(result.FailedThreadIds, Is.Empty);
+            Assert.That(confirmed, Is.EqualTo(new[] { session.ThreadId }));
+        }
+
+        [TestCase("stored")]
+        [TestCase("archived")]
+        [TestCase("loaded")]
+        [TestCase("loaded-object")]
+        [TestCase("local-cache")]
+        [TestCase("transport")]
+        public async Task ConfirmMissing_PathlessRecordRetainsExistingAndUncertainThreads(string scenario)
+        {
+            var operations = CreateOperations(new AppServerProtocolCapabilities(), (method, args, ct, timeout) =>
+            {
+                if (scenario == "transport") throw new InvalidOperationException("disconnected");
+                var parameters = (IDictionary<string, object>)args;
+                object[] data = new object[0];
+                if (parameters.ContainsKey("cursor"))
+                {
+                    if (method == "thread/list" && (scenario == "stored" || (scenario == "archived" && (bool)parameters["archived"])))
+                        data = new object[] { new Dictionary<string, object> { { "id", "missing" } } };
+                    if (method == "thread/loaded/list" && scenario == "loaded") data = new object[] { "missing" };
+                    if (method == "thread/loaded/list" && scenario == "loaded-object")
+                        data = new object[] { new Dictionary<string, object> { { "threadId", "missing" } } };
+                }
+                return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>
+                {
+                    { "data", data }, { "nextCursor", parameters.ContainsKey("cursor") ? null : "next" }
+                });
+            }, locallyKnownLoadedThreadIds: scenario == "local-cache" ? new[] { "missing" } : null);
+            Func<Task<bool>> probe = () => operations.ConfirmThreadMissingAsync("missing", null,
+                _ => throw new InvalidOperationException("No path to inspect."));
+            if (scenario == "transport") Assert.ThrowsAsync<InvalidOperationException>(async () => await probe());
+            else Assert.That(await probe(), Is.False);
+        }
+
+        [Test, Combinatorial]
+        public async Task ConfirmMissing_RejectsIncompleteCatalogEvidence(
+            [Values("thread/list", "thread/loaded/list")] string catalog,
+            [Values("missing-data", "wrong-data", "invalid-id", "wrong-cursor", "repeated-cursor")] string scenario)
+        {
+            var requests = 0;
+            var operations = CreateOperations(new AppServerProtocolCapabilities(), (method, args, ct, timeout) =>
+            {
+                Assert.That(++requests, Is.LessThan(10), "A repeated cursor must stop the absence check.");
+                var response = new Dictionary<string, object> { { "data", new object[0] } };
+                if (method == catalog)
+                {
+                    if (scenario == "missing-data") response.Remove("data");
+                    if (scenario == "wrong-data") response["data"] = "not an array";
+                    if (scenario == "invalid-id") response["data"] = new object[] { new Dictionary<string, object> { { "id", 42 } } };
+                    if (scenario == "wrong-cursor") response["nextCursor"] = 42;
+                    if (scenario == "repeated-cursor") response["nextCursor"] = "same";
+                }
+                return Task.FromResult<IDictionary<string, object>>(response);
+            });
+            Assert.That(await operations.ConfirmThreadMissingAsync("missing", "/sessions/missing.jsonl",
+                _ => throw new InvalidOperationException("not found (os error 2)")), Is.False);
         }
 
         [TestCase("stored")]
@@ -228,7 +327,8 @@ namespace MyCodex.Application.Tests
             AppServerProtocolCapabilities capabilities,
             AppServerRequestInvoker requestInvoker,
             Action<string> rememberLoadedThreadId = null,
-            Func<string, string> mapPath = null)
+            Func<string, string> mapPath = null,
+            IEnumerable<string> locallyKnownLoadedThreadIds = null)
         {
             return new AppServerThreadOperations(
                 () => { },
@@ -241,7 +341,7 @@ namespace MyCodex.Application.Tests
                 () => Task.FromResult<IReadOnlyList<string>>(new string[0]),
                 (limit, cancellationToken) => Task.FromResult(new List<AppServerThreadSummary>()),
                 (request, cancellationToken) => Task.FromResult<AppServerConversationSummary>(null),
-                () => new string[0],
+                () => locallyKnownLoadedThreadIds ?? new string[0],
                 rememberLoadedThreadId ?? (threadId => { }),
                 threadId => { });
         }

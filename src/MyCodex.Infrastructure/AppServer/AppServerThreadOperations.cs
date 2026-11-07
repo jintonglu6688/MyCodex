@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -158,28 +159,40 @@ namespace MyCodex.Infrastructure.AppServer
         {
             _ensureConnected();
             EnsureThreadId(threadId);
-            if (string.IsNullOrWhiteSpace(sessionPath)) return false;
-            foreach (var archived in new[] { false, true })
+            foreach (var catalog in new[]
+            {
+                (Method: "thread/list", Archived: false),
+                (Method: "thread/list", Archived: true),
+                (Method: "thread/loaded/list", Archived: false)
+            })
             {
                 string cursor = null;
                 var cursors = new HashSet<string>(StringComparer.Ordinal);
+                var loaded = catalog.Method == "thread/loaded/list";
                 do
                 {
-                    var parameters = BuildThreadListParameters(archived, null, cursor);
-                    var result = await SendRequestAsync("thread/list", parameters).ConfigureAwait(false);
-                    if (result == null || !result.ContainsKey("data") || result["data"] == null) return false;
+                    var parameters = loaded ? new Dictionary<string, object>() : BuildThreadListParameters(catalog.Archived, null, cursor);
+                    AddOptionalString(parameters, "cursor", cursor);
+                    var result = await SendRequestAsync(catalog.Method, parameters).ConfigureAwait(false);
+                    if (!(AppServerJsonValueReader.GetValue(result, "data") is IList)) return false;
                     foreach (var entry in AppServerJsonValueReader.GetArray(result, "data"))
                     {
                         var thread = entry as IDictionary<string, object>;
-                        if (thread == null || string.IsNullOrWhiteSpace(AppServerJsonValueReader.GetString(thread, "id"))) return false;
-                        if (string.Equals(AppServerJsonValueReader.GetString(thread, "id"), threadId, StringComparison.Ordinal)) return false;
+                        var id = loaded && entry is string ? (string)entry :
+                            ((loaded ? AppServerJsonValueReader.GetValue(thread, "threadId") : null) ??
+                                AppServerJsonValueReader.GetValue(thread, "id")) as string;
+                        if (string.IsNullOrWhiteSpace(id) || string.Equals(id, threadId, StringComparison.Ordinal)) return false;
                     }
-                    cursor = AppServerJsonValueReader.GetString(result, "nextCursor");
+                    var nextCursor = AppServerJsonValueReader.GetValue(result, "nextCursor");
+                    if (nextCursor != null && !(nextCursor is string)) return false;
+                    cursor = nextCursor as string;
                     if (!string.IsNullOrWhiteSpace(cursor) && !cursors.Add(cursor)) return false;
                 }
                 while (!string.IsNullOrWhiteSpace(cursor));
             }
-            if ((await ListLoadedThreadIdsAsync(null, CancellationToken.None).ConfigureAwait(false)).Contains(threadId)) return false;
+            if ((_getLocallyKnownLoadedThreadIds() ?? Enumerable.Empty<string>()).Contains(threadId, StringComparer.OrdinalIgnoreCase)) return false;
+            // Without a rollout path, only a complete catalog check establishes absence.
+            if (string.IsNullOrWhiteSpace(sessionPath)) return true;
             try
             {
                 await getMetadata(sessionPath).ConfigureAwait(false);
