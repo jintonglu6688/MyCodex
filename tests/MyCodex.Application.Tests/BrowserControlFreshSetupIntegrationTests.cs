@@ -91,9 +91,11 @@ namespace MyCodex.Application.Tests
             var root = Path.Combine(TestContext.CurrentContext.WorkDirectory, "browser-fresh-dotnet-" + Guid.NewGuid().ToString("N"));
             var home = Path.Combine(root, "home");
             Directory.CreateDirectory(home);
-            var hostDirectory = Path.Combine(root, "runtime", "browser-host", "h1");
+            var hostPin = new JavaScriptSerializer().Deserialize<BrowserExtensionHostBundle.Pin>(
+                RepositorySource.ReadFile("tools", "runtime", "browser-extension-host.json"));
+            var hostDirectory = Path.Combine(root, "runtime", "browser-host", hostPin.bundleId);
             Directory.CreateDirectory(hostDirectory);
-            File.Copy(RepositorySource.GetPath("runtime", "browser-host", "h1", "extension-host.exe"),
+            File.Copy(RepositorySource.GetPath("runtime", "browser-host", hostPin.bundleId, "extension-host.exe"),
                 Path.Combine(hostDirectory, "extension-host.exe"));
             foreach (var item in new Dictionary<string, string>
             {
@@ -107,7 +109,9 @@ namespace MyCodex.Application.Tests
                 using (var input = typeof(WindowsBrowserExtensionSetupService).Assembly.GetManifestResourceStream(item.Value))
                 using (var output = File.Create(file)) input.CopyTo(output);
             }
-            var codex = RepositorySource.GetPath("runtime", "codex", "0.164.0", "x86_64-pc-windows-msvc", "vendor", "x86_64-pc-windows-msvc", "bin", "codex.exe");
+            var paths = new AppConfigService(RepositorySource.Root);
+            const string target = "x86_64-pc-windows-msvc";
+            var codex = paths.GetBundledCodexExecutablePath(paths.GetLatestInstalledBundledCodexVersion(target), target);
             var start = new ProcessStartInfo(codex, "app-server --listen stdio://")
             {
                 WorkingDirectory = root, UseShellExecute = false, CreateNoWindow = true,

@@ -58,6 +58,33 @@ namespace MyCodex.Application.Tests
             Assert.That(File.ReadAllText(codexPath), Is.EqualTo("selected CLI fixture: never executed"));
         }
 
+        [TestCase(false)]
+        [TestCase(true)]
+        public void LocalArchiveStillRequiresVerifiedEntries(bool corrupt)
+        {
+            var candidate = CreateCandidate("local");
+            UpdateManifest(candidate, "runtime_archive_version", "local");
+            if (corrupt) File.AppendAllText(Path.Combine(candidate, "bin", "node.exe"), "corruption");
+
+            var result = Resolve();
+
+            Assert.That(result.Status, Is.EqualTo(corrupt ? ComputerUseComponentStatus.InvalidComponents : ComputerUseComponentStatus.Ready));
+            if (!corrupt) Assert.That(result.Components.RuntimeVersion, Is.EqualTo("local"));
+        }
+
+        [Test]
+        public void VersionedArchiveHasPriorityOverLocalArchive()
+        {
+            var local = CreateCandidate("a-local");
+            UpdateManifest(local, "runtime_archive_version", "local");
+            var versioned = CreateCandidate("z-versioned");
+
+            var result = Resolve();
+
+            Assert.That(result.Components.RuntimeRoot, Is.EqualTo(versioned));
+            Assert.That(result.Components.StaleOfficialRuntimeRoots, Does.Contain(local));
+        }
+
         [Test]
         public void MissingSelectedCliDoesNotUseAnyBundledAlternative()
         {
@@ -90,10 +117,12 @@ namespace MyCodex.Application.Tests
             Assert.That(Resolve().DetailCode, Is.EqualTo("entry-integrity-mismatch"));
         }
 
-        [Test]
-        public void ProductionResolverRejectsUnverifiedBytesEvenWithCorrectVersionMetadata()
+        [TestCase("0.0.24/fixture")]
+        [TestCase("local")]
+        public void ProductionResolverRejectsUnverifiedBytesEvenWithCorrectVersionMetadata(string archiveVersion)
         {
-            CreateCandidate("fake");
+            var candidate = CreateCandidate("fake");
+            UpdateManifest(candidate, "runtime_archive_version", archiveVersion);
             var result = new ComputerUseComponentResolver().Resolve(codexPath, "0.158.0", root);
             Assert.That(result.Status, Is.EqualTo(ComputerUseComponentStatus.InvalidComponents));
             Assert.That(result.Components, Is.Null);
@@ -155,6 +184,8 @@ namespace MyCodex.Application.Tests
         [TestCase("node_path", "../../outside.exe", ComputerUseComponentStatus.InvalidComponents)]
         [TestCase("arch", "arm64", ComputerUseComponentStatus.UnsupportedComponentVersion)]
         [TestCase("runtime_archive_version", "invalid", ComputerUseComponentStatus.UnsupportedComponentVersion)]
+        [TestCase("runtime_archive_version", "local/unknown", ComputerUseComponentStatus.UnsupportedComponentVersion)]
+        [TestCase("runtime_archive_version", "LOCAL", ComputerUseComponentStatus.UnsupportedComponentVersion)]
         public void UnverifiedManifestIsNotUsed(string key, string value, ComputerUseComponentStatus expected)
         {
             var candidate = CreateCandidate("invalid");

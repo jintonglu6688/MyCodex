@@ -88,7 +88,7 @@ def runtime_root(explicit):
                     'bin/node_repl.exe', 'bin/node_modules', '@oai/sky'):
                 continue
             version = manifest.get('runtime_archive_version', '').split('/')[0]
-            if not re.fullmatch(r'\d+\.\d+(?:\.\d+){0,2}', version) or not sky.get('version'):
+            if (manifest.get('runtime_archive_version') != 'local' and not re.fullmatch(r'\d+\.\d+(?:\.\d+){0,2}', version)) or not sky.get('version'):
                 continue
             for file in ('manifest.json', 'bin/node.exe', 'bin/node_repl.exe',
                          'bin/node_modules/@oai/sky/package.json',
@@ -109,7 +109,7 @@ def runtime_root(explicit):
                 env={**os.environ, 'MYCODEX_CUA_VERIFY_ROOT': str(candidate)}, capture_output=True, text=True, timeout=15)
             if verify.returncode != 0 or verify.stdout.strip() != 'OPENAI_COMPONENTS_VERIFIED':
                 raise RuntimeError('Official component signature validation failed')
-            verified.append((tuple(map(int, version.split('.'))), manifest['runtime_archive_version'], candidate.resolve()))
+            verified.append(((0, 0) if version == 'local' else tuple(map(int, version.split('.'))), manifest['runtime_archive_version'], candidate.resolve()))
         except (OSError, ValueError):
             continue
     if verified:

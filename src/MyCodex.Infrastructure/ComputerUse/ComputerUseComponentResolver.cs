@@ -214,6 +214,8 @@ namespace MyCodex.Infrastructure.ComputerUse
 
         private static Version RuntimeVersion(string value)
         {
+            // Official unpacked runtimes use "local"; versioned candidates retain priority and all trust checks still apply.
+            if (string.Equals(value, "local", StringComparison.Ordinal)) return new Version(0, 0);
             return Version.TryParse((value ?? string.Empty).Split('/')[0], out var version) ? version : null;
         }
 

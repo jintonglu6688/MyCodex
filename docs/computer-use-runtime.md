@@ -2,7 +2,28 @@
 
 MyCodex packages the original Windows Computer Use plugin, Node REPL, Sky library and native helper from the official ChatGPT Windows package. Its native host and authorization checks remain separate from [browser automation](browser-use-runtime.md).
 
-## Reviewed update: 2026-10-29
+## Current update: 2026-11-07
+
+The [official Windows release feed](https://persistent.oaistatic.com/codex-app-prod/windows-release.json) reported ChatGPT x64 `26.1103.4239.0`, released `2026-11-07T00:57:15Z`. The installed package had that exact identity, so this update copied its original `app/resources/cua_node` and `app/resources/plugins/openai-bundled/plugins/computer-use` trees. No official application files were changed.
+
+| Component | Current |
+|---|---|
+| ChatGPT Windows x64 package / bundle ID | `26.1103.4239.0` |
+| Computer Use plugin | `26.1103.32239` |
+| Runtime archive metadata | `local` |
+| Node | `24.22.1-cua.1` |
+| `@oai/sky` | `0.7.17` |
+| `@oai/cua-repl` | `0.1.3` |
+
+The Node, Node REPL and native helper Authenticode signatures were valid and identified `OpenAI OpCo, LLC`. The bundle includes the original files plus MyCodex's generated marketplace catalog and inventory. Its complete inventory SHA256 is `F4A894E73F223C66B1024080B200781F062DB43205B2BC5FFABC8AABCBF3DF63`; the checked-in pin and embedded resource must match it.
+
+The official unpacked runtime now uses the literal version label `local`. Component resolution accepts that exact label while retaining all path, content and signature checks. If both local and numbered archives are supplied, numbered archives retain selection priority. No original manifest or executable is edited to invent a numeric version.
+
+The separate browser bundle and native messaging host were updated from the same official installation; see [browser runtime](browser-use-runtime.md). The earlier packaging failure came from a stale checked-in native pin, which still selected the previous bundle directory. Updating only generated payloads does not update the pin embedded in the application.
+
+Current validation: 273 related .NET tests passed and one link fixture was skipped; the explicit fresh-home .NET setup test also passed. The actual upstream native/browser routing fixture, seven browser checks, 210 host checks, two native-messaging roundtrips and the real WindowsHelperTransport `end_turn` contract passed. Installer path checks accepted root lengths 44, 60 and 72 and rejected 73 before copying. Release built with zero warnings/errors; installer compilation and its authentication receipt/hash verification passed. Inno Setup 6.7.3 reported missing Simplified Chinese language entries and used its English defaults. These checks did not perform real desktop input, browser registration changes or full clean-machine application installation.
+
+## Previous reviewed update: 2026-10-29
 
 | Component | Previous | Current |
 |---|---|---|
