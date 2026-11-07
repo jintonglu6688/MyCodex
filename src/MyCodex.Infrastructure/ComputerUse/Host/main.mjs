@@ -1,6 +1,5 @@
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { mkdtempSync, rmSync } from 'node:fs';
 import { createComputerUseHost } from './computer-use-host.mjs';
 import { createBrowserUseControl } from './browser-use-control.mjs';
 
@@ -21,30 +20,18 @@ try {
     if (typeof WindowsHelperTransport !== 'function' ||
         typeof WindowsHelperTransport.prototype.request !== 'function' ||
         typeof WindowsHelperTransport.prototype.close !== 'function') throw new Error('CUA_COMPONENT_CONTRACT');
-    let compatibility;
-    async function checkCompatibility() {
-        const probeHome = mkdtempSync(path.join(process.cwd(), 'compatibility-'));
-        let probe;
+    async function checkCompatibility(transport) {
         try {
-            probe = new WindowsHelperTransport({
-                helperCommand: path.join(sky, 'bin', 'windows', 'codex-computer-use.exe'),
-                helperArgs: ['--parent-pid', String(process.pid)],
-                helperEnv: { CODEX_CLI_PATH: cli, CODEX_HOME: probeHome }, timeoutMs: 3000
-            });
-            await probe.request('end_turn', {}, { skipTurnTransition: true });
+            // Use the live helper: a disposable probe can leave Windows database handles
+            // open after close(), making immediate home deletion fail with EPERM.
+            const state = await transport.request('diagnostic_state', {}, { skipTurnTransition: true, timeoutMs: 3000 });
+            if (state === null || typeof state !== 'object' || Array.isArray(state)) throw new Error();
         } catch { throw Object.assign(new Error('CUA_COMPONENT_CONTRACT'), { code: 'CUA_COMPONENT_CONTRACT' }); }
-        finally {
-            try { await probe?.close(); }
-            finally { rmSync(probeHome, { recursive: true, force: true }); }
-        }
     }
     const host = createComputerUseHost({
         emit: write,
         prepareExecution: true,
-        prepareTransport: () => {
-            compatibility ??= checkCompatibility().catch(error => { compatibility = null; throw error; });
-            return compatibility;
-        },
+        prepareTransport: checkCompatibility,
         createTransport: helperHome => new WindowsHelperTransport({
             helperCommand: path.join(sky, 'bin', 'windows', 'codex-computer-use.exe'),
             helperArgs: ['--parent-pid', String(process.pid)],

@@ -10,8 +10,8 @@ const METHODS = new Set([
     'click', 'click_element', 'scroll', 'drag', 'press_key', 'type_text', 'launch_app',
     'perform_secondary_action', 'set_value', 'end_turn'
 ]);
-// Known categories only select recovery guidance; they never bypass the official
-// helper's checks or repeat an action. Unrecognized failures remain conservative.
+// Known categories never bypass the official helper's checks or repeat an action.
+// A failed observer needs a new helper; observation/input errors keep their caches.
 const RECOVERABLE_ACTION_FAILURES = new Map([
     ['coordinate input geometry is unavailable', {
         code: 'CUA_GEOMETRY_UNAVAILABLE',
@@ -19,7 +19,8 @@ const RECOVERABLE_ACTION_FAILURES = new Map([
     }],
     ['accessibility window-opened handler did not become ready', {
         code: 'CUA_WINDOW_OBSERVER_NOT_READY',
-        guidance: 'The application launch could not be observed; inspect existing windows before choosing another action. Do not blindly repeat the launch.'
+        resetTransport: true,
+        guidance: 'The window observer failed before the application was launched. The failed helper has been closed. Call list_windows to inspect the desktop and initialize a new helper before retrying launch_app.'
     }],
     ['user input was detected in this window; call get_window_state before continuing', {
         code: 'CUA_OBSERVATION_STALE',
@@ -103,6 +104,32 @@ export function createComputerUseHost({ createTransport, emit, prepareExecution 
         emit({ event: 'fatal', code });
     }
 
+    function closeTransport(slot) {
+        if (slot.transportClosing) return slot.transportClosing;
+        const transport = slot.transport;
+        slot.transport = null;
+        if (!transport) return Promise.resolve();
+        // Recovery and a concurrent stop must finish the same cleanup before releasing ownership.
+        slot.transportClosing = (async () => {
+            let timer;
+            try {
+                await Promise.race([
+                    Promise.resolve().then(() => transport.close()),
+                    new Promise((_, reject) => {
+                        timer = setTimeout(() => reject(error('CUA_CLOSE_TIMEOUT')), 1500);
+                    })
+                ]);
+                slot.transportClosing = null;
+            } catch {
+                failHost('CUA_CLOSE_TIMEOUT');
+                throw error('CUA_CLOSE_TIMEOUT');
+            } finally {
+                clearTimeout(timer);
+            }
+        })();
+        return slot.transportClosing;
+    }
+
     async function release(slot, reason) {
         if (slot.closing) return slot.closing;
         slot.turn = null;
@@ -124,25 +151,8 @@ export function createComputerUseHost({ createTransport, emit, prepareExecution 
         }
         // Old connections cannot close or approve operations in the next generation.
         for (const socket of slot.sockets) socket.destroy();
-        const transport = slot.transport;
-        slot.transport = null;
         slot.closing = (async () => {
-            if (transport) {
-                let timer;
-                try {
-                    await Promise.race([
-                        Promise.resolve().then(() => transport.close()),
-                        new Promise((_, reject) => {
-                            timer = setTimeout(() => reject(error('CUA_CLOSE_TIMEOUT')), 1500);
-                        })
-                    ]);
-                } catch {
-                    failHost('CUA_CLOSE_TIMEOUT');
-                    throw error('CUA_CLOSE_TIMEOUT');
-                } finally {
-                    clearTimeout(timer);
-                }
-            }
+            await closeTransport(slot);
             if (lease && owner === lease) {
                 owner = null;
                 if (!lease.acquiring) released(lease);
@@ -261,11 +271,13 @@ export function createComputerUseHost({ createTransport, emit, prepareExecution 
         try {
             await acquire(slot, generation);
             if (!alive(slot, generation)) throw error('CUA_TURN_ENDED');
-            stage = 'transport_prepare';
-            await prepareTransport();
-            if (!alive(slot, generation)) throw error('CUA_TURN_ENDED');
-            stage = 'transport_create';
-            slot.transport ??= createTransport(slot.helperHome);
+            if (!slot.transport) {
+                stage = 'transport_create';
+                slot.transport = createTransport(slot.helperHome);
+                stage = 'transport_prepare';
+                await prepareTransport(slot.transport);
+                if (!alive(slot, generation)) throw error('CUA_TURN_ENDED');
+            }
             stage = 'executor_request';
             const result = await slot.transport.request(request.method, request.params, {
                 codexTurnMetadata: metadata,
@@ -290,6 +302,10 @@ export function createComputerUseHost({ createTransport, emit, prepareExecution 
                     ? TARGET_OBSCURED_FAILURE : null);
             const diagnostic = failureDiagnostic(failure, request.method, stage, approvalState, started, recoverable);
             if (recoverable && alive(slot, generation)) {
+                if (recoverable.resetTransport) {
+                    await closeTransport(slot);
+                    if (!alive(slot, generation)) return;
+                }
                 fail(recoverable.code, `${recoverable.code}: ${recoverable.guidance}`);
                 emit({ event: 'actionFailed', code: recoverable.code, slot: slot.id, generation, thread: slot.thread, diagnostic });
                 return;
@@ -388,7 +404,7 @@ export function createComputerUseHost({ createTransport, emit, prepareExecution 
             const pipePath = request.pipePath ?? `\\\\.\\pipe\\mycodex-cua-${id}`;
             const slot = { id, pipePath, helperHome: request.helperHome, published: false,
                 thread: null, turn: null, generation: 0, approvals: new Map(),
-                sockets: new Set(), unpublishedSockets: new Set(), transport: null, closing: null, busy: false };
+                sockets: new Set(), unpublishedSockets: new Set(), transport: null, transportClosing: null, closing: null, busy: false };
             slot.server = net.createServer(socket => connect(slot, socket));
             await new Promise((resolve, reject) => {
                 slot.server.once('error', reject);
