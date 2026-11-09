@@ -18,7 +18,7 @@ namespace MyCodex.Application.Tests
 {
     [TestFixture]
     [Apartment(ApartmentState.STA)]
-    public sealed class AuthenticationCenterFormTests
+    public sealed partial class AuthenticationCenterFormTests
     {
         [Test]
         public void PackageMismatchAndResidentConflictHaveDifferentRecoveryInstructions()
@@ -1150,7 +1150,7 @@ namespace MyCodex.Application.Tests
             internal AuthenticationProviderEdit LastEdit;
             internal bool RouteRequired, RouterRunning, SupportsSessionHistory, SupportsAggregation, Aggregating;
             internal string SyncError;
-            internal bool SupportsInactiveSaveWhileBusy, SupportsProviderOrdering;
+            internal bool SupportsInactiveSaveWhileBusy, SupportsProviderOrdering, SupportsProviderUsage;
             internal List<string> LastOrder;
             internal Exception ReorderFailure;
 
@@ -1162,7 +1162,7 @@ namespace MyCodex.Application.Tests
                     throw Failure;
                 }
                 if (ReadReply != null) return ReadReply.Task;
-                return Task.FromResult(new AuthenticationCenterSnapshot { TargetName = "Test", CodexHome = "test-home", CurrentProviderId = Current, Providers = Providers.ToList(), RouteRequired = RouteRequired, RouterRunning = RouterRunning, RouteInFlight = 3, SupportsSessionHistory = SupportsSessionHistory, SupportsAggregation = SupportsAggregation, Aggregating = Aggregating, SyncError = SyncError, SupportsInactiveSaveWhileBusy = SupportsInactiveSaveWhileBusy, SupportsProviderOrdering = SupportsProviderOrdering });
+                return Task.FromResult(new AuthenticationCenterSnapshot { TargetName = "Test", CodexHome = "test-home", CurrentProviderId = Current, Providers = Providers.ToList(), RouteRequired = RouteRequired, RouterRunning = RouterRunning, RouteInFlight = 3, SupportsSessionHistory = SupportsSessionHistory, SupportsAggregation = SupportsAggregation, Aggregating = Aggregating, SyncError = SyncError, SupportsInactiveSaveWhileBusy = SupportsInactiveSaveWhileBusy, SupportsProviderOrdering = SupportsProviderOrdering, SupportsProviderUsage = SupportsProviderUsage });
             }
 
             public Task<AuthenticationProvider> SaveAsync(AuthenticationProviderEdit edit, CancellationToken cancellationToken)
@@ -1194,6 +1194,37 @@ namespace MyCodex.Application.Tests
                 DeleteCalls++;
                 Providers.RemoveAll(item => item.Id == provider.Id);
                 return Task.FromResult(false);
+            }
+
+            internal AuthenticationUsageSettings Usage = new AuthenticationUsageSettings { ProviderId = "a", ProviderName = "a" };
+            internal AuthenticationUsageEdit LastUsageEdit;
+            internal AuthenticationUsageResult UsageResult = new AuthenticationUsageResult { Success = true };
+            internal int UsageSaveCalls, UsageQueryCalls;
+
+            public Task<AuthenticationUsageSettings> ReadUsageAsync(string providerId, CancellationToken cancellationToken)
+            {
+                return Task.FromResult(Usage);
+            }
+
+            public Task<AuthenticationUsageSettings> SaveUsageAsync(AuthenticationUsageEdit edit, CancellationToken cancellationToken)
+            {
+                UsageSaveCalls++;
+                LastUsageEdit = edit;
+                Usage = new AuthenticationUsageSettings
+                {
+                    ProviderId = edit.ProviderId, ProviderName = Usage.ProviderName, Configured = true, Enabled = edit.Enabled,
+                    TemplateType = edit.TemplateType, BaseUrl = edit.BaseUrl, UserId = edit.UserId, Code = edit.Code,
+                    Timeout = edit.Timeout, AutoQueryInterval = edit.AutoQueryInterval,
+                    HasApiKey = !edit.ClearApiKey && (Usage.HasApiKey || !string.IsNullOrEmpty(edit.ApiKey)),
+                    HasAccessToken = !edit.ClearAccessToken && (Usage.HasAccessToken || !string.IsNullOrEmpty(edit.AccessToken))
+                };
+                return Task.FromResult(Usage);
+            }
+
+            public Task<AuthenticationUsageResult> QueryUsageAsync(string providerId, CancellationToken cancellationToken)
+            {
+                UsageQueryCalls++;
+                return Task.FromResult(UsageResult);
             }
 
             public Task ReorderAsync(IReadOnlyList<string> providerIds, CancellationToken cancellationToken)

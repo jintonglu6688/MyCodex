@@ -2193,19 +2193,9 @@ namespace MyCodex.WinForms.Forms
 
         private async void OnUserCenterMenuItemClick(object sender, EventArgs e)
         {
-            if (!IsChatGptAccountAuthenticationActive())
+            if (!UserCenterForm.IsChatGptAuthActive(_authenticationState))
             {
-                SetStatus(UiLocalization.Text(
-                    "MainForm.Status.UserCenterUnavailableForApi",
-                    "User Center is only available when signed in with a ChatGPT account."));
-                MessageBox.Show(
-                    this,
-                    UiLocalization.Text(
-                        "MainForm.Message.UserCenterUnavailableForApi",
-                        "User Center is only available when the current authentication is a ChatGPT account."),
-                    AppConstants.AppName,
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                ShowProviderUsage();
                 return;
             }
 

@@ -279,6 +279,47 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public async Task UsageCallsKeepSecretsOptionalAndReadNumbersInvariantly()
+        {
+            var calls = new List<KeyValuePair<string, IDictionary<string, object>>>();
+            var client = new AuthenticationCenterClient("Test", (method, values, token) =>
+            {
+                calls.Add(new KeyValuePair<string, IDictionary<string, object>>(method, values));
+                IDictionary<string, object> reply = method == "gui/usage/query"
+                    ? new Dictionary<string, object>
+                    {
+                        { "success", true },
+                        { "data", new object[] { new Dictionary<string, object> { { "planName", "Pro" }, { "remaining", 12.5m }, { "total", 20 }, { "used", 7.5d }, { "unit", "USD" }, { "isValid", true } } } }
+                    }
+                    : new Dictionary<string, object>
+                    {
+                        { "providerId", "a" }, { "providerName", "A" }, { "detected", "balance" },
+                        { "config", method == "gui/usage/get" ? null : new Dictionary<string, object> { { "enabled", true }, { "templateType", "general" }, { "hasApiKey", true }, { "timeout", 15 }, { "autoQueryInterval", 0 } } }
+                    };
+                return Task.FromResult(reply);
+            });
+            var read = await client.ReadUsageAsync("a", CancellationToken.None);
+            Assert.That(read.Configured, Is.False);
+            Assert.That(read.Detected, Is.EqualTo("balance"));
+            var saved = await client.SaveUsageAsync(new AuthenticationUsageEdit { ProviderId = "a", Enabled = true, TemplateType = "general", ApiKey = "", ClearAccessToken = true, Timeout = 15, AutoQueryInterval = 0 }, CancellationToken.None);
+            Assert.That(saved.Configured && saved.HasApiKey, Is.True);
+            Assert.That(saved.Timeout, Is.EqualTo(15));
+            Assert.That(saved.AutoQueryInterval, Is.Zero);
+            var sent = calls[1].Value;
+            Assert.That(calls[1].Key, Is.EqualTo("gui/usage/save"));
+            Assert.That(sent.ContainsKey("apiKey"), Is.False, "An empty key keeps the saved one.");
+            Assert.That(sent.ContainsKey("clearApiKey"), Is.False);
+            Assert.That(sent["clearAccessToken"], Is.True);
+            var result = await client.QueryUsageAsync("a", CancellationToken.None);
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Items.Single().Remaining, Is.EqualTo(12.5m));
+            Assert.That(result.Items.Single().Total, Is.EqualTo(20m));
+            Assert.That(result.Items.Single().Used, Is.EqualTo(7.5m));
+            Assert.That(result.Items.Single().IsValid, Is.True);
+            Assert.That(calls.Select(call => call.Key), Is.EqualTo(new[] { "gui/usage/get", "gui/usage/save", "gui/usage/query" }));
+        }
+
+        [Test]
         public void IncompatibleProtocolStopsBeforeReadingProviders()
         {
             var calls = 0;

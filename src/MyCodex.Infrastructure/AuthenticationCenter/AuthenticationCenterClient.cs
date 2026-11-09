@@ -194,6 +194,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                 SupportsAggregation = Strings(status, "capabilities")?.Contains("aggregation") == true,
                 SupportsInactiveSaveWhileBusy = Strings(status, "capabilities")?.Contains("inactiveSaveWhileBusy") == true,
                 SupportsProviderOrdering = Strings(status, "capabilities")?.Contains("providerOrdering") == true,
+                SupportsProviderUsage = Strings(status, "capabilities")?.Contains("providerUsage") == true,
                 Aggregating = Flag(status, "aggregating"),
                 RouteRequired = Flag(status, "routeRequired"),
                 RouterRunning = Flag(status, "routerRunning"),

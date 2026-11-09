@@ -620,7 +620,7 @@ namespace MyCodex.WinForms.Forms
                     text.IndexOf("全模型", StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
-        private static bool IsChatGptAuthActive(AppServerAuthenticationState state)
+        internal static bool IsChatGptAuthActive(AppServerAuthenticationState state)
         {
             return state != null &&
                    state.IsAuthenticated &&

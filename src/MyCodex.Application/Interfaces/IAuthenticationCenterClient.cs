@@ -23,6 +23,9 @@ namespace MyCodex.Application.Interfaces
         Task<bool> DeleteAsync(AuthenticationProvider provider, CancellationToken cancellationToken);
         // providerIds names every saved provider once, in the new list order.
         Task ReorderAsync(IReadOnlyList<string> providerIds, CancellationToken cancellationToken);
+        Task<AuthenticationUsageSettings> ReadUsageAsync(string providerId, CancellationToken cancellationToken);
+        Task<AuthenticationUsageSettings> SaveUsageAsync(AuthenticationUsageEdit edit, CancellationToken cancellationToken);
+        Task<AuthenticationUsageResult> QueryUsageAsync(string providerId, CancellationToken cancellationToken);
         Task<AuthenticationApplyPlan> PreflightAsync(AuthenticationProvider provider, CancellationToken cancellationToken);
         Task<AuthenticationOperation> ApplyAsync(AuthenticationApplyPlan plan, string operationId, CancellationToken cancellationToken);
         Task<AuthenticationOperation> GetOperationAsync(string operationId, CancellationToken cancellationToken);

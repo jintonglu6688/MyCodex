@@ -3717,12 +3717,6 @@ Latest: {1}</value>
 <data name="MainForm.Action.OpenUserCenter" xml:space="preserve">
     <value>Open user center</value>
   </data>
-<data name="MainForm.Message.UserCenterUnavailableForApi" xml:space="preserve">
-    <value>User Center is only available when the current authentication is a ChatGPT account.</value>
-  </data>
-<data name="MainForm.Status.UserCenterUnavailableForApi" xml:space="preserve">
-    <value>User Center is only available for ChatGPT accounts</value>
-  </data>
 <data name="MainForm.Action.ReadArchivedSessions" xml:space="preserve">
     <value>Read archived sessions</value>
   </data>
@@ -13980,4 +13974,163 @@ Backup file: {1}</value>
 {0}
 
 Trust this host key and retry detection?</value></data>
+  <data name="AuthenticationCenter.Button.Usage" xml:space="preserve">
+    <value>&amp;Quota settings</value>
+  </data>
+  <data name="AuthenticationCenter.Error.UsageNotConfigured" xml:space="preserve">
+    <value>Usage queries are not turned on for this provider.</value>
+  </data>
+  <data name="AuthenticationCenter.Error.UsageUnsupported" xml:space="preserve">
+    <value>ChatGPT accounts show their quota in User Center; usage query settings do not apply.</value>
+  </data>
+  <data name="AuthenticationUsage.Template.TokenPlan" xml:space="preserve">
+    <value>Coding plan usage</value>
+  </data>
+  <data name="AuthenticationUsage.Template.Balance" xml:space="preserve">
+    <value>Account balance</value>
+  </data>
+  <data name="AuthenticationUsage.Template.General" xml:space="preserve">
+    <value>Generic balance endpoint</value>
+  </data>
+  <data name="AuthenticationUsage.Template.Custom" xml:space="preserve">
+    <value>Custom script</value>
+  </data>
+  <data name="AuthenticationUsage.TitleFor" xml:space="preserve">
+    <value>Usage query settings: {0}</value>
+  </data>
+  <data name="AuthenticationUsage.Enabled" xml:space="preserve">
+    <value>&amp;Enable usage queries</value>
+  </data>
+  <data name="AuthenticationUsage.Template" xml:space="preserve">
+    <value>Query &amp;method</value>
+  </data>
+  <data name="AuthenticationUsage.BaseUrl" xml:space="preserve">
+    <value>Query &amp;URL</value>
+  </data>
+  <data name="AuthenticationUsage.ApiKey" xml:space="preserve">
+    <value>API &amp;key</value>
+  </data>
+  <data name="AuthenticationUsage.ClearApiKey" xml:space="preserve">
+    <value>Clear the saved key (&amp;X)</value>
+  </data>
+  <data name="AuthenticationUsage.AccessToken" xml:space="preserve">
+    <value>Access &amp;token</value>
+  </data>
+  <data name="AuthenticationUsage.ClearAccessToken" xml:space="preserve">
+    <value>Clear the saved token (&amp;L)</value>
+  </data>
+  <data name="AuthenticationUsage.UserId" xml:space="preserve">
+    <value>User &amp;ID</value>
+  </data>
+  <data name="AuthenticationUsage.Timeout" xml:space="preserve">
+    <value>Time&amp;out in seconds (2-30)</value>
+  </data>
+  <data name="AuthenticationUsage.Interval" xml:space="preserve">
+    <value>Auto &amp;refresh in minutes (0 turns it off)</value>
+  </data>
+  <data name="AuthenticationUsage.Code" xml:space="preserve">
+    <value>Query &amp;script</value>
+  </data>
+  <data name="AuthenticationUsage.Status" xml:space="preserve">
+    <value>Usage query status</value>
+  </data>
+  <data name="AuthenticationUsage.Save" xml:space="preserve">
+    <value>S&amp;ave and test</value>
+  </data>
+  <data name="AuthenticationUsage.Close" xml:space="preserve">
+    <value>&amp;Close</value>
+  </data>
+  <data name="AuthenticationUsage.Hint" xml:space="preserve">
+    <value>An empty query URL or key uses the provider's own address and key.</value>
+  </data>
+  <data name="AuthenticationUsage.Recommended" xml:space="preserve">
+    <value>Recommended for this provider: {0}.</value>
+  </data>
+  <data name="AuthenticationUsage.Invalid.Timeout" xml:space="preserve">
+    <value>Enter a timeout from 2 to 30 seconds.</value>
+  </data>
+  <data name="AuthenticationUsage.Invalid.Interval" xml:space="preserve">
+    <value>Enter an auto refresh interval from 0 to 1440 minutes.</value>
+  </data>
+  <data name="AuthenticationUsage.Invalid.Code" xml:space="preserve">
+    <value>Enter the query script.</value>
+  </data>
+  <data name="AuthenticationUsage.Saving" xml:space="preserve">
+    <value>Saving…</value>
+  </data>
+  <data name="AuthenticationUsage.SavedDisabled" xml:space="preserve">
+    <value>Saved. Usage queries are turned off for this provider.</value>
+  </data>
+  <data name="AuthenticationUsage.Testing" xml:space="preserve">
+    <value>Saved. Testing the query…</value>
+  </data>
+  <data name="AuthenticationUsage.TestPassed" xml:space="preserve">
+    <value>Saved. The test query succeeded:</value>
+  </data>
+  <data name="AuthenticationUsage.TestFailed" xml:space="preserve">
+    <value>Saved, but the test query failed:</value>
+  </data>
+  <data name="ProviderUsage.Header" xml:space="preserve">
+    <value>Provider usage</value>
+  </data>
+  <data name="ProviderUsage.Accessible.Details" xml:space="preserve">
+    <value>Usage details</value>
+  </data>
+  <data name="ProviderUsage.Button.Settings" xml:space="preserve">
+    <value>Usage &amp;settings</value>
+  </data>
+  <data name="ProviderUsage.Status.Refreshing" xml:space="preserve">
+    <value>Querying usage…</value>
+  </data>
+  <data name="ProviderUsage.Status.BackendUnsupported" xml:space="preserve">
+    <value>The authentication backend of this target cannot query usage. Update it from the authentication center.</value>
+  </data>
+  <data name="ProviderUsage.Status.NoProvider" xml:space="preserve">
+    <value>The current configuration is not a saved provider of the authentication center.</value>
+  </data>
+  <data name="ProviderUsage.Status.NotConfigured" xml:space="preserve">
+    <value>Usage queries are not turned on for this provider. Choose Usage settings to set them up.</value>
+  </data>
+  <data name="ProviderUsage.Status.Updated" xml:space="preserve">
+    <value>Usage updated at {0}.</value>
+  </data>
+  <data name="ProviderUsage.Status.Failed" xml:space="preserve">
+    <value>The usage query failed. The details are in the list.</value>
+  </data>
+  <data name="ProviderUsage.Details.Provider" xml:space="preserve">
+    <value>Provider: {0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Method" xml:space="preserve">
+    <value>Query method: {0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Failed" xml:space="preserve">
+    <value>Query failed: {0}</value>
+  </data>
+  <data name="ProviderUsage.Details.UnknownError" xml:space="preserve">
+    <value>unknown error</value>
+  </data>
+  <data name="ProviderUsage.Details.NoData" xml:space="preserve">
+    <value>The provider returned no usage data.</value>
+  </data>
+  <data name="ProviderUsage.Details.Plan" xml:space="preserve">
+    <value>Plan: {0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Invalid" xml:space="preserve">
+    <value>Not valid: {0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Remaining" xml:space="preserve">
+    <value>Remaining: {0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Used" xml:space="preserve">
+    <value>Used: {0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Total" xml:space="preserve">
+    <value>Total: {0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Reset" xml:space="preserve">
+    <value>Resets: {0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Extra" xml:space="preserve">
+    <value>Details: {0}</value>
+  </data>
 </root>

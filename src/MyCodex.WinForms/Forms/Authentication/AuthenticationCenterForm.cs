@@ -32,6 +32,7 @@ namespace MyCodex.WinForms.Forms
         private bool _supportsSessionHistory;
         private bool _supportsInactiveSaveWhileBusy;
         private bool _supportsProviderOrdering;
+        private bool _supportsProviderUsage;
         private readonly Button _addButton;
         private readonly Button _accountsButton;
         private readonly Button _refreshButton;
@@ -47,6 +48,7 @@ namespace MyCodex.WinForms.Forms
         private readonly MenuItem _reauthenticateMenuItem;
         private readonly MenuItem _moveUpMenuItem;
         private readonly MenuItem _moveDownMenuItem;
+        private readonly MenuItem _usageMenuItem;
         private readonly Label _identityLabel;
         private bool _reconnectPending;
         private bool _busy;
@@ -163,11 +165,14 @@ namespace MyCodex.WinForms.Forms
                 async (sender, args) => await MoveSelectedAsync(-1), Shortcut.AltUpArrow) { Visible = false };
             _moveDownMenuItem = new MenuItem(UiLocalization.Text("AuthenticationCenter.Button.MoveDown", "Move do&wn"),
                 async (sender, args) => await MoveSelectedAsync(1), Shortcut.AltDownArrow) { Visible = false };
+            _usageMenuItem = new MenuItem(UiLocalization.Text("AuthenticationCenter.Button.Usage", "&Quota settings"),
+                async (sender, args) => await OpenUsageSettingsAsync()) { Visible = false };
             _providerContextMenu.MenuItems.Add(_enableMenuItem);
             _providerContextMenu.MenuItems.Add(_aggregationMemberMenuItem);
             _providerContextMenu.MenuItems.Add(_editMenuItem);
             _providerContextMenu.MenuItems.Add(_copyMenuItem);
             _providerContextMenu.MenuItems.Add(_reauthenticateMenuItem);
+            _providerContextMenu.MenuItems.Add(_usageMenuItem);
             _providerContextMenu.MenuItems.Add(_moveUpMenuItem);
             _providerContextMenu.MenuItems.Add(_moveDownMenuItem);
             _providerContextMenu.MenuItems.Add("-");
@@ -259,6 +264,7 @@ namespace MyCodex.WinForms.Forms
             _supportsSessionHistory = snapshot.SupportsSessionHistory;
             _supportsInactiveSaveWhileBusy = snapshot.SupportsInactiveSaveWhileBusy;
             _supportsProviderOrdering = snapshot.SupportsProviderOrdering;
+            _supportsProviderUsage = snapshot.SupportsProviderUsage;
                 _supportsAggregation = snapshot.SupportsAggregation;
                 var aggregationNote = await ReadStackStateAsync();
                 if (IsDisposed) return;
@@ -471,6 +477,32 @@ namespace MyCodex.WinForms.Forms
             });
         }
 
+        private async Task OpenUsageSettingsAsync()
+        {
+            var provider = SelectedProvider;
+            if (_busy || !_loaded || provider == null || !_usageMenuItem.Visible) return;
+            _busy = true;
+            UpdateActions();
+            try
+            {
+                await AuthenticationUsageForm.EditAsync(this, _client, provider.Id, _lifetime.Token);
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception error)
+            {
+                if (!IsDisposed) AnnounceError(AuthenticationCenterUiText.Error(error));
+            }
+            finally
+            {
+                _busy = false;
+                if (!IsDisposed)
+                {
+                    UpdateActions();
+                    _providersList.Focus();
+                }
+            }
+        }
+
         // offset is -1 (up) or 1 (down); the backend stores the whole list order.
         internal async Task MoveSelectedAsync(int offset)
         {
@@ -588,6 +620,9 @@ namespace MyCodex.WinForms.Forms
             _moveUpMenuItem.Visible = _moveDownMenuItem.Visible = _supportsProviderOrdering;
             _moveUpMenuItem.Enabled = !_busy && _loaded && _supportsProviderOrdering && index > 0;
             _moveDownMenuItem.Enabled = !_busy && _loaded && _supportsProviderOrdering && index >= 0 && index < _providersList.Items.Count - 1;
+            // ChatGPT accounts show their quota in User Center through the App Server.
+            _usageMenuItem.Visible = _supportsProviderUsage && provider != null && provider.Kind != "chatgpt";
+            _usageMenuItem.Enabled = !_busy && _loaded && _usageMenuItem.Visible;
             _refreshButton.Enabled = !_busy;
             _updateBackendButton.Visible = _updateBackend != null && _updateAvailable;
             _updateBackendButton.Enabled = !_busy && _updateAvailable;

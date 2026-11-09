@@ -502,13 +502,20 @@ namespace MyCodex.Application.Tests
             "OptionsForm.Button.OfficeCliInstall",
             "OptionsForm.Button.OfficeCliUninstall"
         })]
+        [TestCase("AuthenticationUsageForm", new[]
+        {
+            "AuthenticationUsage.Enabled", "AuthenticationUsage.Template", "AuthenticationUsage.BaseUrl", "AuthenticationUsage.ApiKey",
+            "AuthenticationUsage.ClearApiKey", "AuthenticationUsage.AccessToken", "AuthenticationUsage.ClearAccessToken", "AuthenticationUsage.UserId",
+            "AuthenticationUsage.Timeout", "AuthenticationUsage.Interval", "AuthenticationUsage.Code", "AuthenticationUsage.Save", "AuthenticationUsage.Close"
+        })]
+        [TestCase("ProviderUsageForm", new[] { "UserCenterForm.Button.Refresh", "ProviderUsage.Button.Settings", "UserCenterForm.Button.Close" })]
         [TestCase("AuthenticationCenterForm", new[]
         {
             "AuthenticationCenter.Button.Add", "AuthenticationCenter.Button.Edit",
             "AuthenticationCenter.Button.Copy", "AuthenticationCenter.Button.Delete",
             "AuthenticationCenter.Button.Refresh", "AuthenticationCenter.Button.Close",
             "AuthenticationCenter.Button.Enable", "AuthenticationCenter.Button.RetryConnection", "AuthenticationCenter.Button.Reauthenticate", "AuthenticationCenter.Button.Accounts",
-            "AuthenticationCenter.Button.MoveUp", "AuthenticationCenter.Button.MoveDown",
+            "AuthenticationCenter.Button.MoveUp", "AuthenticationCenter.Button.MoveDown", "AuthenticationCenter.Button.Usage",
             "SessionHistory.Unified", "SessionHistory.Button.Retry"
         })]
         [TestCase("AuthenticationLoginControl", new[]

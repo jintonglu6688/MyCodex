@@ -406,7 +406,6 @@ namespace MyCodex.WinForms.Forms
         private void RefreshAuthenticationUi()
         {
             RefreshWindowTitle();
-            _userCenterMenuItem.Enabled = IsChatGptAccountAuthenticationActive();
             _fileSyncThreadsMenuItem.Enabled = IsConnectedStatus();
             _workspaceSyncThreadsMenuItem.Enabled = IsConnectedStatus();
             UpdateAutomaticThreadSyncState();

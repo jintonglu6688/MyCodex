@@ -80,6 +80,10 @@ namespace MyCodex.WinForms.Forms
             var code = (exception as AuthenticationCenterException)?.Code;
             switch (code)
             {
+                case "usage_not_configured":
+                    return UiLocalization.Text("AuthenticationCenter.Error.UsageNotConfigured", "Usage queries are not turned on for this provider.");
+                case "usage_unsupported":
+                    return UiLocalization.Text("AuthenticationCenter.Error.UsageUnsupported", "ChatGPT accounts show their quota in User Center; usage query settings do not apply.");
                 case "incomplete_account_credentials":
                     return UiLocalization.Text("AuthenticationCenter.Error.CaptureAccount", "The current account has incomplete or inconsistent file credentials. It was not archived. Sign in again to save this account.");
                 case "external_proxy_unavailable":

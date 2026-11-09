@@ -106,6 +106,7 @@ namespace MyCodex.Application.DTOs
         public bool SupportsAggregation { get; set; }
         public bool SupportsInactiveSaveWhileBusy { get; set; }
         public bool SupportsProviderOrdering { get; set; }
+        public bool SupportsProviderUsage { get; set; }
         // Codex is in aggregation mode: routed through the host with several providers listed.
         public bool Aggregating { get; set; }
         public bool RouteRequired { get; set; }

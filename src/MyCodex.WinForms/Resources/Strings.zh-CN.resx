@@ -3666,12 +3666,6 @@
 <data name="MainForm.Action.OpenUserCenter" xml:space="preserve">
     <value>打开用户中心</value>
   </data>
-<data name="MainForm.Message.UserCenterUnavailableForApi" xml:space="preserve">
-    <value>用户中心仅在当前认证为 ChatGPT 账号时可用。</value>
-  </data>
-<data name="MainForm.Status.UserCenterUnavailableForApi" xml:space="preserve">
-    <value>用户中心仅适用于 ChatGPT 账号</value>
-  </data>
 <data name="MainForm.Action.ReadArchivedSessions" xml:space="preserve">
     <value>读取归档会话</value>
   </data>
@@ -13935,4 +13929,163 @@ MyCodex 桌面客户端。</value>
 {0}
 
 是否信任此主机密钥并重试检测？</value></data>
+  <data name="AuthenticationCenter.Button.Usage" xml:space="preserve">
+    <value>额度查询设置(&amp;Q)</value>
+  </data>
+  <data name="AuthenticationCenter.Error.UsageNotConfigured" xml:space="preserve">
+    <value>此提供商尚未启用额度查询。</value>
+  </data>
+  <data name="AuthenticationCenter.Error.UsageUnsupported" xml:space="preserve">
+    <value>ChatGPT 账号的额度在用户中心查看，不适用额度查询设置。</value>
+  </data>
+  <data name="AuthenticationUsage.Template.TokenPlan" xml:space="preserve">
+    <value>套餐用量</value>
+  </data>
+  <data name="AuthenticationUsage.Template.Balance" xml:space="preserve">
+    <value>账户余额</value>
+  </data>
+  <data name="AuthenticationUsage.Template.General" xml:space="preserve">
+    <value>通用余额接口</value>
+  </data>
+  <data name="AuthenticationUsage.Template.Custom" xml:space="preserve">
+    <value>自定义脚本</value>
+  </data>
+  <data name="AuthenticationUsage.TitleFor" xml:space="preserve">
+    <value>额度查询设置：{0}</value>
+  </data>
+  <data name="AuthenticationUsage.Enabled" xml:space="preserve">
+    <value>启用额度查询(&amp;E)</value>
+  </data>
+  <data name="AuthenticationUsage.Template" xml:space="preserve">
+    <value>查询方式(&amp;M)</value>
+  </data>
+  <data name="AuthenticationUsage.BaseUrl" xml:space="preserve">
+    <value>查询地址(&amp;U)</value>
+  </data>
+  <data name="AuthenticationUsage.ApiKey" xml:space="preserve">
+    <value>API Key(&amp;K)</value>
+  </data>
+  <data name="AuthenticationUsage.ClearApiKey" xml:space="preserve">
+    <value>清除已保存的 Key(&amp;X)</value>
+  </data>
+  <data name="AuthenticationUsage.AccessToken" xml:space="preserve">
+    <value>访问令牌(&amp;T)</value>
+  </data>
+  <data name="AuthenticationUsage.ClearAccessToken" xml:space="preserve">
+    <value>清除已保存的令牌(&amp;L)</value>
+  </data>
+  <data name="AuthenticationUsage.UserId" xml:space="preserve">
+    <value>用户 ID(&amp;I)</value>
+  </data>
+  <data name="AuthenticationUsage.Timeout" xml:space="preserve">
+    <value>超时秒数，2 到 30(&amp;O)</value>
+  </data>
+  <data name="AuthenticationUsage.Interval" xml:space="preserve">
+    <value>自动刷新间隔分钟数，0 为关闭(&amp;R)</value>
+  </data>
+  <data name="AuthenticationUsage.Code" xml:space="preserve">
+    <value>查询脚本(&amp;S)</value>
+  </data>
+  <data name="AuthenticationUsage.Status" xml:space="preserve">
+    <value>额度查询状态</value>
+  </data>
+  <data name="AuthenticationUsage.Save" xml:space="preserve">
+    <value>保存并测试(&amp;A)</value>
+  </data>
+  <data name="AuthenticationUsage.Close" xml:space="preserve">
+    <value>关闭(&amp;C)</value>
+  </data>
+  <data name="AuthenticationUsage.Hint" xml:space="preserve">
+    <value>查询地址或 Key 留空时，使用提供商自己的地址和 Key。</value>
+  </data>
+  <data name="AuthenticationUsage.Recommended" xml:space="preserve">
+    <value>根据提供商地址推荐：{0}。</value>
+  </data>
+  <data name="AuthenticationUsage.Invalid.Timeout" xml:space="preserve">
+    <value>请输入 2 到 30 之间的超时秒数。</value>
+  </data>
+  <data name="AuthenticationUsage.Invalid.Interval" xml:space="preserve">
+    <value>请输入 0 到 1440 之间的自动刷新分钟数。</value>
+  </data>
+  <data name="AuthenticationUsage.Invalid.Code" xml:space="preserve">
+    <value>请输入查询脚本。</value>
+  </data>
+  <data name="AuthenticationUsage.Saving" xml:space="preserve">
+    <value>正在保存…</value>
+  </data>
+  <data name="AuthenticationUsage.SavedDisabled" xml:space="preserve">
+    <value>已保存。此提供商的额度查询已关闭。</value>
+  </data>
+  <data name="AuthenticationUsage.Testing" xml:space="preserve">
+    <value>已保存，正在测试查询…</value>
+  </data>
+  <data name="AuthenticationUsage.TestPassed" xml:space="preserve">
+    <value>已保存，测试查询成功：</value>
+  </data>
+  <data name="AuthenticationUsage.TestFailed" xml:space="preserve">
+    <value>已保存，但测试查询失败：</value>
+  </data>
+  <data name="ProviderUsage.Header" xml:space="preserve">
+    <value>提供商额度</value>
+  </data>
+  <data name="ProviderUsage.Accessible.Details" xml:space="preserve">
+    <value>额度详情</value>
+  </data>
+  <data name="ProviderUsage.Button.Settings" xml:space="preserve">
+    <value>额度设置(&amp;S)</value>
+  </data>
+  <data name="ProviderUsage.Status.Refreshing" xml:space="preserve">
+    <value>正在查询额度…</value>
+  </data>
+  <data name="ProviderUsage.Status.BackendUnsupported" xml:space="preserve">
+    <value>此目标的认证后端不支持额度查询，请在认证中心更新后端。</value>
+  </data>
+  <data name="ProviderUsage.Status.NoProvider" xml:space="preserve">
+    <value>当前配置不是认证中心里保存的提供商。</value>
+  </data>
+  <data name="ProviderUsage.Status.NotConfigured" xml:space="preserve">
+    <value>此提供商尚未启用额度查询。选择“额度设置”进行配置。</value>
+  </data>
+  <data name="ProviderUsage.Status.Updated" xml:space="preserve">
+    <value>额度已于 {0} 更新。</value>
+  </data>
+  <data name="ProviderUsage.Status.Failed" xml:space="preserve">
+    <value>额度查询失败，详情见列表。</value>
+  </data>
+  <data name="ProviderUsage.Details.Provider" xml:space="preserve">
+    <value>提供商：{0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Method" xml:space="preserve">
+    <value>查询方式：{0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Failed" xml:space="preserve">
+    <value>查询失败：{0}</value>
+  </data>
+  <data name="ProviderUsage.Details.UnknownError" xml:space="preserve">
+    <value>未知错误</value>
+  </data>
+  <data name="ProviderUsage.Details.NoData" xml:space="preserve">
+    <value>提供商没有返回额度数据。</value>
+  </data>
+  <data name="ProviderUsage.Details.Plan" xml:space="preserve">
+    <value>套餐：{0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Invalid" xml:space="preserve">
+    <value>无效：{0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Remaining" xml:space="preserve">
+    <value>剩余：{0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Used" xml:space="preserve">
+    <value>已用：{0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Total" xml:space="preserve">
+    <value>总量：{0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Reset" xml:space="preserve">
+    <value>重置时间：{0}</value>
+  </data>
+  <data name="ProviderUsage.Details.Extra" xml:space="preserve">
+    <value>附加信息：{0}</value>
+  </data>
 </root>
