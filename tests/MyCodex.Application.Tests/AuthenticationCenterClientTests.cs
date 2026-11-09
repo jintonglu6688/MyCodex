@@ -264,6 +264,21 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public async Task ReorderSendsTheWholeListInOrder()
+        {
+            IDictionary<string, object> sent = null;
+            var client = new AuthenticationCenterClient("Test", (method, values, token) =>
+            {
+                Assert.That(method, Is.EqualTo("gui/provider/reorder"));
+                sent = values;
+                return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>());
+            });
+            await client.ReorderAsync(new[] { "b", "a", "c" }, CancellationToken.None);
+            Assert.That(sent.Keys, Is.EquivalentTo(new[] { "providerIds" }));
+            Assert.That(sent["providerIds"], Is.EqualTo(new[] { "b", "a", "c" }));
+        }
+
+        [Test]
         public void IncompatibleProtocolStopsBeforeReadingProviders()
         {
             var calls = 0;

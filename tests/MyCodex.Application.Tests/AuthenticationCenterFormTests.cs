@@ -11,6 +11,7 @@ using MyCodex.Application.Interfaces;
 using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using MyCodex.WinForms.Controls;
+using MyCodex.WinForms.Localization;
 using NUnit.Framework;
 
 namespace MyCodex.Application.Tests
@@ -674,6 +675,66 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void MoveMenuReordersTheWholeListAndKeepsTheMovedProviderSelected()
+        {
+            var client = new FakeClient { SupportsProviderOrdering = true };
+            client.Providers.AddRange(new[] { Provider("a"), Provider("b"), Provider("c") });
+            using (var form = new AuthenticationCenterForm(client))
+            {
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
+                // Selection events, and so the menu state, need real window handles.
+                Assert.That(form.Handle, Is.Not.EqualTo(IntPtr.Zero));
+                Assert.That(list.Handle, Is.Not.EqualTo(IntPtr.Zero));
+                form.RefreshAsync().GetAwaiter().GetResult();
+                var up = FormTestDriver.Field<MenuItem>(form, "_moveUpMenuItem");
+                var down = FormTestDriver.Field<MenuItem>(form, "_moveDownMenuItem");
+                list.Items[0].Selected = true;
+                Assert.That(up.Visible && down.Visible, Is.True);
+                Assert.That(up.Enabled, Is.False, "The first provider cannot move up.");
+                Assert.That(down.Enabled, Is.True);
+                Assert.That(up.Shortcut, Is.EqualTo(Shortcut.AltUpArrow));
+                Assert.That(down.Shortcut, Is.EqualTo(Shortcut.AltDownArrow));
+
+                // Alt+Down on the focused list goes through the context menu shortcut.
+                var message = Message.Create(list.Handle, 0x104, (IntPtr)Keys.Down, IntPtr.Zero);
+                Assert.That(FormTestDriver.Invoke(list, "ProcessCmdKey", message, Keys.Alt | Keys.Down), Is.True);
+                Assert.That(client.LastOrder, Is.EqualTo(new[] { "b", "a", "c" }));
+                Assert.That(list.Items.Cast<ListViewItem>().Select(item => ((AuthenticationProvider)item.Tag).Id), Is.EqualTo(new[] { "b", "a", "c" }));
+                Assert.That(list.SelectedIndices.Cast<int>(), Is.EqualTo(new[] { 1 }));
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Is.EqualTo(
+                    string.Format(UiLocalization.Text("AuthenticationCenter.Status.Moved", "Moved to position {0} of {1}."), 2, 3)));
+
+                list.Items[1].Selected = false;
+                list.Items[2].Selected = true;
+                Assert.That(down.Enabled, Is.False, "The last provider cannot move down.");
+                form.MoveSelectedAsync(1).GetAwaiter().GetResult();
+                Assert.That(client.LastOrder, Is.EqualTo(new[] { "b", "a", "c" }), "An impossible move sends nothing.");
+
+                client.ReorderFailure = new AuthenticationCenterException("version_conflict");
+                form.MoveSelectedAsync(-1).GetAwaiter().GetResult();
+                Assert.That(FormTestDriver.Field<Label>(form, "_statusLabel").Text, Is.EqualTo(UiLocalization.Text(
+                    "AuthenticationCenter.Status.MoveStale", "The list changed and has been refreshed. Move again if needed.")),
+                    "A stale list is refreshed without an editor conflict dialog.");
+                Assert.That(client.ReadCalls, Is.EqualTo(3), "Initial load, the move, and the stale refresh.");
+            }
+        }
+
+        [Test]
+        public void MoveMenuStaysHiddenForBackendsWithoutOrdering()
+        {
+            var client = new FakeClient();
+            client.Providers.AddRange(new[] { Provider("a"), Provider("b") });
+            using (var form = new AuthenticationCenterForm(client))
+            {
+                form.RefreshAsync().GetAwaiter().GetResult();
+                FormTestDriver.Field<ListView>(form, "_providersList").Items[0].Selected = true;
+                Assert.That(FormTestDriver.Field<MenuItem>(form, "_moveDownMenuItem").Visible, Is.False);
+                form.MoveSelectedAsync(1).GetAwaiter().GetResult();
+                Assert.That(client.LastOrder, Is.Null);
+            }
+        }
+
+        [Test]
         public void SavingAnAddedProviderSendsDraftAndReopeningReadsItBack()
         {
             var client = new FakeClient();
@@ -1089,7 +1150,9 @@ namespace MyCodex.Application.Tests
             internal AuthenticationProviderEdit LastEdit;
             internal bool RouteRequired, RouterRunning, SupportsSessionHistory, SupportsAggregation, Aggregating;
             internal string SyncError;
-            internal bool SupportsInactiveSaveWhileBusy;
+            internal bool SupportsInactiveSaveWhileBusy, SupportsProviderOrdering;
+            internal List<string> LastOrder;
+            internal Exception ReorderFailure;
 
             public Task<AuthenticationCenterSnapshot> ReadAsync(CancellationToken cancellationToken)
             {
@@ -1099,7 +1162,7 @@ namespace MyCodex.Application.Tests
                     throw Failure;
                 }
                 if (ReadReply != null) return ReadReply.Task;
-                return Task.FromResult(new AuthenticationCenterSnapshot { TargetName = "Test", CodexHome = "test-home", CurrentProviderId = Current, Providers = Providers.ToList(), RouteRequired = RouteRequired, RouterRunning = RouterRunning, RouteInFlight = 3, SupportsSessionHistory = SupportsSessionHistory, SupportsAggregation = SupportsAggregation, Aggregating = Aggregating, SyncError = SyncError, SupportsInactiveSaveWhileBusy = SupportsInactiveSaveWhileBusy });
+                return Task.FromResult(new AuthenticationCenterSnapshot { TargetName = "Test", CodexHome = "test-home", CurrentProviderId = Current, Providers = Providers.ToList(), RouteRequired = RouteRequired, RouterRunning = RouterRunning, RouteInFlight = 3, SupportsSessionHistory = SupportsSessionHistory, SupportsAggregation = SupportsAggregation, Aggregating = Aggregating, SyncError = SyncError, SupportsInactiveSaveWhileBusy = SupportsInactiveSaveWhileBusy, SupportsProviderOrdering = SupportsProviderOrdering });
             }
 
             public Task<AuthenticationProvider> SaveAsync(AuthenticationProviderEdit edit, CancellationToken cancellationToken)
@@ -1131,6 +1194,16 @@ namespace MyCodex.Application.Tests
                 DeleteCalls++;
                 Providers.RemoveAll(item => item.Id == provider.Id);
                 return Task.FromResult(false);
+            }
+
+            public Task ReorderAsync(IReadOnlyList<string> providerIds, CancellationToken cancellationToken)
+            {
+                if (ReorderFailure != null) throw ReorderFailure;
+                LastOrder = providerIds.ToList();
+                var reordered = providerIds.Select(id => Providers.Single(item => item.Id == id)).ToList();
+                Providers.Clear();
+                Providers.AddRange(reordered);
+                return Task.CompletedTask;
             }
 
             public Task<AuthenticationApplyPlan> PreflightAsync(AuthenticationProvider provider, CancellationToken cancellationToken)

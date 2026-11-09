@@ -508,6 +508,7 @@ namespace MyCodex.Application.Tests
             "AuthenticationCenter.Button.Copy", "AuthenticationCenter.Button.Delete",
             "AuthenticationCenter.Button.Refresh", "AuthenticationCenter.Button.Close",
             "AuthenticationCenter.Button.Enable", "AuthenticationCenter.Button.RetryConnection", "AuthenticationCenter.Button.Reauthenticate", "AuthenticationCenter.Button.Accounts",
+            "AuthenticationCenter.Button.MoveUp", "AuthenticationCenter.Button.MoveDown",
             "SessionHistory.Unified", "SessionHistory.Button.Retry"
         })]
         [TestCase("AuthenticationLoginControl", new[]

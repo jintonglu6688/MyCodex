@@ -193,6 +193,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                 SupportsSessionHistory = Strings(status, "capabilities")?.Contains("unifiedSessionHistory") == true,
                 SupportsAggregation = Strings(status, "capabilities")?.Contains("aggregation") == true,
                 SupportsInactiveSaveWhileBusy = Strings(status, "capabilities")?.Contains("inactiveSaveWhileBusy") == true,
+                SupportsProviderOrdering = Strings(status, "capabilities")?.Contains("providerOrdering") == true,
                 Aggregating = Flag(status, "aggregating"),
                 RouteRequired = Flag(status, "routeRequired"),
                 RouterRunning = Flag(status, "routerRunning"),
@@ -333,6 +334,13 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                 throw new AuthenticationCenterException("protocol_mismatch");
             }
             return (bool)removed;
+        }
+
+        public async Task ReorderAsync(IReadOnlyList<string> providerIds, CancellationToken cancellationToken)
+        {
+            if (providerIds == null) throw new ArgumentNullException(nameof(providerIds));
+            await _request("provider/reorder", new Dictionary<string, object> { { "providerIds", providerIds.ToList() } },
+                cancellationToken).ConfigureAwait(false);
         }
 
         private static Dictionary<string, object> Selection(AuthenticationProvider provider)

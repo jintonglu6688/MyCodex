@@ -12810,6 +12810,18 @@ Local configuration directory: {1}</value>
   <data name="AuthenticationCenter.Button.Reauthenticate" xml:space="preserve">
     <value>Sign in &amp;again</value>
   </data>
+  <data name="AuthenticationCenter.Button.MoveUp" xml:space="preserve">
+    <value>Move &amp;up</value>
+  </data>
+  <data name="AuthenticationCenter.Button.MoveDown" xml:space="preserve">
+    <value>Move do&amp;wn</value>
+  </data>
+  <data name="AuthenticationCenter.Status.Moved" xml:space="preserve">
+    <value>Moved to position {0} of {1}.</value>
+  </data>
+  <data name="AuthenticationCenter.Status.MoveStale" xml:space="preserve">
+    <value>The list changed and has been refreshed. Move again if needed.</value>
+  </data>
   <data name="AuthenticationCenter.State.NeedsReauthentication" xml:space="preserve">
     <value>Sign-in required</value>
   </data>

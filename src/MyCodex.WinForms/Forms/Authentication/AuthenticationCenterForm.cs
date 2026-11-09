@@ -31,6 +31,7 @@ namespace MyCodex.WinForms.Forms
         private bool _supportsFullConfigEditor;
         private bool _supportsSessionHistory;
         private bool _supportsInactiveSaveWhileBusy;
+        private bool _supportsProviderOrdering;
         private readonly Button _addButton;
         private readonly Button _accountsButton;
         private readonly Button _refreshButton;
@@ -44,6 +45,8 @@ namespace MyCodex.WinForms.Forms
         private readonly MenuItem _copyMenuItem;
         private readonly MenuItem _deleteMenuItem;
         private readonly MenuItem _reauthenticateMenuItem;
+        private readonly MenuItem _moveUpMenuItem;
+        private readonly MenuItem _moveDownMenuItem;
         private readonly Label _identityLabel;
         private bool _reconnectPending;
         private bool _busy;
@@ -155,11 +158,18 @@ namespace MyCodex.WinForms.Forms
             _deleteMenuItem = new MenuItem(UiLocalization.Text("AuthenticationCenter.Button.Delete", "&Delete"));
             _reauthenticateMenuItem = new MenuItem(UiLocalization.Text("AuthenticationCenter.Button.Reauthenticate", "Sign in &again"));
             _aggregationMemberMenuItem = new MenuItem(MemberButtonText(false)) { Visible = false };
+            // Shortcuts work while the list has focus, because ListView forwards keys to its context menu.
+            _moveUpMenuItem = new MenuItem(UiLocalization.Text("AuthenticationCenter.Button.MoveUp", "Move &up"),
+                async (sender, args) => await MoveSelectedAsync(-1), Shortcut.AltUpArrow) { Visible = false };
+            _moveDownMenuItem = new MenuItem(UiLocalization.Text("AuthenticationCenter.Button.MoveDown", "Move do&wn"),
+                async (sender, args) => await MoveSelectedAsync(1), Shortcut.AltDownArrow) { Visible = false };
             _providerContextMenu.MenuItems.Add(_enableMenuItem);
             _providerContextMenu.MenuItems.Add(_aggregationMemberMenuItem);
             _providerContextMenu.MenuItems.Add(_editMenuItem);
             _providerContextMenu.MenuItems.Add(_copyMenuItem);
             _providerContextMenu.MenuItems.Add(_reauthenticateMenuItem);
+            _providerContextMenu.MenuItems.Add(_moveUpMenuItem);
+            _providerContextMenu.MenuItems.Add(_moveDownMenuItem);
             _providerContextMenu.MenuItems.Add("-");
             _providerContextMenu.MenuItems.Add(_deleteMenuItem);
             _providerContextMenu.Popup += (sender, args) => UpdateContextMenu();
@@ -248,6 +258,7 @@ namespace MyCodex.WinForms.Forms
             _supportsFullConfigEditor = snapshot.SupportsFullConfigEditor;
             _supportsSessionHistory = snapshot.SupportsSessionHistory;
             _supportsInactiveSaveWhileBusy = snapshot.SupportsInactiveSaveWhileBusy;
+            _supportsProviderOrdering = snapshot.SupportsProviderOrdering;
                 _supportsAggregation = snapshot.SupportsAggregation;
                 var aggregationNote = await ReadStackStateAsync();
                 if (IsDisposed) return;
@@ -460,6 +471,32 @@ namespace MyCodex.WinForms.Forms
             });
         }
 
+        // offset is -1 (up) or 1 (down); the backend stores the whole list order.
+        internal async Task MoveSelectedAsync(int offset)
+        {
+            var index = _providersList.SelectedIndices.Count == 1 ? _providersList.SelectedIndices[0] : -1;
+            var target = index + offset;
+            if (_busy || !_loaded || !_supportsProviderOrdering || index < 0 || target < 0 || target >= _providersList.Items.Count)
+            {
+                return;
+            }
+            var ids = _providersList.Items.Cast<ListViewItem>().Select(item => ((AuthenticationProvider)item.Tag).Id).ToList();
+            var id = ids[index];
+            ids[index] = ids[target];
+            ids[target] = id;
+            var stale = false;
+            await MutateAsync(async () =>
+            {
+                try { await _client.ReorderAsync(ids, _lifetime.Token); }
+                // The list changed elsewhere: show the current order instead of an editor conflict.
+                catch (AuthenticationCenterException error) when (error.Code == "version_conflict") { stale = true; }
+                return id;
+            }, () => stale
+                ? UiLocalization.Text("AuthenticationCenter.Status.MoveStale", "The list changed and has been refreshed. Move again if needed.")
+                : string.Format(UiLocalization.Text("AuthenticationCenter.Status.Moved", "Moved to position {0} of {1}."),
+                    target + 1, ids.Count));
+        }
+
         private async Task DeleteSelectedAsync()
         {
             var provider = SelectedProvider;
@@ -547,6 +584,10 @@ namespace MyCodex.WinForms.Forms
             _copyMenuItem.Enabled = !_busy && _loaded && provider != null;
             _editMenuItem.Enabled = !_busy && _loaded && provider != null;
             _deleteMenuItem.Enabled = !_busy && _loaded && provider != null && provider.Id != _currentProviderId;
+            var index = provider == null ? -1 : _providersList.SelectedIndices[0];
+            _moveUpMenuItem.Visible = _moveDownMenuItem.Visible = _supportsProviderOrdering;
+            _moveUpMenuItem.Enabled = !_busy && _loaded && _supportsProviderOrdering && index > 0;
+            _moveDownMenuItem.Enabled = !_busy && _loaded && _supportsProviderOrdering && index >= 0 && index < _providersList.Items.Count - 1;
             _refreshButton.Enabled = !_busy;
             _updateBackendButton.Visible = _updateBackend != null && _updateAvailable;
             _updateBackendButton.Enabled = !_busy && _updateAvailable;

@@ -12765,6 +12765,18 @@ MyCodex 桌面客户端。</value>
   <data name="AuthenticationCenter.Button.Reauthenticate" xml:space="preserve">
     <value>重新登录(&amp;L)</value>
   </data>
+  <data name="AuthenticationCenter.Button.MoveUp" xml:space="preserve">
+    <value>上移(&amp;U)</value>
+  </data>
+  <data name="AuthenticationCenter.Button.MoveDown" xml:space="preserve">
+    <value>下移(&amp;W)</value>
+  </data>
+  <data name="AuthenticationCenter.Status.Moved" xml:space="preserve">
+    <value>已移到第 {0} 位，共 {1} 项。</value>
+  </data>
+  <data name="AuthenticationCenter.Status.MoveStale" xml:space="preserve">
+    <value>列表已有变化，已刷新。如需调整请重新移动。</value>
+  </data>
   <data name="AuthenticationCenter.State.NeedsReauthentication" xml:space="preserve">
     <value>需重新登录</value>
   </data>
