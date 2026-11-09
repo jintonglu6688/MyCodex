@@ -14133,4 +14133,49 @@ Trust this host key and retry detection?</value></data>
   <data name="ProviderUsage.Details.Extra" xml:space="preserve">
     <value>Details: {0}</value>
   </data>
+  <data name="AuthenticationCenter.Column.Usage" xml:space="preserve">
+    <value>Quota</value>
+  </data>
+  <data name="ProviderUsage.Column.Querying" xml:space="preserve">
+    <value>Querying…</value>
+  </data>
+  <data name="ProviderUsage.Column.Failed" xml:space="preserve">
+    <value>Query failed</value>
+  </data>
+  <data name="ProviderUsage.Column.NoData" xml:space="preserve">
+    <value>No data</value>
+  </data>
+  <data name="ProviderUsage.Column.Invalid" xml:space="preserve">
+    <value>Not valid</value>
+  </data>
+  <data name="ProviderUsage.Column.Remaining" xml:space="preserve">
+    <value>{0} left</value>
+  </data>
+  <data name="ProviderUsage.Column.UsedOfTotal" xml:space="preserve">
+    <value>{0} of {1} used</value>
+  </data>
+  <data name="ProviderUsage.Column.Plan" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="AuthenticationUsage.ZhipuTeam" xml:space="preserve">
+    <value>Zhipu team plan (&amp;G)</value>
+  </data>
+  <data name="AuthenticationUsage.TeamOrganizationId" xml:space="preserve">
+    <value>Organization ID (&amp;N)</value>
+  </data>
+  <data name="AuthenticationUsage.TeamProjectId" xml:space="preserve">
+    <value>&amp;Project ID</value>
+  </data>
+  <data name="AuthenticationUsage.AccessKeyId" xml:space="preserve">
+    <value>AccessKey ID (&amp;Y)</value>
+  </data>
+  <data name="AuthenticationUsage.SecretAccessKey" xml:space="preserve">
+    <value>AccessKey secret (&amp;W)</value>
+  </data>
+  <data name="AuthenticationUsage.ClearAccessKey" xml:space="preserve">
+    <value>Clear the saved AccessKey (&amp;D)</value>
+  </data>
+  <data name="AuthenticationUsage.VolcengineHint" xml:space="preserve">
+    <value>Volcengine queries usage with the account AccessKey, not the inference API key.</value>
+  </data>
 </root>

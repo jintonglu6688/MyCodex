@@ -310,6 +310,20 @@ namespace MyCodex.Application.Tests
             Assert.That(sent.ContainsKey("apiKey"), Is.False, "An empty key keeps the saved one.");
             Assert.That(sent.ContainsKey("clearApiKey"), Is.False);
             Assert.That(sent["clearAccessToken"], Is.True);
+            Assert.That(sent.ContainsKey("zhipuTeam") || sent.ContainsKey("accessKeyId") || sent.ContainsKey("clearAccessKey"), Is.False);
+            await client.SaveUsageAsync(new AuthenticationUsageEdit
+            {
+                ProviderId = "a", Enabled = true, TemplateType = "token_plan", ZhipuTeam = true, TeamOrganizationId = "org", TeamProjectId = "project",
+                AccessKeyId = "", SecretAccessKey = "synthetic-sk", ClearAccessKey = true
+            }, CancellationToken.None);
+            var plan = calls.Last().Value;
+            Assert.That(plan["zhipuTeam"], Is.True);
+            Assert.That(plan["teamOrganizationId"], Is.EqualTo("org"));
+            Assert.That(plan["teamProjectId"], Is.EqualTo("project"));
+            Assert.That(plan.ContainsKey("accessKeyId"), Is.False, "An empty AccessKey ID keeps the saved one.");
+            Assert.That(plan["secretAccessKey"], Is.EqualTo("synthetic-sk"));
+            Assert.That(plan["clearAccessKey"], Is.True);
+            calls.RemoveAt(calls.Count - 1);
             var result = await client.QueryUsageAsync("a", CancellationToken.None);
             Assert.That(result.Success, Is.True);
             Assert.That(result.Items.Single().Remaining, Is.EqualTo(12.5m));

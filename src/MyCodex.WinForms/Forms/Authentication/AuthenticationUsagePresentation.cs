@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using MyCodex.Application.DTOs;
 using MyCodex.WinForms.Localization;
@@ -64,6 +65,25 @@ namespace MyCodex.WinForms.Forms
                 if (extra != null) lines.Add(extra);
             }
             return lines;
+        }
+
+        // One short cell for the provider list: the first plan's remaining amount.
+        internal static string Summary(AuthenticationUsageResult result)
+        {
+            if (result == null || !result.Success) return UiLocalization.Text("ProviderUsage.Column.Failed", "Query failed");
+            var item = result.Items.FirstOrDefault();
+            if (item == null) return UiLocalization.Text("ProviderUsage.Column.NoData", "No data");
+            if (item.IsValid == false) return UiLocalization.Text("ProviderUsage.Column.Invalid", "Not valid");
+            var amount = item.Remaining.HasValue
+                ? string.Format(UiLocalization.Text("ProviderUsage.Column.Remaining", "{0} left"), Amount(item.Remaining.Value, item.Unit))
+                : item.Used.HasValue && item.Total.HasValue
+                    ? string.Format(UiLocalization.Text("ProviderUsage.Column.UsedOfTotal", "{0} of {1} used"),
+                        Amount(item.Used.Value, item.Unit), Amount(item.Total.Value, item.Unit))
+                    : UiLocalization.Text("ProviderUsage.Column.NoData", "No data");
+            // Several plans (such as time windows) are told apart by name.
+            return result.Items.Count > 1 && !string.IsNullOrWhiteSpace(item.PlanName)
+                ? string.Format(UiLocalization.Text("ProviderUsage.Column.Plan", "{0}: {1}"), item.PlanName, amount)
+                : amount;
         }
 
         private static string Amount(decimal value, string unit)

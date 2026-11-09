@@ -32,6 +32,15 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             if (edit.ClearApiKey) parameters["clearApiKey"] = true;
             if (!string.IsNullOrEmpty(edit.AccessToken)) parameters["accessToken"] = edit.AccessToken;
             if (edit.ClearAccessToken) parameters["clearAccessToken"] = true;
+            if (edit.ZhipuTeam)
+            {
+                parameters["zhipuTeam"] = true;
+                parameters["teamOrganizationId"] = edit.TeamOrganizationId;
+                parameters["teamProjectId"] = edit.TeamProjectId;
+            }
+            if (!string.IsNullOrEmpty(edit.AccessKeyId)) parameters["accessKeyId"] = edit.AccessKeyId;
+            if (!string.IsNullOrEmpty(edit.SecretAccessKey)) parameters["secretAccessKey"] = edit.SecretAccessKey;
+            if (edit.ClearAccessKey) parameters["clearAccessKey"] = true;
             return ReadUsageSettings(await _request("usage/save", parameters, cancellationToken).ConfigureAwait(false));
         }
 
@@ -70,7 +79,8 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             {
                 ProviderId = Text(value, "providerId") ?? throw new AuthenticationCenterException("invalid_response"),
                 ProviderName = Text(value, "providerName"),
-                Detected = Text(value, "detected")
+                Detected = Text(value, "detected"),
+                PlanProvider = Text(value, "planProvider")
             };
             if (value.TryGetValue("config", out var item) && item is IDictionary<string, object> config)
             {
@@ -84,6 +94,10 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                 settings.Timeout = (int)(Number(config, "timeout") ?? 10);
                 settings.AutoQueryInterval = (int)(Number(config, "autoQueryInterval") ?? 5);
                 settings.Code = Text(config, "code");
+                settings.ZhipuTeam = Flag(config, "zhipuTeam");
+                settings.HasAccessKey = Flag(config, "hasAccessKey");
+                settings.TeamOrganizationId = Text(config, "teamOrganizationId");
+                settings.TeamProjectId = Text(config, "teamProjectId");
             }
             return settings;
         }

@@ -203,9 +203,111 @@ namespace MyCodex.Application.Tests
             }));
         }
 
+        [Test]
+        public void PlanCredentialsAppearOnlyForTheCodingPlanTheAddressNames()
+        {
+            var client = new FakeClient();
+            client.Usage = new AuthenticationUsageSettings { ProviderId = "a", ProviderName = "a", Detected = "token_plan", PlanProvider = "zhipu" };
+            using (var form = new AuthenticationUsageForm(client, client.Usage))
+            {
+                form.Show();
+                Assert.That(Visible(form), Is.EquivalentTo(new[] { "_enabled", "_template", "_zhipuTeam", "_interval" }));
+                FormTestDriver.Field<CheckBox>(form, "_zhipuTeam").Checked = true;
+                Assert.That(Visible(form), Is.EquivalentTo(new[] { "_enabled", "_template", "_zhipuTeam", "_teamOrganization", "_teamProject", "_interval" }));
+                FormTestDriver.Field<ThemedTextBox>(form, "_teamOrganization").Text = " org-1 ";
+                FormTestDriver.Field<ThemedTextBox>(form, "_teamProject").Text = "project-1";
+                form.SaveAsync().GetAwaiter().GetResult();
+                Assert.That(client.LastUsageEdit.ZhipuTeam, Is.True);
+                Assert.That(client.LastUsageEdit.TeamOrganizationId, Is.EqualTo("org-1"));
+                Assert.That(client.LastUsageEdit.TeamProjectId, Is.EqualTo("project-1"));
+                Assert.That(client.LastUsageEdit.AccessKeyId, Is.Null, "Volcengine fields are hidden for Zhipu.");
+                FormTestDriver.Field<ComboBox>(form, "_template").SelectedItem = "balance";
+                Assert.That(Visible(form), Does.Not.Contain("_zhipuTeam"));
+            }
+            client.Usage = new AuthenticationUsageSettings
+            {
+                ProviderId = "a", ProviderName = "a", Configured = true, Enabled = true, TemplateType = "token_plan", PlanProvider = "volcengine", HasAccessKey = true
+            };
+            using (var form = new AuthenticationUsageForm(client, client.Usage))
+            {
+                form.Show();
+                Assert.That(Visible(form), Is.EquivalentTo(new[] { "_enabled", "_template", "_accessKeyId", "_secretAccessKey", "_clearAccessKey", "_interval" }));
+                Assert.That(FormTestDriver.Field<ThemedTextBox>(form, "_status").Text, Does.StartWith(
+                    UiLocalization.Text("AuthenticationUsage.VolcengineHint", "Volcengine queries usage with the account AccessKey, not the inference API key.")));
+                FormTestDriver.Field<ThemedTextBox>(form, "_accessKeyId").Text = "synthetic-ak";
+                FormTestDriver.Field<ThemedTextBox>(form, "_secretAccessKey").Text = "synthetic-sk";
+                form.SaveAsync().GetAwaiter().GetResult();
+                Assert.That(client.LastUsageEdit.AccessKeyId, Is.EqualTo("synthetic-ak"));
+                Assert.That(client.LastUsageEdit.SecretAccessKey, Is.EqualTo("synthetic-sk"));
+                Assert.That(client.LastUsageEdit.ZhipuTeam, Is.False);
+                Assert.That(FormTestDriver.Field<ThemedTextBox>(form, "_secretAccessKey").Text, Is.Empty, "Entered secrets are not kept on screen.");
+                foreach (var name in Visible(form))
+                {
+                    Assert.That(FormTestDriver.Field<Control>(form, name).AccessibleName, Is.Not.Empty.And.Not.Contains("&"), name);
+                }
+            }
+        }
+
+        [Test]
+        public void ProviderListShowsUsageQueriedOnOpenAndKeepsItAcrossEditRefreshes()
+        {
+            var client = new FakeClient { SupportsProviderUsage = true };
+            var enabled = Provider("a");
+            enabled.UsageEnabled = true;
+            client.Providers.AddRange(new[] { enabled, Provider("b") });
+            client.UsageResult = new AuthenticationUsageResult
+            {
+                Success = true,
+                Items = new List<AuthenticationUsageItem> { new AuthenticationUsageItem { Remaining = 3.5m, Unit = "USD" } }
+            };
+            using (var form = new AuthenticationCenterForm(client))
+            {
+                var list = FormTestDriver.Field<ListView>(form, "_providersList");
+                Assert.That(list.Columns[7].Text, Is.EqualTo(UiLocalization.Text("AuthenticationCenter.Column.Usage", "Quota")));
+                form.RefreshAsync(queryUsage: true).GetAwaiter().GetResult();
+                var expected = AuthenticationUsagePresentation.Summary(client.UsageResult);
+                Assert.That(list.Items[0].SubItems[7].Text, Is.EqualTo(expected));
+                Assert.That(list.Items[1].SubItems[7].Text, Is.Empty, "Providers without usage queries are not queried.");
+                Assert.That(client.UsageQueryCalls, Is.EqualTo(1));
+
+                form.RefreshAsync("a").GetAwaiter().GetResult();
+                Assert.That(list.Items[0].SubItems[7].Text, Is.EqualTo(expected));
+                Assert.That(client.UsageQueryCalls, Is.EqualTo(1), "Refreshes after edits reuse the shown result.");
+
+                client.UsageResult = new AuthenticationUsageResult { Error = "401" };
+                form.RefreshAsync(queryUsage: true).GetAwaiter().GetResult();
+                Assert.That(list.Items[0].SubItems[7].Text, Is.EqualTo(UiLocalization.Text("ProviderUsage.Column.Failed", "Query failed")));
+            }
+        }
+
+        [Test]
+        public void UsageSummaryNamesThePlanOnlyWhenThereAreSeveral()
+        {
+            var windows = new AuthenticationUsageResult
+            {
+                Success = true,
+                Items = new List<AuthenticationUsageItem>
+                {
+                    new AuthenticationUsageItem { PlanName = "5h", Remaining = 80, Unit = "%" },
+                    new AuthenticationUsageItem { PlanName = "Week", Remaining = 60, Unit = "%" }
+                }
+            };
+            var remaining = string.Format(UiLocalization.Text("ProviderUsage.Column.Remaining", "{0} left"), "80%");
+            Assert.That(AuthenticationUsagePresentation.Summary(windows), Is.EqualTo(
+                string.Format(UiLocalization.Text("ProviderUsage.Column.Plan", "{0}: {1}"), "5h", remaining)));
+            Assert.That(AuthenticationUsagePresentation.Summary(new AuthenticationUsageResult
+            {
+                Success = true,
+                Items = new List<AuthenticationUsageItem> { new AuthenticationUsageItem { PlanName = "Pro", Used = 2, Total = 10, Unit = "USD" } }
+            }), Is.EqualTo(string.Format(UiLocalization.Text("ProviderUsage.Column.UsedOfTotal", "{0} of {1} used"), "2 USD", "10 USD")));
+            Assert.That(AuthenticationUsagePresentation.Summary(new AuthenticationUsageResult { Success = true }),
+                Is.EqualTo(UiLocalization.Text("ProviderUsage.Column.NoData", "No data")));
+        }
+
         private static List<string> Visible(Form form)
         {
-            return new[] { "_enabled", "_template", "_baseUrl", "_apiKey", "_clearApiKey", "_accessToken", "_clearAccessToken", "_userId", "_timeout", "_interval", "_code" }
+            return new[] { "_enabled", "_template", "_zhipuTeam", "_teamOrganization", "_teamProject", "_accessKeyId", "_secretAccessKey", "_clearAccessKey",
+                    "_baseUrl", "_apiKey", "_clearApiKey", "_accessToken", "_clearAccessToken", "_userId", "_timeout", "_interval", "_code" }
                 .Where(name => FormTestDriver.Field<Control>(form, name).Visible).ToList();
         }
     }

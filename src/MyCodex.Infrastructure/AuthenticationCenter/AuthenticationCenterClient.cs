@@ -514,7 +514,8 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                 PresetId = Text(value, "presetId"), PresetName = Text(value, "presetName"), AccountId = Text(value, "accountId"), AccountLabel = Text(value, "accountLabel"),
                 NeedsReauthentication = Flag(value, "needsReauthentication"), Models = ReadModels(value), Advanced = ReadAdvanced(value),
                 HasApiKey = value.TryGetValue("hasApiKey", out var exists) && exists is bool flag && flag,
-                GlobalApplied = Flag(value, "globalApplied"), RecoveryRequired = Flag(value, "recoveryRequired")
+                GlobalApplied = Flag(value, "globalApplied"), RecoveryRequired = Flag(value, "recoveryRequired"),
+                UsageEnabled = Flag(value, "usageEnabled")
             };
         }
 

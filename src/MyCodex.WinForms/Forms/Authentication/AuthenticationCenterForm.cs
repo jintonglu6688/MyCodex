@@ -49,6 +49,8 @@ namespace MyCodex.WinForms.Forms
         private readonly MenuItem _moveUpMenuItem;
         private readonly MenuItem _moveDownMenuItem;
         private readonly MenuItem _usageMenuItem;
+        private readonly AuthenticationUsageColumn _usage;
+        private const int UsageColumnIndex = 7;
         private readonly Label _identityLabel;
         private bool _reconnectPending;
         private bool _busy;
@@ -75,6 +77,7 @@ namespace MyCodex.WinForms.Forms
             Func<Func<CancellationToken, Task<AuthenticationStackState>>, CancellationToken, Task<AuthenticationStackResult>> changeStack = null)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
+            _usage = new AuthenticationUsageColumn(_client);
             if (modelMetadataCatalog != null)
             {
                 _modelMetadata = new AuthenticationModelMetadataService(modelMetadataCatalog, async token =>
@@ -111,6 +114,7 @@ namespace MyCodex.WinForms.Forms
             _providersList.Columns.Add(UiLocalization.Text("AuthenticationCenter.Column.State", "State"), 100);
             _providersList.Columns.Add(UiLocalization.Text("AuthenticationCenter.Column.Account", "Account"), 180);
             _providersList.Columns.Add(UiLocalization.Text("Aggregation.Column", "Aggregation"), 90);
+            _providersList.Columns.Add(UiLocalization.Text("AuthenticationCenter.Column.Usage", "Quota"), 160);
             _targetLabel = new Label { Dock = DockStyle.Fill, AutoSize = true, TabStop = false };
             _statusLabel = new Label { Dock = DockStyle.Fill, AutoSize = true, TabStop = false };
             _identityLabel = new Label { Dock = DockStyle.Fill, AutoSize = true, TabStop = false };
@@ -204,7 +208,7 @@ namespace MyCodex.WinForms.Forms
                 await RefreshAsync();
                 if (!IsDisposed) _providersList.Focus();
             };
-            _refreshButton.Click += async (sender, args) => { _shownLoadError = null; await RefreshAsync(); };
+            _refreshButton.Click += async (sender, args) => { _shownLoadError = null; await RefreshAsync(queryUsage: true); };
             _updateBackendButton.Click += async (sender, args) => await UpdateBackendAsync();
             _retryButton.Click += async (sender, args) => await RetryConnectionAsync();
             _sessionHistoryCheckBox.Click += async (sender, args) => await ToggleSessionHistoryAsync();
@@ -225,10 +229,10 @@ namespace MyCodex.WinForms.Forms
                 if (args.KeyCode == Keys.F5)
                 {
                     args.SuppressKeyPress = true;
-                    await RefreshAsync();
+                    await RefreshAsync(queryUsage: true);
                 }
             };
-            Shown += async (sender, args) => await RefreshAsync();
+            Shown += async (sender, args) => await RefreshAsync(queryUsage: true);
             UpdateActions();
             ActiveControl = _providersList;
         }
@@ -241,7 +245,8 @@ namespace MyCodex.WinForms.Forms
             }
         }
 
-        internal async Task RefreshAsync(string selectedId = null)
+        // queryUsage asks for fresh usage results; refreshes after edits keep the shown ones.
+        internal async Task RefreshAsync(string selectedId = null, bool queryUsage = false)
         {
             if (_busy || IsDisposed)
             {
@@ -292,7 +297,7 @@ namespace MyCodex.WinForms.Forms
                                     ? UiLocalization.Text("AuthenticationCenter.State.Current", "Current")
                                     : UiLocalization.Text("AuthenticationCenter.State.Changed", "Saved changes"))
                                 : UiLocalization.Text("AuthenticationCenter.State.Saved", "Saved"), provider.AccountLabel ?? string.Empty,
-                            AggregationColumnText(provider.Id) }) { Tag = provider };
+                            AggregationColumnText(provider.Id), _usage.Text(provider.Id) }) { Tag = provider };
                         _providersList.Items.Add(item);
                         item.Selected = provider.Id == selectedId;
                         item.Focused = item.Selected;
@@ -309,6 +314,8 @@ namespace MyCodex.WinForms.Forms
                     _providersList.EndUpdate();
                 }
                 _loaded = true;
+                if (queryUsage)
+                    QueryUsage(snapshot.Providers.Where(p => _supportsProviderUsage && p.UsageEnabled).Select(p => p.Id), true);
                 _updateAvailable = false;
                 var routeError = !snapshot.RouteRequired ? null
                     : !snapshot.ManualRestartRequired && !snapshot.StartupRecoveryReady
@@ -483,9 +490,10 @@ namespace MyCodex.WinForms.Forms
             if (_busy || !_loaded || provider == null || !_usageMenuItem.Visible) return;
             _busy = true;
             UpdateActions();
+            var saved = false;
             try
             {
-                await AuthenticationUsageForm.EditAsync(this, _client, provider.Id, _lifetime.Token);
+                saved = await AuthenticationUsageForm.EditAsync(this, _client, provider.Id, _lifetime.Token);
             }
             catch (OperationCanceledException) { }
             catch (Exception error)
@@ -500,6 +508,31 @@ namespace MyCodex.WinForms.Forms
                     UpdateActions();
                     _providersList.Focus();
                 }
+            }
+            if (!saved || IsDisposed) return;
+            // The list shows the new settings' result, not the previous one.
+            _usage.Forget(provider.Id);
+            await RefreshAsync(provider.Id);
+            if (_supportsProviderUsage && SelectedProvider?.Id == provider.Id && SelectedProvider.UsageEnabled)
+                QueryUsage(new[] { provider.Id }, false);
+        }
+
+        private async void QueryUsage(IEnumerable<string> providerIds, bool restart)
+        {
+            try
+            {
+                await _usage.QueryAsync(providerIds, restart, UpdateUsageCell, _lifetime.Token);
+            }
+            catch (OperationCanceledException) { }
+        }
+
+        private void UpdateUsageCell(string providerId)
+        {
+            if (IsDisposed) return;
+            foreach (ListViewItem item in _providersList.Items)
+            {
+                if ((item.Tag as AuthenticationProvider)?.Id == providerId)
+                    item.SubItems[UsageColumnIndex].Text = _usage.Text(providerId);
             }
         }
 

@@ -14088,4 +14088,49 @@ MyCodex 桌面客户端。</value>
   <data name="ProviderUsage.Details.Extra" xml:space="preserve">
     <value>附加信息：{0}</value>
   </data>
+  <data name="AuthenticationCenter.Column.Usage" xml:space="preserve">
+    <value>额度</value>
+  </data>
+  <data name="ProviderUsage.Column.Querying" xml:space="preserve">
+    <value>查询中…</value>
+  </data>
+  <data name="ProviderUsage.Column.Failed" xml:space="preserve">
+    <value>查询失败</value>
+  </data>
+  <data name="ProviderUsage.Column.NoData" xml:space="preserve">
+    <value>无数据</value>
+  </data>
+  <data name="ProviderUsage.Column.Invalid" xml:space="preserve">
+    <value>无效</value>
+  </data>
+  <data name="ProviderUsage.Column.Remaining" xml:space="preserve">
+    <value>剩余 {0}</value>
+  </data>
+  <data name="ProviderUsage.Column.UsedOfTotal" xml:space="preserve">
+    <value>已用 {0} / {1}</value>
+  </data>
+  <data name="ProviderUsage.Column.Plan" xml:space="preserve">
+    <value>{0}：{1}</value>
+  </data>
+  <data name="AuthenticationUsage.ZhipuTeam" xml:space="preserve">
+    <value>智谱团队版套餐(&amp;G)</value>
+  </data>
+  <data name="AuthenticationUsage.TeamOrganizationId" xml:space="preserve">
+    <value>组织 ID(&amp;N)</value>
+  </data>
+  <data name="AuthenticationUsage.TeamProjectId" xml:space="preserve">
+    <value>项目 ID(&amp;P)</value>
+  </data>
+  <data name="AuthenticationUsage.AccessKeyId" xml:space="preserve">
+    <value>AccessKey ID(&amp;Y)</value>
+  </data>
+  <data name="AuthenticationUsage.SecretAccessKey" xml:space="preserve">
+    <value>AccessKey Secret(&amp;W)</value>
+  </data>
+  <data name="AuthenticationUsage.ClearAccessKey" xml:space="preserve">
+    <value>清除已保存的 AccessKey(&amp;D)</value>
+  </data>
+  <data name="AuthenticationUsage.VolcengineHint" xml:space="preserve">
+    <value>火山方舟用账号的 AccessKey 查询用量，不是推理用的 API Key。</value>
+  </data>
 </root>

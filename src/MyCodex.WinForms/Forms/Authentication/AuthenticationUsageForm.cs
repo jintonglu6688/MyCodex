@@ -31,6 +31,12 @@ namespace MyCodex.WinForms.Forms
         private readonly ThemedTextBox _userId = new ThemedTextBox();
         private readonly ThemedTextBox _timeout = new ThemedTextBox();
         private readonly ThemedTextBox _interval = new ThemedTextBox();
+        private readonly CheckBox _zhipuTeam = new ThemedCheckBox { AutoSize = true };
+        private readonly ThemedTextBox _teamOrganization = new ThemedTextBox();
+        private readonly ThemedTextBox _teamProject = new ThemedTextBox();
+        private readonly ThemedTextBox _accessKeyId = new ThemedTextBox { UseSystemPasswordChar = true };
+        private readonly ThemedTextBox _secretAccessKey = new ThemedTextBox { UseSystemPasswordChar = true };
+        private readonly CheckBox _clearAccessKey = new ThemedCheckBox { AutoSize = true };
         private readonly ThemedTextBox _code = new ThemedTextBox { Multiline = true, AcceptsReturn = true, ScrollBars = ScrollBars.Both, WordWrap = false, Height = 180 };
         private readonly ThemedTextBox _status;
         private readonly Button _save;
@@ -67,6 +73,12 @@ namespace MyCodex.WinForms.Forms
             fields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             Check(fields, _enabled, UiLocalization.Text("AuthenticationUsage.Enabled", "&Enable usage queries"));
             Add(fields, UiLocalization.Text("AuthenticationUsage.Template", "Query &method"), _template);
+            Check(fields, _zhipuTeam, UiLocalization.Text("AuthenticationUsage.ZhipuTeam", "Zhipu team plan (&G)"));
+            Add(fields, UiLocalization.Text("AuthenticationUsage.TeamOrganizationId", "Organization ID (&N)"), _teamOrganization);
+            Add(fields, UiLocalization.Text("AuthenticationUsage.TeamProjectId", "&Project ID"), _teamProject);
+            Add(fields, UiLocalization.Text("AuthenticationUsage.AccessKeyId", "AccessKey ID (&Y)"), _accessKeyId);
+            Add(fields, UiLocalization.Text("AuthenticationUsage.SecretAccessKey", "AccessKey secret (&W)"), _secretAccessKey);
+            Check(fields, _clearAccessKey, UiLocalization.Text("AuthenticationUsage.ClearAccessKey", "Clear the saved AccessKey (&D)"));
             Add(fields, UiLocalization.Text("AuthenticationUsage.BaseUrl", "Query &URL"), _baseUrl);
             Add(fields, UiLocalization.Text("AuthenticationUsage.ApiKey", "API &key"), _apiKey);
             Check(fields, _clearApiKey, UiLocalization.Text("AuthenticationUsage.ClearApiKey", "Clear the saved key (&X)"));
@@ -76,7 +88,8 @@ namespace MyCodex.WinForms.Forms
             Add(fields, UiLocalization.Text("AuthenticationUsage.Timeout", "Time&out in seconds (2-30)"), _timeout);
             Add(fields, UiLocalization.Text("AuthenticationUsage.Interval", "Auto &refresh in minutes (0 turns it off)"), _interval);
             Add(fields, UiLocalization.Text("AuthenticationUsage.Code", "Query &script"), _code);
-            foreach (var box in new[] { _baseUrl, _apiKey, _accessToken, _userId, _timeout, _interval }) UiTheme.ApplyTextBox(box, false, false);
+            foreach (var box in new[] { _baseUrl, _apiKey, _accessToken, _userId, _timeout, _interval, _teamOrganization, _teamProject, _accessKeyId, _secretAccessKey })
+                UiTheme.ApplyTextBox(box, false, false);
             UiTheme.ApplyTextBox(_code, true, false);
             UiTheme.ApplyComboBox(_template);
             _template.Items.AddRange(AuthenticationUsagePresentation.Templates.Cast<object>().ToArray());
@@ -85,6 +98,12 @@ namespace MyCodex.WinForms.Forms
             _template.SelectedIndexChanged += (sender, args) => UpdateFields();
             _clearApiKey.CheckedChanged += (sender, args) => { _apiKey.Enabled = !_clearApiKey.Checked; if (_clearApiKey.Checked) _apiKey.Clear(); };
             _clearAccessToken.CheckedChanged += (sender, args) => { _accessToken.Enabled = !_clearAccessToken.Checked; if (_clearAccessToken.Checked) _accessToken.Clear(); };
+            _zhipuTeam.CheckedChanged += (sender, args) => UpdateFields();
+            _clearAccessKey.CheckedChanged += (sender, args) =>
+            {
+                _accessKeyId.Enabled = _secretAccessKey.Enabled = !_clearAccessKey.Checked;
+                if (_clearAccessKey.Checked) { _accessKeyId.Clear(); _secretAccessKey.Clear(); }
+            };
             // The test result is read here, so it stays reachable with Tab.
             _status = new ThemedTextBox { Dock = DockStyle.Fill, ReadOnly = true, Multiline = true, ScrollBars = ScrollBars.Vertical, Height = 110, TabIndex = 1,
                 AccessibleName = UiLocalization.Text("AuthenticationUsage.Status", "Usage query status") };
@@ -105,7 +124,9 @@ namespace MyCodex.WinForms.Forms
             CancelButton = close;
             _save.Click += async (sender, args) => await SaveAsync();
             Display(settings);
-            var hint = UiLocalization.Text("AuthenticationUsage.Hint", "An empty query URL or key uses the provider's own address and key.");
+            var hint = settings.PlanProvider == "volcengine"
+                ? UiLocalization.Text("AuthenticationUsage.VolcengineHint", "Volcengine queries usage with the account AccessKey, not the inference API key.")
+                : UiLocalization.Text("AuthenticationUsage.Hint", "An empty query URL or key uses the provider's own address and key.");
             _status.Text = settings.Configured || settings.Detected == null ? hint
                 : string.Format(UiLocalization.Text("AuthenticationUsage.Recommended", "Recommended for this provider: {0}."),
                     AuthenticationUsagePresentation.TemplateName(settings.Detected)) + " " + hint;
@@ -150,6 +171,12 @@ namespace MyCodex.WinForms.Forms
             _timeout.Text = settings.Timeout.ToString(CultureInfo.InvariantCulture);
             _interval.Text = settings.AutoQueryInterval.ToString(CultureInfo.InvariantCulture);
             _code.Text = settings.Code ?? string.Empty;
+            _zhipuTeam.Checked = settings.ZhipuTeam;
+            _teamOrganization.Text = settings.TeamOrganizationId ?? string.Empty;
+            _teamProject.Text = settings.TeamProjectId ?? string.Empty;
+            _accessKeyId.Clear();
+            _secretAccessKey.Clear();
+            _clearAccessKey.Checked = false;
             UpdateFields();
         }
 
@@ -168,6 +195,15 @@ namespace MyCodex.WinForms.Forms
             SetVisible(_userId, token);
             SetVisible(_timeout, script);
             SetVisible(_code, template == "custom");
+            // Coding plans that need more than the provider key, named by the provider address.
+            var team = template == "token_plan" && _settings?.PlanProvider == "zhipu";
+            var volcengine = template == "token_plan" && _settings?.PlanProvider == "volcengine";
+            SetVisible(_zhipuTeam, team);
+            SetVisible(_teamOrganization, team && _zhipuTeam.Checked);
+            SetVisible(_teamProject, team && _zhipuTeam.Checked);
+            SetVisible(_accessKeyId, volcengine);
+            SetVisible(_secretAccessKey, volcengine);
+            SetVisible(_clearAccessKey, volcengine && _settings?.HasAccessKey == true);
         }
 
         private void SetVisible(Control control, bool visible)
@@ -215,6 +251,18 @@ namespace MyCodex.WinForms.Forms
             if (_accessToken.Visible) { edit.AccessToken = _accessToken.Text.Trim(); edit.ClearAccessToken = _clearAccessToken.Checked; }
             if (_userId.Visible) edit.UserId = _userId.Text.Trim();
             if (_code.Visible) edit.Code = _code.Text;
+            if (_zhipuTeam.Visible && _zhipuTeam.Checked)
+            {
+                edit.ZhipuTeam = true;
+                edit.TeamOrganizationId = _teamOrganization.Text.Trim();
+                edit.TeamProjectId = _teamProject.Text.Trim();
+            }
+            if (_accessKeyId.Visible)
+            {
+                edit.AccessKeyId = _accessKeyId.Text.Trim();
+                edit.SecretAccessKey = _secretAccessKey.Text.Trim();
+                edit.ClearAccessKey = _clearAccessKey.Checked;
+            }
             SetBusy(true);
             _status.Text = UiLocalization.Text("AuthenticationUsage.Saving", "Saving…");
             try

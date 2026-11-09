@@ -506,7 +506,9 @@ namespace MyCodex.Application.Tests
         {
             "AuthenticationUsage.Enabled", "AuthenticationUsage.Template", "AuthenticationUsage.BaseUrl", "AuthenticationUsage.ApiKey",
             "AuthenticationUsage.ClearApiKey", "AuthenticationUsage.AccessToken", "AuthenticationUsage.ClearAccessToken", "AuthenticationUsage.UserId",
-            "AuthenticationUsage.Timeout", "AuthenticationUsage.Interval", "AuthenticationUsage.Code", "AuthenticationUsage.Save", "AuthenticationUsage.Close"
+            "AuthenticationUsage.Timeout", "AuthenticationUsage.Interval", "AuthenticationUsage.Code", "AuthenticationUsage.Save", "AuthenticationUsage.Close",
+            "AuthenticationUsage.ZhipuTeam", "AuthenticationUsage.TeamOrganizationId", "AuthenticationUsage.TeamProjectId",
+            "AuthenticationUsage.AccessKeyId", "AuthenticationUsage.SecretAccessKey", "AuthenticationUsage.ClearAccessKey"
         })]
         [TestCase("ProviderUsageForm", new[] { "UserCenterForm.Button.Refresh", "ProviderUsage.Button.Settings", "UserCenterForm.Button.Close" })]
         [TestCase("AuthenticationCenterForm", new[]

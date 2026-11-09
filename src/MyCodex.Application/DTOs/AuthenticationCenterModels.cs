@@ -20,6 +20,8 @@ namespace MyCodex.Application.DTOs
         public string AccountId { get; set; }
         public string AccountLabel { get; set; }
         public bool NeedsReauthentication { get; set; }
+        // Usage queries are turned on, so the provider list shows the result.
+        public bool UsageEnabled { get; set; }
         public List<AuthenticationCatalogModel> Models { get; set; } = new List<AuthenticationCatalogModel>();
         public Dictionary<string, object> Advanced { get; set; } = new Dictionary<string, object>();
     }

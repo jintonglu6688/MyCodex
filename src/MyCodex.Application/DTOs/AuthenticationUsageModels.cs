@@ -9,6 +9,8 @@ namespace MyCodex.Application.DTOs
         public string ProviderName { get; set; }
         // Template the backend recognizes from the provider address ("token_plan", "balance") or null.
         public string Detected { get; set; }
+        // Coding plan the provider address names ("zhipu", "volcengine", ...) or null.
+        public string PlanProvider { get; set; }
         public bool Configured { get; set; }
         public bool Enabled { get; set; }
         public string TemplateType { get; set; }
@@ -20,6 +22,10 @@ namespace MyCodex.Application.DTOs
         // Minutes between automatic refreshes while User Center is open; 0 turns them off.
         public int AutoQueryInterval { get; set; } = 5;
         public string Code { get; set; }
+        public bool ZhipuTeam { get; set; }
+        public bool HasAccessKey { get; set; }
+        public string TeamOrganizationId { get; set; }
+        public string TeamProjectId { get; set; }
     }
 
     public sealed class AuthenticationUsageEdit
@@ -37,6 +43,14 @@ namespace MyCodex.Application.DTOs
         public int Timeout { get; set; } = 10;
         public int AutoQueryInterval { get; set; } = 5;
         public string Code { get; set; }
+        // Zhipu's team plan shares the personal plan's address and needs both IDs.
+        public bool ZhipuTeam { get; set; }
+        public string TeamOrganizationId { get; set; }
+        public string TeamProjectId { get; set; }
+        // Volcengine account AccessKey; null keeps the saved pair, ClearAccessKey removes it.
+        public string AccessKeyId { get; set; }
+        public string SecretAccessKey { get; set; }
+        public bool ClearAccessKey { get; set; }
     }
 
     public sealed class AuthenticationUsageResult
