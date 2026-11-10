@@ -1,33 +1,33 @@
 {
     "schemaVersion":  "1",
     "channel":  "stable",
-    "generatedAt":  "2026-10-30T11:40:54Z",
-    "packageBaseUrl":  "https://api.gitcode.com/api/v5/repos/gcw_SpGZ48lW/mycodex-updates/releases/app-v8.0.7/attach_files/",
+    "generatedAt":  "2026-11-10T15:10:48Z",
+    "packageBaseUrl":  "https://api.gitcode.com/api/v5/repos/gcw_SpGZ48lW/mycodex-updates/releases/app-v8.1.0/attach_files/",
     "app":  {
-                "version":  "8.0.7",
-                "releaseDate":  "2026-10-30",
+                "version":  "8.1.0",
+                "releaseDate":  "2026-11-10",
                 "releaseNotes":  {
-                                     "zh-CN":  "MyCodex 8.0.7 \u66f4\u65b0\u65e5\u5fd7\r\n\r\n\u4fee\u590d\u5173\u95ed\u6d4f\u89c8\u5668\u63a7\u5236\u65f6\uff0c\u65b0\u5efa\u4f1a\u8bdd\u53d1\u9001\u6d88\u606f\u53ef\u80fd\u63d0\u793a\u201cinvalid transport\u201d\u800c\u65e0\u6cd5\u7ee7\u7eed\u7684\u95ee\u9898\u3002",
-                                     "en-US":  "MyCodex 8.0.7 Release Notes\r\n\r\nFixed an issue where sending a message in a new conversation could fail with \"invalid transport\" when browser control was disabled."
+                                     "zh-CN":  "MyCodex 8.1.0 \u66f4\u65b0\u65e5\u5fd7\r\n\r\n\u2022 \u5b8c\u5584\u6d45\u8272\u4e0e\u6df1\u8272\u4e3b\u9898\uff0c\u65b0\u589e\u201c\u6d45\u8272\uff08\u6696\u8272\uff09\u201d\u9009\u9879\uff1b\u6539\u5584\u9009\u4e2d\u9879\u548c\u7981\u7528\u72b6\u6001\u7684\u8fa8\u8bc6\u5ea6\uff0c\u4fee\u590d\u6587\u5b57\u622a\u65ad\u3001\u5217\u8868\u5185\u5bb9\u91cd\u53e0\u53ca\u90e8\u5206\u7a97\u53e3\u5e03\u5c40\u95ee\u9898\u3002\u611f\u8c22 kl66zhangqiang-lgtm \u5bf9\u4e3b\u9898\u529f\u80fd\u7684\u8d21\u732e\u3002\r\n\u2022 \u65b0\u589e\u7b2c\u4e09\u65b9\u63d0\u4f9b\u5546\u989d\u5ea6\u67e5\u8be2\uff0c\u53ef\u5728\u8ba4\u8bc1\u4e2d\u5fc3\u548c\u7528\u6237\u4e2d\u5fc3\u67e5\u770b\u4f59\u989d\u3001\u5957\u9910\u7528\u91cf\u7b49\u4fe1\u606f\uff0c\u652f\u6301\u624b\u52a8\u548c\u5b9a\u65f6\u5237\u65b0\uff1b\u652f\u6301 NewAPI\u3001Sub2API\u3001\u901a\u7528\u63a5\u53e3\u53ca\u81ea\u5b9a\u4e49\u811a\u672c\uff0c\u5e76\u8865\u5145\u706b\u5c71\u65b9\u821f\u548c\u667a\u8c31\u56e2\u961f\u7248\u914d\u7f6e\u3002\r\n\u2022 \u8ba4\u8bc1\u4e2d\u5fc3\u63d0\u4f9b\u5546\u5217\u8868\u652f\u6301\u4e0a\u79fb\u3001\u4e0b\u79fb\uff0c\u53ef\u901a\u8fc7\u53f3\u952e\u83dc\u5355\u6216 Alt+\u4e0a/\u4e0b\u65b9\u5411\u952e\u8c03\u6574\u987a\u5e8f\u3002\r\n\u2022 \u4fee\u590d\u8fd0\u884c\u65f6\u5347\u7ea7\u540e\uff0c\u90e8\u5206\u7b2c\u4e09\u65b9\u63d0\u4f9b\u5546\u65e7\u4f1a\u8bdd\u63d0\u793a\u201c\u63d0\u4f9b\u5546\u5df2\u4e0d\u518d\u914d\u7f6e\u201d\u800c\u65e0\u6cd5\u7ee7\u7eed\u7684\u95ee\u9898\uff1b\u5b89\u5168\u4fee\u590d\u65f6\u4fdd\u7559\u539f\u4f1a\u8bdd\u548c\u5386\u53f2\uff0c\u907f\u514d\u91cd\u590d\u53d1\u9001\u6d88\u606f\u3002\u8ba4\u8bc1\u540e\u7aef\u5347\u7ea7\u81f3 0.4.1\u3002\r\n\u2022 \u66f4\u65b0\u5185\u7f6e\u6d4f\u89c8\u5668\u63a7\u5236\u548c Computer Use \u7ec4\u4ef6\uff1b\u4fee\u590d\u6253\u5f00\u9879\u76ee\u76ee\u5f55\u3001Edge\u3001\u8bb0\u4e8b\u672c\u7b49\u64cd\u4f5c\u4e2d\u7684\u7ec4\u4ef6\u542f\u52a8\u5931\u8d25\uff0c\u4ee5\u53ca\u4e0e\u5b98\u65b9\u5ba2\u6237\u7aef\u914d\u7f6e\u51b2\u7a81\u5bfc\u81f4\u7684\u201c\u672a\u542f\u52a8\u684c\u9762\u5ba2\u6237\u7aef\u201d\u63d0\u793a\u3002\r\n\u2022 \u7edf\u4e00\u81ea\u52a8\u5316\u4efb\u52a1\u4e0e\u666e\u901a\u4f1a\u8bdd\u7684\u6a21\u578b\u8bbe\u7f6e\uff0c\u6b63\u786e\u4fdd\u7559\u6a21\u578b\u548c\u63a8\u7406\u7b49\u7ea7\uff1b\u652f\u6301\u201c\u8ddf\u968f\u9ed8\u8ba4\u201d\uff0c\u4fee\u590d\u663e\u793a\u3001\u7edf\u8ba1\u53ca\u624b\u52a8\u7eed\u804a\u8bef\u7528\u5168\u5c40\u9ed8\u8ba4\u503c\u7684\u95ee\u9898\uff0c\u5e76\u4fdd\u7559\u684c\u9762\u6216\u624b\u673a\u7aef\u4fee\u6539\u540e\u7684\u9009\u62e9\u3002\r\n\u2022 \u4fee\u590d\u90e8\u5206\u7f3a\u5931\u672c\u5730\u6587\u4ef6\u8def\u5f84\u7684\u6b8b\u7559\u4f1a\u8bdd\u65e0\u6cd5\u5220\u9664\u7684\u95ee\u9898\uff0c\u5b8c\u6574\u6838\u5b9e\u4f1a\u8bdd\u72b6\u6001\u540e\u5141\u8bb8\u6e05\u7406\uff0c\u5e76\u4fdd\u7559\u5f02\u5e38\u60c5\u51b5\u548c\u5b50\u4f1a\u8bdd\u68c0\u67e5\u3002\r\n\u2022 \u6539\u5584\u8fde\u63a5\u3001WSL \u548c SSH \u7a33\u5b9a\u6027\uff1a\u4fee\u590d App Server \u5199\u5165\u5361\u4f4f\u540e\u53d1\u9001\u6216\u91cd\u8fde\u6301\u7eed\u7b49\u5f85\u3001\u8fdc\u7a0b\u51ed\u636e\u548c\u72b6\u6001\u5185\u5bb9\u88ab\u9519\u8bef\u5199\u56de\uff0c\u4ee5\u53ca SSH \u79c1\u94a5\u8def\u5f84\u542b\u7a7a\u683c\u65f6\u542f\u52a8\u5931\u8d25\u7684\u95ee\u9898\u3002",
+                                     "en-US":  "MyCodex 8.1.0 Release Notes\r\n\r\n\u2022 Improved light and dark theme coverage and added a Light (Warm) option. Made selected and disabled states easier to distinguish, and fixed clipped text, overlapping list content and layout issues in several windows. Thanks to kl66zhangqiang-lgtm for contributing the theme improvements.\r\n\u2022 Added usage queries for third-party providers in Authentication Center and User Center, including balances and plan usage, with manual and scheduled refresh. Supports NewAPI, Sub2API, generic endpoints and custom scripts, with additional settings for Volcengine Ark and Zhipu team plans.\r\n\u2022 Added provider reordering in Authentication Center through the context menu or Alt+Up/Down.\r\n\u2022 Fixed older conversations with some third-party providers failing to resume after a runtime update with a provider-no-longer-configured error. Safe repair preserves the original conversation and history and avoids duplicate messages. Updated the authentication backend to 0.4.1.\r\n\u2022 Updated the bundled browser control and Computer Use components. Fixed component startup failures when opening project folders, Edge, Notepad and other applications, and incorrect desktop-client-not-running errors caused by conflicts with official client settings.\r\n\u2022 Aligned automation and regular conversation model settings, preserving the selected model and reasoning effort. Added Follow Default support, fixed display, statistics and manual continuation incorrectly using global defaults, and preserved choices made on desktop or mobile.\r\n\u2022 Fixed deletion failures for stale conversations without a local file path. Cleanup now verifies conversation state while retaining error and child-conversation checks.\r\n\u2022 Improved connection, WSL and SSH reliability. Fixed stalled App Server writes blocking message sending or reconnection, remote credentials and state being written back incorrectly, and startup failures when SSH private key paths contain spaces."
                                  },
                 "asset":  {
-                              "url":  "MyCodex_v8.0.7_Setup_20261030114053.exe/download",
-                              "fileName":  "MyCodex_v8.0.7_Setup_20261030114053.exe",
-                              "sha256":  "4f97529798eba30b7776f09ddeabda12291f3c0e89d71560949b29e126cbb6a3",
-                              "size":  264314004
+                              "url":  "MyCodex_v8.1.0_Setup_20261110144849.exe/download",
+                              "fileName":  "MyCodex_v8.1.0_Setup_20261110144849.exe",
+                              "sha256":  "308af81597dcc308c1964c939b4a633ac749039ac9edcaaa94c8cc20c1314461",
+                              "size":  304811443
                           }
             },
     "runtimes":  [
                      {
                          "source":  "Bundled",
-                         "version":  "0.165.0",
+                         "version":  "0.167.0",
                          "targetTriple":  "x86_64-pc-windows-msvc",
                          "packageFormat":  "npm-tgz",
                          "asset":  {
-                                       "url":  "https://api.gitcode.com/api/v5/repos/gcw_SpGZ48lW/mycodex-updates/releases/runtime-standard-0.165.0/attach_files/codex-0.165.0-win32-x64.tgz/download",
-                                       "fileName":  "codex-0.165.0-win32-x64.tgz",
-                                       "sha256":  "53ebec84d5a380bbb654a796e695576a4dbd2c228ec9bc02982f2013f261969d",
-                                       "size":  173677955
+                                       "url":  "https://registry.npmmirror.com/@openai/codex/-/codex-0.167.0-win32-x64.tgz",
+                                       "fileName":  "codex-0.167.0-win32-x64.tgz",
+                                       "sha256":  "075304c882f6618eb73037bdd1164f942516f214108540bdbb9130eff4ab1e08",
+                                       "size":  181015521
                                    }
                      }
                  ]
