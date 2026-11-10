@@ -1809,4 +1809,19 @@
   <data name="UpdateDownload.Error.Stalled" xml:space="preserve">
     <value>下载长时间没有收到数据，已停止。</value>
   </data>
+  <data name="SessionProvider.Error.BackendUpdate" xml:space="preserve">
+    <value>请更新认证后端，以修复此旧会话的提供商配置。</value>
+  </data>
+  <data name="SessionProvider.Error.Incomplete" xml:space="preserve">
+    <value>会话提供商修复未完成，请重新连接后重试；消息尚未发送。</value>
+  </data>
+  <data name="SessionProvider.Error.Busy" xml:space="preserve">
+    <value>请等待正在运行的任务结束后再修复此会话。没有任务被中止。</value>
+  </data>
+  <data name="SessionProvider.Error.StopTimeout" xml:space="preserve">
+    <value>Codex 尚未完成退出。未修改任何会话文件，请等其退出后重新连接。</value>
+  </data>
+  <data name="SessionProvider.Status.Repaired" xml:space="preserve">
+    <value>已修复旧会话的提供商配置，原历史和线程编号均已保留，并已保存备份。</value>
+  </data>
 </root>

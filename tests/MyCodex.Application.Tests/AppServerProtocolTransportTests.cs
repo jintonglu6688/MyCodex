@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MyCodex.Application.DTOs;
 using MyCodex.Infrastructure.AppServer;
 using NUnit.Framework;
 
@@ -75,6 +76,38 @@ namespace MyCodex.Application.Tests
             Assert.That(errorMessage, Is.EqualTo("Rejected by test"));
             var exception = Assert.ThrowsAsync<InvalidOperationException>(async () => await requestTask.ConfigureAwait(false));
             Assert.That(exception.Message, Is.EqualTo("Rejected by test"));
+        }
+
+        [TestCase("modelProviderNotConfigured", true)]
+        [TestCase("modelProviderMismatch", true)]
+        [TestCase("modelProviderPolicyConflict", true)]
+        [TestCase("unrelatedFailure", false)]
+        public void ProviderErrorsRetainStructuredDetails(string type, bool structured)
+        {
+            var writer = new StringWriter();
+            var transport = CreateTransport(() => writer);
+            var request = transport.SendRequestAsync("thread/resume", new Dictionary<string, object>(),
+                TimeSpan.FromSeconds(5), CancellationToken.None);
+            var id = ReadSingleWrittenMessage(writer)["id"];
+            transport.TryHandleResponse(new Dictionary<string, object>
+            {
+                { "id", id },
+                { "error", new Dictionary<string, object>
+                    {
+                        { "message", "Synthetic rejection" },
+                        { "data", new Dictionary<string, object> { { "type", type }, { "modelProvider", "legacy" } } }
+                    }
+                }
+            }, out var message);
+            var error = Assert.CatchAsync<InvalidOperationException>(async () => await request);
+            Assert.That(message, Is.EqualTo("Synthetic rejection"));
+            Assert.That(error is AppServerModelProviderException, Is.EqualTo(structured));
+            if (structured)
+            {
+                Assert.That(((AppServerModelProviderException)error).ErrorType, Is.EqualTo(type));
+                Assert.That(((AppServerModelProviderException)error).ModelProvider, Is.EqualTo("legacy"));
+            }
+            Assert.That(transport.DrainPendingRequests(), Is.Empty);
         }
 
         [Test]

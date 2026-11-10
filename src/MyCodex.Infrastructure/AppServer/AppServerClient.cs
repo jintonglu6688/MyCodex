@@ -205,6 +205,8 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             CleanupProcessResources();
+            if (SessionProviderRecoveryBeforeConnect != null)
+                await SessionProviderRecoveryBeforeConnect().ConfigureAwait(false);
             await _runtimeStartupCoordinator.EnsureWslNetworkReadyAsync(
                 appConfig,
                 launchInfo,
@@ -1625,7 +1627,13 @@ namespace MyCodex.Infrastructure.AppServer
             }
         }
 
-        public async Task<AppServerReviewStartResult> StartReviewAsync(string threadId, string workspacePath, ApprovalMode? approvalMode, string modelId, AppServerReviewTarget target, bool runDetached, string reasoningEffort = null, string reviewModelId = null)
+        public Task<AppServerReviewStartResult> StartReviewAsync(string threadId, string workspacePath, ApprovalMode? approvalMode, string modelId, AppServerReviewTarget target, bool runDetached, string reasoningEffort = null, string reviewModelId = null)
+        {
+            return WithProviderRecoveryAsync(threadId, workspacePath, () => StartReviewCoreAsync(threadId,
+                workspacePath, approvalMode, modelId, target, runDetached, reasoningEffort, reviewModelId));
+        }
+
+        private async Task<AppServerReviewStartResult> StartReviewCoreAsync(string threadId, string workspacePath, ApprovalMode? approvalMode, string modelId, AppServerReviewTarget target, bool runDetached, string reasoningEffort, string reviewModelId)
         {
             EnsureConnected();
             var epoch = GetConnectionEpoch();
@@ -2291,6 +2299,10 @@ namespace MyCodex.Infrastructure.AppServer
                         TimeSpan.FromMilliseconds(timeoutMs),
                         cancellationToken,
                         expectedConnectionEpoch).ConfigureAwait(false);
+                }
+                catch (AppServerModelProviderException ex)
+                {
+                    throw new AppServerModelProviderException(ex.Message, ex.ErrorType, ex.ModelProvider, method);
                 }
                 catch (AppServerTransportWriteException ex)
                 {

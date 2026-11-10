@@ -47,7 +47,7 @@ $exe = Join-Path $package 'mycodex-auth-host.exe'
 Assert ($LASTEXITCODE -eq 0) 'Fixture compilation failed'
 Copy-Item -LiteralPath $exe -Destination (Join-Path $source 'MyCodex.exe')
 [IO.File]::WriteAllText((Join-Path $package 'LICENSE'), 'fixture', $utf8)
-$manifest = @{schemaVersion=1; hostVersion='0.4.0'; protocolVersion=3; upstreamRevision='85ad4969b3399500baaea9d46b1e08f87aba80e1'; sourceRevision=('a'*40); sourceDirty=$false; target='x86_64-pc-windows-msvc'; executable='mycodex-auth-host.exe'; sha256=(Get-FileHash $exe).Hash.ToLowerInvariant()}
+$manifest = @{schemaVersion=1; hostVersion='0.4.1'; protocolVersion=3; upstreamRevision='85ad4969b3399500baaea9d46b1e08f87aba80e1'; sourceRevision=('a'*40); sourceDirty=$false; target='x86_64-pc-windows-msvc'; executable='mycodex-auth-host.exe'; sha256=(Get-FileHash $exe).Hash.ToLowerInvariant()}
 Write-Json (Join-Path $package 'mycodex-auth-host.manifest.json') $manifest
 $expected = Join-Path $work 'expected.json'
 Write-Json $expected $manifest
@@ -239,7 +239,7 @@ function Test-Installer($name, $expectedCode, $development = $false) {
         if ($name -eq 'repair-verification') { Assert ($diagnostic.Contains('expected_package_repaired')) 'Installer did not use its extracted repair payload' }
         else {
             Assert (-not $diagnostic.Contains('previous_package_restored')) 'Failed post-install verification restored an old backend'
-            Assert ((Get-Content (Join-Path $root 'runtime\auth-core\mycodex-auth-host.manifest.json') -Raw | ConvertFrom-Json).hostVersion -eq '0.4.0') 'New frontend was left with old backend'
+            Assert ((Get-Content (Join-Path $root 'runtime\auth-core\mycodex-auth-host.manifest.json') -Raw | ConvertFrom-Json).hostVersion -eq '0.4.1') 'New frontend was left with old backend'
             Assert ($log.Contains('action=Resume result=1')) 'Persistent verification failure was hidden by recovery'
         }
     }

@@ -102,7 +102,14 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
         {
             var status = await request("status", Empty(), cancellationToken).ConfigureAwait(false);
             if (Strings(status, "capabilities")?.Contains("runtimeConfigPreparation") == true)
-                await request("runtime/prepare", Empty(), cancellationToken).ConfigureAwait(false);
+            {
+                try { await request("runtime/prepare", Empty(), cancellationToken).ConfigureAwait(false); }
+                catch (Exception error) when (Strings(status, "capabilities")?.Contains("sessionProviderMigration") == true &&
+                    (error is OperationCanceledException || (error is AuthenticationCenterException failure && failure.Code == "backend_unavailable")))
+                {
+                    throw new AuthenticationCenterException("provider_recovery_required");
+                }
+            }
         }
 
         public static Task ShutdownLocalBackendAsync(CancellationToken cancellationToken)

@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using MyCodex.Application.DTOs;
 
 namespace MyCodex.Infrastructure.AppServer
 {
@@ -291,7 +292,14 @@ namespace MyCodex.Infrastructure.AppServer
                     errorMessage = "App Server request failed.";
                 }
 
-                pendingRequest.TrySetException(new InvalidOperationException(errorMessage));
+                var data = AppServerJsonValue.GetDictionary(error, "data");
+                var type = AppServerJsonValue.GetString(data, "type");
+                var provider = AppServerJsonValue.GetString(data, "modelProvider");
+                if ((type == "modelProviderNotConfigured" || type == "modelProviderMismatch" || type == "modelProviderPolicyConflict") &&
+                    !string.IsNullOrWhiteSpace(provider))
+                    pendingRequest.TrySetException(new AppServerModelProviderException(errorMessage, type, provider));
+                else
+                    pendingRequest.TrySetException(new InvalidOperationException(errorMessage));
                 return true;
             }
 

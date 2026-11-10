@@ -93,11 +93,13 @@ namespace MyCodex.Infrastructure.AppServer
             IReadOnlyCollection<AppServerUserInputItem> inputItems, ApprovalMode? approvalMode,
             string modelId, string reasoningEffort, AppServerCollaborationMode collaborationMode = null)
         {
-            using (RuntimeOperationGate.Shared.EnterOperation())
+            await WithProviderRecoveryAsync(threadId, workspacePath, async () =>
             {
-                await SendUserMessageForAuthenticationGateAsync(threadId, workspacePath, inputItems,
-                    approvalMode, modelId, reasoningEffort, collaborationMode).ConfigureAwait(false);
-            }
+                using (RuntimeOperationGate.Shared.EnterOperation())
+                    await SendUserMessageForAuthenticationGateAsync(threadId, workspacePath, inputItems,
+                        approvalMode, modelId, reasoningEffort, collaborationMode).ConfigureAwait(false);
+                return true;
+            }).ConfigureAwait(false);
         }
 
         public async Task<AppServerCommandExecResult> ExecuteCommandAsync(string commandText,
@@ -114,11 +116,13 @@ namespace MyCodex.Infrastructure.AppServer
         public async Task SubmitCompactThreadRequestAsync(string threadId, string workspacePath,
             ApprovalMode? approvalMode, string modelId)
         {
-            using (RuntimeOperationGate.Shared.EnterOperation())
+            await WithProviderRecoveryAsync(threadId, workspacePath, async () =>
             {
-                await SubmitCompactThreadForAuthenticationGateAsync(threadId, workspacePath,
-                    approvalMode, modelId).ConfigureAwait(false);
-            }
+                using (RuntimeOperationGate.Shared.EnterOperation())
+                    await SubmitCompactThreadForAuthenticationGateAsync(threadId, workspacePath,
+                        approvalMode, modelId).ConfigureAwait(false);
+                return true;
+            }).ConfigureAwait(false);
         }
     }
 }

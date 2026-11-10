@@ -20,6 +20,12 @@ namespace MyCodex.WinForms.Forms
             if (_appServerClient is AppServerClient client)
             {
                 client.ThreadResumePreparation = _sessionHistoryResumeRepairGate.PrepareAsync;
+                var providerMigration = new SessionProviderMigrationCoordinator(
+                    () => CreateCurrentAuthenticationCenterClient() as ISessionProviderMigrationClient,
+                    (cwd, token) => _appServerClient.ReadConfigAsync(cwd, false, token),
+                    client.RunSessionProviderMaintenanceAsync);
+                client.ThreadProviderRecovery = providerMigration.TryRepairAsync;
+                client.SessionProviderRecoveryBeforeConnect = providerMigration.RecoverBeforeConnectAsync;
             }
         }
 

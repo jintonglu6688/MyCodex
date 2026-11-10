@@ -1809,4 +1809,19 @@ This file is empty.</value>
   <data name="UpdateDownload.Error.Stalled" xml:space="preserve">
     <value>The download received no data for too long and was stopped.</value>
   </data>
+  <data name="SessionProvider.Error.BackendUpdate" xml:space="preserve">
+    <value>Update the authentication backend to repair this conversation's old provider configuration.</value>
+  </data>
+  <data name="SessionProvider.Error.Incomplete" xml:space="preserve">
+    <value>The conversation provider repair did not complete. Reconnect and try again; the message was not sent.</value>
+  </data>
+  <data name="SessionProvider.Error.Busy" xml:space="preserve">
+    <value>Finish the running tasks before repairing this conversation. No task was stopped.</value>
+  </data>
+  <data name="SessionProvider.Error.StopTimeout" xml:space="preserve">
+    <value>Codex has not finished shutting down. No conversation files were changed; reconnect after it exits.</value>
+  </data>
+  <data name="SessionProvider.Status.Repaired" xml:space="preserve">
+    <value>The old conversation provider was repaired. Its history and thread ID were preserved, and a backup was kept.</value>
+  </data>
 </root>

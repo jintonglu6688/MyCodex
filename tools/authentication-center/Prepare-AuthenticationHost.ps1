@@ -8,7 +8,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-$hostVersion = '0.4.0'
+$hostVersion = '0.4.1'
 if ([string]::IsNullOrWhiteSpace($DestinationRoot)) { $DestinationRoot = Join-Path $repositoryRoot 'runtime\auth-core' }
 if ([string]::IsNullOrWhiteSpace($SourceRoot)) {
     $existingManifest = Join-Path $DestinationRoot 'mycodex-auth-host.manifest.json'

@@ -31,7 +31,7 @@ namespace MyCodex.Application.Tests
             }
             _manifest = new Dictionary<string, object>
             {
-                { "schemaVersion", 1 }, { "hostVersion", "0.4.0" }, { "protocolVersion", 3 },
+                { "schemaVersion", 1 }, { "hostVersion", "0.4.1" }, { "protocolVersion", 3 },
                 { "upstreamRevision", "85ad4969b3399500baaea9d46b1e08f87aba80e1" },
                 { "sourceRevision", new string('a', 40) }, { "sourceDirty", false },
                 { "target", "x86_64-pc-windows-msvc" }, { "executable", "mycodex-auth-host.exe" }, { "sha256", hash }
@@ -82,6 +82,7 @@ namespace MyCodex.Application.Tests
 
         [TestCase("0.2.1", 2, "e0f70019b2758f5b6b9a04dd60e4689481a0c0ac")]
         [TestCase("0.3.11", 3, "85ad4969b3399500baaea9d46b1e08f87aba80e1")]
+        [TestCase("0.4.0", 3, "85ad4969b3399500baaea9d46b1e08f87aba80e1")]
         public void OlderKnownLocalPackageCanOnlyBeLoadedForVerifiedReplacement(string version, int protocol, string upstream)
         {
             _manifest["hostVersion"] = version;
@@ -168,7 +169,7 @@ namespace MyCodex.Application.Tests
             _manifest["executable"] = "mycodex-auth-host";
             var serializer = new JavaScriptSerializer();
             var hash = (string)_manifest["sha256"];
-            _manifest["hostVersion"] = "0.4.0";
+            _manifest["hostVersion"] = "0.4.1";
             _manifest["protocolVersion"] = 3;
             _manifest["upstreamRevision"] = "85ad4969b3399500baaea9d46b1e08f87aba80e1";
             var text = serializer.Serialize(_manifest);

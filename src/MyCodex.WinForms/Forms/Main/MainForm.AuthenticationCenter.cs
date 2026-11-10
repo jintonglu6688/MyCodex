@@ -35,6 +35,7 @@ namespace MyCodex.WinForms.Forms
             }
             catch (Exception error)
             {
+                if (error is AuthenticationCenterException recovery && recovery.Code == "provider_recovery_required") throw;
                 if (!await WaitForTargetExitDecisionAsync()) return;
                 // An absent optional authentication package must not disable ordinary App Server use.
                 SetLowPriorityStatus(AuthenticationCenterUiText.Error(error));
