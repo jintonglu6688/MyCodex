@@ -181,18 +181,19 @@ namespace MyCodex.Infrastructure.RemoteRelay
                 StandardOutputEncoding = Encoding.UTF8,
                 StandardErrorEncoding = Encoding.UTF8
             };
-            using (var process = Process.Start(startInfo))
+            // The runner reads both streams at once and times out; reading them in turn can deadlock.
+            var result = Processes.ProcessExecutionRunner.Run(new Processes.ProcessExecutionRequest
             {
-                var stdout = process.StandardOutput.ReadToEnd();
-                var stderr = process.StandardError.ReadToEnd();
-                process.WaitForExit();
-                if (process.ExitCode != 0)
-                {
-                    throw new InvalidOperationException("Relay CLI failed: " + (stderr ?? string.Empty).Trim());
-                }
-
-                return stdout;
+                StartInfo = startInfo,
+                TimeoutMilliseconds = 30000,
+                TimeoutMessage = "Relay CLI timed out."
+            });
+            if (result.ExitCode != 0)
+            {
+                throw new InvalidOperationException("Relay CLI failed: " + (result.StandardError ?? string.Empty).Trim());
             }
+
+            return result.StandardOutput;
         }
 
         private static string Quote(string value)

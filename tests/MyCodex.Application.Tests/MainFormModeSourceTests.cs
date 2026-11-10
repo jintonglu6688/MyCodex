@@ -325,7 +325,6 @@ namespace MyCodex.Application.Tests
         {
             var source = RepositorySource.ReadSourceFile("MainForm.MessageSending.cs");
             var send = RepositorySource.ExtractMethod(source, "private async Task SendCurrentInputAsync(string overrideText, bool includePendingAttachments)");
-            Assert.That(send, Does.Not.Contain("TryUpdateThreadWorkspaceMetadataAsync"));
             var sendIndex = send.IndexOf("await _sessionThreadService.SendUserMessageAsync(", StringComparison.Ordinal);
             var completionIndex = send.IndexOf("ApplySessionSendCompletionPlanAsync(completionPlan, targetSession)", StringComparison.Ordinal);
             Assert.That(sendIndex, Is.GreaterThanOrEqualTo(0));
@@ -842,17 +841,6 @@ namespace MyCodex.Application.Tests
             Assert.That(modesSource, Does.Contain("_workspaceList.TabStop = !isOfficeMode;"));
             Assert.That(workspacesSource, Does.Contain("if (_currentInteractionMode == AppInteractionMode.Office)"));
             Assert.That(workspacesSource, Does.Not.Contain("categoryNameOnly"));
-        }
-
-        [Category(SourceGuardCategory.SourceBehavior)]
-        [Test]
-        public void SendPath_SkipsGitMetadataUpdatesForOfficeSessions()
-        {
-            var source = RepositorySource.ReadSourceFile("MainForm.cs");
-
-            Assert.That(source, Does.Contain("TryUpdateThreadWorkspaceMetadataAsync"));
-            Assert.That(source, Does.Contain("session.Mode == AppInteractionMode.Office"));
-            Assert.That(source, Does.Contain("return Task.CompletedTask"));
         }
 
         [Category(SourceGuardCategory.SourceBehavior)]

@@ -246,18 +246,6 @@ namespace MyCodex.Infrastructure.Persistence
             return Path.Combine(GetAppDataDirectory(), "logs");
         }
 
-        internal static string NormalizePathSegment(string value)
-        {
-            var text = string.IsNullOrWhiteSpace(value) ? "default" : value.Trim();
-            var builder = new StringBuilder(text.Length);
-            foreach (var ch in text)
-            {
-                builder.Append(char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' ? ch : '_');
-            }
-
-            return builder.Length == 0 ? "default" : builder.ToString();
-        }
-
         internal static string ValidateRuntimePathSegment(string value, string parameterName)
         {
             var text = value == null ? null : value.Trim();

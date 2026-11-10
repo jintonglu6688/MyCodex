@@ -47,24 +47,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void BuildLocalForwardArguments_ForPrivateKey_AddsLoopbackForwardAndBatchMode()
-        {
-            var arguments = RemoteSshCommandLine.BuildLocalForwardArguments(new RemoteMacSshConfigSnapshot
-            {
-                HostName = "192.168.50.2",
-                UserName = "tonglujin",
-                Port = 2222,
-                AuthenticationMode = RemoteSshAuthenticationMode.PrivateKey,
-                PrivateKeyPath = @"C:\Users\tester\.ssh\id_ed25519"
-            }, 43210, 43210);
-
-            Assert.That(arguments, Does.Contain("-L localhost:43210:localhost:43210"));
-            Assert.That(arguments, Does.Contain("-o BatchMode=yes"));
-            Assert.That(arguments, Does.Contain("-p 2222"));
-            Assert.That(arguments, Does.Contain("tonglujin@192.168.50.2"));
-        }
-
-        [Test]
         public void BuildSshArguments_ForPassword_DoesNotEnableOpenSshConnectionSharing()
         {
             var arguments = RemoteSshCommandLine.BuildSshArguments(new RemoteMacSshConfigSnapshot

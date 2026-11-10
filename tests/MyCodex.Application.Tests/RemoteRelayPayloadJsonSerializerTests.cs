@@ -8,27 +8,13 @@ namespace MyCodex.Application.Tests
     public sealed class RemoteRelayPayloadJsonSerializerTests
     {
         [Test]
-        public void SerializeCommand_RoundTripsCommandEnvelopeAndPayloadObject()
+        public void DeserializeCommand_ReadsCommandEnvelopeAndPayloadObject()
         {
-            var command = new RemoteRelayCommand
-            {
-                RequestId = "request-1",
-                CommandType = RemoteCommandTypes.CodingWorkspacesList,
-                DeviceId = "device-a",
-                Payload = new Dictionary<string, object>
-                {
-                    { "limit", 50 },
-                    { "cursor", "older" }
-                }
-            };
+            const string json = "{\"schemaVersion\":1,\"payloadType\":\"remote.command\",\"requestId\":\"request-1\"," +
+                "\"commandType\":\"coding.workspaces.list\",\"deviceId\":\"device-a\",\"payload\":{\"limit\":50,\"cursor\":\"older\"}}";
 
-            var json = RemoteRelayPayloadJsonSerializer.SerializeCommand(command);
             var roundTrip = RemoteRelayPayloadJsonSerializer.DeserializeCommand(json);
 
-            Assert.That(json, Does.Contain("\"schemaVersion\":1"));
-            Assert.That(json, Does.Contain("\"payloadType\":\"remote.command\""));
-            Assert.That(json, Does.Contain("\"commandType\":\"coding.workspaces.list\""));
-            Assert.That(json, Does.Contain("\"payload\":{\"limit\":50,\"cursor\":\"older\"}"));
             Assert.That(roundTrip.SchemaVersion, Is.EqualTo(1));
             Assert.That(roundTrip.PayloadType, Is.EqualTo(RemoteRelayPayloadTypes.Command));
             Assert.That(roundTrip.RequestId, Is.EqualTo("request-1"));

@@ -212,39 +212,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void SessionCollectionQueries_SelectsCodingAndOfficeByIndependentRuntimeIdentities()
-        {
-            var coding = new ChatSession
-            {
-                Id = "coding",
-                Mode = AppInteractionMode.Coding,
-                RuntimeProfileId = RuntimeProfileService.WindowsRuntimeProfileId
-            };
-            var office = new ChatSession
-            {
-                Id = "office",
-                Mode = AppInteractionMode.Office,
-                RuntimeProfileId = RuntimeProfileService.WindowsRuntimeProfileId,
-                OfficeRuntimeScopeId = "wsl|ubuntu"
-            };
-            var otherOffice = new ChatSession
-            {
-                Id = "other-office",
-                Mode = AppInteractionMode.Office,
-                RuntimeProfileId = RuntimeProfileService.WindowsRuntimeProfileId,
-                OfficeRuntimeScopeId = "wsl|debian"
-            };
-
-            var selected = SessionCollectionQueries.GetSessionsForActiveRuntimeContexts(
-                new[] { coding, office, otherOffice },
-                RuntimeProfileService.WindowsRuntimeProfileId,
-                "wsl|ubuntu");
-
-            Assert.That(selected.Select(session => session.Id).ToArray(),
-                Is.EqualTo(new[] { "coding", "office" }));
-        }
-
-        [Test]
         public void ModeWorkspaceProjection_EmptyOfficeStateDoesNotFabricateDefaultWorkspace()
         {
             var availabilityChecks = 0;
@@ -681,111 +648,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void ActivityDisplayState_BuildsSingleReadableActivityText()
-        {
-            var text = ActivityDisplayState.BuildText(
-                "Running command",
-                "Started: ping 127.0.0.1",
-                true,
-                "Summary",
-                "Log",
-                "No summary currently.",
-                "No log entries currently.");
-
-            Assert.That(text, Is.EqualTo(
-                "[Summary]" + Environment.NewLine +
-                "Running command" + Environment.NewLine +
-                Environment.NewLine +
-                "[Log]" + Environment.NewLine +
-                "Started: ping 127.0.0.1"));
-        }
-
-        [Test]
-        public void ActivityDisplayState_UsesEmptyFallbacks()
-        {
-            var text = ActivityDisplayState.BuildText(
-                null,
-                " ",
-                true,
-                "Summary",
-                "Log",
-                "No summary currently.",
-                "No log entries currently.");
-
-            Assert.That(text, Is.EqualTo(
-                "[Summary]" + Environment.NewLine +
-                "No summary currently." + Environment.NewLine +
-                Environment.NewLine +
-                "[Log]" + Environment.NewLine +
-                "No log entries currently."));
-        }
-
-        [Test]
-        public void ActivityDisplayState_HidesLogSectionWhenDisabled()
-        {
-            var text = ActivityDisplayState.BuildText(
-                "Running command",
-                "Started: ping 127.0.0.1",
-                false,
-                "Summary",
-                "Log",
-                "No summary currently.",
-                "No log entries currently.");
-
-            Assert.That(text, Is.EqualTo(
-                "[Summary]" + Environment.NewLine +
-                "Running command"));
-        }
-
-        [Test]
-        public void ActivityDisplayState_BuildsStableListItems()
-        {
-            var items = ActivityDisplayState.BuildItems(
-                "Running command" + Environment.NewLine + "Waiting for result",
-                "Started: ping 127.0.0.1" + Environment.NewLine + "Exit code: 0",
-                true,
-                "Summary",
-                "Log",
-                "No summary currently.",
-                "No log entries currently.");
-
-            Assert.That(items, Is.EqualTo(new[]
-            {
-                "Summary: Running command",
-                "Summary: Waiting for result",
-                "Log (2): Exit code: 0"
-            }));
-        }
-
-        [Test]
-        public void ActivityDisplayState_UsesSummarySectionNamesAsListItemPrefixes()
-        {
-            var items = ActivityDisplayState.BuildItems(
-                "Current step: Checking project" + Environment.NewLine +
-                Environment.NewLine +
-                "Thinking:" + Environment.NewLine +
-                "Current: Reading files" + Environment.NewLine +
-                "Completed: Found entry point" + Environment.NewLine +
-                Environment.NewLine +
-                "Plan:" + Environment.NewLine +
-                "Completed: Build project",
-                string.Empty,
-                false,
-                "Summary",
-                "Log",
-                "No summary currently.",
-                "No log entries currently.");
-
-            Assert.That(items, Is.EqualTo(new[]
-            {
-                "Current step: Checking project",
-                "Thinking: Current: Reading files",
-                "Thinking: Completed: Found entry point",
-                "Plan: Completed: Build project"
-            }));
-        }
-
-        [Test]
         public void ActivityDisplayState_SplitsLiveStatusFromStableActivityItems()
         {
             var summaryText =
@@ -1112,22 +974,6 @@ namespace MyCodex.Application.Tests
                     "Turn: Starting a new conversation turn"
                 }));
             }
-        }
-
-        [Test]
-        public void ActivityDisplayState_ResolvesPreservedSelectionByTextBeforeIndex()
-        {
-            var items = new[]
-            {
-                "Summary: Updated",
-                "Summary: Extra line",
-                "Log: Started",
-                "Log: Exit code: 0"
-            };
-
-            Assert.That(ActivityDisplayState.ResolvePreservedIndex(items, "Log: Started", 1), Is.EqualTo(2));
-            Assert.That(ActivityDisplayState.ResolvePreservedIndex(items, "Missing", 1), Is.EqualTo(1));
-            Assert.That(ActivityDisplayState.ResolvePreservedIndex(items, "Missing", 8), Is.EqualTo(-1));
         }
 
         [Test]
@@ -1772,16 +1618,6 @@ namespace MyCodex.Application.Tests
             Assert.That(plan.Session, Is.SameAs(session));
             Assert.That(plan.IncludeSystemHeader, Is.True);
             Assert.That(session.LastActiveAt, Is.EqualTo(now));
-            Assert.That(
-                SessionActivationWorkflowPlanner.ShouldSkipExplicitActivation(
-                    new ChatSession { Id = "SESSION-1" },
-                    session),
-                Is.True);
-            Assert.That(
-                SessionActivationWorkflowPlanner.ShouldSkipExplicitActivation(
-                    new ChatSession { Id = "session-2" },
-                    session),
-                Is.False);
         }
 
         [Test]
@@ -4569,7 +4405,7 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void SessionStorageOperationPlanner_SelectArchivableAndCountSessions()
+        public void SessionStorageOperationPlanner_SelectArchivableSessions()
         {
             var sessions = new ChatSession[]
             {
@@ -4579,10 +4415,8 @@ namespace MyCodex.Application.Tests
             };
 
             var archivable = SessionStorageOperationPlanner.SelectArchivableSessions(sessions);
-            var nonNullCount = SessionStorageOperationPlanner.CountNonNullSessions(sessions);
 
             Assert.That(archivable.Select(session => session.Id).ToArray(), Is.EqualTo(new[] { "a" }));
-            Assert.That(nonNullCount, Is.EqualTo(2));
         }
 
         [TestCase("windows")]
@@ -4624,7 +4458,7 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void SessionStorageOperationPlanner_ResolveSessionPathFromSummariesAndDetails()
+        public void SessionStorageOperationPlanner_ResolveSessionPathFromSummaries()
         {
             var summaries = new[]
             {
@@ -4633,26 +4467,8 @@ namespace MyCodex.Application.Tests
             };
 
             var summaryPath = SessionStorageOperationPlanner.ResolveSessionPathFromThreadSummaries(summaries, "THREAD-B");
-            var detailsPath = SessionStorageOperationPlanner.ResolveSessionPathFromThreadDetails(
-                new AppServerThreadDetails { SessionPath = "session-c.json" });
-            var emptyDetailsPath = SessionStorageOperationPlanner.ResolveSessionPathFromThreadDetails(
-                new AppServerThreadDetails());
 
             Assert.That(summaryPath, Is.EqualTo("session-b.json"));
-            Assert.That(detailsPath, Is.EqualTo("session-c.json"));
-            Assert.That(emptyDetailsPath, Is.Null);
-        }
-
-        [Test]
-        public void SessionStorageOperationPlanner_ShouldIgnoreReadThreadInvalidOperationMatchesKeywords()
-        {
-            var ignored = new InvalidOperationException("failed to locate rollout for this thread");
-            var ignoredByMaterialized = new InvalidOperationException("thread not materialized");
-            var notIgnored = new InvalidOperationException("permission denied");
-
-            Assert.That(SessionStorageOperationPlanner.ShouldIgnoreThreadReadInvalidOperation(ignored), Is.True);
-            Assert.That(SessionStorageOperationPlanner.ShouldIgnoreThreadReadInvalidOperation(ignoredByMaterialized), Is.True);
-            Assert.That(SessionStorageOperationPlanner.ShouldIgnoreThreadReadInvalidOperation(notIgnored), Is.False);
         }
 
         [Test]

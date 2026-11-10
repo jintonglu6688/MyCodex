@@ -41,12 +41,6 @@ namespace MyCodex.Application.Services
             return member != null && !(state.Active && member.IsDefault);
         }
 
-        public static bool CanBeDefault(AuthenticationStackState state, string providerId)
-        {
-            var eligibility = state == null ? null : Eligibility(state, providerId);
-            return eligibility != null && eligibility.DefaultRefusal == null;
-        }
-
         public static string DefaultRefusal(AuthenticationStackState state, string providerId)
         {
             return state == null ? null : Eligibility(state, providerId)?.DefaultRefusal;

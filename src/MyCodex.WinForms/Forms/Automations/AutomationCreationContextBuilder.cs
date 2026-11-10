@@ -50,29 +50,5 @@ namespace MyCodex.WinForms.Forms
                 ApprovalMode = approvalMode
             };
         }
-
-        public static AutomationCreationContext ForOfficeWorkspace(
-            WorkspaceInfo workspace,
-            string officeRootPath,
-            string runtimeProfileId,
-            string officeRuntimeScopeId,
-            string modelId,
-            string reasoningEffort,
-            ApprovalMode? approvalMode)
-        {
-            return new AutomationCreationContext
-            {
-                Kind = AutomationKind.Office,
-                InteractionMode = AppInteractionMode.Office,
-                RuntimeProfileId = runtimeProfileId,
-                OfficeRuntimeScopeId = officeRuntimeScopeId,
-                WorkspaceId = workspace == null ? null : workspace.Id,
-                WorkspacePath = workspace == null ? null : workspace.RootPath,
-                OfficeRootPath = officeRootPath,
-                ModelId = modelId,
-                ReasoningEffort = reasoningEffort,
-                ApprovalMode = approvalMode
-            };
-        }
     }
 }

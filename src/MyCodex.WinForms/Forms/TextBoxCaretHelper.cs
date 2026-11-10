@@ -15,21 +15,6 @@ namespace MyCodex.WinForms.Forms
             MoveToStart(textBox);
         }
 
-        internal static void SetTextAndRestoreSelection(TextBoxBase textBox, string text, int selectionStart, int selectionLength)
-        {
-            if (textBox == null || textBox.IsDisposed)
-            {
-                return;
-            }
-
-            textBox.Text = text ?? string.Empty;
-            var safeSelectionStart = System.Math.Max(0, System.Math.Min(selectionStart, textBox.TextLength));
-            var safeSelectionLength = System.Math.Max(0, System.Math.Min(selectionLength, textBox.TextLength - safeSelectionStart));
-            textBox.SelectionStart = safeSelectionStart;
-            textBox.SelectionLength = safeSelectionLength;
-            textBox.ScrollToCaret();
-        }
-
         internal static void MoveToStart(TextBoxBase textBox)
         {
             if (textBox == null || textBox.IsDisposed)

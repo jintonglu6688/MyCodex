@@ -131,8 +131,6 @@ namespace MyCodex.Application.Tests
         {
             "InitializeAppAsync",
             "EnsureAppServerConnectedAsync",
-            "EnsureRuntimeEndpointReadyAsync",
-            "RequiresRuntimeEndpointStorage",
             "TryRecoverAppServerConnectionAsync",
             "EnsureAppServerAvailableForActionAsync",
             "RefreshAuthenticationStateAsync",
@@ -160,15 +158,11 @@ namespace MyCodex.Application.Tests
             "AppendLog",
             "LogFlushTimer_Tick",
             "FlushPendingLogText",
-            "ClearRenderedLog",
-            "ClearAllLogBuffers",
-            "HasRecordedLogContent",
             "HasActivityTimelineContent",
             "EnsurePendingLogFlushScheduled",
             "RefreshActivityDisplay",
             "RenderActivityDisplay",
-            "BuildCurrentActivityTimelineItems",
-            "ShouldShowActivityLog"
+            "BuildCurrentActivityTimelineItems"
         };
 
         private static readonly string[] Phase6StatusTitleMethodNames =
@@ -787,7 +781,7 @@ namespace MyCodex.Application.Tests
             var renderBlock = ExtractBlock(
                 activitySource,
                 "private void RenderActivityDisplay()",
-                "private bool ShouldShowActivityLog()");
+                "private string[] BuildCurrentActivityTimelineItems(");
 
             Assert.That(combinedSource, Does.Contain("private readonly ActivityVirtualBrowseControl _activityBrowseControl;"));
             Assert.That(combinedSource, Does.Contain("private readonly Label _activityCurrentStatusLabel;"));

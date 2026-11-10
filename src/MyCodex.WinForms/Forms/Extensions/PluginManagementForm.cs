@@ -1407,26 +1407,6 @@ namespace MyCodex.WinForms.Forms
                 : plugin.SourcePath;
         }
 
-        private static string ResolveExistingPluginFolderPath(
-            string sourcePath,
-            string trackedSourcePath,
-            string cacheDirectory)
-        {
-            if (!string.IsNullOrWhiteSpace(sourcePath) && Directory.Exists(sourcePath))
-            {
-                return sourcePath;
-            }
-
-            if (!string.IsNullOrWhiteSpace(trackedSourcePath) && Directory.Exists(trackedSourcePath))
-            {
-                return trackedSourcePath;
-            }
-
-            return !string.IsNullOrWhiteSpace(cacheDirectory) && Directory.Exists(cacheDirectory)
-                ? cacheDirectory
-                : null;
-        }
-
         private List<string> GetLoadedCategoriesForMarket(string marketName)
         {
             return GetAvailableMarketItems()
@@ -2140,19 +2120,6 @@ namespace MyCodex.WinForms.Forms
             return plugin.Name;
         }
 
-
-        private static void AddPluginIdentityKeys(HashSet<string> keys, AppServerPluginSummary plugin)
-        {
-            if (keys == null || plugin == null)
-            {
-                return;
-            }
-
-            var pluginKey = GetPluginKey(plugin);
-            AddPluginIdentityKey(keys, pluginKey);
-            AddPluginIdentityKey(keys, GetPluginBaseKey(plugin));
-            AddPluginDisplayIdentityKey(keys, plugin.DisplayName);
-        }
 
         private static bool AddPluginIdentityKeysForCandidate(HashSet<string> keys, string pluginId, string displayName)
         {

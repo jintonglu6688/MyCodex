@@ -111,31 +111,6 @@ namespace MyCodex.Application.Services
             return result;
         }
 
-        public static List<ChatSession> GetSessionsForActiveRuntimeContexts(
-            IEnumerable<ChatSession> sessions,
-            string codingRuntimeProfileId,
-            string officeRuntimeScopeId)
-        {
-            var result = new List<ChatSession>();
-            if (sessions == null)
-            {
-                return result;
-            }
-
-            foreach (var session in sessions)
-            {
-                if (IsSessionInActiveRuntimeContexts(
-                    session,
-                    codingRuntimeProfileId,
-                    officeRuntimeScopeId))
-                {
-                    result.Add(session);
-                }
-            }
-
-            return result;
-        }
-
         public static bool IsSessionInActiveRuntimeContexts(
             ChatSession session,
             string codingRuntimeProfileId,

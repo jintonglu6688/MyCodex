@@ -33,6 +33,33 @@ namespace MyCodex.Application.Tests
             Assert.That(exception.InnerException, Is.TypeOf<InvalidOperationException>());
         }
 
+        [TestCase(@"..\..\Startup")]
+        [TestCase("9.0.0/..")]
+        [TestCase("..")]
+        public void AppUpdateDownload_RejectsManifestVersionThatIsNotADirectoryName(string version)
+        {
+            var service = new AppUpdateService(
+                new MyCodex.Infrastructure.Persistence.AppConfigService(
+                    Path.Combine(TestContext.CurrentContext.WorkDirectory, "update-version-" + Guid.NewGuid().ToString("N"))),
+                new UpdateManifestClient("https://updates.invalid/stable.json"),
+                new UpdatePackageDownloader());
+            var check = new AppUpdateCheckResult
+            {
+                Manifest = new UpdateManifest(),
+                Package = new UpdateManifestAppPackage
+                {
+                    Version = version,
+                    Asset = new UpdateAssetReference { Url = "MyCodex_Setup.exe", Sha256 = new string('0', 64) }
+                }
+            };
+
+            Assert.That(
+                () => service.DownloadAsync(check, CancellationToken.None).GetAwaiter().GetResult(),
+                Throws.TypeOf<InvalidOperationException>().With.Message.EqualTo(MyCodex.Shared.Localization.SharedLocalization.Text(
+                    "UpdatePackage.Error.DestinationEscaped",
+                    "Update asset destination escapes the download directory.")));
+        }
+
         [Test]
         public void DownloadVerifiedAsync_RemovesPackageWhenVerificationFails()
         {

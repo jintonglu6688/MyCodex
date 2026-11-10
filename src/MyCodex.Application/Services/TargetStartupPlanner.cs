@@ -13,7 +13,9 @@ namespace MyCodex.Application.Services
 
     public static class TargetStartupPlanner
     {
-        public static TargetStartupSelection Resolve(TargetCatalogSnapshot catalog, string explicitTargetId, string workspacePath)
+        // baseDirectory: where a relative Windows workspace path is resolved; null means the current directory.
+        public static TargetStartupSelection Resolve(TargetCatalogSnapshot catalog, string explicitTargetId, string workspacePath,
+            string baseDirectory = null)
         {
             if (catalog == null || catalog.Targets == null)
             {
@@ -63,7 +65,7 @@ namespace MyCodex.Application.Services
                 {
                     if (WorkspacePathUtilities.LooksLikeUnixAbsolutePath(path))
                         throw new InvalidOperationException("Choose a WSL or SSH target for a Unix workspace path.");
-                    path = Path.GetFullPath(path);
+                    path = Path.GetFullPath(baseDirectory == null ? path : Path.Combine(baseDirectory, path));
                 }
                 else if (!WorkspacePathUtilities.LooksLikeUnixAbsolutePath(path))
                 {

@@ -207,42 +207,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void ShowRunResults_SelectsRunResultsTabAndRefreshesState()
-        {
-            var store = new InMemoryAutomationStore
-            {
-                Snapshot = new AutomationStateSnapshot
-                {
-                    Runs = new List<AutomationRunSnapshot>
-                    {
-                        new AutomationRunSnapshot
-                        {
-                            Id = "run-1",
-                            AutomationId = "automation-1",
-                            Status = AutomationRunStatus.Completed,
-                            StartedAt = new DateTime(2026, 6, 14, 8, 0, 0),
-                            NeedsAttention = true,
-                            Archived = false,
-                            Summary = "Found changes"
-                        }
-                    }
-                }
-            };
-
-            using (var form = new AutomationsForm(store, null, @"E:\MyCodex-Automations"))
-            {
-                form.Show();
-                var tabs = FindControlByName<TabControl>(form, "automationsTabs");
-                tabs.SelectedIndex = 0;
-
-                form.ShowRunResults();
-
-                Assert.That(tabs.SelectedIndex, Is.EqualTo(1));
-                Assert.That(FormTestDriver.FindControlOrDefault<ListView>(form, UiLocalization.Text("AutomationsForm.Accessible.RunHistory", "Run results")).Items.Count, Is.EqualTo(1));
-            }
-        }
-
-        [Test]
         public void AutomationsForm_F5RefreshesAutomationState()
         {
             var store = new InMemoryAutomationStore

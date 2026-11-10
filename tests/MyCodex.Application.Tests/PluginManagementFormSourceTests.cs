@@ -620,31 +620,6 @@ namespace MyCodex.Application.Tests
             Assert.That(operationBody.IndexOf("MessageBox.Show", StringComparison.Ordinal), Is.LessThan(0));
         }
 
-        [Test]
-        public void PluginFolderResolution_UsesTrackedCachePathWhenProtocolPathIsMissing()
-        {
-            var root = Path.Combine(Path.GetTempPath(), "MyCodex-PluginFolderResolution-" + Guid.NewGuid().ToString("N"));
-            var trackedPath = Path.Combine(root, "1.0.0");
-            var cachePath = Path.Combine(root, "cache-root");
-            try
-            {
-                Directory.CreateDirectory(trackedPath);
-                Directory.CreateDirectory(cachePath);
-
-                var resolved = (string)GetPrivateStaticMethod("ResolveExistingPluginFolderPath")
-                    .Invoke(null, new object[] { null, trackedPath, cachePath });
-
-                Assert.That(resolved, Is.EqualTo(trackedPath));
-            }
-            finally
-            {
-                if (Directory.Exists(root))
-                {
-                    Directory.Delete(root, true);
-                }
-            }
-        }
-
         [Category(SourceGuardCategory.SourceBehavior)]
         [Test]
         public void PluginFolderAction_UsesResolvedInstalledFolderForButtonMenuAndOpen()
@@ -772,8 +747,8 @@ namespace MyCodex.Application.Tests
 
         private static void InvokeAddPluginIdentityKeys(HashSet<string> keys, AppServerPluginSummary plugin)
         {
-            GetPrivateStaticMethod("AddPluginIdentityKeys")
-                .Invoke(null, new object[] { keys, plugin });
+            // The form registers an installed plugin through the same candidate path.
+            InvokeAddPluginIdentityKeysForCandidate(keys, plugin.PluginId, plugin.DisplayName);
         }
 
         private static bool InvokeAddPluginIdentityKeysForCandidate(

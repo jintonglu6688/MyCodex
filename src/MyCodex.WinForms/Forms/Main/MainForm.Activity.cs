@@ -7,7 +7,6 @@ namespace MyCodex.WinForms.Forms
     {
         private void AppendLog(string text)
         {
-            _recordedLogState.AppendLogLine(text);
             _visibleLogState.AppendLogLine(text);
             EnsurePendingLogFlushScheduled();
         }
@@ -35,28 +34,6 @@ namespace MyCodex.WinForms.Forms
             }
 
             return true;
-        }
-
-        private void ClearRenderedLog()
-        {
-            _visibleLogState.Clear();
-            if (_logFlushTimer.Enabled)
-            {
-                _logFlushTimer.Stop();
-            }
-
-            RefreshActivityDisplay();
-        }
-
-        private void ClearAllLogBuffers()
-        {
-            ClearRenderedLog();
-            _recordedLogState.Clear();
-        }
-
-        private bool HasRecordedLogContent()
-        {
-            return _recordedLogState.HasContent;
         }
 
         private bool HasActivityTimelineContent()
@@ -132,11 +109,6 @@ namespace MyCodex.WinForms.Forms
             return state.BuildDisplayItems(
                 UiLocalization.Text("MainForm.Activity.List.Empty", "No activity records currently."),
                 _appConfigSnapshot);
-        }
-
-        private bool ShouldShowActivityLog()
-        {
-            return _appConfigSnapshot == null || _appConfigSnapshot.ShowCommandOutput;
         }
     }
 }

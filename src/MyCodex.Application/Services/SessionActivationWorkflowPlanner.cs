@@ -35,12 +35,5 @@ namespace MyCodex.Application.Services
         {
             return new SessionActivationPlan(session, includeSystemHeader);
         }
-
-        public static bool ShouldSkipExplicitActivation(ChatSession currentSession, ChatSession requestedSession)
-        {
-            return currentSession != null &&
-                   requestedSession != null &&
-                   string.Equals(currentSession.Id, requestedSession.Id, StringComparison.OrdinalIgnoreCase);
-        }
     }
 }

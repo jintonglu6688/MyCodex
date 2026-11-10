@@ -26,19 +26,6 @@ namespace MyCodex.Infrastructure.AppServer
             _approvalRequests[requestId] = new PendingRequest<AppServerPendingApprovalRequest>(request, connectionEpoch);
         }
 
-        public bool TryGetApproval(string requestId, out AppServerPendingApprovalRequest request)
-        {
-            PendingRequest<AppServerPendingApprovalRequest> pendingRequest;
-            if (_approvalRequests.TryGetValue(requestId ?? string.Empty, out pendingRequest))
-            {
-                request = pendingRequest.Request;
-                return true;
-            }
-
-            request = null;
-            return false;
-        }
-
         public bool RemoveApproval(string requestId)
         {
             if (string.IsNullOrWhiteSpace(requestId))
@@ -84,19 +71,6 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             _toolInputRequests[requestId] = new PendingRequest<AppServerPendingToolUserInputRequest>(request, connectionEpoch);
-        }
-
-        public bool TryGetToolInput(string requestId, out AppServerPendingToolUserInputRequest request)
-        {
-            PendingRequest<AppServerPendingToolUserInputRequest> pendingRequest;
-            if (_toolInputRequests.TryGetValue(requestId ?? string.Empty, out pendingRequest))
-            {
-                request = pendingRequest.Request;
-                return true;
-            }
-
-            request = null;
-            return false;
         }
 
         public bool RemoveToolInput(string requestId)

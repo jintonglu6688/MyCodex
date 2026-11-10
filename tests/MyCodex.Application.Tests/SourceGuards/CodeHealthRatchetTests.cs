@@ -16,11 +16,9 @@ namespace MyCodex.Application.Tests.SourceGuards
     [Category(SourceGuardCategory.Placement)]
     public sealed class CodeHealthRatchetTests
     {
-        // Seven wiring/propagation lines for provider recovery; migration behavior remains outside the form.
-        private const int MainFormPartialNonEmptyLinesCeiling = 22598;
-        private const int MainFormCoreFileNonEmptyLinesCeiling = 2900;
-        // One coordinator owns deferred browser setup; feature state stays outside MainForm.
-        private const int MainFormFieldCeiling = 363;
+        private const int MainFormPartialNonEmptyLinesCeiling = 22512;
+        private const int MainFormCoreFileNonEmptyLinesCeiling = 2889;
+        private const int MainFormFieldCeiling = 361;
         private const int MethodsOver150LinesCeiling = 13;
         private const int FilesOver1200LinesCeiling = 23;
 

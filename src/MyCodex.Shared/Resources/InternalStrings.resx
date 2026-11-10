@@ -867,9 +867,6 @@
   <data name="RemoteMacFileSystemBridge.Error.CommandFailed" xml:space="preserve">
     <value>Remote SSH command failed.</value>
   </data>
-  <data name="RemoteSshLocalPortForward.Error.StartFailed" xml:space="preserve">
-    <value>Unable to start SSH port forwarding.</value>
-  </data>
   <data name="GitCommandRunner.Error.WorkingDirectoryRequired" xml:space="preserve">
     <value>Working directory cannot be empty.</value>
   </data>

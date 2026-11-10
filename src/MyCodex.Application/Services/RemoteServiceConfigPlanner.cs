@@ -19,23 +19,6 @@ namespace MyCodex.Application.Services
         public IReadOnlyList<string> Messages { get; private set; }
     }
 
-    public sealed class RemoteServiceButtonState
-    {
-        public bool CanTestConnection { get; set; }
-
-        public bool CanSave { get; set; }
-
-        public bool CanRegister { get; set; }
-
-        public bool CanCreateInvite { get; set; }
-
-        public bool CanCopyPairingInfo { get; set; }
-
-        public bool CanRefreshDevices { get; set; }
-
-        public bool CanRevokeDevice { get; set; }
-    }
-
     public static class RemoteServiceConfigPlanner
     {
         public const int CurrentSchemaVersion = 2;
@@ -210,30 +193,6 @@ namespace MyCodex.Application.Services
                 TenantSecret = accessSecret,
                 RelaySigningPublicKey = TextValueHelper.TrimToNull(snapshot.RelaySigningPublicKey),
                 RelaySigningKeyFingerprint = TextValueHelper.TrimToNull(snapshot.RelaySigningKeyFingerprint)
-            };
-        }
-
-        public static RemoteServiceButtonState BuildButtonState(
-            bool configured,
-            bool registered,
-            bool inviteActive,
-            bool deviceSelected,
-            bool busy)
-        {
-            if (busy)
-            {
-                return new RemoteServiceButtonState();
-            }
-
-            return new RemoteServiceButtonState
-            {
-                CanTestConnection = configured,
-                CanSave = configured,
-                CanRegister = configured,
-                CanCreateInvite = configured && registered,
-                CanCopyPairingInfo = inviteActive,
-                CanRefreshDevices = configured,
-                CanRevokeDevice = deviceSelected
             };
         }
 

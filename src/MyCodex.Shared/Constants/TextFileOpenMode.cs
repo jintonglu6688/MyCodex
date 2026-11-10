@@ -45,11 +45,5 @@ namespace MyCodex.Shared.Constants
 
             return Internal;
         }
-
-        public static bool IsExternal(string value)
-        {
-            var mode = Normalize(value);
-            return !string.Equals(mode, Internal, StringComparison.OrdinalIgnoreCase);
-        }
     }
 }

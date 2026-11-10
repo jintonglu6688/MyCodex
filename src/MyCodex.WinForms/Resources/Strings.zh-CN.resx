@@ -8557,9 +8557,6 @@ MyCodex 桌面客户端。</value>
 <data name="GitWorkbenchForm.Message.AmendNoHead" xml:space="preserve">
     <value>未找到可修正的上一条提交。</value>
   </data>
-<data name="MainForm.RuntimeConfig.Error.InitFailed" xml:space="preserve">
-    <value>无法初始化运行时 MyCodex 配置目录。</value>
-  </data>
 <data name="WslAppServerSettingsForm.Accessible.RemoteHostKey" xml:space="preserve">
     <value>主机密钥指纹</value>
   </data>

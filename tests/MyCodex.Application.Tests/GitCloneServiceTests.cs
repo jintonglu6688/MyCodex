@@ -21,6 +21,15 @@ namespace MyCodex.Application.Tests
             Assert.That(GitClonePathPlanner.InferTargetFolderName("https://gitcode.com/example/My Repo.git"), Is.EqualTo("My Repo"));
         }
 
+        [TestCase(false, "clone --progress -- --upload-pack=calc.exe repo")]
+        [TestCase(true, "clone --progress --recurse-submodules -- --upload-pack=calc.exe repo")]
+        public void BuildCloneArguments_SeparatesTheAddressFromGitOptions(bool recurseSubmodules, string expected)
+        {
+            Assert.That(
+                GitCloneService.BuildCloneArguments("--upload-pack=calc.exe", "repo", recurseSubmodules),
+                Is.EqualTo(expected));
+        }
+
         [Test]
         public void RedactSensitiveText_RemovesUrlCredentialsAndGitHubTokens()
         {

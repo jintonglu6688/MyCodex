@@ -38,38 +38,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void ForOfficeWorkspace_BuildsOfficeContextUsingActualRuntimeAndOfficeScope()
-        {
-            var workspace = new WorkspaceInfo
-            {
-                Id = "office-reports",
-                Name = "Reports",
-                RootPath = @"E:\Documents\Reports",
-                Kind = WorkspaceKind.Office
-            };
-
-            var context = AutomationCreationContextBuilder.ForOfficeWorkspace(
-                workspace,
-                "/home/alice/office",
-                "windows",
-                "wsl|ubuntu",
-                "gpt-5.5",
-                "medium",
-                ApprovalMode.ReadOnly);
-
-            Assert.That(context.Kind, Is.EqualTo(AutomationKind.Office));
-            Assert.That(context.InteractionMode, Is.EqualTo(AppInteractionMode.Office));
-            Assert.That(context.WorkspaceId, Is.EqualTo("office-reports"));
-            Assert.That(context.WorkspacePath, Is.EqualTo(@"E:\Documents\Reports"));
-            Assert.That(context.OfficeRootPath, Is.EqualTo("/home/alice/office"));
-            Assert.That(context.RuntimeProfileId, Is.EqualTo("windows"));
-            Assert.That(context.OfficeRuntimeScopeId, Is.EqualTo("wsl|ubuntu"));
-            Assert.That(context.ModelId, Is.EqualTo("gpt-5.5"));
-            Assert.That(context.ReasoningEffort, Is.EqualTo("medium"));
-            Assert.That(context.ApprovalMode, Is.EqualTo(ApprovalMode.ReadOnly));
-        }
-
-        [Test]
         public void ForThread_PreservesThreadContext()
         {
             var context = AutomationCreationContextBuilder.ForThread(

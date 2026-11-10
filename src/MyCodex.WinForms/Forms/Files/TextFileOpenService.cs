@@ -30,7 +30,7 @@ namespace MyCodex.WinForms.Forms
             request = request ?? new TextFileOpenRequest();
             var mode = TextFileOpenMode.Normalize(preference.Mode);
 
-            if (string.Equals(mode, TextFileOpenMode.Internal, StringComparison.OrdinalIgnoreCase) || !request.IsLocalWindowsFile)
+            if (UsesInternalEditor(preference, request.FilePath, request.IsLocalWindowsFile))
             {
                 _openInternalEditor(request);
                 return TextFileOpenResult.Success(true);
@@ -45,11 +45,31 @@ namespace MyCodex.WinForms.Forms
                         "The custom text editor executable is not configured."));
             }
 
+            return Launch(TextFileExternalEditorCommandBuilder.Build(
+                _externalEditorPreferenceResolver.Resolve(preference),
+                request));
+        }
+
+        // The system default action runs scripts and programs; opening a file to read it must not run it.
+        internal static bool UsesInternalEditor(TextFileOpenPreference preference, string path, bool isLocalWindowsFile)
+        {
+            var mode = TextFileOpenMode.Normalize(preference == null ? null : preference.Mode);
+            return string.Equals(mode, TextFileOpenMode.Internal, StringComparison.OrdinalIgnoreCase) || !isLocalWindowsFile ||
+                   (string.Equals(mode, TextFileOpenMode.System, StringComparison.OrdinalIgnoreCase) &&
+                    TextEditableFilePolicy.RunsWhenOpenedByWindows(path));
+        }
+
+        // The file browser's explicit "open with the system app" for files MyCodex cannot show; like Explorer, it runs programs.
+        public TextFileOpenResult OpenWithSystemDefault(string path)
+        {
+            return Launch(new TextFileExternalEditorCommand { ExecutablePath = path, Arguments = string.Empty, UseShellExecute = true });
+        }
+
+        private TextFileOpenResult Launch(TextFileExternalEditorCommand command)
+        {
             try
             {
-                _launchExternalEditor(TextFileExternalEditorCommandBuilder.Build(
-                    _externalEditorPreferenceResolver.Resolve(preference),
-                    request));
+                _launchExternalEditor(command);
                 return TextFileOpenResult.Success(false);
             }
             catch (Win32Exception ex)

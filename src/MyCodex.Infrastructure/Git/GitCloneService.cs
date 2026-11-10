@@ -106,11 +106,12 @@ namespace MyCodex.Infrastructure.Git
             }
         }
 
-        private static string BuildCloneArguments(string repositoryUrl, string folderName, bool recurseSubmodules)
+        // "--" keeps a pasted address such as --upload-pack=calc.exe from being read as a Git option.
+        internal static string BuildCloneArguments(string repositoryUrl, string folderName, bool recurseSubmodules)
         {
             var arguments = recurseSubmodules
-                ? new[] { "clone", "--progress", "--recurse-submodules", repositoryUrl, folderName }
-                : new[] { "clone", "--progress", repositoryUrl, folderName };
+                ? new[] { "clone", "--progress", "--recurse-submodules", "--", repositoryUrl, folderName }
+                : new[] { "clone", "--progress", "--", repositoryUrl, folderName };
             return GitCommandLineBuilder.BuildArguments(arguments);
         }
 

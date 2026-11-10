@@ -162,14 +162,6 @@ namespace MyCodex.Infrastructure.Persistence
             }
         }
 
-        public AppConfigService GetStartupPaths(TargetCatalogSnapshot catalog, string appDirectoryName)
-        {
-            var root = _legacyPaths.GetAppDataDirectory();
-            ValidateCompleted(catalog, Path.Combine(root, "targets"));
-            return new AppConfigService(Path.Combine(root, "targets", catalog.LastOpenedTargetId),
-                _legacyPaths.GetInstallationDirectory(), appDirectoryName, root);
-        }
-
         private static void ValidateCompleted(TargetCatalogSnapshot catalog, string directory)
         {
             if (catalog == null || catalog.SchemaVersion != 1 || catalog.Targets == null ||

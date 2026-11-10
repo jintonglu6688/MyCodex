@@ -71,22 +71,6 @@ namespace MyCodex.WinForms.Forms
             return efforts;
         }
 
-        internal static string BuildModelDescriptionText(AppServerModelOption model)
-        {
-            if (model == null)
-            {
-                return string.Empty;
-            }
-
-            var name = string.IsNullOrWhiteSpace(model.DisplayName) ? model.ModelId : model.DisplayName;
-            if (string.IsNullOrWhiteSpace(model.Description))
-            {
-                return name;
-            }
-
-            return name + " - " + model.Description;
-        }
-
         internal static string BuildModelMenuLabel(AppServerModelOption model)
         {
             if (model == null || string.IsNullOrWhiteSpace(model.ModelId))

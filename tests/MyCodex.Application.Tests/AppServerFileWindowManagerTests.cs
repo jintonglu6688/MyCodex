@@ -37,21 +37,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void Registry_UpdateKeyMovesExistingWindow()
-        {
-            var registry = new AppServerFileWindowRegistry<object>();
-            var oldKey = AppServerFileWindowKey.CreateBrowser("Bundled", "windows", null, AppInteractionMode.Coding, @"E:\Repo");
-            var newKey = AppServerFileWindowKey.CreateBrowser("Bundled", "windows", null, AppInteractionMode.Coding, @"E:\Repo\src");
-            var value = new object();
-
-            registry.TryAdd(oldKey, value);
-            registry.UpdateKey(oldKey, newKey, value);
-
-            Assert.That(registry.TryGet(oldKey), Is.Null);
-            Assert.That(registry.TryGet(newKey), Is.SameAs(value));
-        }
-
-        [Test]
         public void Registry_UpdateKeyToExistingKeyKeepsExistingTarget()
         {
             var registry = new AppServerFileWindowRegistry<object>();

@@ -8609,9 +8609,6 @@ Open it and continue?</value></data>
 <data name="GitWorkbenchForm.Message.AmendNoHead" xml:space="preserve">
     <value>No previous commit was found to amend.</value>
   </data>
-<data name="MainForm.RuntimeConfig.Error.InitFailed" xml:space="preserve">
-    <value>Runtime MyCodex configuration directory could not be initialized.</value>
-  </data>
 <data name="WslAppServerSettingsForm.Accessible.RemoteHostKey" xml:space="preserve">
     <value>Host key fingerprint</value>
   </data>

@@ -153,21 +153,6 @@ namespace MyCodex.Application.Services
             return profile;
         }
 
-        public void SetModelDefaults(
-            AppConfigSnapshot appConfigSnapshot,
-            string modelId,
-            string reasoningEffort)
-        {
-            var runtimeConfig = GetRuntimeProfileConfig(appConfigSnapshot, true);
-            if (runtimeConfig == null)
-            {
-                return;
-            }
-
-            runtimeConfig.DefaultModelId = Normalize(modelId);
-            runtimeConfig.DefaultReasoningEffort = Normalize(reasoningEffort);
-        }
-
         public void SetApprovalMode(AppConfigSnapshot appConfigSnapshot, ApprovalMode approvalMode)
         {
             var runtimeConfig = GetRuntimeProfileConfig(appConfigSnapshot, true);
@@ -175,13 +160,6 @@ namespace MyCodex.Application.Services
             {
                 runtimeConfig.DefaultApprovalMode = approvalMode;
             }
-        }
-
-        public static bool ContainsModelId(IEnumerable<string> modelIds, string modelId)
-        {
-            return !string.IsNullOrWhiteSpace(modelId) &&
-                (modelIds ?? Enumerable.Empty<string>()).Any(candidate =>
-                    string.Equals(candidate, modelId.Trim(), StringComparison.OrdinalIgnoreCase));
         }
 
         public static bool IsExplicitConversationModelAvailable(

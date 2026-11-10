@@ -14,22 +14,6 @@ namespace MyCodex.Application.Tests
     public sealed class RemoteServiceConnectionWorkflowTests
     {
         [Test]
-        public async Task SaveOnlyAsync_PersistsSecretWithoutCallingRelay()
-        {
-            var store = new FakeRemoteServiceConfigStore();
-            var client = new FakeRelayHostClient();
-            var workflow = new RemoteServiceConnectionWorkflow(store, client);
-            var snapshot = CreateValidSnapshot();
-
-            var result = await workflow.SaveOnlyAsync(snapshot, "tenant-secret", "WORKSTATION", CancellationToken.None);
-
-            Assert.That(result.Success, Is.True);
-            Assert.That(result.Stage, Is.EqualTo(RemoteServiceConnectionStage.Saved));
-            Assert.That(store.ProtectedSecret, Is.EqualTo("tenant-secret"));
-            Assert.That(client.Calls, Is.Empty);
-        }
-
-        [Test]
         public async Task ConnectAndRegisterAsync_PinsMetadataBeforeEnrollAndList()
         {
             var store = new FakeRemoteServiceConfigStore();

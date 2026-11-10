@@ -240,17 +240,5 @@ namespace MyCodex.Application.Tests
             Assert.That(snapshot.ExternalProfile.RelayHost, Is.EqualTo("relay.example.com"));
             Assert.That(snapshot.ExternalProfile.EncryptedAccessSecret, Is.EqualTo("protected-external"));
         }
-
-        [TestCase(false, false, false, false)]
-        [TestCase(true, false, false, true)]
-        public void BuildButtonState_EnablesActionsFromConfigAndSelection(bool configured, bool registered, bool deviceSelected, bool canSave)
-        {
-            var state = RemoteServiceConfigPlanner.BuildButtonState(configured, registered, false, deviceSelected, false);
-
-            Assert.That(state.CanSave, Is.EqualTo(canSave));
-            Assert.That(state.CanRegister, Is.EqualTo(configured));
-            Assert.That(state.CanCreateInvite, Is.EqualTo(configured && registered));
-            Assert.That(state.CanRevokeDevice, Is.EqualTo(deviceSelected));
-        }
     }
 }

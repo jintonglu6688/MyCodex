@@ -119,36 +119,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void SetDefaults_KeepsWindowsWslAndRemotePreferencesIsolated()
-        {
-            var service = new SessionDefaultsService();
-            var config = new AppConfigSnapshot();
-            service.SetModelDefaults(config, "windows-model", "high");
-
-            config.CodexRuntimeSource = CodexRuntimeSources.Wsl;
-            config.WslAppServer = new WslAppServerConfigSnapshot
-            {
-                DistributionName = "Ubuntu-24.04"
-            };
-            service.SetModelDefaults(config, "wsl-model", "medium");
-
-            config.CodexRuntimeSource = CodexRuntimeSources.RemoteUnixSsh;
-            config.SelectedRemoteUnixSshProfileId = "linux-dev";
-            config.RemoteUnixSshProfiles = new List<RemoteUnixSshProfileConfigSnapshot>
-            {
-                new RemoteUnixSshProfileConfigSnapshot { Id = "linux-dev" }
-            };
-            service.SetModelDefaults(config, "remote-model", "low");
-
-            Assert.That(config.RuntimeProfiles, Has.Count.EqualTo(3));
-            Assert.That(config.RuntimeProfiles[0].DefaultModelId, Is.EqualTo("windows-model"));
-            Assert.That(config.RuntimeProfiles[1].RuntimeProfileId, Is.EqualTo("wsl|ubuntu-24.04"));
-            Assert.That(config.RuntimeProfiles[1].DefaultModelId, Is.EqualTo("wsl-model"));
-            Assert.That(config.RuntimeProfiles[2].RuntimeProfileId, Is.EqualTo("remote-unix|linux-dev"));
-            Assert.That(config.RuntimeProfiles[2].DefaultModelId, Is.EqualTo("remote-model"));
-        }
-
-        [Test]
         public void IsExplicitConversationModelAvailable_BlocksOnlyUnavailableOverrides()
         {
             var observedModels = Models(Model("available"));

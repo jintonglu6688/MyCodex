@@ -10,8 +10,6 @@ namespace MyCodex.Application.Services
     public enum RemoteServiceConnectionStage
     {
         None,
-        Validation,
-        Saved,
         TestConnection,
         Registered
     }
@@ -36,21 +34,6 @@ namespace MyCodex.Application.Services
         {
             _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
             _relayClient = relayClient ?? throw new ArgumentNullException(nameof(relayClient));
-        }
-
-        public Task<RemoteServiceConnectionResult> SaveOnlyAsync(
-            RemoteServiceConfigSnapshot snapshot,
-            string rawAccessSecret,
-            string machineName,
-            CancellationToken cancellationToken)
-        {
-            SaveSnapshot(snapshot, rawAccessSecret, machineName);
-            return Task.FromResult(new RemoteServiceConnectionResult
-            {
-                Success = true,
-                Stage = RemoteServiceConnectionStage.Saved,
-                Snapshot = snapshot
-            });
         }
 
         public async Task<RemoteServiceConnectionResult> ConnectAndRegisterAsync(

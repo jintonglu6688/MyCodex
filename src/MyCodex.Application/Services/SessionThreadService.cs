@@ -231,16 +231,6 @@ namespace MyCodex.Application.Services
             }
         }
 
-        public async Task TryUpdateThreadGitMetadataAsync(ChatSession session, WorkspaceInfo workspace)
-        {
-            if (session == null)
-            {
-                return;
-            }
-
-            await TryUpdateThreadGitMetadataAsync(session.ThreadId, workspace);
-        }
-
         public async Task TryUpdateThreadGitMetadataAsync(string threadId, WorkspaceInfo workspace)
         {
             if (string.IsNullOrWhiteSpace(threadId) ||

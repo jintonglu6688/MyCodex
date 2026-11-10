@@ -92,7 +92,6 @@ namespace MyCodex.WinForms.Forms
         private readonly PersistedSessionService _persistedSessionService;
         private readonly SessionThreadService _sessionThreadService;
         private readonly IThreadHistoryRepairService _threadHistoryRepairService;
-        private string _validatedRuntimeEndpointScopeKey;
         private readonly List<AppServerModelOption> _availableModels;
         private string _availableModelsScopeKey;
         private readonly List<WorkspaceInfo> _recentWorkspaces;
@@ -144,7 +143,6 @@ namespace MyCodex.WinForms.Forms
         private readonly BufferedDispatchState<AppServerEventArgs> _bufferedCommandOutputState;
         private readonly CoalescingBufferedDispatchState<AppServerEventArgs> _bufferedTurnSummaryEventState;
         private readonly VisibleLogBuffer _visibleLogState;
-        private readonly VisibleLogBuffer _recordedLogState;
         private readonly ActivityDisplayRefreshState _activityDisplayRefreshState;
         private readonly ListView _workspaceList;
         private readonly ListView _sessionList;
@@ -429,7 +427,6 @@ namespace MyCodex.WinForms.Forms
                 BuildBufferedTurnSummaryEventKey,
                 MaxBufferedTurnSummaryEvents);
             _visibleLogState = new VisibleLogBuffer(MaxVisibleLogCharacters, TargetVisibleLogCharacters);
-            _recordedLogState = new VisibleLogBuffer(MaxVisibleLogCharacters, TargetVisibleLogCharacters);
             _activityDisplayRefreshState = new ActivityDisplayRefreshState();
             _sessionHistoryDisplayBuilder = new SessionHistoryDisplayBuilder(
                 ChatHistoryItemFactory.GetSystemSenderText(),
@@ -2072,16 +2069,6 @@ namespace MyCodex.WinForms.Forms
                    _sessionsPendingDefaultCollaborationMode.Contains(session.Id)
                 ? CreateCollaborationMode("default", modelId, reasoningEffort)
                 : null;
-        }
-
-        private Task TryUpdateThreadWorkspaceMetadataAsync(ChatSession session, WorkspaceInfo workspace)
-        {
-            if (session == null || IsOfficeSessionOrWorkspace(session, workspace))
-            {
-                return Task.CompletedTask;
-            }
-
-            return _sessionThreadService.TryUpdateThreadGitMetadataAsync(session, workspace);
         }
 
         private static bool IsOfficeSessionOrWorkspace(ChatSession session, WorkspaceInfo workspace)

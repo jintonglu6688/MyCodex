@@ -186,6 +186,11 @@ namespace MyCodex.Application.Tests
         [TestCase("git status \"x\\\"; calc; \"y\"")]
         [TestCase("powershell.exe -NoProfile -Command 'git status \"x\\\"; calc; \"y\"'")]
         [TestCase("cmd.exe /c git status \"x\\\" & calc & \"y\"")]
+        [TestCase("bash -lc 'git status \\\"; rm -rf ~ #\"'")]
+        [TestCase("bash -lc \"git status \\\\\\\"; rm -rf ~ #\\\\\\\"\"")]
+        [TestCase("/bin/sh -c 'git status \"a\\\\\" ; rm -rf ~ ; \"b\"'")]
+        [TestCase("zsh -lc \"git status $'\\\\'' ; rm -rf ~ #'\"")]
+        [TestCase("cmd.exe /c \"git status ^\" & calc\"")]
         public void Evaluate_CommandPrefixRejectsChainedOrLongerCommands(string command)
         {
             var evaluator = new CustomApprovalPolicyEvaluator();
@@ -207,6 +212,8 @@ namespace MyCodex.Application.Tests
         [TestCase("git status --short")]
         [TestCase("git status 2>&1")]
         [TestCase("pwsh.exe -Command \"git status --short\"")]
+        [TestCase("bash -lc 'git status --short \"my dir\"'")]
+        [TestCase("git status C:\\repo\\src")]
         public void Evaluate_CommandPrefixAllowsSingleCommandAtWordBoundary(string command)
         {
             var evaluator = new CustomApprovalPolicyEvaluator();
@@ -266,6 +273,7 @@ namespace MyCodex.Application.Tests
         [TestCase("git branch -f main HEAD~3")]
         [TestCase("git branch -m old new")]
         [TestCase("git status \"x\\\"; calc; \"y\"")]
+        [TestCase("bash -lc 'git status \\\"; rm -rf ~ #\"'")]
         public void Evaluate_GitInspectPermissionRejectsCommandsThatRunProgramsOrWrite(string command)
         {
             var result = new CustomApprovalPolicyEvaluator().Evaluate(

@@ -18,7 +18,8 @@ namespace MyCodex.Application.Tests
             Assert.That(script, Does.Contain("parent=${2:-}"));
             Assert.That(script, Does.Contain("folder=${3:-}"));
             Assert.That(script, Does.Contain("submodules=${4:-false}"));
-            Assert.That(script, Does.Contain("git -C \"$parent\" clone --progress"));
+            Assert.That(script, Does.Contain("clone --progress -- \"$repository\" \"$folder\""));
+            Assert.That(script, Does.Contain("clone --progress --recurse-submodules -- \"$repository\" \"$folder\""));
             Assert.That(script, Does.Contain("MYCODEX_CLONE_TARGET"));
             Assert.That(script, Does.Not.Contain("eval"));
         }

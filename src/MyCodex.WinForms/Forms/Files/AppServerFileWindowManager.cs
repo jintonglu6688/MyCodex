@@ -42,11 +42,6 @@ namespace MyCodex.WinForms.Forms
             }
         }
 
-        public void UpdateKey(AppServerFileWindowKey oldKey, AppServerFileWindowKey newKey, T item)
-        {
-            TryUpdateKey(oldKey, newKey, item);
-        }
-
         public bool TryUpdateKey(AppServerFileWindowKey oldKey, AppServerFileWindowKey newKey, T item)
         {
             if (oldKey == null || newKey == null || item == null)
@@ -250,10 +245,9 @@ namespace MyCodex.WinForms.Forms
             }
 
             var preference = _textFileOpenPreferenceProvider();
-            var mode = TextFileOpenMode.Normalize(preference == null ? null : preference.Mode);
-            var requestPath = TextFileOpenMode.IsExternal(mode) && hasLocalWindowsPath
-                ? localWindowsPath
-                : path;
+            var requestPath = TextFileOpenService.UsesInternalEditor(preference, path, hasLocalWindowsPath)
+                ? path
+                : localWindowsPath;
             var service = new TextFileOpenService(
                 null,
                 request => OpenPreview(request.FilePath, returnFocusTarget));
@@ -273,16 +267,7 @@ namespace MyCodex.WinForms.Forms
 
         private static void OpenWithSystemDefault(string path, Form returnFocusTarget)
         {
-            var service = new TextFileOpenService(
-                null,
-                request => { });
-            var result = service.Open(
-                new TextFileOpenPreference { Mode = TextFileOpenMode.System },
-                new TextFileOpenRequest
-                {
-                    FilePath = path,
-                    IsLocalWindowsFile = true
-                });
+            var result = new TextFileOpenService(null, request => { }).OpenWithSystemDefault(path);
 
             if (!result.Handled && !string.IsNullOrWhiteSpace(result.ErrorMessage))
             {

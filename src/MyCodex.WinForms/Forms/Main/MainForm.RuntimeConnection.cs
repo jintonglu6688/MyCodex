@@ -149,7 +149,6 @@ namespace MyCodex.WinForms.Forms
             {
                 if (!await WaitForTargetExitDecisionAsync()) return false;
                 _connectionStatus = GetConnectionStatusDisconnectedText();
-                _validatedRuntimeEndpointScopeKey = null;
                 RefreshHeader();
                 RefreshInputState();
                 AppendLog(string.Format(
@@ -158,63 +157,6 @@ namespace MyCodex.WinForms.Forms
                 SetHighPriorityStatus(ex.Message);
                 return false;
             }
-        }
-
-        private async Task EnsureRuntimeEndpointReadyAsync()
-        {
-            if (!RequiresRuntimeEndpointStorage())
-            {
-                _validatedRuntimeEndpointScopeKey = null;
-                return;
-            }
-
-            var scopeKey = _runtimeProfileService.GetCurrentRuntimeProfileId(_appConfigSnapshot);
-            if (string.Equals(_validatedRuntimeEndpointScopeKey, scopeKey, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            var script =
-                "set -eu\n" +
-                "root=\"${HOME}/.codex/mycodex\"\n" +
-                "mkdir -p \"$root\"\n" +
-                "chmod 700 \"$root\" 2>/dev/null || true\n" +
-                "printf 'MYCODEX_RUNTIME_CONFIG_READY=%s\\n' \"$root\"";
-            var result = await _appServerClient.ExecuteCommandAsync(
-                script,
-                "/",
-                ApprovalMode.FullAccess,
-                "mycodex-runtime-config-init-" + Guid.NewGuid().ToString("N"),
-                30000);
-            if (result == null || result.ExitCode != 0)
-            {
-                var message = result != null && !string.IsNullOrWhiteSpace(result.StdErr)
-                    ? result.StdErr.Trim()
-                    : UiLocalization.Text("MainForm.RuntimeConfig.Error.InitFailed", "Runtime MyCodex configuration directory could not be initialized.");
-                throw new InvalidOperationException(message);
-            }
-
-            _validatedRuntimeEndpointScopeKey = scopeKey;
-        }
-
-        private bool RequiresRuntimeEndpointStorage()
-        {
-            if (_currentInteractionMode == AppInteractionMode.Office)
-            {
-                return false;
-            }
-
-            if (_appConfigSnapshot == null)
-            {
-                return false;
-            }
-
-            if (CodexRuntimeSources.IsRemoteUnixSsh(_appConfigSnapshot.CodexRuntimeSource))
-            {
-                return true;
-            }
-
-            return string.Equals(_appConfigSnapshot.CodexRuntimeSource, CodexRuntimeSources.Wsl, StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task<bool> TryRecoverAppServerConnectionAsync(string initialStatus, string failureStatus, bool announceSuccess)
@@ -271,7 +213,6 @@ namespace MyCodex.WinForms.Forms
             {
                 if (!await WaitForTargetExitDecisionAsync()) return false;
                 _connectionStatus = GetConnectionStatusDisconnectedText();
-                _validatedRuntimeEndpointScopeKey = null;
                 RefreshHeader();
                 RefreshInputState();
                 AppendLog(string.Format(UiLocalization.Text("MainForm.Log.ReconnectAppServerFailed.Template", "Failed to reconnect App Server: {0}"), ex.Message));
@@ -302,7 +243,6 @@ namespace MyCodex.WinForms.Forms
                     if (!await WaitForTargetExitDecisionAsync()) return false;
                     TraceSendDiagnosticError("EnsureAppServer", ex);
                     _connectionStatus = GetConnectionStatusDisconnectedText();
-                    _validatedRuntimeEndpointScopeKey = null;
                     RefreshHeader();
                     RefreshInputState();
                     AppendLog(string.Format(

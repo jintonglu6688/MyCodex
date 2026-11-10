@@ -152,7 +152,7 @@ namespace MyCodex.Application.Tests
             var source = RepositorySource.ReadSourceFile("Program.cs");
 
             Assert.That(source, Does.Contain("mainForm.ApplyStartupArguments(args)"));
-            Assert.That(source, Does.Contain("TargetStartupPlanner.Resolve(snapshot, options.TargetId, options.WorkspacePath)"));
+            Assert.That(source, Does.Contain("TargetStartupPlanner.Resolve(snapshot, options.TargetId, options.WorkspacePath, launchDirectory)"));
             Assert.That(source.IndexOf("TargetInstanceCoordinator.Acquire", StringComparison.Ordinal),
                 Is.LessThan(source.IndexOf("catalog.GetPaths(selection.Target.Id)", StringComparison.Ordinal)));
             Assert.That(source.IndexOf("catalog.GetPaths(selection.Target.Id)", StringComparison.Ordinal),

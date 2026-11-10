@@ -96,7 +96,7 @@ chinesesimp.PreparingForceClose=正在按您的确认强制关闭本安装目录
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [InstallDelete]
-Type: filesandordirs; Name: "{app}\runtime\*"
+Type: filesandordirs; Name: "{app}\runtime\*"; Check: IsExistingMyCodexInstallation
 
 [UninstallDelete]
 Type: files; Name: "{app}\tools\installation-exit.version"
@@ -147,6 +147,13 @@ begin
     Result := FmtMessage(CustomMessage('InstallPathTooLong'), ['{#MaximumInstallRootLength}'])
   else
     Result := '';
+end;
+
+// Stale runtimes exist only where MyCodex is installed. A chosen folder that merely contains
+// its own "runtime" directory keeps it.
+function IsExistingMyCodexInstallation(): Boolean;
+begin
+  Result := FileExists(ExpandConstant('{app}\MyCodex.exe'));
 end;
 
 function CanLaunchInstalledApplication(): Boolean;

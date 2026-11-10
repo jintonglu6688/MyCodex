@@ -19,15 +19,5 @@ namespace MyCodex.Application.Tests
         {
             Assert.That(TextFileOpenMode.Normalize(value), Is.EqualTo(expected));
         }
-
-        [Test]
-        public void IsExternal_ReturnsTrueOnlyForProcessBackedModes()
-        {
-            Assert.That(TextFileOpenMode.IsExternal(TextFileOpenMode.Internal), Is.False);
-            Assert.That(TextFileOpenMode.IsExternal(TextFileOpenMode.System), Is.True);
-            Assert.That(TextFileOpenMode.IsExternal(TextFileOpenMode.VsCode), Is.True);
-            Assert.That(TextFileOpenMode.IsExternal(TextFileOpenMode.NotepadPlusPlus), Is.True);
-            Assert.That(TextFileOpenMode.IsExternal(TextFileOpenMode.Custom), Is.True);
-        }
     }
 }

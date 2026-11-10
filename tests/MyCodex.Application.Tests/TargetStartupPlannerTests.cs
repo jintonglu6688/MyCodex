@@ -20,6 +20,16 @@ namespace MyCodex.Application.Tests
             Assert.That(catalog.LastOpenedTargetId, Is.EqualTo("ssh-build"));
         }
 
+        [TestCase(".", @"E:\Projects\site")]
+        [TestCase(@"docs\api", @"E:\Projects\site\docs\api")]
+        [TestCase(@"D:\Other", @"D:\Other")]
+        public void RelativeWindowsWorkspace_ResolvesAgainstTheLaunchDirectory(string workspace, string expected)
+        {
+            var selection = TargetStartupPlanner.Resolve(Catalog("windows"), null, workspace, @"E:\Projects\site");
+
+            Assert.That(selection.WorkspacePath, Is.EqualTo(expected));
+        }
+
         [TestCase(@"\\wsl$\Ubuntu\home\alice\repo", "wsl-ubuntu", "/home/alice/repo")]
         [TestCase(@"\\wsl.localhost\Debian\home\alice\repo", "wsl-debian", "/home/alice/repo")]
         [TestCase(@"\\WSL.LOCALHOST\ubuntu\home\alice\repo with spaces", "wsl-ubuntu", "/home/alice/repo with spaces")]

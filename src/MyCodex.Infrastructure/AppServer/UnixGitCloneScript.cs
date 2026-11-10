@@ -20,7 +20,7 @@ namespace MyCodex.Infrastructure.AppServer
             "case \"$parent\" in '~') parent=\"$HOME\" ;; '~/'*) parent=\"$HOME/${parent#~/}\" ;; esac\n" +
             "mkdir -p \"$parent\"\n" +
             "if [ -d \"$parent/$folder\" ] && [ \"$(find \"$parent/$folder\" -mindepth 1 -maxdepth 1 2>/dev/null | head -n 1)\" ]; then echo 'The target folder already exists and is not empty.' >&2; exit 73; fi\n" +
-            "if [ \"$submodules\" = true ]; then git -C \"$parent\" clone --progress --recurse-submodules \"$repository\" \"$folder\"; else git -C \"$parent\" clone --progress \"$repository\" \"$folder\"; fi\n" +
+            "if [ \"$submodules\" = true ]; then git -C \"$parent\" clone --progress --recurse-submodules -- \"$repository\" \"$folder\"; else git -C \"$parent\" clone --progress -- \"$repository\" \"$folder\"; fi\n" +
             "exit_code=$?\n" +
             "if [ \"$exit_code\" -eq 0 ]; then printf '\\nMYCODEX_CLONE_TARGET\\t%s/%s\\n' \"$parent\" \"$folder\"; fi\n" +
             "exit \"$exit_code\"";

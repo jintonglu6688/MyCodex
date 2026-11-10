@@ -89,8 +89,108 @@ namespace MyCodex.Infrastructure.Codex
             if (string.IsNullOrWhiteSpace(integrity) && string.IsNullOrWhiteSpace(shaSum))
                 throw new InvalidOperationException(SharedLocalization.Text("CodexRuntimeUpdate.Error.IntegrityCheckFailed",
                     "Codex runtime package integrity check failed."));
+            // The mirror serves both this metadata and the package, so its hash proves nothing by itself.
+            // npm's own signature over the hash does; the unsigned SHA-1 is then left unused.
+            if (_officialMetadataFailed)
+            {
+                if (!VerifyRegistrySignature(packageVersion, integrity, JsonValueReader.GetArray(dist, "signatures")))
+                    throw new InvalidOperationException(SharedLocalization.Text("CodexRuntimeUpdate.Error.IntegrityCheckFailed",
+                        "Codex runtime package integrity check failed."));
+                shaSum = null;
+            }
+
             token.ThrowIfCancellationRequested();
             return new CodexRuntimePackage(version, targetTriple, fileName, integrity, shaSum);
+        }
+
+        // npm signs "<name>@<version>:<integrity>" with its registry key, and mirrors republish that signature.
+        // shortcut: one pinned npm registry key (it has no expiry date), add the next key here when npm rotates it.
+        private const string NpmRegistryKeyId = "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U";
+        private const string NpmRegistryPublicKey =
+            "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEY6Ya7W++7aUPzvMTrezH6Ycx3c+HOKYCcNGybJZSCJq/fd7Qa8uuAKtdIkUQtQiEKERhAmE5lMMJhP8OkDOa2g==";
+
+        internal static bool VerifyRegistrySignature(string packageVersion, string integrity, IEnumerable<object> signatures)
+        {
+            if (string.IsNullOrWhiteSpace(packageVersion) || string.IsNullOrWhiteSpace(integrity) || signatures == null)
+            {
+                return false;
+            }
+
+            // The key is a P-256 SubjectPublicKeyInfo; its last 65 bytes are the uncompressed point.
+            var keyInfo = Convert.FromBase64String(NpmRegistryPublicKey);
+            var publicKey = new byte[65];
+            Buffer.BlockCopy(keyInfo, keyInfo.Length - publicKey.Length, publicKey, 0, publicKey.Length);
+            var message = System.Text.Encoding.UTF8.GetBytes("@openai/codex@" + packageVersion + ":" + integrity);
+            var crypto = new RemoteRelay.CngSecureRemoteCrypto();
+            foreach (var item in signatures)
+            {
+                var signature = item as IDictionary<string, object>;
+                byte[] rawSignature;
+                if (signature != null &&
+                    string.Equals(JsonValueReader.GetString(signature, "keyid"), NpmRegistryKeyId, StringComparison.Ordinal) &&
+                    TryReadDerEcdsaSignature(JsonValueReader.GetString(signature, "sig"), out rawSignature) &&
+                    crypto.VerifyRawEcdsa(publicKey, message, rawSignature))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // DER "SEQUENCE { INTEGER r, INTEGER s }" to the fixed 32+32 byte form the verifier takes.
+        private static bool TryReadDerEcdsaSignature(string base64, out byte[] rawSignature)
+        {
+            rawSignature = new byte[64];
+            byte[] der;
+            try
+            {
+                der = Convert.FromBase64String(base64 ?? string.Empty);
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+
+            // A P-256 signature is at most 72 bytes, so every length fits the one-byte form.
+            if (der.Length < 8 || der.Length > 72 || der[0] != 0x30 || der[1] != der.Length - 2)
+            {
+                return false;
+            }
+
+            var offset = 2;
+            for (var part = 0; part < 2; part++)
+            {
+                if (offset + 2 > der.Length || der[offset] != 0x02)
+                {
+                    return false;
+                }
+
+                int length = der[offset + 1];
+                offset += 2;
+                if (length == 0 || offset + length > der.Length)
+                {
+                    return false;
+                }
+
+                // A leading zero only keeps the integer positive.
+                var start = offset;
+                offset += length;
+                while (length > 32 && der[start] == 0)
+                {
+                    start++;
+                    length--;
+                }
+
+                if (length > 32)
+                {
+                    return false;
+                }
+
+                Buffer.BlockCopy(der, start, rawSignature, part * 32 + 32 - length, length);
+            }
+
+            return offset == der.Length;
         }
 
         private async Task<IDictionary<string, object>> ReadMetadataAsync(string version, CancellationToken token)

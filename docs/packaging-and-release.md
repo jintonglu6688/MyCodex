@@ -50,7 +50,11 @@ workflow.
 - `updates\stable.json` is the app manifest distribution file and may lag
   `Version.props` between releases. New clients discover bundled runtime updates
   directly from stable npm metadata and prefer verified npmmirror downloads;
-  the manifest's runtime entries remain for older clients. Runtime archives are
+  the manifest's runtime entries remain for older clients. When the official
+  registry is unreachable and the metadata itself comes from npmmirror, the
+  client accepts its hash only with npm's registry signature over it. The npm
+  public key is pinned in `CodexRuntimePackageClient`; add the new key there
+  when npm rotates it. Runtime archives are
   no longer uploaded to GitCode.
 - GitCode is only a public distribution repository for manifests and packages.
   The source repository never gets a `gitcode` remote.

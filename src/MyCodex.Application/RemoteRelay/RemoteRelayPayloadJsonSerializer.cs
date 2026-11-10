@@ -9,32 +9,6 @@ namespace MyCodex.Application.RemoteRelay
     {
         public const int MaxBusinessJsonCharacters = 11 * 1024 * 1024;
 
-        public static string SerializeCommand(RemoteRelayCommand command)
-        {
-            if (command == null)
-            {
-                throw new ArgumentNullException(nameof(command));
-            }
-
-            command.SchemaVersion = command.SchemaVersion <= 0 ? 1 : command.SchemaVersion;
-            command.PayloadType = RemoteRelayPayloadTypes.Command;
-            if (command.Payload == null)
-            {
-                command.Payload = new Dictionary<string, object>();
-            }
-
-            return CreateSerializer().Serialize(new Dictionary<string, object>
-            {
-                { "schemaVersion", command.SchemaVersion },
-                { "payloadType", command.PayloadType },
-                { "requestId", command.RequestId },
-                { "operationId", command.OperationId },
-                { "deviceId", command.DeviceId },
-                { "commandType", command.CommandType },
-                { "payload", command.Payload }
-            });
-        }
-
         public static RemoteRelayCommand DeserializeCommand(string json)
         {
             var root = CreateSerializer().DeserializeObject(json ?? string.Empty) as IDictionary<string, object>;

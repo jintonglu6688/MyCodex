@@ -28,6 +28,12 @@ namespace MyCodex.Application.Tests
             _legacy = new AppConfigService(_root);
         }
 
+        private AppConfigService StartupPaths(TargetCatalogSnapshot catalog)
+        {
+            return new AppConfigService(Path.Combine(_root, "targets", catalog.LastOpenedTargetId),
+                _legacy.GetInstallationDirectory(), "MyCodex", _root);
+        }
+
         [TestCase("Bundled")]
         [TestCase("System")]
         [TestCase("Custom")]
@@ -53,7 +59,7 @@ namespace MyCodex.Application.Tests
 
             var migration = new TargetDataMigration(_legacy);
             var catalog = migration.Run();
-            var paths = migration.GetStartupPaths(catalog, "MyCodex");
+            var paths = StartupPaths(catalog);
             var preferences = new JsonAppConfigStore(paths).Load();
             var migratedRemote = new JsonRemoteServiceConfigStore(paths).Load();
             Assert.That(preferences.CodexRuntimeSource, Is.EqualTo(source == "RemoteMacSsh" ? "RemoteUnixSsh" : source));
@@ -140,7 +146,7 @@ namespace MyCodex.Application.Tests
             Assert.That(File.ReadAllBytes(_legacy.GetRemoteServiceConfigFilePath()), Is.EqualTo(original));
             var migration = new TargetDataMigration(_legacy);
             var catalog = migration.Run();
-            var paths = migration.GetStartupPaths(catalog, "MyCodex");
+            var paths = StartupPaths(catalog);
             Assert.That(new JsonRemoteServiceConfigStore(paths).Load().HostId, Is.EqualTo(CreateRemote().HostId));
             var updated = new JsonAppConfigStore(paths).Load();
             updated.UiThemePreference = "light";
@@ -286,7 +292,7 @@ namespace MyCodex.Application.Tests
             Write(_legacy.GetRemoteServiceConfigFilePath(), remote);
             var migration = new TargetDataMigration(_legacy);
             var catalog = migration.Run();
-            var result = new JsonRemoteServiceConfigStore(migration.GetStartupPaths(catalog, "MyCodex")).Load();
+            var result = new JsonRemoteServiceConfigStore(StartupPaths(catalog)).Load();
             Assert.That(result.TenantId, Is.EqualTo("updated-tenant"));
             Assert.That(result.EncryptedAccessSecret, Is.EqualTo("protected-updated"));
             Assert.That(result.HostId, Is.EqualTo(remote.HostId));

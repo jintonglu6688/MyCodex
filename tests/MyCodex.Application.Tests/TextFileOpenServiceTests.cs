@@ -108,6 +108,56 @@ namespace MyCodex.Application.Tests
             Assert.That(launched[0].ExecutablePath, Is.EqualTo(@"D:\Portable\npp.exe"));
         }
 
+        [TestCase(@"E:\Repo\install.cmd")]
+        [TestCase(@"E:\Repo\tool.EXE")]
+        [TestCase(@"E:\Repo\build.ps1")]
+        [TestCase(@"E:\Repo\readme.txt.lnk")]
+        [TestCase(@"E:\Repo\setup.exe. ")]
+        public void Open_UsesInternalEditor_WhenSystemModeWouldRunTheFile(string path)
+        {
+            var internalPaths = new List<string>();
+            var service = new TextFileOpenService(
+                command => { throw new InvalidOperationException("The file must not be handed to the shell."); },
+                request => internalPaths.Add(request.FilePath));
+
+            var result = service.Open(
+                new TextFileOpenPreference { Mode = TextFileOpenMode.System },
+                new TextFileOpenRequest { FilePath = path, IsLocalWindowsFile = true });
+
+            Assert.That(result.OpenedInternally, Is.True);
+            Assert.That(internalPaths, Is.EqualTo(new[] { path }));
+        }
+
+        [Test]
+        public void Open_LaunchesSystemDefault_ForDocumentInSystemMode()
+        {
+            var launched = new List<TextFileExternalEditorCommand>();
+            var service = new TextFileOpenService(
+                command => launched.Add(command),
+                request => { throw new InvalidOperationException("Internal editor should not be used."); });
+
+            var result = service.Open(
+                new TextFileOpenPreference { Mode = TextFileOpenMode.System },
+                new TextFileOpenRequest { FilePath = @"E:\Repo\notes.txt", IsLocalWindowsFile = true });
+
+            Assert.That(result.OpenedInternally, Is.False);
+            Assert.That(launched[0].ExecutablePath, Is.EqualTo(@"E:\Repo\notes.txt"));
+            Assert.That(launched[0].UseShellExecute, Is.True);
+        }
+
+        [Test]
+        public void OpenWithSystemDefault_HandsTheFileToTheShell()
+        {
+            var launched = new List<TextFileExternalEditorCommand>();
+            var service = new TextFileOpenService(command => launched.Add(command), request => { });
+
+            var result = service.OpenWithSystemDefault(@"E:\Repo\report.pdf");
+
+            Assert.That(result.Handled, Is.True);
+            Assert.That(launched[0].ExecutablePath, Is.EqualTo(@"E:\Repo\report.pdf"));
+            Assert.That(launched[0].UseShellExecute, Is.True);
+        }
+
         [Test]
         public void Open_ReturnsFailure_WhenCustomEditorPathIsMissing()
         {

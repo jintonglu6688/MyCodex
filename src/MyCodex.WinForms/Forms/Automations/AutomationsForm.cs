@@ -156,18 +156,6 @@ namespace MyCodex.WinForms.Forms
             UpdateActionButtons();
         }
 
-        public void ShowRunResults()
-        {
-            RefreshData(UiLocalization.Text("AutomationsForm.Status.Updated", "Automation state updated."));
-            if (_tabs.TabPages.Count > 1)
-            {
-                _tabs.SelectedIndex = 1;
-            }
-
-            _runsListView.Focus();
-            UpdateActionButtons();
-        }
-
         protected override void OnShown(EventArgs e)
         {
             base.OnShown(e);

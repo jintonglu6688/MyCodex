@@ -47,19 +47,84 @@ namespace MyCodex.Application.Tests
                 requests.Add(url);
                 if (url.StartsWith(CodexRuntimePackageClient.OfficialRegistry, StringComparison.Ordinal))
                     throw new WebException("offline");
-                return Task.FromResult(Metadata(url));
+                return Task.FromResult(SignedMirrorMetadata(url, SignedIntegrity));
             });
-            Assert.That((await client.CheckLatestAsync(Target, CancellationToken.None)).Version, Is.EqualTo("0.165.0"));
+            var package = await client.CheckLatestAsync(Target, CancellationToken.None);
+            Assert.That(package.Version, Is.EqualTo("0.167.0"));
+            Assert.That(package.Integrity, Is.EqualTo(SignedIntegrity));
+            Assert.That(package.ShaSum, Is.Null, "Only the signed hash may verify a package described by the mirror.");
             Assert.That(requests, Is.EqualTo(new[]
             {
                 CodexRuntimePackageClient.OfficialRegistry + "/%40openai%2Fcodex/latest",
                 CodexRuntimePackageClient.MirrorRegistry + "/%40openai%2Fcodex/latest",
-                CodexRuntimePackageClient.MirrorRegistry + "/%40openai%2Fcodex/0.165.0-win32-x64"
+                CodexRuntimePackageClient.MirrorRegistry + "/%40openai%2Fcodex/0.167.0-win32-x64"
             }), "After one official failure the platform request goes straight to the mirror.");
 
             requests.Clear();
             await client.CheckLatestAsync(Target, CancellationToken.None);
             Assert.That(requests[0], Does.StartWith(CodexRuntimePackageClient.OfficialRegistry), "Each check tries the official registry again.");
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void MirrorMetadataWithoutNpmSignatureOverItsHashIsRejected(bool keepSignature)
+        {
+            var client = new CodexRuntimePackageClient((url, token) =>
+            {
+                if (url.StartsWith(CodexRuntimePackageClient.OfficialRegistry, StringComparison.Ordinal))
+                    throw new WebException("offline");
+                var metadata = SignedMirrorMetadata(url, Integrity("replaced package"));
+                if (!keepSignature && !url.EndsWith("/latest", StringComparison.Ordinal))
+                    ((IDictionary<string, object>)metadata["dist"]).Remove("signatures");
+                return Task.FromResult(metadata);
+            });
+
+            Assert.ThrowsAsync<InvalidOperationException>(() => client.CheckLatestAsync(Target, CancellationToken.None));
+        }
+
+        [Test]
+        public void VerifyRegistrySignature_AcceptsOnlyNpmSignatureForThatVersionAndHash()
+        {
+            var signatures = (object[])((IDictionary<string, object>)SignedMirrorMetadata("x", SignedIntegrity)["dist"])["signatures"];
+
+            Assert.That(CodexRuntimePackageClient.VerifyRegistrySignature("0.167.0-win32-x64", SignedIntegrity, signatures), Is.True);
+            Assert.That(CodexRuntimePackageClient.VerifyRegistrySignature("0.167.1-win32-x64", SignedIntegrity, signatures), Is.False);
+            Assert.That(CodexRuntimePackageClient.VerifyRegistrySignature("0.167.0-win32-x64", Integrity("other"), signatures), Is.False);
+            Assert.That(CodexRuntimePackageClient.VerifyRegistrySignature("0.167.0-win32-x64", SignedIntegrity, new object[0]), Is.False);
+            Assert.That(CodexRuntimePackageClient.VerifyRegistrySignature("0.167.0-win32-x64", SignedIntegrity, new object[]
+            {
+                new Dictionary<string, object> { { "keyid", "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U" }, { "sig", "MAA=" } }
+            }), Is.False);
+        }
+
+        // Published npm metadata for @openai/codex 0.167.0-win32-x64; the signature is npm's and cannot be made up here.
+        private const string SignedIntegrity =
+            "sha512-duPCBwflc8qhQdLekbL8fDYF646tW4gj0/l9BDnsVhEzoqm6OwxMAJXDFwSOLUUJPCmjBeM+eHYAx4fP/hwfjg==";
+
+        private static IDictionary<string, object> SignedMirrorMetadata(string url, string integrity)
+        {
+            if (url.EndsWith("/latest", StringComparison.Ordinal))
+                return new Dictionary<string, object> { { "version", "0.167.0" } };
+            return new Dictionary<string, object>
+            {
+                { "version", "0.167.0-win32-x64" },
+                { "dist", new Dictionary<string, object>
+                    {
+                        { "tarball", CodexRuntimePackageClient.MirrorRegistry + "/@openai/codex/-/codex-0.167.0-win32-x64.tgz" },
+                        { "integrity", integrity },
+                        { "shasum", "d79951fa28f9fd34c245c84723e2eb547c9acf73" },
+                        { "signatures", new object[]
+                            {
+                                new Dictionary<string, object>
+                                {
+                                    { "sig", "MEQCIBQPw3rcviPvLyJGEYjJ/zkwb4orLwRUhKk315KRztE/AiBjRD1eKIfzicLQ0TrqPCdkdKaL4esvjfiJWbSM4/15fg==" },
+                                    { "keyid", "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U" }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
         }
 
         [TestCase("0.166.0-alpha.1")]

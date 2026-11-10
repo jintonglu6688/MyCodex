@@ -27,6 +27,10 @@ namespace MyCodex.WinForms
         [STAThread]
         private static void Main(string[] args)
         {
+            // Windows looks for a bare program name (gh, ssh, wsl.exe) in the current directory before PATH.
+            // The directory MyCodex was started from may be a cloned repository, so it must not stay current.
+            var launchDirectory = Environment.CurrentDirectory;
+            Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
             if (InstallationExitStartup.TryRun(args, out var installationExitCode))
             {
                 Environment.ExitCode = installationExitCode;
@@ -69,7 +73,7 @@ namespace MyCodex.WinForms
                 try
                 {
                     options = StartupCommandLineOptions.Parse(args);
-                    selection = TargetStartupPlanner.Resolve(snapshot, options.TargetId, options.WorkspacePath);
+                    selection = TargetStartupPlanner.Resolve(snapshot, options.TargetId, options.WorkspacePath, launchDirectory);
                 }
                 catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException || exception is NotSupportedException)
                 {

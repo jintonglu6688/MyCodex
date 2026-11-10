@@ -35,25 +35,6 @@ namespace MyCodex.Application.Services
             return result;
         }
 
-        public static int CountNonNullSessions(IEnumerable<ChatSession> sessions)
-        {
-            if (sessions == null)
-            {
-                return 0;
-            }
-
-            var count = 0;
-            foreach (var session in sessions)
-            {
-                if (session != null)
-                {
-                    count++;
-                }
-            }
-
-            return count;
-        }
-
         public static string ResolveSessionPathFromThreadSummaries(IEnumerable<AppServerThreadSummary> threads, string threadId)
         {
             if (threads == null || string.IsNullOrWhiteSpace(threadId))
@@ -72,27 +53,6 @@ namespace MyCodex.Application.Services
             }
 
             return null;
-        }
-
-        public static string ResolveSessionPathFromThreadDetails(AppServerThreadDetails details)
-        {
-            return details == null || string.IsNullOrWhiteSpace(details.SessionPath)
-                ? null
-                : details.SessionPath;
-        }
-
-        public static bool ShouldIgnoreThreadReadInvalidOperation(InvalidOperationException exception)
-        {
-            if (exception == null || string.IsNullOrWhiteSpace(exception.Message))
-            {
-                return false;
-            }
-
-            return exception.Message.IndexOf("materialized", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                   exception.Message.IndexOf("includeTurns", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                   exception.Message.IndexOf("not loaded", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                   exception.Message.IndexOf("failed to locate rollout", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                   exception.Message.IndexOf("no rollout found", StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
 }

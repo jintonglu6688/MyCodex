@@ -122,6 +122,25 @@ namespace MyCodex.Application.Services
                 "README"
             };
 
+        // shortcut: a fixed list of types Windows runs rather than shows, add a type when its default action runs code.
+        private static readonly HashSet<string> RunnableExtensions =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".bat", ".cmd", ".com", ".cpl", ".exe", ".hta", ".jar", ".js", ".jse", ".lnk", ".msc", ".msi", ".msp",
+                ".pif", ".ps1", ".py", ".pyw", ".reg", ".scr", ".sh", ".url", ".vbe", ".vbs", ".wsf", ".wsh"
+            };
+
+        public static bool RunsWhenOpenedByWindows(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return false;
+            }
+
+            // Windows ignores trailing dots and spaces, so "setup.exe." still runs.
+            return RunnableExtensions.Contains(Path.GetExtension(path.Trim().TrimEnd('.', ' ')));
+        }
+
         public static bool ShouldOpenWithTextEditor(string path)
         {
             if (string.IsNullOrWhiteSpace(path))

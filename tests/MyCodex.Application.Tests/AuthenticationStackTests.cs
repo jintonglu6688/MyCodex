@@ -110,7 +110,6 @@ namespace MyCodex.Application.Tests
             Assert.That(AuthenticationStackPlanner.CanJoin(state, "d"), Is.True);
             Assert.That(AuthenticationStackPlanner.CanJoin(state, "official"), Is.False);
             Assert.That(AuthenticationStackPlanner.CanJoin(state, "b"), Is.False);
-            Assert.That(AuthenticationStackPlanner.CanBeDefault(state, "official"), Is.True);
             Assert.That(AuthenticationStackPlanner.DefaultRefusal(state, "broken"), Is.EqualTo("invalid_provider"));
             Assert.That(AuthenticationStackPlanner.DefaultCandidates(state), Is.EqualTo(new[] { "official", "a", "b", "c", "d" }));
             Assert.That(AuthenticationStackPlanner.MemberCandidates(state, "a"), Is.EqualTo(new[] { "b", "c", "d" }));

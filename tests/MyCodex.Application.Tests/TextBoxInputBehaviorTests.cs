@@ -20,19 +20,6 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void SetTextAndRestoreSelection_ClampsSelectionWithinUpdatedText()
-        {
-            using (var textBox = new TextBox())
-            {
-                TextBoxCaretHelper.SetTextAndRestoreSelection(textBox, "abc", 10, 10);
-
-                Assert.That(textBox.Text, Is.EqualTo("abc"));
-                Assert.That(textBox.SelectionStart, Is.EqualTo(3));
-                Assert.That(textBox.SelectionLength, Is.EqualTo(0));
-            }
-        }
-
-        [Test]
         public void ApplyTextBox_NormalizesExistingMultilineLfText()
         {
             using (var textBox = new TextBox())

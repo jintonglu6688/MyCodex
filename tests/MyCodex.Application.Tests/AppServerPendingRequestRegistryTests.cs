@@ -19,10 +19,13 @@ namespace MyCodex.Application.Tests
             registry.RegisterApproval("approval-1", request);
 
             AppServerPendingApprovalRequest loaded;
-            Assert.That(registry.TryGetApproval("approval-1", out loaded), Is.True);
+            Assert.That(registry.TryTakeApproval("approval-1", out loaded), Is.True);
             Assert.That(loaded.ThreadId, Is.EqualTo("thread-1"));
+            Assert.That(registry.TryTakeApproval("approval-1", out loaded), Is.False);
+
+            registry.RegisterApproval("approval-1", request);
             Assert.That(registry.RemoveApproval("approval-1"), Is.True);
-            Assert.That(registry.TryGetApproval("approval-1", out loaded), Is.False);
+            Assert.That(registry.TryTakeApproval("approval-1", out loaded), Is.False);
         }
 
         [Test]
@@ -38,10 +41,13 @@ namespace MyCodex.Application.Tests
             registry.RegisterToolInput("tool-1", request);
 
             AppServerPendingToolUserInputRequest loaded;
-            Assert.That(registry.TryGetToolInput("tool-1", out loaded), Is.True);
+            Assert.That(registry.TryTakeToolInput("tool-1", out loaded), Is.True);
             Assert.That(loaded.ThreadId, Is.EqualTo("thread-1"));
+            Assert.That(registry.TryTakeToolInput("tool-1", out loaded), Is.False);
+
+            registry.RegisterToolInput("tool-1", request);
             Assert.That(registry.RemoveToolInput("tool-1"), Is.True);
-            Assert.That(registry.TryGetToolInput("tool-1", out loaded), Is.False);
+            Assert.That(registry.TryTakeToolInput("tool-1", out loaded), Is.False);
         }
 
         [Test]

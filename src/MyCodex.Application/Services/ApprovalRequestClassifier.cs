@@ -733,7 +733,8 @@ namespace MyCodex.Application.Services
 
                 if (quote == '"')
                 {
-                    if (backslashEscapesQuote && ch == '\\' && i + 1 < text.Length && text[i + 1] == '"')
+                    // A POSIX backslash escapes whatever follows, so "a\\" ends at its last quote.
+                    if (backslashEscapesQuote && ch == '\\' && i + 1 < text.Length)
                     {
                         i++;
                         continue;
@@ -752,6 +753,14 @@ namespace MyCodex.Application.Services
                     }
 
                     continue;
+                }
+
+                // An escaped quote opens no string: bash runs rm in  git status \"; rm -rf ~ #"  and cmd.exe
+                // runs calc in  git status ^" & calc . These escapes are not modelled; such commands ask the user.
+                if ((backslashEscapesQuote && (ch == '\\' || (ch == '$' && i + 1 < text.Length && text[i + 1] == '\''))) ||
+                    (ch == '^' && string.Equals(shellKind, "cmd", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
                 }
 
                 if (ch == '"' || (ch == '\'' && singleQuotesAreQuoting))

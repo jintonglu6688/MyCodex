@@ -112,9 +112,17 @@ namespace MyCodex.Infrastructure.Updates
                     "Update manifest does not include an app installer asset."));
             }
 
-            var updateDirectory = Path.Combine(
-                _appConfigService.GetUpdateTempDirectory(),
-                string.IsNullOrWhiteSpace(checkResult.Package.Version) ? "app" : checkResult.Package.Version.Trim());
+            // The version comes from the manifest; "..\.." in it must not move the installer out of the update directory.
+            var versionDirectoryName = "app";
+            if (!string.IsNullOrWhiteSpace(checkResult.Package.Version) &&
+                !AppConfigService.TryValidateRuntimePathSegment(checkResult.Package.Version, out versionDirectoryName))
+            {
+                throw new InvalidOperationException(SharedLocalization.Text(
+                    "UpdatePackage.Error.DestinationEscaped",
+                    "Update asset destination escapes the download directory."));
+            }
+
+            var updateDirectory = Path.Combine(_appConfigService.GetUpdateTempDirectory(), versionDirectoryName);
             var sourceUri = _manifestClient.ResolveAssetUri(checkResult.Package.Asset, checkResult.Manifest);
             var installerPath = await _downloader.DownloadVerifiedAsync(
                 sourceUri,
