@@ -104,6 +104,8 @@ namespace MyCodex.Infrastructure.ComputerUse
                     overrides = BrowserUseConfigurationPlanner.SuppressBrowser(config, overrides, _codexPath);
                     parameters["config"] = overrides;
                 }
+                var fallback = ComputerUseConfigurationPlanner.SuppressOfficialDesktop(config, overrides);
+                if (fallback != null) parameters["config"] = fallback;
                 var browserRequested = _browserEnabled() && BrowserUseConfigurationPlanner.IsRequested(config, overrides);
                 if (!browserRequested && (ComputerUseConfigurationPlanner.IsPluginDisabled(config) ||
                     ComputerUseConfigurationPlanner.IsPluginDisabled(overrides))) return Unavailable("PluginDisabled");
@@ -125,6 +127,7 @@ namespace MyCodex.Infrastructure.ComputerUse
                     nativeAvailable = await _pluginPreparation.EnsureAsync(_bundle, _codexHome, token, true, config).ConfigureAwait(false);
                     if (!nativeAvailable && !browserRequested) return Unavailable("PluginDisabled");
                 }
+                if (!nativeAvailable) _report(plan.IsAvailable ? "PluginDisabled" : plan.DetailCode, existingThread);
                 var helperHome = Path.Combine(_homeRoot, Guid.NewGuid().ToString("N"));
                 if (_disposed) throw new OperationCanceledException(token);
                 if (_host == null || !_host.IsAlive)
@@ -150,7 +153,7 @@ namespace MyCodex.Infrastructure.ComputerUse
                 };
                 ComputerUsePipeSecurity.Restrict(binding.Pipe);
                 await current.RequestAsync("publish", new Dictionary<string, object> { { "slot", binding.Slot } }, token).ConfigureAwait(false);
-                var configured = overrides;
+                var configured = fallback;
                 if (nativeAvailable)
                 {
                     plan = ComputerUseConfigurationPlanner.Plan(config, requirements, overrides, _components, binding.Pipe, _codexHome);

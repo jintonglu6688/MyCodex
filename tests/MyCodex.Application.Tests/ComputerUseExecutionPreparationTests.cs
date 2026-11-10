@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Script.Serialization;
 using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Infrastructure.ComputerUse;
 using NUnit.Framework;
@@ -88,6 +90,48 @@ namespace MyCodex.Application.Tests
                 Register(manager, null);
                 Assert.CatchAsync<OperationCanceledException>(() => Prepare(manager, "old-turn"));
             }
+        }
+
+        [TestCase("PluginDisabled")]
+        [TestCase("NodeReplConflict")]
+        public async Task UnavailableNativePreparationDoesNotInheritOfficialDesktopConnection(string failure)
+        {
+            var command = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                "WindowsApps", "OpenAI.Codex_26.1103.7773.0_x64__2p2nqsd0c76g0", "app", "resources", "cua_node", "bin", "node_repl.exe");
+            var node = new Dictionary<string, object>
+            {
+                { "command", command }, { "args", new[] { "--unsupported" } },
+                { "env", new Dictionary<string, object> { { "SKY_CUA_NATIVE_PIPE", "1" } } }
+            };
+            var config = new Dictionary<string, object>
+            {
+                { "mcp_servers", new Dictionary<string, object> { { "node_repl", node } } },
+                { "plugins", new Dictionary<string, object> { { ComputerUseBundle.PluginId,
+                    new Dictionary<string, object> { { "enabled", failure != "PluginDisabled" } } } } }
+            };
+            var serializer = new JavaScriptSerializer();
+            var before = serializer.Serialize(config);
+            var overrides = new Dictionary<string, object> { { "model", "keep" } };
+            var parameters = new Dictionary<string, object> { { "cwd", @"C:\fixture" }, { "config", overrides } };
+            var statuses = new List<string>();
+            using (var manager = new ComputerUseSessionManager("unused", "unused", @"C:\home", (method, args, token) =>
+            {
+                Assert.That(method, Is.EqualTo("config/read").Or.EqualTo("configRequirements/read"));
+                return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>
+                    { { "config", config }, { "requirements", null } });
+            }, (code, thread) => statuses.Add(code), browserEnabled: () => false))
+            {
+                FormTestDriver.SetField(manager, "_components", new ComputerUseComponents { NodeReplPath = @"C:\verified\node_repl.exe" });
+                Assert.That(await manager.PrepareAsync(parameters, CancellationToken.None), Is.Null);
+            }
+            var result = (IDictionary<string, object>)parameters["config"];
+            var servers = (IDictionary<string, object>)result["mcp_servers"];
+            Assert.That(servers.ContainsKey("node_repl"), Is.True, "The original desktop server would still be inherited.");
+            Assert.That(((IDictionary<string, object>)servers["node_repl"])["enabled"], Is.False);
+            Assert.That(result["model"], Is.EqualTo("keep"));
+            Assert.That(overrides.Count, Is.EqualTo(1));
+            Assert.That(serializer.Serialize(config), Is.EqualTo(before));
+            Assert.That(statuses, Does.Contain(failure));
         }
 
         private static ComputerUseSessionManager Manager(

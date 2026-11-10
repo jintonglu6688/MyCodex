@@ -169,6 +169,81 @@ namespace MyCodex.Application.Tests
             Assert.That(Plan(config).DetailCode, Is.EqualTo("NodeReplConflict"));
         }
 
+        [TestCase("OpenAI.Codex_26.1103.7773.0_x64__2p2nqsd0c76g0")]
+        [TestCase("OpenAI.Codex_27.1.2.3_arm64__2p2nqsd0c76g0")]
+        [TestCase("openai.codex_26.1103.7773.0_X64__2P2NQSD0C76G0")]
+        public void Plan_RebindsOfficialWindowsAppsReferencesWithoutChangingSharedConfig(string package)
+        {
+            var bin = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                "WindowsApps", package, "app", "resources", "cua_node", "bin");
+            var env = new Dictionary<string, object>
+            {
+                { "NODE_REPL_NODE_PATH", Path.Combine(bin, "node.exe") },
+                { "NODE_REPL_NODE_MODULE_DIRS", Path.Combine(bin, "node_modules") },
+                { "NODE_REPL_TRUSTED_CODE_PATHS", Home + ";" + Path.Combine(bin, "node_modules") },
+                { "NODE_REPL_TRUSTED_SERVICES", "{\"sky\":\"@oai/sky/service\"}" },
+                { "SKY_CUA_NATIVE_PIPE", "1" }, { "SKY_CUA_NATIVE_PIPE_DIRECTORY", @"\\.\pipe\codex-computer-use-old" }
+            };
+            var config = new Dictionary<string, object>
+            {
+                { "mcp_servers", new Dictionary<string, object> { { "node_repl", new Dictionary<string, object>
+                    { { "command", Path.Combine(bin, "node_repl.exe") }, { "env", env } } } } }
+            };
+            var before = Serialize(config);
+            var plan = Plan(config);
+            Assert.That(plan.IsAvailable, Is.True, plan.DetailCode);
+            Assert.That(Node(plan)["command"], Is.EqualTo(Components().NodeReplPath));
+            var rewritten = Child(Node(plan), "env");
+            Assert.That(rewritten["NODE_REPL_NODE_PATH"], Is.EqualTo(Components().NodePath));
+            Assert.That(rewritten["NODE_REPL_NODE_MODULE_DIRS"], Is.EqualTo(Components().NodeModulesPath));
+            Assert.That(rewritten["NODE_REPL_TRUSTED_CODE_PATHS"], Is.EqualTo(Home + ";" + Components().NodeModulesPath));
+            Assert.That(rewritten["SKY_CUA_NATIVE_PIPE_DIRECTORY"], Is.EqualTo(Pipe));
+            Assert.That(Serialize(config), Is.EqualTo(before));
+        }
+
+        [TestCase("WindowsApps-old/OpenAI.Codex_26.1103.7773.0_x64__2p2nqsd0c76g0")]
+        [TestCase("WindowsApps/Other.Codex_26.1103.7773.0_x64__2p2nqsd0c76g0")]
+        [TestCase("WindowsApps/OpenAI.Codex_26.1103.7773.0_x64__otherpublisher")]
+        [TestCase("WindowsApps/OpenAI.Codex_26.1103.7773_x64__2p2nqsd0c76g0")]
+        [TestCase("WindowsApps/OpenAI.Codex_26.1103.7773.0_x64__2p2nqsd0c76g0/extra")]
+        [TestCase("WindowsApps/OpenAI.Codex_26.1103.7773.0_x86__2p2nqsd0c76g0")]
+        public void Plan_DoesNotTreatWindowsAppsLookalikesAsOfficialReferences(string relative)
+        {
+            var config = Json("{'mcp_servers':{'node_repl':{}}}");
+            Child(Child(config, "mcp_servers"), "node_repl")["command"] = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), relative,
+                "app", "resources", "cua_node", "bin", "node_repl.exe");
+            Assert.That(Plan(config).DetailCode, Is.EqualTo("NodeReplConflict"));
+        }
+
+        [TestCase("OpenAI.Codex_26.1103.7773.0_x64__2p2nqsd0c76g0", "1", true)]
+        [TestCase("OpenAI.Codex_26.1103.7773.0_x64__2p2nqsd0c76g0", "0", false)]
+        [TestCase("Other.Codex_26.1103.7773.0_x64__2p2nqsd0c76g0", "1", false)]
+        public void FallbackSuppressesOnlyRecognizedOfficialDesktopServer(string package, string nativePipe, bool suppressed)
+        {
+            var node = new Dictionary<string, object>
+            {
+                { "command", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                    "WindowsApps", package, "app", "resources", "cua_node", "bin", "node_repl.exe") },
+                { "env", new Dictionary<string, object> { { "SKY_CUA_NATIVE_PIPE", nativePipe } } }
+            };
+            var config = new Dictionary<string, object>
+                { { "mcp_servers", new Dictionary<string, object> { { "node_repl", node } } } };
+            var overrides = Json("{'model':'keep','mcp_servers':{'other':{'command':'other.exe'}}}");
+            var before = Serialize(config);
+            var original = Serialize(overrides);
+            var fallback = ComputerUseConfigurationPlanner.SuppressOfficialDesktop(config, overrides);
+            Assert.That(ReferenceEquals(fallback, overrides), Is.EqualTo(!suppressed));
+            Assert.That(fallback["model"], Is.EqualTo("keep"));
+            Assert.That(Child(Child(fallback, "mcp_servers"), "other")["command"], Is.EqualTo("other.exe"));
+            if (suppressed)
+                Assert.That(Child(Child(fallback, "mcp_servers"), "node_repl")["enabled"], Is.False);
+            Assert.That(Serialize(config), Is.EqualTo(before));
+            Assert.That(Serialize(overrides), Is.EqualTo(original));
+            Child(overrides, "mcp_servers")["node_repl"] = Json("{'command':'C:/custom/node_repl.exe'}");
+            Assert.That(ComputerUseConfigurationPlanner.SuppressOfficialDesktop(config, overrides), Is.SameAs(overrides));
+        }
+
         [Test]
         public void Plan_DropsAbsentMcpOptionalFieldsBeforeSendingThreadOverrides()
         {

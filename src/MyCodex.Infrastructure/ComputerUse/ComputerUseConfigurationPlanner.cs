@@ -42,6 +42,30 @@ namespace MyCodex.Infrastructure.ComputerUse
             "enforceResidency", "network", "application", "autoReview", "models"
         };
 
+        internal static IDictionary<string, object> SuppressOfficialDesktop(IDictionary<string, object> config,
+            IDictionary<string, object> overrides)
+        {
+            try
+            {
+                var node = Clone(Child(Child(config, "mcp_servers"), "node_repl"));
+                Merge(node, Child(Child(overrides, "mcp_servers"), "node_repl"));
+                if (!(Value(node, "command") is string command) ||
+                    !IsPreviousOfficialComponentPath(command, "node_repl.exe") ||
+                    !Equals(Value(Child(node, "env"), "SKY_CUA_NATIVE_PIPE"), "1")) return overrides;
+                // A failed preparation must not fall through to another desktop client's pipe.
+                var result = Clone(overrides);
+                var servers = Clone(Child(result, "mcp_servers"));
+                node["enabled"] = false;
+                servers["node_repl"] = StripNulls(node);
+                result["mcp_servers"] = servers;
+                return result;
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is NotSupportedException || ex is PathTooLongException)
+            {
+                return overrides;
+            }
+        }
+
         public static ComputerUseConfigurationPlan Plan(
             IDictionary<string, object> effectiveConfig,
             IDictionary<string, object> requirements,
@@ -233,15 +257,30 @@ namespace MyCodex.Infrastructure.ComputerUse
 
         private static bool IsPreviousOfficialComponentPath(string value, string leaf)
         {
-            // Only rewrite the known official cache layout. Never load or execute that copy.
+            // Recognize only official path layouts for replacement; never read or execute those copies.
             var cache = Path.GetFullPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "OpenAI", "Codex", "runtimes", "cua_node")).TrimEnd('\\') + "\\";
             var path = Path.GetFullPath(value);
-            if (!path.StartsWith(cache, StringComparison.OrdinalIgnoreCase)) return false;
-            var segments = path.Substring(cache.Length).Split('\\');
-            return segments.Length == 3 && segments[0].Length == 16 && segments[0].All(Uri.IsHexDigit) &&
-                string.Equals(segments[1], "bin", StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(segments[2], leaf, StringComparison.OrdinalIgnoreCase);
+            if (path.StartsWith(cache, StringComparison.OrdinalIgnoreCase))
+            {
+                var cached = path.Substring(cache.Length).Split('\\');
+                return cached.Length == 3 && cached[0].Length == 16 && cached[0].All(Uri.IsHexDigit) &&
+                    string.Equals(cached[1], "bin", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(cached[2], leaf, StringComparison.OrdinalIgnoreCase);
+            }
+            var windowsApps = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WindowsApps") + "\\";
+            if (!path.StartsWith(windowsApps, StringComparison.OrdinalIgnoreCase)) return false;
+            var segments = path.Substring(windowsApps.Length).Split('\\');
+            if (segments.Length != 6 || !string.Equals(segments[1], "app", StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(segments[2], "resources", StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(segments[3], "cua_node", StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(segments[4], "bin", StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(segments[5], leaf, StringComparison.OrdinalIgnoreCase)) return false;
+            var identity = segments[0].Split('_');
+            return identity.Length == 5 && string.Equals(identity[0], "OpenAI.Codex", StringComparison.OrdinalIgnoreCase) &&
+                Version.TryParse(identity[1], out var version) && version.Revision >= 0 &&
+                (string.Equals(identity[2], "x64", StringComparison.OrdinalIgnoreCase) || string.Equals(identity[2], "arm64", StringComparison.OrdinalIgnoreCase)) &&
+                identity[3].Length == 0 && string.Equals(identity[4], "2p2nqsd0c76g0", StringComparison.OrdinalIgnoreCase);
         }
         private static bool SamePath(string left, string right)
         {
