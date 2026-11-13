@@ -211,7 +211,24 @@ namespace MyCodex.Application.Tests
             "HooksManagementForm.Button.Revoke",
             "HooksManagementForm.Button.Enable",
             "HooksManagementForm.Button.Disable",
+            "HooksManagementForm.Button.OpenSource",
+            "HooksManagementForm.Button.New",
+            "HooksManagementForm.Button.Delete",
             "HooksManagementForm.Button.Close"
+        })]
+        [TestCase("HookEditForm", new[]
+        {
+            "HookEditForm.Label.Location",
+            "HookEditForm.Label.Event",
+            "HookEditForm.Label.Matcher",
+            "HookEditForm.Label.Type",
+            "HookEditForm.Label.Command",
+            "HookEditForm.Label.Server",
+            "HookEditForm.Label.Tool",
+            "HookEditForm.Label.Timeout",
+            "HookEditForm.Label.StatusMessage",
+            "Common.OK",
+            "Common.Cancel"
         })]
         [TestCase("McpManagementForm", new[]
         {

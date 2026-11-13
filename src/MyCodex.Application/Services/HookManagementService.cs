@@ -29,11 +29,104 @@ namespace MyCodex.Application.Services
     {
         private readonly IAppServerHookClient _hookClient;
         private readonly IAppServerConfigClient _configClient;
+        private readonly IAppServerFileSystemClient _fileClient;
 
-        public HookManagementService(IAppServerHookClient hookClient, IAppServerConfigClient configClient)
+        public HookManagementService(
+            IAppServerHookClient hookClient,
+            IAppServerConfigClient configClient,
+            IAppServerFileSystemClient fileClient = null)
         {
             _hookClient = hookClient ?? throw new ArgumentNullException(nameof(hookClient));
             _configClient = configClient ?? throw new ArgumentNullException(nameof(configClient));
+            _fileClient = fileClient;
+        }
+
+        public bool CanEditFiles
+        {
+            get { return _fileClient != null; }
+        }
+
+        /// <summary>The user hooks.json sits next to the user config.toml, in the target's CODEX_HOME.</summary>
+        public async Task<string> GetUserHooksPathAsync(string workspacePath)
+        {
+            var config = await _configClient.ReadConfigAsync(workspacePath, true).ConfigureAwait(false);
+            var userLayer = config == null ? null : config.Layers.FirstOrDefault(layer =>
+                string.Equals(layer.SourceType, "user", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(layer.FilePath));
+            return userLayer == null ? null : HookSourceFileEditor.GetSiblingPath(userLayer.FilePath, "hooks.json");
+        }
+
+        public async Task<byte[]> ReadSourceAsync(string path)
+        {
+            var result = await RequireFileClient().ReadFileAsync(path).ConfigureAwait(false);
+            return string.IsNullOrEmpty(result == null ? null : result.DataBase64) ? new byte[0] : Convert.FromBase64String(result.DataBase64);
+        }
+
+        public Task WriteSourceAsync(string path, byte[] data)
+        {
+            return RequireFileClient().WriteFileAsync(path, data);
+        }
+
+        // shortcut: read-modify-write without a file version check; fs/writeFile has no expectedVersion, add one if a bridge gains it.
+        public async Task AddHookAsync(string path, string eventName, string matcher, Dictionary<string, object> handler)
+        {
+            var original = await ReadExistingOrNullAsync(path).ConfigureAwait(false);
+            var updated = HookSourceFileEditor.AddHandler(original, eventName, matcher, handler);
+            if (original == null)
+            {
+                await RequireFileClient().CreateDirectoryAsync(HookSourceFileEditor.GetSiblingPath(path, string.Empty).TrimEnd('/', '\\'), true).ConfigureAwait(false);
+            }
+
+            await RequireFileClient().WriteFileAsync(path, updated).ConfigureAwait(false);
+        }
+
+        /// <summary>False when the file no longer holds the listed definition at that position.</summary>
+        public async Task<bool> RemoveHookAsync(AppServerHookInfo hook)
+        {
+            if (!HookSourceFileEditor.CanRemove(hook))
+            {
+                return false;
+            }
+
+            var updated = HookSourceFileEditor.RemoveHandler(await ReadSourceAsync(hook.SourcePath).ConfigureAwait(false), hook);
+            if (updated == null)
+            {
+                return false;
+            }
+
+            await RequireFileClient().WriteFileAsync(hook.SourcePath, updated).ConfigureAwait(false);
+            return true;
+        }
+
+        private async Task<byte[]> ReadExistingOrNullAsync(string path)
+        {
+            try
+            {
+                return await ReadSourceAsync(path).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // Only a missing file starts a new one; an existing file that cannot be read is never replaced.
+                AppServerFileSystemMetadata metadata = null;
+                try
+                {
+                    metadata = await RequireFileClient().GetMetadataAsync(path).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                }
+
+                if (metadata != null)
+                {
+                    throw;
+                }
+
+                return null;
+            }
+        }
+
+        private IAppServerFileSystemClient RequireFileClient()
+        {
+            return _fileClient ?? throw new InvalidOperationException("Hook source files are unavailable without a file system client.");
         }
 
         public async Task<AppServerHooksListResult> ListAsync(string workspacePath, string threadId)

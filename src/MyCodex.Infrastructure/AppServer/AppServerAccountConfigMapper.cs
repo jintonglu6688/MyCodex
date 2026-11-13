@@ -164,7 +164,8 @@ namespace MyCodex.Infrastructure.AppServer
                     SourceText = BuildConfigLayerSourceText(source),
                     SourceType = GetConfigLayerSourceType(source),
                     Version = AppServerJsonValue.GetString(layer, "version"),
-                    DisabledReason = AppServerJsonValue.GetString(layer, "disabledReason")
+                    DisabledReason = AppServerJsonValue.GetString(layer, "disabledReason"),
+                    FilePath = AppServerJsonValue.GetString(source, "file")
                 });
             }
 

@@ -14331,4 +14331,112 @@ MyCodex 桌面客户端。</value>
   <data name="ActivitySettingsForm.Accessible.Hook" xml:space="preserve">
     <value>显示 Hook 消息</value>
   </data>
+  <data name="HookEditForm.Title" xml:space="preserve">
+    <value>新建 Hook</value>
+  </data>
+  <data name="HookEditForm.Accessible.Location" xml:space="preserve">
+    <value>位置</value>
+  </data>
+  <data name="HookEditForm.Accessible.Event" xml:space="preserve">
+    <value>事件</value>
+  </data>
+  <data name="HookEditForm.Accessible.Matcher" xml:space="preserve">
+    <value>匹配条件</value>
+  </data>
+  <data name="HookEditForm.Accessible.Type" xml:space="preserve">
+    <value>处理器类型</value>
+  </data>
+  <data name="HookEditForm.Accessible.Command" xml:space="preserve">
+    <value>命令</value>
+  </data>
+  <data name="HookEditForm.Accessible.Server" xml:space="preserve">
+    <value>MCP 服务器</value>
+  </data>
+  <data name="HookEditForm.Accessible.Tool" xml:space="preserve">
+    <value>MCP 工具</value>
+  </data>
+  <data name="HookEditForm.Accessible.Timeout" xml:space="preserve">
+    <value>超时秒数</value>
+  </data>
+  <data name="HookEditForm.Accessible.StatusMessage" xml:space="preserve">
+    <value>状态消息</value>
+  </data>
+  <data name="HookEditForm.Label.Location" xml:space="preserve">
+    <value>位置(&amp;L)：</value>
+  </data>
+  <data name="HookEditForm.Label.Event" xml:space="preserve">
+    <value>事件(&amp;E)：</value>
+  </data>
+  <data name="HookEditForm.Label.Matcher" xml:space="preserve">
+    <value>匹配条件（可选）(&amp;M)：</value>
+  </data>
+  <data name="HookEditForm.Label.Type" xml:space="preserve">
+    <value>类型(&amp;Y)：</value>
+  </data>
+  <data name="HookEditForm.Label.Command" xml:space="preserve">
+    <value>命令(&amp;D)：</value>
+  </data>
+  <data name="HookEditForm.Label.Server" xml:space="preserve">
+    <value>MCP 服务器(&amp;S)：</value>
+  </data>
+  <data name="HookEditForm.Label.Tool" xml:space="preserve">
+    <value>MCP 工具(&amp;T)：</value>
+  </data>
+  <data name="HookEditForm.Label.Timeout" xml:space="preserve">
+    <value>超时秒数（可选）(&amp;I)：</value>
+  </data>
+  <data name="HookEditForm.Label.StatusMessage" xml:space="preserve">
+    <value>状态消息（可选）(&amp;G)：</value>
+  </data>
+  <data name="HookEditForm.Location.User" xml:space="preserve">
+    <value>用户 hooks.json</value>
+  </data>
+  <data name="HookEditForm.Location.Project" xml:space="preserve">
+    <value>项目 hooks.json</value>
+  </data>
+  <data name="HookEditForm.Type.Command" xml:space="preserve">
+    <value>命令</value>
+  </data>
+  <data name="HookEditForm.Type.McpTool" xml:space="preserve">
+    <value>MCP 工具</value>
+  </data>
+  <data name="HookEditForm.Error.Timeout" xml:space="preserve">
+    <value>超时必须是大于零的整数秒。</value>
+  </data>
+  <data name="HookEditForm.Error.Command" xml:space="preserve">
+    <value>请输入要运行的命令。</value>
+  </data>
+  <data name="HookEditForm.Error.McpTool" xml:space="preserve">
+    <value>请同时输入 MCP 服务器和工具。</value>
+  </data>
+  <data name="HooksManagementForm.Button.OpenSource" xml:space="preserve">
+    <value>打开来源(&amp;O)...</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.OpenSource" xml:space="preserve">
+    <value>打开来源文件</value>
+  </data>
+  <data name="HooksManagementForm.Button.New" xml:space="preserve">
+    <value>新建(&amp;N)...</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.New" xml:space="preserve">
+    <value>新建 Hook</value>
+  </data>
+  <data name="HooksManagementForm.Button.Delete" xml:space="preserve">
+    <value>删除(&amp;L)</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Delete" xml:space="preserve">
+    <value>删除 Hook</value>
+  </data>
+  <data name="HooksManagementForm.Confirm.Delete" xml:space="preserve">
+    <value>从 {0} 删除这个 hook 定义吗？其他 hooks 和它调用的脚本都会保留。{1}{1}{2}</value>
+  </data>
+  <data name="HooksManagementForm.Status.Added" xml:space="preserve">
+    <value>已添加 Hook。信任之前它不会运行。</value>
+  </data>
+  <data name="HooksManagementForm.Status.Deleted" xml:space="preserve">
+    <value>已删除 Hook 定义。</value>
+  </data>
+  <data name="HooksManagementForm.Status.UserPathUnknown" xml:space="preserve">
+    <value>找不到用户配置文件夹，未保存任何内容。</value>
+  </data>
 </root>

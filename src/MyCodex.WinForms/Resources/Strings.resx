@@ -14376,4 +14376,112 @@ Trust this host key and retry detection?</value></data>
   <data name="ActivitySettingsForm.Accessible.Hook" xml:space="preserve">
     <value>Show hook messages</value>
   </data>
+  <data name="HookEditForm.Title" xml:space="preserve">
+    <value>New Hook</value>
+  </data>
+  <data name="HookEditForm.Accessible.Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="HookEditForm.Accessible.Event" xml:space="preserve">
+    <value>Event</value>
+  </data>
+  <data name="HookEditForm.Accessible.Matcher" xml:space="preserve">
+    <value>Matcher</value>
+  </data>
+  <data name="HookEditForm.Accessible.Type" xml:space="preserve">
+    <value>Handler type</value>
+  </data>
+  <data name="HookEditForm.Accessible.Command" xml:space="preserve">
+    <value>Command</value>
+  </data>
+  <data name="HookEditForm.Accessible.Server" xml:space="preserve">
+    <value>MCP server</value>
+  </data>
+  <data name="HookEditForm.Accessible.Tool" xml:space="preserve">
+    <value>MCP tool</value>
+  </data>
+  <data name="HookEditForm.Accessible.Timeout" xml:space="preserve">
+    <value>Timeout in seconds</value>
+  </data>
+  <data name="HookEditForm.Accessible.StatusMessage" xml:space="preserve">
+    <value>Status message</value>
+  </data>
+  <data name="HookEditForm.Label.Location" xml:space="preserve">
+    <value>&amp;Location:</value>
+  </data>
+  <data name="HookEditForm.Label.Event" xml:space="preserve">
+    <value>&amp;Event:</value>
+  </data>
+  <data name="HookEditForm.Label.Matcher" xml:space="preserve">
+    <value>&amp;Matcher (optional):</value>
+  </data>
+  <data name="HookEditForm.Label.Type" xml:space="preserve">
+    <value>T&amp;ype:</value>
+  </data>
+  <data name="HookEditForm.Label.Command" xml:space="preserve">
+    <value>Comman&amp;d:</value>
+  </data>
+  <data name="HookEditForm.Label.Server" xml:space="preserve">
+    <value>MCP &amp;server:</value>
+  </data>
+  <data name="HookEditForm.Label.Tool" xml:space="preserve">
+    <value>MCP &amp;tool:</value>
+  </data>
+  <data name="HookEditForm.Label.Timeout" xml:space="preserve">
+    <value>T&amp;imeout in seconds (optional):</value>
+  </data>
+  <data name="HookEditForm.Label.StatusMessage" xml:space="preserve">
+    <value>Status messa&amp;ge (optional):</value>
+  </data>
+  <data name="HookEditForm.Location.User" xml:space="preserve">
+    <value>User hooks.json</value>
+  </data>
+  <data name="HookEditForm.Location.Project" xml:space="preserve">
+    <value>Project hooks.json</value>
+  </data>
+  <data name="HookEditForm.Type.Command" xml:space="preserve">
+    <value>Command</value>
+  </data>
+  <data name="HookEditForm.Type.McpTool" xml:space="preserve">
+    <value>MCP tool</value>
+  </data>
+  <data name="HookEditForm.Error.Timeout" xml:space="preserve">
+    <value>Timeout must be a whole number of seconds greater than zero.</value>
+  </data>
+  <data name="HookEditForm.Error.Command" xml:space="preserve">
+    <value>Enter the command to run.</value>
+  </data>
+  <data name="HookEditForm.Error.McpTool" xml:space="preserve">
+    <value>Enter both the MCP server and the tool.</value>
+  </data>
+  <data name="HooksManagementForm.Button.OpenSource" xml:space="preserve">
+    <value>Open Source(&amp;O)...</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.OpenSource" xml:space="preserve">
+    <value>Open source file</value>
+  </data>
+  <data name="HooksManagementForm.Button.New" xml:space="preserve">
+    <value>New(&amp;N)...</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.New" xml:space="preserve">
+    <value>New hook</value>
+  </data>
+  <data name="HooksManagementForm.Button.Delete" xml:space="preserve">
+    <value>Delete(&amp;L)</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Delete" xml:space="preserve">
+    <value>Delete hook</value>
+  </data>
+  <data name="HooksManagementForm.Confirm.Delete" xml:space="preserve">
+    <value>Delete this hook definition from {0}? Other hooks and the scripts it runs are kept.{1}{1}{2}</value>
+  </data>
+  <data name="HooksManagementForm.Status.Added" xml:space="preserve">
+    <value>Hook added. It will not run until you trust it.</value>
+  </data>
+  <data name="HooksManagementForm.Status.Deleted" xml:space="preserve">
+    <value>Hook definition deleted.</value>
+  </data>
+  <data name="HooksManagementForm.Status.UserPathUnknown" xml:space="preserve">
+    <value>The user configuration folder could not be found. Nothing was saved.</value>
+  </data>
 </root>

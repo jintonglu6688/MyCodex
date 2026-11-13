@@ -84,5 +84,8 @@ namespace MyCodex.Application.DTOs
         public string Version { get; set; }
 
         public string DisabledReason { get; set; }
+
+        /// <summary>The layer's config file, as a client path, for file-backed layers such as the user config.</summary>
+        public string FilePath { get; set; }
     }
 }

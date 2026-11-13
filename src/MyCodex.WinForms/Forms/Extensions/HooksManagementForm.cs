@@ -28,6 +28,9 @@ namespace MyCodex.WinForms.Forms
         private readonly Button _revokeButton;
         private readonly Button _enableButton;
         private readonly Button _disableButton;
+        private readonly Button _openSourceButton;
+        private readonly Button _newButton;
+        private readonly Button _deleteButton;
         private readonly Button _closeButton;
         private AppServerHooksListResult _list;
         private bool _isBusy;
@@ -95,10 +98,25 @@ namespace MyCodex.WinForms.Forms
                 UiLocalization.Text("HooksManagementForm.Accessible.Disable", "Disable"),
                 6);
             UiTheme.ApplyButton(_disableButton, UiGlyph.Cancel);
+            _openSourceButton = UiControlFactory.CreateListActionButton(
+                UiLocalization.Text("HooksManagementForm.Button.OpenSource", "Open Source(&O)..."),
+                UiLocalization.Text("HooksManagementForm.Accessible.OpenSource", "Open source file"),
+                7);
+            UiTheme.ApplyButton(_openSourceButton, UiGlyph.FileChange);
+            _newButton = UiControlFactory.CreateListActionButton(
+                UiLocalization.Text("HooksManagementForm.Button.New", "New(&N)..."),
+                UiLocalization.Text("HooksManagementForm.Accessible.New", "New hook"),
+                8);
+            UiTheme.ApplyButton(_newButton, UiGlyph.NewSession);
+            _deleteButton = UiControlFactory.CreateListActionButton(
+                UiLocalization.Text("HooksManagementForm.Button.Delete", "Delete(&L)"),
+                UiLocalization.Text("HooksManagementForm.Accessible.Delete", "Delete hook"),
+                9);
+            UiTheme.ApplyButton(_deleteButton, UiGlyph.Delete);
             _closeButton = UiControlFactory.CreateListActionButton(
                 UiLocalization.Text("HooksManagementForm.Button.Close", "Close(&C)"),
                 UiLocalization.Text("HooksManagementForm.Accessible.Close", "Close"),
-                7);
+                10);
             UiTheme.ApplyButton(_closeButton, UiGlyph.Cancel);
             FormInteractionConventions.ConfigureRefreshButton(_refreshButton);
 
@@ -111,6 +129,9 @@ namespace MyCodex.WinForms.Forms
             _revokeButton.Click += async (sender, e) => await RunAsync(() => ApplySelectedAsync(hook => _service.RevokeAsync(_workspacePath, _threadId, hook)));
             _enableButton.Click += async (sender, e) => await RunAsync(() => ApplySelectedAsync(hook => _service.SetEnabledAsync(_workspacePath, _threadId, hook, true)));
             _disableButton.Click += async (sender, e) => await RunAsync(() => ApplySelectedAsync(hook => _service.SetEnabledAsync(_workspacePath, _threadId, hook, false)));
+            _openSourceButton.Click += async (sender, e) => await RunAsync(OpenSourceAsync);
+            _newButton.Click += async (sender, e) => await RunAsync(AddHookAsync);
+            _deleteButton.Click += async (sender, e) => await RunAsync(DeleteSelectedAsync);
             _closeButton.Click += (sender, e) => Close();
             KeyDown += async (sender, e) =>
             {
@@ -139,7 +160,7 @@ namespace MyCodex.WinForms.Forms
                 BackColor = UiTheme.WindowBackColor,
                 TabStop = false
             };
-            actions.Controls.AddRange(new Control[] { _refreshButton, _trustButton, _revokeButton, _enableButton, _disableButton, _closeButton });
+            actions.Controls.AddRange(new Control[] { _refreshButton, _trustButton, _revokeButton, _enableButton, _disableButton, _openSourceButton, _newButton, _deleteButton, _closeButton });
 
             var root = new TableLayoutPanel
             {
@@ -194,6 +215,82 @@ namespace MyCodex.WinForms.Forms
         {
             ShowList(await _service.ListAsync(_workspacePath, _threadId));
             SetStatus(BuildSummary());
+        }
+
+        /// <summary>Plugin and managed sources open read-only; a saved change makes the hook need review again.</summary>
+        private async Task OpenSourceAsync()
+        {
+            var hook = SelectedHook;
+            if (hook == null)
+            {
+                return;
+            }
+
+            var path = hook.SourcePath;
+            var data = await _service.ReadSourceAsync(path);
+            Func<byte[], Task> save = null;
+            if (HookSourceFileEditor.CanEditSource(hook))
+            {
+                save = bytes => _service.WriteSourceAsync(path, bytes);
+            }
+
+            using (var preview = new AppServerFilePreviewForm(path, Convert.ToBase64String(data), save))
+            {
+                preview.ShowDialog(this);
+            }
+
+            await LoadAsync();
+        }
+
+        private async Task AddHookAsync()
+        {
+            using (var form = new HookEditForm(!string.IsNullOrWhiteSpace(_workspacePath)))
+            {
+                if (form.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+
+                var path = form.IsProjectLocation
+                    ? HookSourceFileEditor.GetProjectHooksPath(_workspacePath)
+                    : await _service.GetUserHooksPathAsync(_workspacePath);
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    SetStatus(UiLocalization.Text("HooksManagementForm.Status.UserPathUnknown", "The user configuration folder could not be found. Nothing was saved."));
+                    return;
+                }
+
+                await _service.AddHookAsync(path, form.EventName, form.Matcher, form.Handler);
+            }
+
+            ShowList(await _service.ListAsync(_workspacePath, _threadId));
+            SetStatus(UiLocalization.Text("HooksManagementForm.Status.Added", "Hook added. It will not run until you trust it."));
+        }
+
+        private async Task DeleteSelectedAsync()
+        {
+            var hook = SelectedHook;
+            if (hook == null)
+            {
+                return;
+            }
+
+            var prompt = string.Format(
+                CultureInfo.CurrentCulture,
+                UiLocalization.Text("HooksManagementForm.Confirm.Delete", "Delete this hook definition from {0}? Other hooks and the scripts it runs are kept.{1}{1}{2}"),
+                hook.SourcePath,
+                Environment.NewLine,
+                DescribeHandler(hook));
+            if (MessageBox.Show(this, prompt, Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            var removed = await _service.RemoveHookAsync(hook);
+            ShowList(await _service.ListAsync(_workspacePath, _threadId));
+            SetStatus(removed
+                ? UiLocalization.Text("HooksManagementForm.Status.Deleted", "Hook definition deleted.")
+                : UiLocalization.Text("HooksManagementForm.Status.Changed", "The hook changed since it was shown. Review it again before saving."));
         }
 
         private async Task TrustSelectedAsync()
@@ -462,6 +559,9 @@ namespace MyCodex.WinForms.Forms
             _revokeButton.Enabled = canModify && !HookStateEditPlanner.NeedsReview(hook);
             _enableButton.Enabled = canModify && !hook.Enabled;
             _disableButton.Enabled = canModify && hook.Enabled;
+            _openSourceButton.Enabled = !_isBusy && _service.CanEditFiles && hook != null && !string.IsNullOrWhiteSpace(hook.SourcePath);
+            _newButton.Enabled = !_isBusy && _service.CanEditFiles;
+            _deleteButton.Enabled = !_isBusy && _service.CanEditFiles && HookSourceFileEditor.CanRemove(hook);
         }
 
         private void SetStatus(string text)

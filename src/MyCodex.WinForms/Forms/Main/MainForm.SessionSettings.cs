@@ -67,7 +67,7 @@ namespace MyCodex.WinForms.Forms
             _skillsManagementMenuItem.Click += SkillsManagementMenuItem_Click;
             _pluginManagementMenuItem.Click += PluginManagementMenuItem_Click;
             _hooksManagementMenuItem.Click += HooksManagementMenuItem_Click;
-            _hookReviewPrompt = new HookReviewPromptCoordinator(this, () => new HookManagementService(_appServerClient, _appServerClient),
+            _hookReviewPrompt = new HookReviewPromptCoordinator(this, () => new HookManagementService(_appServerClient, _appServerClient, _appServerClient),
                 () => IsCurrentWorkspaceAvailable() ? _currentWorkspace?.RootPath : null, () => _currentSession?.ThreadId, NotifyInteractionRequest);
             Activated += (sender, e) => _ = _hookReviewPrompt.CheckAsync(false);
             _remoteServiceMenuItem.Click += RemoteServiceMenuItem_Click;

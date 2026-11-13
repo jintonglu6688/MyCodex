@@ -203,7 +203,13 @@ namespace MyCodex.Infrastructure.AppServer
             AddOptionalString(parameters, "cwd", _mapRequiredClientPathToServer(workspacePath, "workspace"));
 
             var result = await SendRequestAsync("config/read", parameters, cancellationToken).ConfigureAwait(false);
-            return AppServerAccountConfigMapper.BuildConfigSnapshot(result);
+            var snapshot = AppServerAccountConfigMapper.BuildConfigSnapshot(result);
+            foreach (var layer in snapshot.Layers.Where(layer => !string.IsNullOrWhiteSpace(layer.FilePath)))
+            {
+                layer.FilePath = _mapServerPathToClient(layer.FilePath);
+            }
+
+            return snapshot;
         }
 
         public async Task<AppServerPermissionProfileListResult> ListPermissionProfilesAsync(
