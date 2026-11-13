@@ -27,7 +27,7 @@ namespace MyCodex.WinForms.Forms
         private Task RestoreBrowserControlAsync()
         {
             return _appConfigSnapshot.BrowserControlEnabled == true && _appServerClient.ProtocolCapabilities?.SupportsBrowserUseIntegration == true
-                ? GetBrowserControlOptions().ApplyAsync(true, false) : Task.CompletedTask;
+                ? GetBrowserControlOptions().ApplyAsync(true, false, silent: true) : Task.CompletedTask;
         }
 
         private IDisposable TryAcquireBrowserControlTransition()

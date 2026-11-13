@@ -26,6 +26,8 @@ namespace MyCodex.WinForms.Forms
         private bool _needsReconnect;
         private bool _applying;
         private bool _disposed;
+        private bool _silent;
+        private string _failure;
 
         internal BrowserControlOptionsCoordinator(Form owner, IAppServerClient client, IBrowserExtensionSetupService service,
             Func<IDisposable> tryTransition, Func<Task<bool>> reconnect, Action<string> status,
@@ -61,9 +63,11 @@ namespace MyCodex.WinForms.Forms
             return new BrowserControlOptionsPage(_service, supported, enabled == true);
         }
 
-        internal async Task ApplyAsync(bool enabled, bool settingChanged)
+        // Silent applies (startup restore) show no wait dialog or message box; status text carries the outcome.
+        internal async Task ApplyAsync(bool enabled, bool settingChanged, bool silent = false)
         {
             if (_disposed) return;
+            _silent = silent;
             _enabled = enabled;
             _needsReconnect |= settingChanged;
             _pending = enabled || _needsReconnect;
@@ -89,27 +93,32 @@ namespace MyCodex.WinForms.Forms
                 if (lease == null)
                 {
                     _retry.Start();
-                    _status(UiLocalization.Text("BrowserControl.Pending", "Browser control setting saved. Waiting for current work to finish before applying configuration."));
+                    if (!_silent) _status(UiLocalization.Text("BrowserControl.Pending", "Browser control setting saved. Waiting for current work to finish before applying configuration."));
                     return;
                 }
                 _retry.Stop();
                 _applying = true;
                 _pending = false;
                 var stage = "prepare";
+                var changed = false;
+                var silent = _silent;
+                Func<Task> operation = async () =>
+                {
+                    if (_enabled) _needsReconnect |= await _service.PrepareAsync(_closing.Token);
+                    _closing.Token.ThrowIfCancellationRequested();
+                    if (_needsReconnect)
+                    {
+                        stage = "reconnect";
+                        changed = true;
+                        if (!await _reconnect()) throw new InvalidOperationException("BROWSER_RECONNECT_FAILED");
+                    }
+                    _needsReconnect = false;
+                };
                 try
                 {
-                    await _runPreparation(async () =>
-                    {
-                        if (_enabled) _needsReconnect |= await _service.PrepareAsync(_closing.Token);
-                        _closing.Token.ThrowIfCancellationRequested();
-                        if (_needsReconnect)
-                        {
-                            stage = "reconnect";
-                            if (!await _reconnect()) throw new InvalidOperationException("BROWSER_RECONNECT_FAILED");
-                        }
-                        _needsReconnect = false;
-                    });
-                    _status(_enabled
+                    await (silent ? operation() : _runPreparation(operation));
+                    _failure = null;
+                    if (!silent || changed) _status(_enabled
                         ? UiLocalization.Text("BrowserControl.Prepared", "Browser control configured. Install or enable the browser extension if needed. If the browser was already open, fully exit and reopen it once.")
                         : UiLocalization.Text("BrowserControl.Disabled", "Browser control is off."));
                 }
@@ -122,12 +131,24 @@ namespace MyCodex.WinForms.Forms
                         var code = error is AuthenticationCenterException busy && busy.Code == "runtime_busy" ? "runtime_busy" : "unspecified";
                         System.Diagnostics.Trace.TraceWarning("[BrowserControl] Setup failed. Stage={0}; ExceptionType={1}; Code={2}", stage, error.GetType().Name, code);
                         var message = UiLocalization.Text("BrowserControl.SetupFailed", "Browser control setup did not finish. Check that the MyCodex installation is complete, the runtime is connected and browser control is permitted by your settings. Open Options > Browser Control and select OK to retry.");
+                        _failure = message;
                         _status(message);
-                        MessageBox.Show(_owner, message, UiLocalization.Text("BrowserControl.Title", "Browser Control"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        if (!silent) MessageBox.Show(_owner, message, UiLocalization.Text("BrowserControl.Title", "Browser Control"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
-                finally { _applying = false; }
+                finally
+                {
+                    _applying = false;
+                    // An apply requested while this one ran (no wait dialog blocks Options) must not be lost.
+                    if (_pending && !_disposed) _retry.Start();
+                }
             }
+        }
+
+        // Later startup status messages can replace a silent failure; repeat it once startup finishes.
+        internal void RepeatFailureStatus()
+        {
+            if (!_disposed && _failure != null) _status(_failure);
         }
 
         private Task RunPreparationAsync(Func<Task> operation)

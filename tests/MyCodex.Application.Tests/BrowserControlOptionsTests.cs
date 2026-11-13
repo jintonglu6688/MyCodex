@@ -144,6 +144,63 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [TestCase(false, 0, 0)]
+        [TestCase(true, 1, 1)]
+        public async Task SilentStartupSkipsWaitDialogAndReportsOnlyChanges(bool packageChanged, int expectedReconnects, int expectedStatuses)
+        {
+            var service = new Service { Changed = packageChanged };
+            var reconnects = 0;
+            var dialogs = 0;
+            var statuses = new List<string>();
+            using (var owner = new Form())
+            using (var coordinator = new BrowserControlOptionsCoordinator(owner, null, service, () => new Lease(() => { }),
+                () => { reconnects++; return Task.FromResult(true); }, statuses.Add, run => { dialogs++; return run(); }))
+            {
+                await coordinator.ApplyAsync(true, false, silent: true);
+                Assert.That(service.Preparations, Is.EqualTo(1));
+                Assert.That(dialogs, Is.Zero);
+                Assert.That(reconnects, Is.EqualTo(expectedReconnects));
+                Assert.That(statuses, Has.Count.EqualTo(expectedStatuses));
+            }
+        }
+
+        [Test]
+        public async Task SilentStartupFailureUsesStatusOnlyAndCanBeRepeated()
+        {
+            // A message box here would block the STA test; reaching the asserts proves none was shown.
+            var service = new Service { Failure = new System.IO.IOException("BROWSER_BRIDGE_UNREADABLE") };
+            var statuses = new List<string>();
+            using (var owner = new Form())
+            using (var coordinator = new BrowserControlOptionsCoordinator(owner, null, service, () => new Lease(() => { }),
+                () => Task.FromResult(true), statuses.Add, run => run()))
+            {
+                await coordinator.ApplyAsync(true, false, silent: true);
+                Assert.That(statuses, Has.Count.EqualTo(1));
+                coordinator.RepeatFailureStatus();
+                Assert.That(statuses, Has.Count.EqualTo(2));
+                Assert.That(statuses[1], Is.EqualTo(statuses[0]));
+            }
+        }
+
+        [Test]
+        public async Task ApplyRequestedDuringSilentPreparationIsRetried()
+        {
+            var service = new Service { Gate = new TaskCompletionSource<bool>() };
+            using (var owner = new Form())
+            using (var coordinator = new BrowserControlOptionsCoordinator(owner, null, service, () => new Lease(() => { }),
+                () => Task.FromResult(true), _ => { }, run => run()))
+            {
+                var startup = coordinator.ApplyAsync(true, false, silent: true);
+                await coordinator.ApplyAsync(true, true);
+                service.Gate.SetResult(false);
+                await startup;
+                Assert.That(FormTestDriver.Field<System.Windows.Forms.Timer>(coordinator, "_retry").Enabled, Is.True);
+                service.Gate = null;
+                await FormTestDriver.Invoke<Task>(coordinator, "TryApplyAsync");
+                Assert.That(service.Preparations, Is.EqualTo(2));
+            }
+        }
+
         private sealed class Lease : IDisposable
         {
             private readonly Action _release;
@@ -167,7 +224,14 @@ namespace MyCodex.Application.Tests
                 Token = token;
                 return Pending?.Task ?? Task.FromResult(browser == BrowserExtensionBrowser.Edge ? Edge : Chrome);
             }
-            public Task<bool> PrepareAsync(CancellationToken token) { Preparations++; return Task.FromResult(Changed); }
+            internal Exception Failure;
+            internal TaskCompletionSource<bool> Gate;
+            public Task<bool> PrepareAsync(CancellationToken token)
+            {
+                Preparations++;
+                if (Failure != null) throw Failure;
+                return Gate?.Task ?? Task.FromResult(Changed);
+            }
             public void OpenPage(BrowserExtensionBrowser browser, BrowserExtensionSetupPage page) { Opens.Add(browser + ":" + page); }
         }
     }

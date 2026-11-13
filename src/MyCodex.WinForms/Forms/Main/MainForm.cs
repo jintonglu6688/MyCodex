@@ -713,6 +713,7 @@ namespace MyCodex.WinForms.Forms
                     if (!await WaitForTargetExitDecisionAsync()) return;
                 }
                 await InitializeAppAsync();
+                _browserControlOptions?.RepeatFailureStatus();
                 if (!await WaitForTargetExitDecisionAsync()) return;
                 await StartRemoteHostServiceAsync();
                 if (!await WaitForTargetExitDecisionAsync()) return;
