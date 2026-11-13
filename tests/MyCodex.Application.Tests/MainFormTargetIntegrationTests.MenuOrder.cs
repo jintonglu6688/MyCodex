@@ -31,7 +31,7 @@ namespace MyCodex.Application.Tests
                 Assert.That(FormTestDriver.Field<MenuItem>(form, "_extensionsMenuItem").MenuItems.Cast<MenuItem>(), Is.EqualTo(new[]
                 {
                     FormTestDriver.Field<MenuItem>(form, "_pluginManagementMenuItem"), FormTestDriver.Field<MenuItem>(form, "_skillsManagementMenuItem"),
-                    FormTestDriver.Field<MenuItem>(form, "_mcpManagementMenuItem")
+                    FormTestDriver.Field<MenuItem>(form, "_mcpManagementMenuItem"), FormTestDriver.Field<MenuItem>(form, "_hooksManagementMenuItem")
                 }));
                 if (withTargetContext)
                 {

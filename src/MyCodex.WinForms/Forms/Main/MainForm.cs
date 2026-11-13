@@ -1580,18 +1580,7 @@ namespace MyCodex.WinForms.Forms
                     return;
                 }
 
-                _appConfigSnapshot.ShowActivityThinkingMessages = form.ShowThinkingMessages;
-                _appConfigSnapshot.ShowActivityPlanMessages = form.ShowPlanMessages;
-                _appConfigSnapshot.ShowActivityToolMessages = form.ShowToolMessages;
-                _appConfigSnapshot.ShowActivityCommandMessages = form.ShowCommandMessages;
-                _appConfigSnapshot.ShowActivityFileMessages = form.ShowFileMessages;
-                _appConfigSnapshot.ShowActivityNoticeMessages = form.ShowNoticeMessages;
-                _appConfigSnapshot.ShowActivityErrorMessages = form.ShowErrorMessages;
-                _appConfigSnapshot.ShowActivityApprovalMessages = form.ShowApprovalMessages;
-                _appConfigSnapshot.ShowActivityAccountMessages = form.ShowAccountMessages;
-                _appConfigSnapshot.ShowActivityProtocolNoticeMessages = form.ShowProtocolNoticeMessages;
-                _appConfigSnapshot.ShowActivityProtocolWarningMessages = form.ShowProtocolWarningMessages;
-                _appConfigSnapshot.ClearActivityOnNewTurn = form.ClearOnNewTurn;
+                form.ApplyTo(_appConfigSnapshot);
 
                 if (!SaveAppConfig())
                 {

@@ -32,6 +32,8 @@ namespace MyCodex.WinForms.Forms
         private MenuItem _mcpManagementMenuItem;
         private MenuItem _skillsManagementMenuItem;
         private MenuItem _pluginManagementMenuItem;
+        private MenuItem _hooksManagementMenuItem;
+        private HookReviewPromptCoordinator _hookReviewPrompt;
         private MenuItem _remoteServiceMenuItem;
         private WslAppServerSettingsForm _appServerRuntimeSettingsForm;
         private MenuItem _sessionModelMenuItem;
@@ -51,6 +53,7 @@ namespace MyCodex.WinForms.Forms
             _mcpManagementMenuItem = new MenuItem(UiLocalization.Text("Settings.Menu.McpManagement", "MCP Management..."));
             _skillsManagementMenuItem = new MenuItem(UiLocalization.Text("Settings.Menu.SkillsManagement", "Skills Management..."));
             _pluginManagementMenuItem = new MenuItem(UiLocalization.Text("Settings.Menu.PluginManagement", "Plugin Management..."));
+            _hooksManagementMenuItem = new MenuItem(UiLocalization.Text("Settings.Menu.HooksManagement", "Hooks Management..."));
             _remoteServiceMenuItem = new MenuItem(UiLocalization.Text("Settings.Menu.RemoteService", "Phone Connection(&R)..."));
             _sessionModelMenuItem = new MenuItem(UiLocalization.Text("Settings.Menu.SessionModel", "Model"));
             _sessionPermissionMenuItem = new MenuItem(UiLocalization.Text("Settings.Menu.SessionPermission", "Permission"));
@@ -63,6 +66,10 @@ namespace MyCodex.WinForms.Forms
             _mcpManagementMenuItem.Click += McpManagementMenuItem_Click;
             _skillsManagementMenuItem.Click += SkillsManagementMenuItem_Click;
             _pluginManagementMenuItem.Click += PluginManagementMenuItem_Click;
+            _hooksManagementMenuItem.Click += HooksManagementMenuItem_Click;
+            _hookReviewPrompt = new HookReviewPromptCoordinator(this, () => new HookManagementService(_appServerClient, _appServerClient),
+                () => IsCurrentWorkspaceAvailable() ? _currentWorkspace?.RootPath : null, () => _currentSession?.ThreadId, NotifyInteractionRequest);
+            Activated += (sender, e) => _ = _hookReviewPrompt.CheckAsync(false);
             _remoteServiceMenuItem.Click += RemoteServiceMenuItem_Click;
             _sessionModelMenuItem.Click += SessionModelMenuItem_Click;
             _sessionPermissionMenuItem.Click += SessionPermissionMenuItem_Click;
@@ -99,6 +106,7 @@ namespace MyCodex.WinForms.Forms
             _extensionsMenuItem.MenuItems.Add(_pluginManagementMenuItem);
             _extensionsMenuItem.MenuItems.Add(_skillsManagementMenuItem);
             _extensionsMenuItem.MenuItems.Add(_mcpManagementMenuItem);
+            _extensionsMenuItem.MenuItems.Add(_hooksManagementMenuItem);
             _settingsMenuItem.MenuItems.Add(_extensionsMenuItem);
             _settingsMenuItem.MenuItems.Add(_remoteServiceMenuItem);
 
@@ -146,6 +154,11 @@ namespace MyCodex.WinForms.Forms
                 _pluginManagementMenuItem.Text = UiLocalization.Text("Settings.Menu.PluginManagement", "Plugin Management...");
             }
 
+            if (_hooksManagementMenuItem != null)
+            {
+                _hooksManagementMenuItem.Text = UiLocalization.Text("Settings.Menu.HooksManagement", "Hooks Management...");
+            }
+
             if (_remoteServiceMenuItem != null)
             {
                 _remoteServiceMenuItem.Text = UiLocalization.Text("Settings.Menu.RemoteService", "Phone Connection(&R)...");
@@ -175,6 +188,7 @@ namespace MyCodex.WinForms.Forms
             await PromptForStartupFastModeIfNeededAsync();
             if (!await WaitForTargetExitDecisionAsync()) return;
             await RefreshKnownUnixWorkspaceGitInfoAsync();
+            _ = _hookReviewPrompt.CheckAsync(true); // Not awaited: the review dialog must not hold up the connect flow.
         }
 
         private void SettingsMenuItem_Popup(object sender, EventArgs e)
@@ -188,6 +202,7 @@ namespace MyCodex.WinForms.Forms
             _mcpManagementMenuItem.Enabled = state.McpManagementEnabled;
             _skillsManagementMenuItem.Enabled = state.SkillsManagementEnabled;
             _pluginManagementMenuItem.Enabled = state.PluginManagementEnabled;
+            _hooksManagementMenuItem.Enabled = state.PluginManagementEnabled;
             UpdateSessionSettingsMenuText();
         }
 
@@ -304,6 +319,16 @@ namespace MyCodex.WinForms.Forms
             {
                 form.ShowDialog(this);
             }
+        }
+
+        private async void HooksManagementMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!await EnsureAppServerAvailableForActionAsync(UiLocalization.Text("MainForm.SessionSettings.Action.OpenHooksManagement", "Open Hooks Management")))
+            {
+                return;
+            }
+
+            _hookReviewPrompt.OpenManagement();
         }
 
         private void RemoteServiceMenuItem_Click(object sender, EventArgs e)

@@ -695,8 +695,6 @@ namespace MyCodex.Application.Tests
             }
         }
 
-        [TestCase("hook/started")]
-        [TestCase("hook/completed")]
         [TestCase("process/outputDelta")]
         [TestCase("process/exited")]
         [TestCase("rawResponseItem/completed")]

@@ -1821,4 +1821,25 @@ This file is empty.</value>
   <data name="SessionProvider.Status.Repaired" xml:space="preserve">
     <value>The old conversation provider was repaired. Its history and thread ID were preserved, and a backup was kept.</value>
   </data>
+  <data name="AppServerClient.HookRun.Template" xml:space="preserve">
+    <value>{0} hook {1}: {2}</value>
+  </data>
+  <data name="AppServerClient.HookRun.Duration" xml:space="preserve">
+    <value> ({0} ms)</value>
+  </data>
+  <data name="AppServerClient.HookRun.Status.Running" xml:space="preserve">
+    <value>running</value>
+  </data>
+  <data name="AppServerClient.HookRun.Status.Completed" xml:space="preserve">
+    <value>completed</value>
+  </data>
+  <data name="AppServerClient.HookRun.Status.Failed" xml:space="preserve">
+    <value>failed</value>
+  </data>
+  <data name="AppServerClient.HookRun.Status.Blocked" xml:space="preserve">
+    <value>blocked</value>
+  </data>
+  <data name="AppServerClient.HookRun.Status.Stopped" xml:space="preserve">
+    <value>stopped</value>
+  </data>
 </root>

@@ -51,6 +51,7 @@ namespace MyCodex.Application.Tests
             "ActivitySettingsForm.Check.Thinking",
             "ActivitySettingsForm.Check.Plan",
             "ActivitySettingsForm.Check.Tool",
+            "ActivitySettingsForm.Check.Hook",
             "ActivitySettingsForm.Check.Command",
             "ActivitySettingsForm.Check.File",
             "ActivitySettingsForm.Check.Notice",
@@ -196,6 +197,21 @@ namespace MyCodex.Application.Tests
             "SkillsManagementForm.Button.Disable",
             "SkillsManagementForm.Button.OpenFolder",
             "SkillsManagementForm.Button.Errors"
+        })]
+        [TestCase("HookReviewForm", new[]
+        {
+            "HookReviewForm.Button.TrustAll",
+            "HookReviewForm.Button.Manage",
+            "HookReviewForm.Button.Later"
+        })]
+        [TestCase("HooksManagementForm", new[]
+        {
+            "HooksManagementForm.Button.Refresh",
+            "HooksManagementForm.Button.Trust",
+            "HooksManagementForm.Button.Revoke",
+            "HooksManagementForm.Button.Enable",
+            "HooksManagementForm.Button.Disable",
+            "HooksManagementForm.Button.Close"
         })]
         [TestCase("McpManagementForm", new[]
         {
@@ -657,6 +673,7 @@ namespace MyCodex.Application.Tests
                 "ActivitySettingsForm.Check.Thinking",
                 "ActivitySettingsForm.Check.Plan",
                 "ActivitySettingsForm.Check.Tool",
+                "ActivitySettingsForm.Check.Hook",
                 "ActivitySettingsForm.Check.Command",
                 "ActivitySettingsForm.Check.File",
                 "ActivitySettingsForm.Check.Notice",

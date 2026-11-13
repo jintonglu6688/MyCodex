@@ -13,6 +13,7 @@ namespace MyCodex.WinForms.Forms
         internal const string KindThinking = "thinking";
         internal const string KindPlan = "plan";
         internal const string KindTool = "tool";
+        internal const string KindHook = "hook";
         internal const string KindNetwork = "network";
         internal const string KindCommand = "command";
         internal const string KindFile = "file";
@@ -26,6 +27,7 @@ namespace MyCodex.WinForms.Forms
 
         private readonly List<ActivityTimelineItem> _items;
         private readonly HashSet<string> _seenKeys;
+        private readonly Dictionary<string, string> _runningHooks = new Dictionary<string, string>(StringComparer.Ordinal);
 
         public ActivityTimelineState()
         {
@@ -37,6 +39,7 @@ namespace MyCodex.WinForms.Forms
         {
             _items.Clear();
             _seenKeys.Clear();
+            _runningHooks.Clear();
         }
 
         public bool HasItems
@@ -96,6 +99,9 @@ namespace MyCodex.WinForms.Forms
                     return AppendSimpleItem(e, KindNetwork, GetNetworkLabel(), e.Content);
                 case "command_completed":
                     return AppendCommandItem(e);
+                case "hook_started":
+                case "hook_completed":
+                    return UpsertHookRun(e);
                 case "turn_failed":
                 case "error":
                 case "app_server_disconnected":
@@ -113,6 +119,36 @@ namespace MyCodex.WinForms.Forms
                 default:
                     return false;
             }
+        }
+
+        /// <summary>A run with no terminal event after a disconnect is reported as unknown, never left running.</summary>
+        public bool MarkRunningHooksInterrupted()
+        {
+            var changed = false;
+            foreach (var running in new List<KeyValuePair<string, string>>(_runningHooks))
+            {
+                changed |= UpsertItem(running.Key, KindHook, GetHookLabel(), running.Value + " - " +
+                    UiLocalization.Text("MainForm.ActivityTimeline.HookInterrupted", "connection lost, result unknown"));
+            }
+
+            _runningHooks.Clear();
+            return changed;
+        }
+
+        private bool UpsertHookRun(AppServerEventArgs e)
+        {
+            var key = "hook|" + (e.ItemId ?? e.Content);
+            var text = CollapseTextToSingleLine(e.Content);
+            if (string.Equals(e.EventType, "hook_started", StringComparison.OrdinalIgnoreCase))
+            {
+                _runningHooks[key] = text;
+            }
+            else
+            {
+                _runningHooks.Remove(key);
+            }
+
+            return UpsertItem(key, KindHook, GetHookLabel(), text);
         }
 
         public bool UpsertTurnSummary(string turnId, string text)
@@ -353,6 +389,8 @@ namespace MyCodex.WinForms.Forms
                     return config.ShowActivityPlanMessages;
                 case KindTool:
                     return config.ShowActivityToolMessages;
+                case KindHook:
+                    return config.ShowActivityHookMessages;
                 case KindCommand:
                     return config.ShowActivityCommandMessages;
                 case KindFile:
@@ -531,6 +569,11 @@ namespace MyCodex.WinForms.Forms
         private static string GetPlanLabel()
         {
             return TrimLabel(UiLocalization.Text("MainForm.TurnSummary.Section.Plan", "Plan:"));
+        }
+
+        private static string GetHookLabel()
+        {
+            return UiLocalization.Text("MainForm.ActivityTimeline.Kind.Hook", "Hook");
         }
 
         private static string GetToolLabel()

@@ -93,6 +93,8 @@ namespace MyCodex.WinForms.Forms
                 case "image_generation_started":
                 case "image_generation_completed":
                 case "subagent_activity":
+                case "hook_started":
+                case "hook_completed":
                     return AppServerEventRoute.SummaryOnly;
                 case "turn_started":
                     return AppServerEventRoute.TurnStarted;

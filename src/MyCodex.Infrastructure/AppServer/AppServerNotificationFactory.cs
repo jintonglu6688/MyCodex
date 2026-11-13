@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
 using MyCodex.Shared.Localization;
@@ -311,22 +312,24 @@ namespace MyCodex.Infrastructure.AppServer
 
         internal static AppServerEventArgs CreateConfigWarning(IDictionary<string, object> parameters)
         {
-            return CreateProtocolWarning(
-                "AppServerClient.Protocol.ConfigWarning.Template",
-                "Configuration warning: {0}",
-                "AppServerClient.Protocol.ConfigWarning.NoDetails",
-                "The runtime reported a configuration warning.",
+            var message = ExtractSummaryWithDetails(parameters);
+            var path = AppServerJsonValueReader.GetString(parameters, "path");
+            if (!string.IsNullOrWhiteSpace(message) && !string.IsNullOrWhiteSpace(path))
+            {
+                var line = AppServerJsonValueReader.GetNullableLong(
+                    AppServerJsonValueReader.GetDictionary(AppServerJsonValueReader.GetDictionary(parameters, "range"), "start"), "line");
+                message += Environment.NewLine + path + (line.HasValue ? ":" + line.Value.ToString(CultureInfo.InvariantCulture) : string.Empty);
+            }
+
+            return CreateProtocolWarning(string.IsNullOrWhiteSpace(message)
+                ? SharedLocalization.Text("AppServerClient.Protocol.ConfigWarning.NoDetails", "The runtime reported a configuration warning.")
+                : LF("AppServerClient.Protocol.ConfigWarning.Template", "Configuration warning: {0}", message),
                 parameters);
         }
 
         internal static AppServerEventArgs CreateDeprecationNotice(IDictionary<string, object> parameters)
         {
-            var summary = AppServerJsonValueReader.GetString(parameters, "summary");
-            var details = AppServerJsonValueReader.GetString(parameters, "details");
-            var message = string.IsNullOrWhiteSpace(summary) ? ExtractRuntimeMessage(parameters) : summary;
-            if (!string.IsNullOrWhiteSpace(summary) && !string.IsNullOrWhiteSpace(details) &&
-                !string.Equals(summary, details, StringComparison.Ordinal))
-                message += Environment.NewLine + details;
+            var message = ExtractSummaryWithDetails(parameters);
             return CreateProtocolWarning(string.IsNullOrWhiteSpace(message)
                 ? SharedLocalization.Text("AppServerClient.Protocol.DeprecationNotice.NoDetails", "The runtime reported a deprecation notice.")
                 : LF("AppServerClient.Protocol.DeprecationNotice.Template", "Deprecation notice: {0}", message),
@@ -410,6 +413,71 @@ namespace MyCodex.Infrastructure.AppServer
                 mcpToolName: review.Action != null ? review.Action.Title : null,
                 itemStatus: review.Status,
                 guardianApprovalReview: review);
+        }
+
+        /// <summary>
+        /// One line per hook run, keyed by run id so completion replaces the running line. Context entries are
+        /// never copied: they can carry prompts or command output. Only an error, stop, or feedback reason is shown.
+        /// </summary>
+        internal static AppServerEventArgs CreateHookRun(IDictionary<string, object> parameters)
+        {
+            var run = AppServerJsonValueReader.GetDictionary(parameters, "run");
+            var status = AppServerJsonValueReader.GetString(run, "status");
+            var eventName = AppServerJsonValueReader.GetString(run, "eventName") ?? string.Empty;
+            var sourcePath = AppServerJsonValueReader.GetString(run, "sourcePath");
+            var label = AppServerJsonValueReader.GetFirstNonEmptyString(run, "statusMessage") ??
+                (string.IsNullOrWhiteSpace(sourcePath) ? AppServerJsonValueReader.GetString(run, "source") : System.IO.Path.GetFileName(sourcePath));
+            var content = LF(
+                "AppServerClient.HookRun.Template",
+                "{0} hook {1}: {2}",
+                eventName.Length == 0 ? eventName : char.ToUpperInvariant(eventName[0]) + eventName.Substring(1),
+                DescribeHookRunStatus(status),
+                label);
+            var durationMs = AppServerJsonValueReader.GetNullableLong(run, "durationMs");
+            if (durationMs.HasValue && !string.Equals(status, "running", StringComparison.Ordinal))
+            {
+                content += LF("AppServerClient.HookRun.Duration", " ({0} ms)", durationMs.Value.ToString(CultureInfo.InvariantCulture));
+            }
+
+            var reason = AppServerJsonValueReader.GetArray(run, "entries")
+                .OfType<IDictionary<string, object>>()
+                .Where(entry => HookReasonKinds.Contains(AppServerJsonValueReader.GetString(entry, "kind") ?? string.Empty))
+                .Select(entry => AppServerJsonValueReader.GetString(entry, "text"))
+                .FirstOrDefault(text => !string.IsNullOrWhiteSpace(text));
+            if (reason != null)
+            {
+                reason = reason.Replace('\r', ' ').Replace('\n', ' ').Trim();
+                content += " - " + (reason.Length > 200 ? reason.Substring(0, 200) + "..." : reason);
+            }
+
+            return new AppServerEventArgs(
+                string.Equals(status, "running", StringComparison.Ordinal) ? "hook_started" : "hook_completed",
+                content,
+                threadId: AppServerJsonValueReader.GetString(parameters, "threadId"),
+                turnId: AppServerJsonValueReader.GetString(parameters, "turnId"),
+                itemId: AppServerJsonValueReader.GetString(run, "id"),
+                itemStatus: status);
+        }
+
+        private static readonly string[] HookReasonKinds = { "error", "stop", "feedback" };
+
+        private static string DescribeHookRunStatus(string status)
+        {
+            switch (status)
+            {
+                case "running":
+                    return SharedLocalization.Text("AppServerClient.HookRun.Status.Running", "running");
+                case "completed":
+                    return SharedLocalization.Text("AppServerClient.HookRun.Status.Completed", "completed");
+                case "failed":
+                    return SharedLocalization.Text("AppServerClient.HookRun.Status.Failed", "failed");
+                case "blocked":
+                    return SharedLocalization.Text("AppServerClient.HookRun.Status.Blocked", "blocked");
+                case "stopped":
+                    return SharedLocalization.Text("AppServerClient.HookRun.Status.Stopped", "stopped");
+                default:
+                    return status;
+            }
         }
 
         internal static AppServerEventArgs CreateTurnModerationMetadata(IDictionary<string, object> parameters)
@@ -609,6 +677,17 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 lines.Add(name + "=" + value);
             }
+        }
+
+        private static string ExtractSummaryWithDetails(IDictionary<string, object> parameters)
+        {
+            var summary = AppServerJsonValueReader.GetString(parameters, "summary");
+            var details = AppServerJsonValueReader.GetString(parameters, "details");
+            var message = string.IsNullOrWhiteSpace(summary) ? ExtractRuntimeMessage(parameters) : summary;
+            if (!string.IsNullOrWhiteSpace(summary) && !string.IsNullOrWhiteSpace(details) &&
+                !string.Equals(summary, details, StringComparison.Ordinal))
+                message += Environment.NewLine + details;
+            return message;
         }
 
         private static string ExtractRuntimeMessage(IDictionary<string, object> parameters)

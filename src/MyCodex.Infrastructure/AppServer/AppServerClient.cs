@@ -1105,6 +1105,16 @@ namespace MyCodex.Infrastructure.AppServer
             return await _operations.WriteSkillEnabledAsync(path, enabled).ConfigureAwait(false);
         }
 
+        public Task<AppServerHooksListResult> ListHooksAsync(string workspacePath, string threadId)
+        {
+            return _operations.ListHooksAsync(workspacePath, threadId);
+        }
+
+        public Task<AppServerConfigWriteResult> WriteHookStateAsync(IReadOnlyCollection<AppServerConfigWriteEdit> edits, string expectedVersion)
+        {
+            return _operations.WriteHookStateAsync(edits, expectedVersion);
+        }
+
         public async Task<List<AppServerFileSystemEntry>> ReadDirectoryAsync(string path)
         {
             return await _operations.ReadDirectoryAsync(path).ConfigureAwait(false);

@@ -1821,4 +1821,25 @@
   <data name="SessionProvider.Status.Repaired" xml:space="preserve">
     <value>已修复旧会话的提供商配置，原历史和线程编号均已保留，并已保存备份。</value>
   </data>
+  <data name="AppServerClient.HookRun.Template" xml:space="preserve">
+    <value>{0} hook {1}：{2}</value>
+  </data>
+  <data name="AppServerClient.HookRun.Duration" xml:space="preserve">
+    <value>（{0} 毫秒）</value>
+  </data>
+  <data name="AppServerClient.HookRun.Status.Running" xml:space="preserve">
+    <value>运行中</value>
+  </data>
+  <data name="AppServerClient.HookRun.Status.Completed" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="AppServerClient.HookRun.Status.Failed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="AppServerClient.HookRun.Status.Blocked" xml:space="preserve">
+    <value>已阻止</value>
+  </data>
+  <data name="AppServerClient.HookRun.Status.Stopped" xml:space="preserve">
+    <value>已停止</value>
+  </data>
 </root>

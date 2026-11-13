@@ -230,7 +230,7 @@ namespace MyCodex.Infrastructure.AppServer
             return AppServerPermissionProfileMapper.BuildListResult(result);
         }
 
-        public async Task WriteConfigBatchAsync(IReadOnlyCollection<AppServerConfigWriteEdit> edits, string filePath = null, string expectedVersion = null, bool reloadUserConfig = false)
+        public async Task<IDictionary<string, object>> WriteConfigBatchAsync(IReadOnlyCollection<AppServerConfigWriteEdit> edits, string filePath = null, string expectedVersion = null, bool reloadUserConfig = false)
         {
             _ensureConnected();
 
@@ -282,7 +282,30 @@ namespace MyCodex.Infrastructure.AppServer
             }
 
             AppServerEventDiagnostics.TraceConfigWrite(edits, reloadUserConfig, filePath);
-            await SendRequestAsync("config/batchWrite", parameters).ConfigureAwait(false);
+            return await SendRequestAsync("config/batchWrite", parameters).ConfigureAwait(false);
+        }
+
+        public async Task<AppServerConfigWriteResult> WriteHookStateAsync(IReadOnlyCollection<AppServerConfigWriteEdit> edits, string expectedVersion)
+        {
+            var result = await WriteConfigBatchAsync(edits, null, expectedVersion, true).ConfigureAwait(false);
+            return AppServerHookMapper.BuildWriteResult(result);
+        }
+
+        public async Task<AppServerHooksListResult> ListHooksAsync(string workspacePath, string threadId)
+        {
+            _ensureConnected();
+            var parameters = new Dictionary<string, object>();
+            if (!string.IsNullOrWhiteSpace(threadId))
+            {
+                parameters["threadId"] = threadId;
+            }
+            else if (!string.IsNullOrWhiteSpace(workspacePath))
+            {
+                parameters["cwds"] = new[] { _mapRequiredClientPathToServer(workspacePath, "workspace") };
+            }
+
+            var result = await SendRequestAsync("hooks/list", parameters).ConfigureAwait(false);
+            return AppServerHookMapper.BuildList(result, _mapServerPathToClient);
         }
 
         public async Task<List<AppServerMcpServerStatus>> ListMcpServerStatusesAsync()

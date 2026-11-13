@@ -14130,4 +14130,205 @@ MyCodex 桌面客户端。</value>
   <data name="AuthenticationUsage.VolcengineHint" xml:space="preserve">
     <value>火山方舟用账号的 AccessKey 查询用量，不是推理用的 API Key。</value>
   </data>
+  <data name="Settings.Menu.HooksManagement" xml:space="preserve">
+    <value>Hooks 管理(&amp;H)...</value>
+  </data>
+  <data name="MainForm.SessionSettings.Action.OpenHooksManagement" xml:space="preserve">
+    <value>打开 Hooks 管理</value>
+  </data>
+  <data name="HooksManagementForm.Title" xml:space="preserve">
+    <value>Hooks 管理</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Hooks" xml:space="preserve">
+    <value>Hooks</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Details" xml:space="preserve">
+    <value>详情</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Trust" xml:space="preserve">
+    <value>信任</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Revoke" xml:space="preserve">
+    <value>撤销信任</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Enable" xml:space="preserve">
+    <value>启用</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Disable" xml:space="preserve">
+    <value>禁用</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="HooksManagementForm.Button.Refresh" xml:space="preserve">
+    <value>刷新(&amp;R)</value>
+  </data>
+  <data name="HooksManagementForm.Button.Trust" xml:space="preserve">
+    <value>信任(&amp;T)...</value>
+  </data>
+  <data name="HooksManagementForm.Button.Revoke" xml:space="preserve">
+    <value>撤销信任(&amp;V)</value>
+  </data>
+  <data name="HooksManagementForm.Button.Enable" xml:space="preserve">
+    <value>启用(&amp;E)</value>
+  </data>
+  <data name="HooksManagementForm.Button.Disable" xml:space="preserve">
+    <value>禁用(&amp;D)</value>
+  </data>
+  <data name="HooksManagementForm.Button.Close" xml:space="preserve">
+    <value>关闭(&amp;C)</value>
+  </data>
+  <data name="HooksManagementForm.Column.Handler" xml:space="preserve">
+    <value>处理器</value>
+  </data>
+  <data name="HooksManagementForm.Confirm.Trust" xml:space="preserve">
+    <value>信任这个 hook 吗？在定义改变之前，它会在 {0} 事件时运行。{1}{1}{2}</value>
+  </data>
+  <data name="HooksManagementForm.Details.Event" xml:space="preserve">
+    <value>事件</value>
+  </data>
+  <data name="HooksManagementForm.Details.Matcher" xml:space="preserve">
+    <value>匹配条件</value>
+  </data>
+  <data name="HooksManagementForm.Details.Handler" xml:space="preserve">
+    <value>处理器</value>
+  </data>
+  <data name="HooksManagementForm.Details.Timeout" xml:space="preserve">
+    <value>超时（秒）</value>
+  </data>
+  <data name="HooksManagementForm.Details.Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="HooksManagementForm.Details.Source" xml:space="preserve">
+    <value>来源</value>
+  </data>
+  <data name="HooksManagementForm.Details.SourcePath" xml:space="preserve">
+    <value>来源文件</value>
+  </data>
+  <data name="HooksManagementForm.Details.Plugin" xml:space="preserve">
+    <value>插件</value>
+  </data>
+  <data name="HooksManagementForm.Details.Hash" xml:space="preserve">
+    <value>定义指纹</value>
+  </data>
+  <data name="HooksManagementForm.Details.Key" xml:space="preserve">
+    <value>键</value>
+  </data>
+  <data name="HooksManagementForm.Details.WorkspaceViewOnly" xml:space="preserve">
+    <value>此列表显示的是工作区配置。在当前运行时加载该会话之前，会话加载的项目 hooks 可能不在列表中。</value>
+  </data>
+  <data name="HooksManagementForm.State.Enabled" xml:space="preserve">
+    <value>已启用</value>
+  </data>
+  <data name="HooksManagementForm.State.Disabled" xml:space="preserve">
+    <value>已禁用</value>
+  </data>
+  <data name="HooksManagementForm.Trust.Trusted" xml:space="preserve">
+    <value>已信任</value>
+  </data>
+  <data name="HooksManagementForm.Trust.Managed" xml:space="preserve">
+    <value>由策略管理</value>
+  </data>
+  <data name="HooksManagementForm.Trust.Modified" xml:space="preserve">
+    <value>信任后已更改，需要审阅</value>
+  </data>
+  <data name="HooksManagementForm.Trust.Untrusted" xml:space="preserve">
+    <value>未信任，需要审阅</value>
+  </data>
+  <data name="HooksManagementForm.Status.Loading" xml:space="preserve">
+    <value>正在读取 Hooks。</value>
+  </data>
+  <data name="HooksManagementForm.Status.Failed" xml:space="preserve">
+    <value>Hooks 操作失败：{0}</value>
+  </data>
+  <data name="HooksManagementForm.Status.Summary" xml:space="preserve">
+    <value>共 {0} 个 Hooks，{1} 个需要审阅后才会运行，{2} 条警告或错误。</value>
+  </data>
+  <data name="HooksManagementForm.Status.Changed" xml:space="preserve">
+    <value>显示之后该 hook 已改变。请重新审阅后再保存。</value>
+  </data>
+  <data name="HooksManagementForm.Status.VersionUnavailable" xml:space="preserve">
+    <value>无法确认用户配置版本，未保存任何内容。</value>
+  </data>
+  <data name="HooksManagementForm.Status.Overridden" xml:space="preserve">
+    <value>已保存，但被更高优先级的配置层覆盖。</value>
+  </data>
+  <data name="HooksManagementForm.Status.Saved" xml:space="preserve">
+    <value>已保存。正在运行的 hooks 可能仍按旧设置完成。</value>
+  </data>
+  <data name="HookReviewForm.Title" xml:space="preserve">
+    <value>{0} 个 Hooks 需要审阅</value>
+  </data>
+  <data name="HookReviewForm.Summary" xml:space="preserve">
+    <value>这些 Hooks 是新增或已更改的，信任之前不会运行。信任后，Hooks 可以在沙箱外运行。</value>
+  </data>
+  <data name="HookReviewForm.Accessible.Hooks" xml:space="preserve">
+    <value>需要审阅的 Hooks</value>
+  </data>
+  <data name="HookReviewForm.Button.TrustAll" xml:space="preserve">
+    <value>全部信任(&amp;A)...</value>
+  </data>
+  <data name="HookReviewForm.Accessible.TrustAll" xml:space="preserve">
+    <value>全部信任</value>
+  </data>
+  <data name="HookReviewForm.Button.Manage" xml:space="preserve">
+    <value>管理(&amp;M)...</value>
+  </data>
+  <data name="HookReviewForm.Accessible.Manage" xml:space="preserve">
+    <value>管理 Hooks</value>
+  </data>
+  <data name="HookReviewForm.Button.Later" xml:space="preserve">
+    <value>稍后(&amp;L)</value>
+  </data>
+  <data name="HookReviewForm.Accessible.Later" xml:space="preserve">
+    <value>不信任，继续</value>
+  </data>
+  <data name="HookReviewForm.Confirm.TrustAll" xml:space="preserve">
+    <value>信任此处列出的全部 {0} 个 Hooks 吗？在定义改变之前，它们都会运行。</value>
+  </data>
+  <data name="HookReviewForm.Message.Changed" xml:space="preserve">
+    <value>列表打开期间部分 Hooks 已改变。请先查看更新后的列表再信任。</value>
+  </data>
+  <data name="HookReviewForm.Notice.Pending" xml:space="preserve">
+    <value>有 {0} 个 Hooks 需要审阅，信任之前不会运行。</value>
+  </data>
+  <data name="HooksManagementForm.Column.Hook" xml:space="preserve">
+    <value>Hook</value>
+  </data>
+  <data name="HooksManagementForm.Source.Plugin" xml:space="preserve">
+    <value>{0} 插件</value>
+  </data>
+  <data name="HooksManagementForm.Source.Project" xml:space="preserve">
+    <value>项目 {0}</value>
+  </data>
+  <data name="HooksManagementForm.Source.User" xml:space="preserve">
+    <value>用户配置</value>
+  </data>
+  <data name="HooksManagementForm.TrustShort.Trusted" xml:space="preserve">
+    <value>已信任</value>
+  </data>
+  <data name="HooksManagementForm.TrustShort.Untrusted" xml:space="preserve">
+    <value>未信任</value>
+  </data>
+  <data name="HooksManagementForm.TrustShort.Modified" xml:space="preserve">
+    <value>已更改</value>
+  </data>
+  <data name="HooksManagementForm.TrustShort.Managed" xml:space="preserve">
+    <value>受管</value>
+  </data>
+  <data name="MainForm.ActivityTimeline.Kind.Hook" xml:space="preserve">
+    <value>Hook</value>
+  </data>
+  <data name="MainForm.ActivityTimeline.HookInterrupted" xml:space="preserve">
+    <value>连接中断，结果未知</value>
+  </data>
+  <data name="ActivitySettingsForm.Check.Hook" xml:space="preserve">
+    <value>显示 Hook 消息(&amp;K)</value>
+  </data>
+  <data name="ActivitySettingsForm.Accessible.Hook" xml:space="preserve">
+    <value>显示 Hook 消息</value>
+  </data>
 </root>

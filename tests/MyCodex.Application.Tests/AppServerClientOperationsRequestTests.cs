@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
@@ -91,6 +92,81 @@ namespace MyCodex.Application.Tests
             Assert.That(requestedCancellationToken, Is.EqualTo(CancellationToken.None));
             Assert.That(requestedTimeoutMs, Is.EqualTo(300000));
             Assert.That(result.Started, Is.True);
+        }
+
+        [Test]
+        public async Task ListHooksAsync_SendsMappedCwdAndMapsHookMetadata()
+        {
+            object requestedParameters = null;
+            var operations = CreateOperations(
+                (method, parameters, cancellationToken, timeoutMs) =>
+                {
+                    Assert.That(method, Is.EqualTo("hooks/list"));
+                    requestedParameters = parameters;
+                    return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>
+                    {
+                        {
+                            "data", new object[]
+                            {
+                                new Dictionary<string, object>
+                                {
+                                    { "cwd", "/repo" },
+                                    { "warnings", new object[] { "bad matcher" } },
+                                    { "errors", new object[] { new Dictionary<string, object> { { "path", "/repo/hooks.json" }, { "message", "parse" } } } },
+                                    {
+                                        "hooks", new object[]
+                                        {
+                                            new Dictionary<string, object>
+                                            {
+                                                { "key", "k" }, { "eventName", "preToolUse" }, { "handlerType", "mcpTool" },
+                                                { "server", "s" }, { "tool", "t" }, { "sourcePath", "/repo/hooks.json" },
+                                                { "enabled", true }, { "isManaged", false }, { "timeoutSec", 30 },
+                                                { "currentHash", "sha256:x" }, { "trustStatus", "modified" }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                },
+                (path, name) => "/repo");
+
+            var result = await operations.ListHooksAsync(@"E:\Repo", null);
+
+            Assert.That((string[])((IDictionary<string, object>)requestedParameters)["cwds"], Is.EqualTo(new[] { "/repo" }));
+            var hook = result.Hooks.Single();
+            Assert.That(hook.McpServer + "/" + hook.McpTool, Is.EqualTo("s/t"));
+            Assert.That(hook.TimeoutSec, Is.EqualTo(30));
+            Assert.That(hook.TrustStatus, Is.EqualTo("modified"));
+            Assert.That(result.Warnings, Is.EqualTo(new[] { "bad matcher" }));
+            Assert.That(result.Errors, Is.EqualTo(new[] { "/repo/hooks.json: parse" }));
+        }
+
+        [Test]
+        public async Task WriteHookStateAsync_SendsVersionedReloadingBatchAndReadsStatus()
+        {
+            IDictionary<string, object> requestedParameters = null;
+            var operations = CreateOperations(
+                (method, parameters, cancellationToken, timeoutMs) =>
+                {
+                    Assert.That(method, Is.EqualTo("config/batchWrite"));
+                    requestedParameters = (IDictionary<string, object>)parameters;
+                    return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>
+                    {
+                        { "status", "okOverridden" }, { "version", "v2" }
+                    });
+                },
+                (path, name) => path);
+
+            var result = await operations.WriteHookStateAsync(
+                new[] { AppServerConfigWriteEdit.CreateReplace("hooks.state.\"k\".trusted_hash", null) },
+                "v1");
+
+            Assert.That(requestedParameters["expectedVersion"], Is.EqualTo("v1"));
+            Assert.That(requestedParameters["reloadUserConfig"], Is.EqualTo(true));
+            Assert.That(result.IsOverridden, Is.True);
+            Assert.That(result.Version, Is.EqualTo("v2"));
         }
 
         private static AppServerClientOperations CreateOperations(

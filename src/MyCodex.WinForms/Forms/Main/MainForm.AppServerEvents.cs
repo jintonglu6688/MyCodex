@@ -131,6 +131,8 @@ namespace MyCodex.WinForms.Forms
             }
 
             HandleReasoningSummaryChatMessageEvent(e, route);
+            if (route == AppServerEventRoute.ThreadStarted && !e.IsHistorical)
+                _ = _hookReviewPrompt.CheckAsync(true); // A new thread may load project hooks the workspace view missed.
 
             if (ThreadDiscoveryRefreshPlanner.ShouldRequestThreadListRefresh(route, e != null ? e.ThreadId : null, IsKnownThreadId))
             {
@@ -611,6 +613,7 @@ namespace MyCodex.WinForms.Forms
             ClearAllThreadBusy();
             ClearAllInFlightThreadStates();
             FinalizeAllActiveTurnSummaries(message);
+            foreach (var timeline in _threadActivityTimelineStates.Values) timeline?.MarkRunningHooksInterrupted();
             _connectionStatus = GetConnectionStatusDisconnectedText();
             RefreshHeader();
             RefreshInputState();

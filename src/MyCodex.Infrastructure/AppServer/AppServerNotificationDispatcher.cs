@@ -27,6 +27,7 @@ namespace MyCodex.Infrastructure.AppServer
         FileChangePatchUpdated,
         AutoApprovalReviewStarted,
         AutoApprovalReviewCompleted,
+        HookRun,
         McpToolCallProgress,
         ReasoningSummaryTextDelta,
         ReasoningSummaryPartAdded,
@@ -117,6 +118,9 @@ namespace MyCodex.Infrastructure.AppServer
                     return AppServerNotificationAction.AutoApprovalReviewStarted;
                 case "item/autoApprovalReview/completed":
                     return AppServerNotificationAction.AutoApprovalReviewCompleted;
+                case "hook/started":
+                case "hook/completed":
+                    return AppServerNotificationAction.HookRun;
                 case "item/mcpToolCall/progress":
                     return AppServerNotificationAction.McpToolCallProgress;
                 case "item/reasoning/summaryTextDelta":
@@ -187,9 +191,7 @@ namespace MyCodex.Infrastructure.AppServer
                 return false;
             }
 
-            return string.Equals(method, "hook/started", StringComparison.Ordinal) ||
-                   string.Equals(method, "hook/completed", StringComparison.Ordinal) ||
-                   string.Equals(method, "app/list/updated", StringComparison.Ordinal) ||
+            return string.Equals(method, "app/list/updated", StringComparison.Ordinal) ||
                    string.Equals(method, "process/outputDelta", StringComparison.Ordinal) ||
                    string.Equals(method, "process/exited", StringComparison.Ordinal) ||
                    string.Equals(method, "rawResponseItem/completed", StringComparison.Ordinal) ||

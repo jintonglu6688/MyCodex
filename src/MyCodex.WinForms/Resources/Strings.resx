@@ -14175,4 +14175,205 @@ Trust this host key and retry detection?</value></data>
   <data name="AuthenticationUsage.VolcengineHint" xml:space="preserve">
     <value>Volcengine queries usage with the account AccessKey, not the inference API key.</value>
   </data>
+  <data name="Settings.Menu.HooksManagement" xml:space="preserve">
+    <value>Hooks Management...</value>
+  </data>
+  <data name="MainForm.SessionSettings.Action.OpenHooksManagement" xml:space="preserve">
+    <value>Open Hooks Management</value>
+  </data>
+  <data name="HooksManagementForm.Title" xml:space="preserve">
+    <value>Hooks Management</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Hooks" xml:space="preserve">
+    <value>Hooks</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Details" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Trust" xml:space="preserve">
+    <value>Trust</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Revoke" xml:space="preserve">
+    <value>Revoke trust</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Enable" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Disable" xml:space="preserve">
+    <value>Disable</value>
+  </data>
+  <data name="HooksManagementForm.Accessible.Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="HooksManagementForm.Button.Refresh" xml:space="preserve">
+    <value>Refresh(&amp;R)</value>
+  </data>
+  <data name="HooksManagementForm.Button.Trust" xml:space="preserve">
+    <value>Trust(&amp;T)...</value>
+  </data>
+  <data name="HooksManagementForm.Button.Revoke" xml:space="preserve">
+    <value>Revoke Trust(&amp;V)</value>
+  </data>
+  <data name="HooksManagementForm.Button.Enable" xml:space="preserve">
+    <value>Enable(&amp;E)</value>
+  </data>
+  <data name="HooksManagementForm.Button.Disable" xml:space="preserve">
+    <value>Disable(&amp;D)</value>
+  </data>
+  <data name="HooksManagementForm.Button.Close" xml:space="preserve">
+    <value>Close(&amp;C)</value>
+  </data>
+  <data name="HooksManagementForm.Column.Handler" xml:space="preserve">
+    <value>Handler</value>
+  </data>
+  <data name="HooksManagementForm.Confirm.Trust" xml:space="preserve">
+    <value>Trust this hook? It will run on {0} events until its definition changes.{1}{1}{2}</value>
+  </data>
+  <data name="HooksManagementForm.Details.Event" xml:space="preserve">
+    <value>Event</value>
+  </data>
+  <data name="HooksManagementForm.Details.Matcher" xml:space="preserve">
+    <value>Matcher</value>
+  </data>
+  <data name="HooksManagementForm.Details.Handler" xml:space="preserve">
+    <value>Handler</value>
+  </data>
+  <data name="HooksManagementForm.Details.Timeout" xml:space="preserve">
+    <value>Timeout (seconds)</value>
+  </data>
+  <data name="HooksManagementForm.Details.Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="HooksManagementForm.Details.Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="HooksManagementForm.Details.SourcePath" xml:space="preserve">
+    <value>Source file</value>
+  </data>
+  <data name="HooksManagementForm.Details.Plugin" xml:space="preserve">
+    <value>Plugin</value>
+  </data>
+  <data name="HooksManagementForm.Details.Hash" xml:space="preserve">
+    <value>Definition hash</value>
+  </data>
+  <data name="HooksManagementForm.Details.Key" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="HooksManagementForm.Details.WorkspaceViewOnly" xml:space="preserve">
+    <value>This list shows the workspace configuration. Project hooks the session loads may be missing until the session is loaded by this runtime.</value>
+  </data>
+  <data name="HooksManagementForm.State.Enabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="HooksManagementForm.State.Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="HooksManagementForm.Trust.Trusted" xml:space="preserve">
+    <value>Trusted</value>
+  </data>
+  <data name="HooksManagementForm.Trust.Managed" xml:space="preserve">
+    <value>Managed by policy</value>
+  </data>
+  <data name="HooksManagementForm.Trust.Modified" xml:space="preserve">
+    <value>Changed since trusted, needs review</value>
+  </data>
+  <data name="HooksManagementForm.Trust.Untrusted" xml:space="preserve">
+    <value>Not trusted, needs review</value>
+  </data>
+  <data name="HooksManagementForm.Status.Loading" xml:space="preserve">
+    <value>Reading hooks.</value>
+  </data>
+  <data name="HooksManagementForm.Status.Failed" xml:space="preserve">
+    <value>Hooks operation failed: {0}</value>
+  </data>
+  <data name="HooksManagementForm.Status.Summary" xml:space="preserve">
+    <value>{0} hooks, {1} need review before they run, {2} warnings or errors.</value>
+  </data>
+  <data name="HooksManagementForm.Status.Changed" xml:space="preserve">
+    <value>The hook changed since it was shown. Review it again before saving.</value>
+  </data>
+  <data name="HooksManagementForm.Status.VersionUnavailable" xml:space="preserve">
+    <value>The user configuration version could not be confirmed. Nothing was saved.</value>
+  </data>
+  <data name="HooksManagementForm.Status.Overridden" xml:space="preserve">
+    <value>Saved, but a higher configuration layer overrides it.</value>
+  </data>
+  <data name="HooksManagementForm.Status.Saved" xml:space="preserve">
+    <value>Saved. Hooks already running may finish with the old setting.</value>
+  </data>
+  <data name="HookReviewForm.Title" xml:space="preserve">
+    <value>{0} hooks need review</value>
+  </data>
+  <data name="HookReviewForm.Summary" xml:space="preserve">
+    <value>These hooks are new or changed and will not run until trusted. Hooks can run outside the sandbox after you trust them.</value>
+  </data>
+  <data name="HookReviewForm.Accessible.Hooks" xml:space="preserve">
+    <value>Hooks needing review</value>
+  </data>
+  <data name="HookReviewForm.Button.TrustAll" xml:space="preserve">
+    <value>Trust All(&amp;A)...</value>
+  </data>
+  <data name="HookReviewForm.Accessible.TrustAll" xml:space="preserve">
+    <value>Trust all</value>
+  </data>
+  <data name="HookReviewForm.Button.Manage" xml:space="preserve">
+    <value>Manage(&amp;M)...</value>
+  </data>
+  <data name="HookReviewForm.Accessible.Manage" xml:space="preserve">
+    <value>Manage hooks</value>
+  </data>
+  <data name="HookReviewForm.Button.Later" xml:space="preserve">
+    <value>Later(&amp;L)</value>
+  </data>
+  <data name="HookReviewForm.Accessible.Later" xml:space="preserve">
+    <value>Continue without trusting</value>
+  </data>
+  <data name="HookReviewForm.Confirm.TrustAll" xml:space="preserve">
+    <value>Trust all {0} hooks listed here? They will run until their definitions change.</value>
+  </data>
+  <data name="HookReviewForm.Message.Changed" xml:space="preserve">
+    <value>Some hooks changed while this list was open. Review the updated list before trusting.</value>
+  </data>
+  <data name="HookReviewForm.Notice.Pending" xml:space="preserve">
+    <value>{0} hooks need review and will not run until trusted.</value>
+  </data>
+  <data name="HooksManagementForm.Column.Hook" xml:space="preserve">
+    <value>Hook</value>
+  </data>
+  <data name="HooksManagementForm.Source.Plugin" xml:space="preserve">
+    <value>{0} plugin</value>
+  </data>
+  <data name="HooksManagementForm.Source.Project" xml:space="preserve">
+    <value>Project {0}</value>
+  </data>
+  <data name="HooksManagementForm.Source.User" xml:space="preserve">
+    <value>User config</value>
+  </data>
+  <data name="HooksManagementForm.TrustShort.Trusted" xml:space="preserve">
+    <value>Trusted</value>
+  </data>
+  <data name="HooksManagementForm.TrustShort.Untrusted" xml:space="preserve">
+    <value>Untrusted</value>
+  </data>
+  <data name="HooksManagementForm.TrustShort.Modified" xml:space="preserve">
+    <value>Changed</value>
+  </data>
+  <data name="HooksManagementForm.TrustShort.Managed" xml:space="preserve">
+    <value>Managed</value>
+  </data>
+  <data name="MainForm.ActivityTimeline.Kind.Hook" xml:space="preserve">
+    <value>Hook</value>
+  </data>
+  <data name="MainForm.ActivityTimeline.HookInterrupted" xml:space="preserve">
+    <value>connection lost, result unknown</value>
+  </data>
+  <data name="ActivitySettingsForm.Check.Hook" xml:space="preserve">
+    <value>Show hook messages(&amp;K)</value>
+  </data>
+  <data name="ActivitySettingsForm.Accessible.Hook" xml:space="preserve">
+    <value>Show hook messages</value>
+  </data>
 </root>

@@ -24,6 +24,7 @@ namespace MyCodex.Domain.Entities
         private bool? _showActivityThinkingMessages = true;
         private bool? _showActivityPlanMessages = true;
         private bool? _showActivityToolMessages = true;
+        private bool? _showActivityHookMessages = true;
         private bool? _showActivityCommandMessages = true;
         private bool? _showActivityFileMessages = true;
         private bool? _showActivityNoticeMessages = true;
@@ -111,6 +112,19 @@ namespace MyCodex.Domain.Entities
         {
             get { return _showActivityToolMessages ?? true; }
             set { _showActivityToolMessages = value; }
+        }
+
+        [DataMember(Name = "ShowActivityHookMessages", EmitDefaultValue = false)]
+        private bool? SerializedShowActivityHookMessages
+        {
+            get { return _showActivityHookMessages; }
+            set { _showActivityHookMessages = value; }
+        }
+
+        public bool ShowActivityHookMessages
+        {
+            get { return _showActivityHookMessages ?? true; }
+            set { _showActivityHookMessages = value; }
         }
 
         [DataMember(Name = "ShowActivityCommandMessages", EmitDefaultValue = false)]

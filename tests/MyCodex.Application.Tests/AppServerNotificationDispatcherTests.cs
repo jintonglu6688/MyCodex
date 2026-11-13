@@ -6,8 +6,6 @@ namespace MyCodex.Application.Tests
     [TestFixture]
     public sealed class AppServerNotificationDispatcherTests
     {
-        [TestCase("hook/started")]
-        [TestCase("hook/completed")]
         [TestCase("app/list/updated")]
         [TestCase("process/outputDelta")]
         [TestCase("process/exited")]
@@ -23,6 +21,7 @@ namespace MyCodex.Application.Tests
         }
 
         [TestCase("thread/started")]
+        [TestCase("hook/started")]
         [TestCase("item/agentMessage/delta")]
         [TestCase("error")]
         public void IsLowNoiseCompatibilityNotification_RegularNotification_ReturnsFalse(string method)

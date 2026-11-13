@@ -896,6 +896,7 @@ namespace MyCodex.Application.Tests
                 ShowActivityThinkingMessages = true,
                 ShowActivityPlanMessages = true,
                 ShowActivityToolMessages = true,
+                ShowActivityHookMessages = true,
                 ShowActivityCommandMessages = true,
                 ShowActivityFileMessages = true,
                 ShowActivityNoticeMessages = true,
@@ -910,24 +911,27 @@ namespace MyCodex.Application.Tests
             using (var form = new ActivitySettingsForm(snapshot))
             {
                 FormTestDriver.Field<CheckBox>(form, "_toolCheckBox").Checked = false;
+                FormTestDriver.Field<CheckBox>(form, "_hookCheckBox").Checked = false;
                 FormTestDriver.Field<CheckBox>(form, "_commandCheckBox").Checked = false;
                 FormTestDriver.Field<CheckBox>(form, "_approvalCheckBox").Checked = false;
                 FormTestDriver.Field<CheckBox>(form, "_protocolWarningCheckBox").Checked = false;
                 FormTestDriver.Field<CheckBox>(form, "_clearOnNewTurnCheckBox").Checked = true;
                 FormTestDriver.ClickOk(form);
+                form.ApplyTo(snapshot);
 
-                Assert.That(form.ShowToolMessages, Is.False);
-                Assert.That(form.ShowCommandMessages, Is.False);
-                Assert.That(form.ShowApprovalMessages, Is.False);
-                Assert.That(form.ShowProtocolWarningMessages, Is.False);
-                Assert.That(form.ClearOnNewTurn, Is.True);
-                Assert.That(form.ShowThinkingMessages, Is.True);
-                Assert.That(form.ShowPlanMessages, Is.True);
-                Assert.That(form.ShowFileMessages, Is.True);
-                Assert.That(form.ShowNoticeMessages, Is.True);
-                Assert.That(form.ShowErrorMessages, Is.True);
-                Assert.That(form.ShowAccountMessages, Is.True);
-                Assert.That(form.ShowProtocolNoticeMessages, Is.True);
+                Assert.That(snapshot.ShowActivityToolMessages, Is.False);
+                Assert.That(snapshot.ShowActivityHookMessages, Is.False);
+                Assert.That(snapshot.ShowActivityCommandMessages, Is.False);
+                Assert.That(snapshot.ShowActivityApprovalMessages, Is.False);
+                Assert.That(snapshot.ShowActivityProtocolWarningMessages, Is.False);
+                Assert.That(snapshot.ClearActivityOnNewTurn, Is.True);
+                Assert.That(snapshot.ShowActivityThinkingMessages, Is.True);
+                Assert.That(snapshot.ShowActivityPlanMessages, Is.True);
+                Assert.That(snapshot.ShowActivityFileMessages, Is.True);
+                Assert.That(snapshot.ShowActivityNoticeMessages, Is.True);
+                Assert.That(snapshot.ShowActivityErrorMessages, Is.True);
+                Assert.That(snapshot.ShowActivityAccountMessages, Is.True);
+                Assert.That(snapshot.ShowActivityProtocolNoticeMessages, Is.True);
             }
         }
 

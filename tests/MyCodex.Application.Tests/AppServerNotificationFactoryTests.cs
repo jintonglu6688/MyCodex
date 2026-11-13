@@ -136,6 +136,68 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void CreateConfigWarning_ShowsSummaryDetailsAndLocation()
+        {
+            WithCulture("en-US", () =>
+            {
+                var args = AppServerNotificationFactory.CreateConfigWarning(new Dictionary<string, object>
+                {
+                    { "summary", "Invalid hooks.json" },
+                    { "details", "unknown field `extra`" },
+                    { "path", "/home/me/.codex/hooks.json" },
+                    { "range", new Dictionary<string, object> { { "start", new Dictionary<string, object> { { "line", 3 }, { "column", 1 } } } } }
+                });
+
+                Assert.That(args.Content, Is.EqualTo(
+                    "Configuration warning: Invalid hooks.json" + Environment.NewLine +
+                    "unknown field `extra`" + Environment.NewLine +
+                    "/home/me/.codex/hooks.json:3"));
+            });
+        }
+
+        [Test]
+        public void CreateHookRun_KeysByRunIdAndShowsOnlyTheFailureReason()
+        {
+            WithCulture("en-US", () =>
+            {
+                var started = AppServerNotificationFactory.CreateHookRun(HookRun("running", null));
+                var blocked = AppServerNotificationFactory.CreateHookRun(HookRun("blocked", 42L));
+
+                Assert.That(started.EventType, Is.EqualTo("hook_started"));
+                Assert.That(started.ItemId, Is.EqualTo("run-1"));
+                Assert.That(started.TurnId, Is.Null);
+                Assert.That(started.Content, Is.EqualTo("PreToolUse hook running: Checking policy - Command not allowed"));
+                Assert.That(blocked.EventType, Is.EqualTo("hook_completed"));
+                Assert.That(blocked.Content, Is.EqualTo("PreToolUse hook blocked: Checking policy (42 ms) - Command not allowed"));
+                Assert.That(blocked.Content, Does.Not.Contain("secret context"));
+            });
+        }
+
+        private static Dictionary<string, object> HookRun(string status, long? durationMs)
+        {
+            return new Dictionary<string, object>
+            {
+                { "threadId", "thread-1" },
+                { "turnId", null },
+                {
+                    "run", new Dictionary<string, object>
+                    {
+                        { "id", "run-1" }, { "eventName", "preToolUse" }, { "status", status },
+                        { "statusMessage", "Checking policy" }, { "sourcePath", "/repo/.codex/hooks.json" },
+                        { "durationMs", durationMs },
+                        {
+                            "entries", new object[]
+                            {
+                                new Dictionary<string, object> { { "kind", "context" }, { "text", "secret context" } },
+                                new Dictionary<string, object> { { "kind", "stop" }, { "text", "Command\nnot allowed" } }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        [Test]
         public void CreateModelRerouted_BuildsVisibleProtocolNotice()
         {
             WithCulture("en-US", () =>

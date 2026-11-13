@@ -140,6 +140,9 @@ namespace MyCodex.Infrastructure.AppServer
                 case AppServerNotificationAction.AutoApprovalReviewCompleted:
                     _context.RaiseEvent(AppServerNotificationFactory.CreateAutoApprovalReviewCompleted(parameters));
                     break;
+                case AppServerNotificationAction.HookRun:
+                    _context.RaiseEvent(AppServerNotificationFactory.CreateHookRun(parameters));
+                    break;
                 case AppServerNotificationAction.McpToolCallProgress:
                     HandleMcpToolCallProgress(threadId, turnId, parameters);
                     break;

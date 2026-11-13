@@ -798,6 +798,32 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void ActivityTimelineState_HookRunUpdatesOneLineAndDisconnectMarksItUnknown()
+        {
+            using (UseCulture("en-US"))
+            {
+                var state = new ActivityTimelineState();
+
+                state.ApplyEvent(new AppServerEventArgs("hook_started", "Stop hook running: a", threadId: "thread-1", itemId: "run-a"));
+                state.ApplyEvent(new AppServerEventArgs("hook_started", "Stop hook running: b", threadId: "thread-1", itemId: "run-b"));
+                state.ApplyEvent(new AppServerEventArgs("hook_completed", "Stop hook completed: a (5 ms)", threadId: "thread-1", itemId: "run-a"));
+
+                Assert.That(state.MarkRunningHooksInterrupted(), Is.True);
+                Assert.That(state.BuildDisplayItems("No activity records currently."), Is.EqualTo(new[]
+                {
+                    "Hook: Stop hook completed: a (5 ms)",
+                    "Hook: Stop hook running: b - connection lost, result unknown"
+                }));
+                Assert.That(state.MarkRunningHooksInterrupted(), Is.False);
+                Assert.That(state.BuildDisplayItems("No activity records currently.", new AppConfigSnapshot { ShowActivityToolMessages = false }), Has.Length.EqualTo(2));
+                Assert.That(state.BuildDisplayItems("No activity records currently.", new AppConfigSnapshot { ShowActivityHookMessages = false }), Is.EqualTo(new[]
+                {
+                    "No activity records currently."
+                }));
+            }
+        }
+
+        [Test]
         public void ActivityTimelineState_UpdatesTurnCompletionWithTokenUsageSummary()
         {
             using (UseCulture("en-US"))
