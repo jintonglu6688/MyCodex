@@ -158,6 +158,7 @@ namespace MyCodex.WinForms.Forms
 
             if (route == AppServerEventRoute.TurnStarted)
             {
+                _hookReviewPrompt.NotifyTurnStarted(e.ThreadId);
                 MarkThreadBusy(e.ThreadId);
                 MarkPausedGoalActiveForRunningTurn(e.ThreadId);
             }

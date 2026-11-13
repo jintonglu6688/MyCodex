@@ -161,6 +161,30 @@ namespace MyCodex.Application.Tests
             Assert.That(state.HasDeferredPrompt, Is.False);
         }
 
+        [Test]
+        public void PromptState_EntersEachNewWorkspaceOrSessionOnce()
+        {
+            var state = new HookReviewPromptState();
+
+            Assert.That(state.EnterContext(@"E:\Repo", null), Is.True);
+            Assert.That(state.EnterContext(@"E:\Repo", null), Is.False);
+            Assert.That(state.EnterContext(@"E:\Repo", "thread-1"), Is.True);
+            Assert.That(state.EnterContext(@"E:\Other", "thread-1"), Is.True);
+        }
+
+        [Test]
+        public void PromptState_ChecksEachCurrentThreadViewOnceUntilReconnect()
+        {
+            var state = new HookReviewPromptState();
+
+            Assert.That(state.NeedsThreadViewCheck("subagent", "thread-1"), Is.False);
+            Assert.That(state.NeedsThreadViewCheck("thread-1", "thread-1"), Is.True);
+            state.MarkThreadViewChecked("thread-1");
+            Assert.That(state.NeedsThreadViewCheck("thread-1", "thread-1"), Is.False);
+            state.ResetThreadViews();
+            Assert.That(state.NeedsThreadViewCheck("thread-1", "thread-1"), Is.True);
+        }
+
         private static AppServerHookInfo Hook(string key, string hash)
         {
             return new AppServerHookInfo { Key = key, CurrentHash = hash, TrustStatus = "untrusted", Enabled = true };

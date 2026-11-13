@@ -188,7 +188,7 @@ namespace MyCodex.WinForms.Forms
             await PromptForStartupFastModeIfNeededAsync();
             if (!await WaitForTargetExitDecisionAsync()) return;
             await RefreshKnownUnixWorkspaceGitInfoAsync();
-            _ = _hookReviewPrompt.CheckAsync(true); // Not awaited: the review dialog must not hold up the connect flow.
+            _ = _hookReviewPrompt.CheckAfterConnectAsync(); // Not awaited: the review dialog must not hold up the connect flow.
         }
 
         private void SettingsMenuItem_Popup(object sender, EventArgs e)

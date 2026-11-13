@@ -24,6 +24,7 @@ namespace MyCodex.WinForms.Forms
         private readonly HookReviewPromptState _state = new HookReviewPromptState();
         private DateTime _lastCheckUtc = DateTime.MinValue;
         private bool _isChecking;
+        private bool _recheckRequested;
 
         public HookReviewPromptCoordinator(
             Form owner,
@@ -39,13 +40,44 @@ namespace MyCodex.WinForms.Forms
             _announce = announce ?? throw new ArgumentNullException(nameof(announce));
         }
 
-        /// <summary>Activation checks are throttled unless a prompt is waiting for the window to come forward.</summary>
-        public async Task CheckAsync(bool force)
+        public Task CheckAfterConnectAsync()
         {
-            if (_isChecking ||
-                (!force && !_state.HasDeferredPrompt && DateTime.UtcNow - _lastCheckUtc < ActivationCheckInterval))
+            _state.ResetThreadViews();
+            return CheckAsync(true);
+        }
+
+        /// <summary>Called whenever the main window redraws its header; checks only when the workspace or session changed.</summary>
+        public void NotifyContextChanged()
+        {
+            if (_state.EnterContext(_getWorkspacePath(), _getThreadId()))
             {
-                return;
+                _ = CheckAsync(true);
+            }
+        }
+
+        public async void NotifyTurnStarted(string threadId)
+        {
+            if (_state.NeedsThreadViewCheck(threadId, _getThreadId()) && await CheckAsync(true))
+            {
+                _state.MarkThreadViewChecked(threadId);
+            }
+        }
+
+        /// <summary>
+        /// Activation checks are throttled unless a prompt is waiting for the window to come forward. A forced check
+        /// that arrives while another runs is queued, so a context change is never lost. True when the list was read.
+        /// </summary>
+        public async Task<bool> CheckAsync(bool force)
+        {
+            if (_isChecking)
+            {
+                _recheckRequested |= force;
+                return false;
+            }
+
+            if (!force && !_state.HasDeferredPrompt && DateTime.UtcNow - _lastCheckUtc < ActivationCheckInterval)
+            {
+                return false;
             }
 
             _isChecking = true;
@@ -80,14 +112,22 @@ namespace MyCodex.WinForms.Forms
                         OpenManagement(service, workspacePath, threadId);
                     }
                 }
+
+                return true;
             }
             catch (Exception)
             {
                 // Runtimes without hooks/list, or a dropped connection, simply mean no prompt; management still reports errors.
+                return false;
             }
             finally
             {
                 _isChecking = false;
+                if (_recheckRequested)
+                {
+                    _recheckRequested = false;
+                    _ = CheckAsync(true);
+                }
             }
         }
 

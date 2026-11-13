@@ -30,6 +30,7 @@ namespace MyCodex.WinForms.Forms
             _branchValueLabel.Text = summary.StatusText;
             RefreshTurnSummaryDisplay();
             RefreshAuthenticationUi();
+            _hookReviewPrompt?.NotifyContextChanged(); // Every visible workspace or session switch redraws the header.
         }
 
         private SessionHeaderSummary BuildOfficeHeaderSummary(string notSelectedText, string notSyncedText)
