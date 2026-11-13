@@ -89,6 +89,28 @@ namespace MyCodex.Application.Tests
             Assert.That(files.Writes.Count, Is.EqualTo(1));
         }
 
+        [Test]
+        public async Task RemoveHookAsync_RemovesTheDefinitionAndMovesTheNextHandlersState()
+        {
+            var files = new FakeFileClient();
+            var path = @"C:\Users\me\.codex\hooks.json";
+            files.Contents[path] = Bom(Existing);
+            var hooks = new HookManagementServiceTests.FakeHookClient();
+            var config = new HookManagementServiceTests.FakeConfigClient();
+            config.Snapshot.Layers.Add(new AppServerConfigLayer { SourceType = "user", Version = "user-v1" });
+            var removed = Hook(path + ":stop:0:0", "stop", "command", "a");
+            var next = Hook(path + ":stop:0:1", "stop", "mcp_tool", null);
+            next.Enabled = false;
+
+            var status = await new HookManagementService(hooks, config, files).RemoveHookAsync(@"E:\Repo", removed, new[] { removed, next });
+
+            Assert.That(status, Is.EqualTo(HookRemoveStatus.Removed));
+            Assert.That(Decode(files.Writes[path], out _), Does.Not.Contain("\"command\": \"a\""));
+            var write = hooks.Writes.Single();
+            Assert.That(write.Item2, Is.EqualTo("user-v1"));
+            Assert.That(write.Item1.First().Value, Is.EquivalentTo(new Dictionary<string, object> { { "enabled", false } }));
+        }
+
         private static AppServerHookInfo Hook(string key, string eventName, string handlerType, string command)
         {
             return new AppServerHookInfo
@@ -117,23 +139,25 @@ namespace MyCodex.Application.Tests
         {
             public bool ExistsButUnreadable { get; set; }
 
+            public Dictionary<string, byte[]> Contents { get; } = new Dictionary<string, byte[]>();
+
             public List<string> CreatedDirectories { get; } = new List<string>();
 
             public Dictionary<string, byte[]> Writes { get; } = new Dictionary<string, byte[]>();
 
             public Task<AppServerFileSystemReadResult> ReadFileAsync(string path)
             {
+                if (Contents.ContainsKey(path))
+                {
+                    return Task.FromResult(new AppServerFileSystemReadResult { DataBase64 = Convert.ToBase64String(Contents[path]) });
+                }
+
                 throw ExistsButUnreadable ? new UnauthorizedAccessException() : (Exception)new InvalidOperationException("not found");
             }
 
             public Task<AppServerFileSystemMetadata> GetMetadataAsync(string path)
             {
-                if (!ExistsButUnreadable)
-                {
-                    throw new InvalidOperationException("not found");
-                }
-
-                return Task.FromResult(new AppServerFileSystemMetadata { IsFile = true });
+                throw new NotSupportedException();
             }
 
             public Task WriteFileAsync(string path, byte[] data)
@@ -150,7 +174,11 @@ namespace MyCodex.Application.Tests
 
             public Task<List<AppServerFileSystemEntry>> ReadDirectoryAsync(string path)
             {
-                throw new NotSupportedException();
+                // The missing case lists only a sibling; the unreadable case lists the file itself.
+                return Task.FromResult(new List<AppServerFileSystemEntry>
+                {
+                    new AppServerFileSystemEntry { FileName = ExistsButUnreadable ? "hooks.json" : "config.toml", IsFile = true }
+                });
             }
 
             public Task RemoveAsync(string path, bool? recursive = null, bool? force = null)

@@ -14484,4 +14484,10 @@ Trust this host key and retry detection?</value></data>
   <data name="HooksManagementForm.Status.UserPathUnknown" xml:space="preserve">
     <value>The user configuration folder could not be found. Nothing was saved.</value>
   </data>
+  <data name="HooksManagementForm.Status.DeletedStateNotUpdated" xml:space="preserve">
+    <value>Hook definition deleted, but the enabled and trust settings of the hooks after it could not be moved. Check them in the list.</value>
+  </data>
+  <data name="HooksManagementForm.Status.Ignored" xml:space="preserve">
+    <value>The runtime did not accept this change. Built-in hooks cannot be changed.</value>
+  </data>
 </root>

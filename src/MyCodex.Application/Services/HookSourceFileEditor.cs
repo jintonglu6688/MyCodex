@@ -44,6 +44,11 @@ namespace MyCodex.Application.Services
             return (index < 0 ? string.Empty : path.Substring(0, index + 1)) + fileName.Replace('\\', separator);
         }
 
+        public static string GetFileName(string path)
+        {
+            return path.Substring(path.LastIndexOfAny(new[] { '/', '\\' }) + 1);
+        }
+
         public static string GetProjectHooksPath(string workspacePath)
         {
             var separator = workspacePath.IndexOf('\\') < 0 && workspacePath.IndexOf('/') >= 0 ? "/" : "\\";
@@ -94,9 +99,10 @@ namespace MyCodex.Application.Services
         /// </summary>
         public static byte[] RemoveHandler(byte[] original, AppServerHookInfo hook)
         {
+            string prefix;
             int groupIndex;
             int handlerIndex;
-            if (!TryGetIndices(hook.Key, out groupIndex, out handlerIndex))
+            if (!HookStateEditPlanner.TryParseKey(hook.Key, out prefix, out groupIndex, out handlerIndex))
             {
                 return null;
             }
@@ -157,16 +163,6 @@ namespace MyCodex.Application.Services
                 default:
                     return false;
             }
-        }
-
-        private static bool TryGetIndices(string key, out int groupIndex, out int handlerIndex)
-        {
-            // Keys end with ":<event>:<group>:<handler>" after a source part that may itself contain colons.
-            groupIndex = handlerIndex = -1;
-            var parts = (key ?? string.Empty).Split(':');
-            return parts.Length >= 4 &&
-                int.TryParse(parts[parts.Length - 2], NumberStyles.None, CultureInfo.InvariantCulture, out groupIndex) &&
-                int.TryParse(parts[parts.Length - 1], NumberStyles.None, CultureInfo.InvariantCulture, out handlerIndex);
         }
 
         private static string GetEventKey(string eventName)

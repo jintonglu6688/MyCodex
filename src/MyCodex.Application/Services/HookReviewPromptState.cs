@@ -19,7 +19,7 @@ namespace MyCodex.Application.Services
     public sealed class HookReviewPromptState
     {
         private readonly HashSet<string> _threadViewsChecked = new HashSet<string>(StringComparer.Ordinal);
-        private string _handledSignature;
+        private readonly HashSet<string> _handledSignatures = new HashSet<string>(StringComparer.Ordinal);
         private string _announcedSignature;
         private string _contextKey;
 
@@ -77,20 +77,19 @@ namespace MyCodex.Application.Services
         {
             if (string.IsNullOrEmpty(signature))
             {
-                // Everything is reviewed, so the same hooks reappearing later should prompt again.
-                _handledSignature = null;
                 _announcedSignature = null;
                 return HookReviewPromptDecision.None;
             }
 
-            if (string.Equals(signature, _handledSignature, StringComparison.Ordinal))
+            // Each workspace or session has its own set; remembering all of them keeps switching back and forth quiet.
+            if (_handledSignatures.Contains(signature))
             {
                 return HookReviewPromptDecision.None;
             }
 
             if (canShowDialog)
             {
-                _handledSignature = signature;
+                _handledSignatures.Add(signature);
                 return HookReviewPromptDecision.Show;
             }
 
@@ -105,7 +104,7 @@ namespace MyCodex.Application.Services
 
         public bool HasDeferredPrompt
         {
-            get { return _announcedSignature != null && !string.Equals(_announcedSignature, _handledSignature, StringComparison.Ordinal); }
+            get { return _announcedSignature != null && !_handledSignatures.Contains(_announcedSignature); }
         }
     }
 }

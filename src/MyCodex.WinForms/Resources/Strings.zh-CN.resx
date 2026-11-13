@@ -14439,4 +14439,10 @@ MyCodex 桌面客户端。</value>
   <data name="HooksManagementForm.Status.UserPathUnknown" xml:space="preserve">
     <value>找不到用户配置文件夹，未保存任何内容。</value>
   </data>
+  <data name="HooksManagementForm.Status.DeletedStateNotUpdated" xml:space="preserve">
+    <value>已删除 hook 定义，但无法迁移其后 hook 的启用和信任设置，请在列表中检查。</value>
+  </data>
+  <data name="HooksManagementForm.Status.Ignored" xml:space="preserve">
+    <value>运行时未接受此更改，内置 hook 无法修改。</value>
+  </data>
 </root>

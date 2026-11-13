@@ -287,11 +287,22 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
-            var removed = await _service.RemoveHookAsync(hook);
+            var removed = await _service.RemoveHookAsync(_workspacePath, hook, _list == null ? null : _list.Hooks);
             ShowList(await _service.ListAsync(_workspacePath, _threadId));
-            SetStatus(removed
-                ? UiLocalization.Text("HooksManagementForm.Status.Deleted", "Hook definition deleted.")
-                : UiLocalization.Text("HooksManagementForm.Status.Changed", "The hook changed since it was shown. Review it again before saving."));
+            switch (removed)
+            {
+                case HookRemoveStatus.Removed:
+                    SetStatus(UiLocalization.Text("HooksManagementForm.Status.Deleted", "Hook definition deleted."));
+                    break;
+                case HookRemoveStatus.RemovedStateNotUpdated:
+                    SetStatus(UiLocalization.Text(
+                        "HooksManagementForm.Status.DeletedStateNotUpdated",
+                        "Hook definition deleted, but the enabled and trust settings of the hooks after it could not be moved. Check them in the list."));
+                    break;
+                default:
+                    SetStatus(UiLocalization.Text("HooksManagementForm.Status.Changed", "The hook changed since it was shown. Review it again before saving."));
+                    break;
+            }
         }
 
         private async Task TrustSelectedAsync()
@@ -305,7 +316,7 @@ namespace MyCodex.WinForms.Forms
             var prompt = string.Format(
                 CultureInfo.CurrentCulture,
                 UiLocalization.Text("HooksManagementForm.Confirm.Trust", "Trust this hook? It will run on {0} events until its definition changes.{1}{1}{2}"),
-                hook.EventName,
+                HookEventNames.Describe(hook.EventName),
                 Environment.NewLine,
                 DescribeHandler(hook));
             if (MessageBox.Show(this, prompt, Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
@@ -341,7 +352,9 @@ namespace MyCodex.WinForms.Forms
                 case HookStateChangeStatus.Saved:
                     SetStatus(result.Overridden
                         ? UiLocalization.Text("HooksManagementForm.Status.Overridden", "Saved, but a higher configuration layer overrides it.")
-                        : UiLocalization.Text("HooksManagementForm.Status.Saved", "Saved. Hooks already running may finish with the old setting."));
+                        : result.Ignored
+                            ? UiLocalization.Text("HooksManagementForm.Status.Ignored", "The runtime did not accept this change. Built-in hooks cannot be changed.")
+                            : UiLocalization.Text("HooksManagementForm.Status.Saved", "Saved. Hooks already running may finish with the old setting."));
                     break;
             }
         }

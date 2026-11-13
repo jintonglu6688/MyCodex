@@ -145,7 +145,73 @@ namespace MyCodex.Application.Tests
             Assert.That(state.Decide(reordered, true), Is.EqualTo(HookReviewPromptDecision.None));
             Assert.That(state.Decide(HookReviewPromptState.GetSignature(new[] { Hook("a", "2") }), true), Is.EqualTo(HookReviewPromptDecision.Show));
             Assert.That(state.Decide(string.Empty, true), Is.EqualTo(HookReviewPromptDecision.None));
-            Assert.That(state.Decide(first, true), Is.EqualTo(HookReviewPromptDecision.Show));
+            Assert.That(state.Decide(first, true), Is.EqualTo(HookReviewPromptDecision.None));
+        }
+
+        [Test]
+        public void PromptState_SwitchingBetweenTwoWorkspacesDoesNotPromptAgain()
+        {
+            var state = new HookReviewPromptState();
+            var repo = HookReviewPromptState.GetSignature(new[] { Hook("repo", "1") });
+            var other = HookReviewPromptState.GetSignature(new[] { Hook("other", "1") });
+
+            Assert.That(state.Decide(repo, true), Is.EqualTo(HookReviewPromptDecision.Show));
+            Assert.That(state.Decide(other, true), Is.EqualTo(HookReviewPromptDecision.Show));
+            Assert.That(state.Decide(repo, true), Is.EqualTo(HookReviewPromptDecision.None));
+            Assert.That(state.Decide(other, true), Is.EqualTo(HookReviewPromptDecision.None));
+        }
+
+        [Test]
+        public async Task SetEnabledAsync_ReportsAChangeTheRuntimeIgnored()
+        {
+            var hooks = new FakeHookClient();
+            hooks.WorkspaceResult = List(Hook("builtin", "h"));
+            var config = new FakeConfigClient();
+            config.Snapshot.Layers.Add(new AppServerConfigLayer { SourceType = "user", Version = "user-v1" });
+
+            var result = await new HookManagementService(hooks, config).SetEnabledAsync(@"E:\Repo", null, Hook("builtin", "h"), false);
+
+            Assert.That(result.Status, Is.EqualTo(HookStateChangeStatus.Saved));
+            Assert.That(result.Ignored, Is.True);
+        }
+
+        [Test]
+        public void BuildRemapAfterRemoval_MovesLaterHandlersOfTheSameGroupAndClearsTheFreedKey()
+        {
+            var removed = Hook("f:stop:0:0", "h0");
+            var disabled = Hook("f:stop:0:1", "h1");
+            disabled.Enabled = false;
+            var trusted = Hook("f:stop:0:2", "h2");
+            trusted.TrustStatus = "trusted";
+            var otherEvent = Hook("f:pre_tool_use:0:1", "x");
+
+            var edits = HookStateEditPlanner.BuildRemapAfterRemoval(removed, new[] { removed, disabled, trusted, otherEvent });
+
+            Assert.That(edits.Select(edit => edit.KeyPath), Is.EqualTo(new[]
+            {
+                "hooks.state.\"f:stop:0:0\"", "hooks.state.\"f:stop:0:1\"", "hooks.state.\"f:stop:0:2\""
+            }));
+            Assert.That(edits[0].Value, Is.EquivalentTo(new Dictionary<string, object> { { "enabled", false } }));
+            Assert.That(edits[1].Value, Is.EquivalentTo(new Dictionary<string, object> { { "trusted_hash", "h2" } }));
+            Assert.That(edits[2].Value, Is.Null);
+            Assert.That(edits.All(edit => edit.MergeStrategy == "replace"), Is.True);
+        }
+
+        [Test]
+        public void BuildRemapAfterRemoval_MovesLaterGroupsUpWhenTheGroupEmpties()
+        {
+            var removed = Hook("C:\\x\\hooks.json:stop:0:0", "h0");
+            var later = Hook("C:\\x\\hooks.json:stop:1:3", "h1");
+
+            var edits = HookStateEditPlanner.BuildRemapAfterRemoval(removed, new[] { removed, later });
+
+            Assert.That(edits.Select(edit => edit.KeyPath), Is.EqualTo(new[]
+            {
+                "hooks.state.\"C:\\\\x\\\\hooks.json:stop:0:3\"",
+                "hooks.state.\"C:\\\\x\\\\hooks.json:stop:0:0\"",
+                "hooks.state.\"C:\\\\x\\\\hooks.json:stop:1:3\""
+            }));
+            Assert.That(edits[0].Value, Is.Null);
         }
 
         [Test]

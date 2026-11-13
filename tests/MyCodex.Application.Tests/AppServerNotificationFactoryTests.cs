@@ -156,15 +156,18 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
-        public void CreateHookRun_KeysByRunIdAndShowsOnlyTheFailureReason()
+        public void CreateHookRun_KeysEachRunByIdAndStartAndShowsOnlyTheFailureReason()
         {
             WithCulture("en-US", () =>
             {
                 var started = AppServerNotificationFactory.CreateHookRun(HookRun("running", null));
                 var blocked = AppServerNotificationFactory.CreateHookRun(HookRun("blocked", 42L));
+                var nextRun = AppServerNotificationFactory.CreateHookRun(HookRun("running", null, 1700000009L));
 
                 Assert.That(started.EventType, Is.EqualTo("hook_started"));
-                Assert.That(started.ItemId, Is.EqualTo("run-1"));
+                Assert.That(started.ItemId, Is.EqualTo("run-1@1700000000"));
+                Assert.That(blocked.ItemId, Is.EqualTo(started.ItemId));
+                Assert.That(nextRun.ItemId, Is.Not.EqualTo(started.ItemId));
                 Assert.That(started.TurnId, Is.Null);
                 Assert.That(started.Content, Is.EqualTo("PreToolUse hook running: Checking policy - Command not allowed"));
                 Assert.That(blocked.EventType, Is.EqualTo("hook_completed"));
@@ -173,7 +176,7 @@ namespace MyCodex.Application.Tests
             });
         }
 
-        private static Dictionary<string, object> HookRun(string status, long? durationMs)
+        private static Dictionary<string, object> HookRun(string status, long? durationMs, long startedAt = 1700000000L)
         {
             return new Dictionary<string, object>
             {
@@ -184,7 +187,7 @@ namespace MyCodex.Application.Tests
                     {
                         { "id", "run-1" }, { "eventName", "preToolUse" }, { "status", status },
                         { "statusMessage", "Checking policy" }, { "sourcePath", "/repo/.codex/hooks.json" },
-                        { "durationMs", durationMs },
+                        { "durationMs", durationMs }, { "startedAt", startedAt },
                         {
                             "entries", new object[]
                             {

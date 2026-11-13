@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using MyCodex.Application.DTOs;
 
@@ -32,6 +33,86 @@ namespace MyCodex.Application.Services
         {
             return BuildStateUpsert(new[] { hook },
                 value => new Dictionary<string, object> { { "enabled", enabled } });
+        }
+
+        /// <summary>Hook keys are "&lt;source&gt;:&lt;event&gt;:&lt;group&gt;:&lt;handler&gt;"; the source part may itself contain colons.</summary>
+        public static bool TryParseKey(string key, out string prefix, out int groupIndex, out int handlerIndex)
+        {
+            prefix = null;
+            groupIndex = handlerIndex = -1;
+            var parts = (key ?? string.Empty).Split(':');
+            if (parts.Length < 4 ||
+                !int.TryParse(parts[parts.Length - 2], NumberStyles.None, CultureInfo.InvariantCulture, out groupIndex) ||
+                !int.TryParse(parts[parts.Length - 1], NumberStyles.None, CultureInfo.InvariantCulture, out handlerIndex))
+            {
+                return false;
+            }
+
+            prefix = string.Join(":", parts, 0, parts.Length - 2);
+            return true;
+        }
+
+        /// <summary>
+        /// Hook state is keyed by position, so removing a handler moves every later handler of that event in that
+        /// file onto its predecessor's key. Rewrites their known state under the new keys (disabled stays disabled,
+        /// trusted stays trusted for its current hash) and drops keys nothing occupies any more.
+        /// </summary>
+        public static List<AppServerConfigWriteEdit> BuildRemapAfterRemoval(AppServerHookInfo removed, IEnumerable<AppServerHookInfo> listed)
+        {
+            string prefix;
+            int group;
+            int handler;
+            var edits = new List<AppServerConfigWriteEdit>();
+            if (removed == null || !TryParseKey(removed.Key, out prefix, out group, out handler))
+            {
+                return edits;
+            }
+
+            var siblings = new List<Tuple<AppServerHookInfo, int, int>>();
+            foreach (var hook in listed ?? Enumerable.Empty<AppServerHookInfo>())
+            {
+                string siblingPrefix;
+                int siblingGroup;
+                int siblingHandler;
+                if (hook != null && !string.Equals(hook.Key, removed.Key, StringComparison.Ordinal) &&
+                    TryParseKey(hook.Key, out siblingPrefix, out siblingGroup, out siblingHandler) &&
+                    string.Equals(siblingPrefix, prefix, StringComparison.Ordinal))
+                {
+                    siblings.Add(Tuple.Create(hook, siblingGroup, siblingHandler));
+                }
+            }
+
+            // A group that keeps other handlers only renumbers them; an emptied group is removed and later groups move up.
+            var groupKept = siblings.Any(sibling => sibling.Item2 == group);
+            var oldKeys = new HashSet<string>(StringComparer.Ordinal) { removed.Key };
+            var newKeys = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var sibling in siblings.Where(sibling => groupKept
+                ? sibling.Item2 == group && sibling.Item3 > handler
+                : sibling.Item2 > group))
+            {
+                var hook = sibling.Item1;
+                var newKey = prefix + ":" +
+                    (groupKept ? group : sibling.Item2 - 1).ToString(CultureInfo.InvariantCulture) + ":" +
+                    (groupKept ? sibling.Item3 - 1 : sibling.Item3).ToString(CultureInfo.InvariantCulture);
+                oldKeys.Add(hook.Key);
+                newKeys.Add(newKey);
+                var state = new Dictionary<string, object>();
+                if (!hook.Enabled)
+                {
+                    state["enabled"] = false;
+                }
+
+                if (string.Equals(hook.TrustStatus, "trusted", StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(hook.CurrentHash))
+                {
+                    state["trusted_hash"] = hook.CurrentHash;
+                }
+
+                edits.Add(AppServerConfigWriteEdit.CreateReplace("hooks.state." + QuoteKeySegment(newKey), state.Count == 0 ? null : state));
+            }
+
+            edits.AddRange(oldKeys.Where(key => !newKeys.Contains(key))
+                .Select(key => AppServerConfigWriteEdit.CreateReplace("hooks.state." + QuoteKeySegment(key), null)));
+            return edits;
         }
 
         public static List<AppServerConfigWriteEdit> BuildRevoke(AppServerHookInfo hook)

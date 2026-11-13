@@ -15,11 +15,21 @@ namespace MyCodex.Application.Services
         NothingToWrite
     }
 
+    public enum HookRemoveStatus
+    {
+        Removed,
+        Changed,
+        RemovedStateNotUpdated
+    }
+
     public sealed class HookStateChangeResult
     {
         public HookStateChangeStatus Status { get; set; }
 
         public bool Overridden { get; set; }
+
+        /// <summary>Saved, yet the runtime still reports the old state, as it does for built-in cleanup hooks.</summary>
+        public bool Ignored { get; set; }
 
         public AppServerHooksListResult List { get; set; }
     }
@@ -79,22 +89,34 @@ namespace MyCodex.Application.Services
             await RequireFileClient().WriteFileAsync(path, updated).ConfigureAwait(false);
         }
 
-        /// <summary>False when the file no longer holds the listed definition at that position.</summary>
-        public async Task<bool> RemoveHookAsync(AppServerHookInfo hook)
+        /// <summary>
+        /// Removes the definition, then moves the state of later handlers of that event onto their new positions,
+        /// since hook state is keyed by position. Changed when the file no longer holds the listed definition.
+        /// </summary>
+        public async Task<HookRemoveStatus> RemoveHookAsync(string workspacePath, AppServerHookInfo hook, IEnumerable<AppServerHookInfo> listed)
         {
             if (!HookSourceFileEditor.CanRemove(hook))
             {
-                return false;
+                return HookRemoveStatus.Changed;
             }
 
             var updated = HookSourceFileEditor.RemoveHandler(await ReadSourceAsync(hook.SourcePath).ConfigureAwait(false), hook);
             if (updated == null)
             {
-                return false;
+                return HookRemoveStatus.Changed;
             }
 
             await RequireFileClient().WriteFileAsync(hook.SourcePath, updated).ConfigureAwait(false);
-            return true;
+            var edits = HookStateEditPlanner.BuildRemapAfterRemoval(hook, listed);
+            var config = await _configClient.ReadConfigAsync(workspacePath, true).ConfigureAwait(false);
+            var guard = AppServerConfigWriteGuard.EvaluateUserConfig(config, edits);
+            if (!guard.CanWrite)
+            {
+                return HookRemoveStatus.RemovedStateNotUpdated;
+            }
+
+            await _hookClient.WriteHookStateAsync(edits, guard.ExpectedVersion).ConfigureAwait(false);
+            return HookRemoveStatus.Removed;
         }
 
         private async Task<byte[]> ReadExistingOrNullAsync(string path)
@@ -105,17 +127,19 @@ namespace MyCodex.Application.Services
             }
             catch (Exception)
             {
-                // Only a missing file starts a new one; an existing file that cannot be read is never replaced.
-                AppServerFileSystemMetadata metadata = null;
+                // Only a file its folder does not list starts a new one; an existing file that cannot be read is never
+                // replaced. A folder that cannot be listed counts as missing, and creating it then reports any real error.
+                List<AppServerFileSystemEntry> entries = null;
                 try
                 {
-                    metadata = await RequireFileClient().GetMetadataAsync(path).ConfigureAwait(false);
+                    entries = await RequireFileClient().ReadDirectoryAsync(HookSourceFileEditor.GetSiblingPath(path, string.Empty)).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {
                 }
 
-                if (metadata != null)
+                var fileName = HookSourceFileEditor.GetFileName(path);
+                if (entries != null && entries.Any(entry => string.Equals(entry.FileName, fileName, StringComparison.OrdinalIgnoreCase)))
                 {
                     throw;
                 }
@@ -154,24 +178,28 @@ namespace MyCodex.Application.Services
 
         public Task<HookStateChangeResult> TrustAsync(string workspacePath, string threadId, IReadOnlyCollection<AppServerHookInfo> reviewed)
         {
-            return ApplyAsync(workspacePath, threadId, reviewed, HookStateEditPlanner.BuildTrust(reviewed));
+            return ApplyAsync(workspacePath, threadId, reviewed, HookStateEditPlanner.BuildTrust(reviewed),
+                hook => string.Equals(hook.TrustStatus, "trusted", StringComparison.Ordinal));
         }
 
         public Task<HookStateChangeResult> SetEnabledAsync(string workspacePath, string threadId, AppServerHookInfo hook, bool enabled)
         {
-            return ApplyAsync(workspacePath, threadId, new[] { hook }, HookStateEditPlanner.BuildEnabled(hook, enabled));
+            return ApplyAsync(workspacePath, threadId, new[] { hook }, HookStateEditPlanner.BuildEnabled(hook, enabled),
+                current => current.Enabled == enabled);
         }
 
         public Task<HookStateChangeResult> RevokeAsync(string workspacePath, string threadId, AppServerHookInfo hook)
         {
-            return ApplyAsync(workspacePath, threadId, new[] { hook }, HookStateEditPlanner.BuildRevoke(hook));
+            return ApplyAsync(workspacePath, threadId, new[] { hook }, HookStateEditPlanner.BuildRevoke(hook),
+                current => !string.Equals(current.TrustStatus, "trusted", StringComparison.Ordinal));
         }
 
         private async Task<HookStateChangeResult> ApplyAsync(
             string workspacePath,
             string threadId,
             IReadOnlyCollection<AppServerHookInfo> reviewed,
-            List<AppServerConfigWriteEdit> edits)
+            List<AppServerConfigWriteEdit> edits,
+            Func<AppServerHookInfo, bool> applied)
         {
             if (edits.Count == 0)
             {
@@ -192,11 +220,14 @@ namespace MyCodex.Application.Services
             }
 
             var write = await _hookClient.WriteHookStateAsync(edits, guard.ExpectedVersion).ConfigureAwait(false);
+            var after = await ListAsync(workspacePath, threadId).ConfigureAwait(false);
             return new HookStateChangeResult
             {
                 Status = HookStateChangeStatus.Saved,
                 Overridden = write != null && write.IsOverridden,
-                List = await ListAsync(workspacePath, threadId).ConfigureAwait(false)
+                Ignored = after != null && after.Hooks.Any(hook =>
+                    reviewed.Any(seen => string.Equals(seen.Key, hook.Key, StringComparison.Ordinal)) && !applied(hook)),
+                List = after
             };
         }
 

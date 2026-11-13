@@ -450,12 +450,17 @@ namespace MyCodex.Infrastructure.AppServer
                 content += " - " + (reason.Length > 200 ? reason.Substring(0, 200) + "..." : reason);
             }
 
+            // The official run id is "<event>:<order>:<source>" and repeats on every run of that hook; the start
+            // time, shared by its started and completed notifications, tells one run from the next.
+            var startedAt = AppServerJsonValueReader.GetNullableLong(run, "startedAt");
+            var runId = AppServerJsonValueReader.GetString(run, "id") +
+                (startedAt.HasValue ? "@" + startedAt.Value.ToString(CultureInfo.InvariantCulture) : string.Empty);
             return new AppServerEventArgs(
                 string.Equals(status, "running", StringComparison.Ordinal) ? "hook_started" : "hook_completed",
                 content,
                 threadId: AppServerJsonValueReader.GetString(parameters, "threadId"),
                 turnId: AppServerJsonValueReader.GetString(parameters, "turnId"),
-                itemId: AppServerJsonValueReader.GetString(run, "id"),
+                itemId: runId,
                 itemStatus: status);
         }
 

@@ -88,6 +88,14 @@ namespace MyCodex.WinForms.Forms
                 var threadId = _getThreadId();
                 var service = _createService();
                 var pending = HookReviewPromptState.GetPending(await service.ListAsync(workspacePath, threadId));
+                if (!string.Equals(workspacePath, _getWorkspacePath(), StringComparison.Ordinal) ||
+                    !string.Equals(threadId, _getThreadId(), StringComparison.Ordinal))
+                {
+                    // The user moved on while the list was read; check the new context instead of showing the old one.
+                    _recheckRequested = true;
+                    return false;
+                }
+
                 var decision = _state.Decide(HookReviewPromptState.GetSignature(pending), CanShowDialog());
                 if (decision != HookReviewPromptDecision.None)
                 {
