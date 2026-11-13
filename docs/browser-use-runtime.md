@@ -4,14 +4,14 @@ MyCodex packages the reviewed external-browser runtime independently of its [nat
 
 | Component | Reviewed version |
 |---|---|
-| Runtime archive metadata | `local`, Windows x64 (ChatGPT `26.1103.4239.0`) |
+| Runtime archive metadata | `local`, Windows x64 (ChatGPT `26.1106.6628.0`) |
 | Node | `24.22.1-cua.1` |
 | `@oai/browser-desktop` | `0.1.1` |
 | `@oai/cua-repl` | `0.1.3` |
 
 `tools/runtime/browser-use-bundle.json` pins these versions and the SHA256 of the complete file inventory. The preparation script verifies the original Node, Node REPL and Windows helper Authenticode signatures when preparing the inventory. At application startup, `BrowserUseRuntimeBundle` verifies the pinned inventory, file sizes, every file hash, required entry points, package metadata and the absence of extra files or filesystem links.
 
-The payload uses the compact directory `runtime/browser/b2/`, with `bin/` directly below it. The bundle ID identifies a reviewed layout; component versions are in the pin and manifest. Keeping a long version directory plus an extra `cua_node/` layer caused functional JavaScript and LevelDB source paths to exceed Windows MAX_PATH in the default test build output. This layout retains all 2461 original files without pruning dependencies or changing Windows settings. Application builds copy the prepared payloads; test project references omit them. Installer preparation computes the permitted installation-root length from the actual packaged paths and rejects longer roots before maintenance.
+The payload uses the compact directory `runtime/browser/b3/`, with `bin/` directly below it. The bundle ID identifies a reviewed layout; component versions are in the pin and manifest. Keeping a long version directory plus an extra `cua_node/` layer caused functional JavaScript and LevelDB source paths to exceed Windows MAX_PATH in the default test build output. This layout retains all 2436 original files without pruning dependencies or changing Windows settings. Application builds copy the prepared payloads; test project references omit them. Installer preparation computes the permitted installation-root length from the actual packaged paths and rejects longer roots before maintenance.
 
 Prepare or verify the pinned repository payload:
 
@@ -29,9 +29,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/runtime/prepare-browse
 
 The generated payload is ignored by Git. A successful runtime verification does not establish that a browser extension is connected or that actual browser actions and permission prompts have passed acceptance testing.
 
+### Component update: 2026-11-13
+
+The browser runtime and native messaging host now come from the official ChatGPT x64 `26.1106.6628.0` package, extracted and block-map verified as recorded in the [native runtime update](computer-use-runtime.md). All browser runtime files are copied intact into bundle `b3`; its complete inventory SHA256 is `7CD64A6A8FD014E58F95DDB5D635F1AC6182319EA0BCE2A2BC865A5D07B32D18`. `@oai/browser-desktop` and `@oai/cua-repl` keep versions `0.1.1` and `0.1.3`, but `browser-service.mjs`, `browser-client.mjs` and the browser environment instructions changed. The native host comes from Chrome plugin `26.1106.51428` and uses bundle `h3` (879408 bytes, SHA256 `5ADDF682A164B7FBB5ED86C507ABCA14B49364C1E1BC0E5586DEE29354725B6B`). The Chrome and Edge extension IDs and the native host name are unchanged.
+
 ### Component update: 2026-11-07
 
-The current browser runtime and native messaging host come from the installed official ChatGPT x64 `26.1103.4239.0`, matching the [official release feed](https://persistent.oaistatic.com/codex-app-prod/windows-release.json). Node and all browser runtime files are copied intact into bundle `b2`; its complete inventory SHA256 is `979DC9DFBF33882137206CB22A3C61C80602BA8B0A0510927B5A3B591586B9A3`. The native host comes from Chrome plugin `26.1103.32239` and uses bundle `h2`. Original executable signatures were valid. The existing Chrome and Edge extension IDs remain the same.
+The previous browser runtime and native messaging host come from the installed official ChatGPT x64 `26.1103.4239.0`, matching the [official release feed](https://persistent.oaistatic.com/codex-app-prod/windows-release.json). Node and all browser runtime files are copied intact into bundle `b2`; its complete inventory SHA256 is `979DC9DFBF33882137206CB22A3C61C80602BA8B0A0510927B5A3B591586B9A3`. The native host comes from Chrome plugin `26.1103.32239` and uses bundle `h2`. Original executable signatures were valid. The existing Chrome and Edge extension IDs remain the same.
 
 Use the preparation scripts with the reviewed official paths and `-UpdatePin` for this intentional update, then verify again without `-UpdatePin`. The `local` metadata label alone does not identify the runtime: the full inventory hash is required. Current validation passed the actual upstream browser/native routing fixture, seven browser lifecycle checks, both Chrome/Edge native-host roundtrips and the explicit fresh-home .NET setup test. See the [native runtime validation record](computer-use-runtime.md) for the related tests and installation limits.
 
@@ -87,7 +91,7 @@ A fresh-home Codex 0.164 integration check installs this plugin, toggles its ena
 
 Automatic bridge preparation deploys a verified copy of the original standalone native host under `%LOCALAPPDATA%\MyCodex\browser-host\h1\<generation>`, writes its Native Messaging manifest and registers it under HKCU for each installed browser requiring repair. Edge uses `Software\Microsoft\Edge\NativeMessagingHosts\com.openai.codexextension`; Chrome uses its corresponding Google/Chrome key. Each individual operation writes only its selected browser's registration and never HKLM. Each update records the old default value, its registry type and new manifest in `browser-host\backups`; failed publication restores the old value if this operation's registration is still current. A concurrent foreign update is preserved. Existing processes and their old binary files remain untouched. A browser already running when its bridge is configured may need to be fully exited and reopened once; MyCodex does not terminate it automatically.
 
-The separate `runtime/browser-host/h2/extension-host.exe` is pinned by `tools/runtime/browser-extension-host.json` (879408 bytes, SHA256 `480A763579152C1D122E104CE5B4D38D29AD67FB1724787D67A6B972ADCB5857`). Preparation verifies OpenAI's Authenticode signature and the exact content hash; the application verifies the embedded pin before deployment. `prepare-browser-extension-host.ps1` prepares it from the concrete reviewed Chrome plugin version or `-SourceExecutable`, and `-VerifyRoot` verifies a packaged copy. No official app or plugin cache is required on the user's machine.
+The separate `runtime/browser-host/h3/extension-host.exe` is pinned by `tools/runtime/browser-extension-host.json` (879408 bytes, SHA256 `5ADDF682A164B7FBB5ED86C507ABCA14B49364C1E1BC0E5586DEE29354725B6B`). Preparation verifies OpenAI's Authenticode signature and the exact content hash; the application verifies the embedded pin before deployment. `prepare-browser-extension-host.ps1` prepares it from the concrete reviewed Chrome plugin version or `-SourceExecutable`, and `-VerifyRoot` verifies a packaged copy. No official app or plugin cache is required on the user's machine.
 
 The automation pipe is standalone. Controlled native-host tests for both official extension IDs complete a real bidirectional `getInfo` roundtrip without Node, Codex CLI, sibling `extension-host-config.json`, a V2 runtime manifest or an official desktop process. Each pipe's server PID is checked before sending fixture data. The installed real extension background also establishes this native transport without calling `codexRuntime/ensure`. The V2 manifest belongs to the separate browser sidebar App Server workflow; this installer does not configure that workflow.
 

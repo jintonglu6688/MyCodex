@@ -2,7 +2,24 @@
 
 MyCodex packages the original Windows Computer Use plugin, Node REPL, Sky library and native helper from the official ChatGPT Windows package. Its native host and authorization checks remain separate from [browser automation](browser-use-runtime.md).
 
-## Current update: 2026-11-07
+## Current update: 2026-11-13
+
+The [official Windows release feed](https://persistent.oaistatic.com/codex-app-prod/windows-release.json) reported ChatGPT x64 `26.1106.6628.0`, released `2026-11-11T12:00:18Z`. Installing it needed administrator rights, so the package was downloaded with `winget download` instead (1057680859 bytes, SHA256 `785189C1960A47DB3C241B9BB84C4A4979C26B79329AF5C0019AFB016F1E56A3`, valid Authenticode signature, publisher `CN=50BDFD77-8903-4850-9FFE-6E8522F64D5B`). Only `app/resources/cua_node` and the Chrome, browser, computer-use and unified-computer-use plugin trees were extracted; all 3200 selected files matched their size and every 64 KiB block hash in `AppxBlockMap.xml`.
+
+| Component | Previous | Current |
+|---|---|---|
+| ChatGPT Windows x64 package / bundle ID | `26.1103.4239.0` | `26.1106.6628.0` |
+| Computer Use plugin | `26.1103.32239` | `26.1106.51428` |
+| Runtime archive metadata | `local` | `local` |
+| Node | `24.22.1-cua.1` | `24.22.1-cua.1` |
+| `@oai/sky` | `0.7.17` | `0.7.18` |
+| `@oai/cua-repl` | `0.1.3` | `0.1.3` |
+
+Substantive changes are a rebuilt `codex-computer-use.exe` and `node_repl.exe`, updated `@oai/browser-desktop` scripts and instructions without a version change, and removal of non-Windows `classic-level` prebuilds. Other native files differ only in signatures or header timestamps. Signatures were valid and identified `OpenAI OpCo, LLC`. The complete inventory SHA256 is `B375CEEBE0BABFABF83400355FAD192BDC4C149A78F16064C198434F289E30CA`.
+
+Validation for this update: bundle preparation and verification passed for Computer Use, browser bundle `b3` and host `h3`; 274 native-host checks; the actual Node REPL/Sky routing check and seven browser runtime checks with Codex CLI `0.168.0`; 8 authorization-host and 10 control-bridge tests; Chrome and Edge native-host pipe roundtrips; 369 focused .NET tests with one link fixture skipped; Release build with zero warnings and errors, and read-only verification of its packaged `b3` and `h3`. These checks used synthetic executors and backends only: no real desktop actions, browser pages, extension connections or model requests.
+
+## Previous update: 2026-11-07
 
 The [official Windows release feed](https://persistent.oaistatic.com/codex-app-prod/windows-release.json) reported ChatGPT x64 `26.1103.4239.0`, released `2026-11-07T00:57:15Z`. The installed package had that exact identity, so this update copied its original `app/resources/cua_node` and `app/resources/plugins/openai-bundled/plugins/computer-use` trees. No official application files were changed.
 
