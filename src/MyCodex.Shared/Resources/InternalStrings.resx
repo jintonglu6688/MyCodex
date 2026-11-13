@@ -1842,4 +1842,49 @@ This file is empty.</value>
   <data name="AppServerClient.HookRun.Status.Stopped" xml:space="preserve">
     <value>stopped</value>
   </data>
+  <data name="HookEvent.PreToolUse" xml:space="preserve">
+    <value>PreToolUse</value>
+  </data>
+  <data name="HookEvent.PostToolUse" xml:space="preserve">
+    <value>PostToolUse</value>
+  </data>
+  <data name="HookEvent.PermissionRequest" xml:space="preserve">
+    <value>PermissionRequest</value>
+  </data>
+  <data name="HookEvent.UserPromptSubmit" xml:space="preserve">
+    <value>UserPromptSubmit</value>
+  </data>
+  <data name="HookEvent.SessionStart" xml:space="preserve">
+    <value>SessionStart</value>
+  </data>
+  <data name="HookEvent.SessionEnd" xml:space="preserve">
+    <value>SessionEnd</value>
+  </data>
+  <data name="HookEvent.Stop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="HookEvent.Interrupt" xml:space="preserve">
+    <value>Interrupt</value>
+  </data>
+  <data name="HookEvent.SubagentStart" xml:space="preserve">
+    <value>SubagentStart</value>
+  </data>
+  <data name="HookEvent.SubagentStop" xml:space="preserve">
+    <value>SubagentStop</value>
+  </data>
+  <data name="HookEvent.PreCompact" xml:space="preserve">
+    <value>PreCompact</value>
+  </data>
+  <data name="HookEvent.PostCompact" xml:space="preserve">
+    <value>PostCompact</value>
+  </data>
+  <data name="HookEvent.PreModelRequest" xml:space="preserve">
+    <value>PreModelRequest</value>
+  </data>
+  <data name="HookEvent.PostModelRequest" xml:space="preserve">
+    <value>PostModelRequest</value>
+  </data>
+  <data name="HookEvent.WithOfficialName" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
 </root>

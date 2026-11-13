@@ -1842,4 +1842,49 @@
   <data name="AppServerClient.HookRun.Status.Stopped" xml:space="preserve">
     <value>已停止</value>
   </data>
+  <data name="HookEvent.PreToolUse" xml:space="preserve">
+    <value>工具调用前</value>
+  </data>
+  <data name="HookEvent.PostToolUse" xml:space="preserve">
+    <value>工具调用后</value>
+  </data>
+  <data name="HookEvent.PermissionRequest" xml:space="preserve">
+    <value>权限请求</value>
+  </data>
+  <data name="HookEvent.UserPromptSubmit" xml:space="preserve">
+    <value>提交提示词</value>
+  </data>
+  <data name="HookEvent.SessionStart" xml:space="preserve">
+    <value>会话开始</value>
+  </data>
+  <data name="HookEvent.SessionEnd" xml:space="preserve">
+    <value>会话结束</value>
+  </data>
+  <data name="HookEvent.Stop" xml:space="preserve">
+    <value>回合结束</value>
+  </data>
+  <data name="HookEvent.Interrupt" xml:space="preserve">
+    <value>中断</value>
+  </data>
+  <data name="HookEvent.SubagentStart" xml:space="preserve">
+    <value>子代理启动</value>
+  </data>
+  <data name="HookEvent.SubagentStop" xml:space="preserve">
+    <value>子代理结束</value>
+  </data>
+  <data name="HookEvent.PreCompact" xml:space="preserve">
+    <value>压缩前</value>
+  </data>
+  <data name="HookEvent.PostCompact" xml:space="preserve">
+    <value>压缩后</value>
+  </data>
+  <data name="HookEvent.PreModelRequest" xml:space="preserve">
+    <value>模型请求前</value>
+  </data>
+  <data name="HookEvent.PostModelRequest" xml:space="preserve">
+    <value>模型请求后</value>
+  </data>
+  <data name="HookEvent.WithOfficialName" xml:space="preserve">
+    <value>{0}（{1}）</value>
+  </data>
 </root>

@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
 using MyCodex.Shared.Constants;
+using MyCodex.Shared.Localization;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
 
@@ -403,7 +404,7 @@ namespace MyCodex.WinForms.Forms
             var text = new StringBuilder();
             if (hook != null)
             {
-                AppendLine(text, "HooksManagementForm.Details.Event", "Event", hook.EventName);
+                AppendLine(text, "HooksManagementForm.Details.Event", "Event", HookEventNames.DescribeWithOfficialName(hook.EventName));
                 AppendLine(text, "HooksManagementForm.Details.Matcher", "Matcher", hook.Matcher);
                 AppendLine(text, "HooksManagementForm.Details.Handler", "Handler", DescribeHandler(hook));
                 AppendLine(text, "HooksManagementForm.Details.Timeout", "Timeout (seconds)", hook.TimeoutSec.HasValue ? hook.TimeoutSec.Value.ToString(CultureInfo.InvariantCulture) : null);
@@ -464,7 +465,7 @@ namespace MyCodex.WinForms.Forms
                 DescribeTrust(hook),
                 hook.Enabled ? null : UiLocalization.Text("HooksManagementForm.State.Disabled", "Disabled"),
                 DescribeSource(hook),
-                DescribeEvent(hook.EventName)
+                HookEventNames.Describe(hook.EventName)
             };
             return new ListViewItem(new[]
             {
@@ -503,11 +504,6 @@ namespace MyCodex.WinForms.Forms
             return directory != null && string.Equals(Path.GetFileName(directory), ".codex", StringComparison.OrdinalIgnoreCase)
                 ? Path.GetDirectoryName(directory)
                 : directory ?? sourcePath;
-        }
-
-        private static string DescribeEvent(string eventName)
-        {
-            return string.IsNullOrEmpty(eventName) ? eventName : char.ToUpperInvariant(eventName[0]) + eventName.Substring(1);
         }
 
         private static string DescribeTrust(AppServerHookInfo hook)

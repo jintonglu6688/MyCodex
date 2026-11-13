@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Web.Script.Serialization;
 using MyCodex.Application.DTOs;
+using MyCodex.Shared.Localization;
 
 namespace MyCodex.Application.Services
 {
@@ -170,7 +171,7 @@ namespace MyCodex.Application.Services
 
         private static string GetEventKey(string eventName)
         {
-            return string.IsNullOrEmpty(eventName) ? eventName : char.ToUpperInvariant(eventName[0]) + eventName.Substring(1);
+            return HookEventNames.GetOfficialName(eventName);
         }
 
         private static void AddOptional(Dictionary<string, object> handler, int? timeoutSec, string statusMessage)

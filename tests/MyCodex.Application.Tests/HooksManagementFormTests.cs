@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Services;
 using MyCodex.Application.Tests.TestSupport;
+using MyCodex.Shared.Localization;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
 
@@ -96,6 +97,29 @@ namespace MyCodex.Application.Tests
 
                 Assert.That(plugin.Text, Is.EqualTo("Untrusted · Disabled · ponytail plugin · SessionStart"));
                 Assert.That(project.Text, Is.EqualTo(@"Trusted · Project E:\MyCodex · PreToolUse"));
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentUICulture = previous;
+            }
+        }
+
+        [Test]
+        public void HookEventNames_TranslateInChineseKeepOfficialNameAndFallBack()
+        {
+            var previous = Thread.CurrentThread.CurrentUICulture;
+            try
+            {
+                Thread.CurrentThread.CurrentUICulture = new CultureInfo("zh-CN");
+                Assert.That(HooksManagementForm.CreateItem(new AppServerHookInfo
+                {
+                    TrustStatus = "untrusted", Enabled = true, Source = "plugin", PluginId = "ponytail@ponytail", EventName = "sessionStart"
+                }).Text, Is.EqualTo("未信任 · ponytail 插件 · 会话开始"));
+                Assert.That(HookEventNames.DescribeWithOfficialName("preToolUse"), Is.EqualTo("工具调用前（PreToolUse）"));
+                Assert.That(HookEventNames.Describe("futureEvent"), Is.EqualTo("FutureEvent"));
+
+                Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
+                Assert.That(HookEventNames.DescribeWithOfficialName("preToolUse"), Is.EqualTo("PreToolUse"));
             }
             finally
             {

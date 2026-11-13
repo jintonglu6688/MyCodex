@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using MyCodex.Application.Services;
 using MyCodex.Shared.Constants;
+using MyCodex.Shared.Localization;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
 
@@ -46,7 +47,7 @@ namespace MyCodex.WinForms.Forms
             _locationComboBox.SelectedIndex = 0;
             _eventComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("HookEditForm.Accessible.Event", "Event"), 3, DockStyle.Fill);
             _eventComboBox.Items.AddRange(HookSourceFileEditor.EventNames
-                .Select(name => (object)(char.ToUpperInvariant(name[0]) + name.Substring(1))).ToArray());
+                .Select(name => (object)HookEventNames.DescribeWithOfficialName(name)).ToArray());
             _eventComboBox.SelectedIndex = 0;
             _matcherTextBox = UiControlFactory.CreateFillTextBox(UiLocalization.Text("HookEditForm.Accessible.Matcher", "Matcher"), 5);
             _typeComboBox = UiControlFactory.CreateDropDownList(UiLocalization.Text("HookEditForm.Accessible.Type", "Handler type"), 7, DockStyle.Fill);

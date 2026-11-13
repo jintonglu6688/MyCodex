@@ -430,7 +430,7 @@ namespace MyCodex.Infrastructure.AppServer
             var content = LF(
                 "AppServerClient.HookRun.Template",
                 "{0} hook {1}: {2}",
-                eventName.Length == 0 ? eventName : char.ToUpperInvariant(eventName[0]) + eventName.Substring(1),
+                HookEventNames.Describe(eventName),
                 DescribeHookRunStatus(status),
                 label);
             var durationMs = AppServerJsonValueReader.GetNullableLong(run, "durationMs");
