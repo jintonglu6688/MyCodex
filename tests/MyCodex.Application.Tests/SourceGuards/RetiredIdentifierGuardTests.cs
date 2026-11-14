@@ -301,6 +301,7 @@ namespace MyCodex.Application.Tests.SourceGuards
 
         private static readonly string[][] RetiredRepositoryFiles =
         {
+            new[] { "tools", "installer", "Update-AuthenticationHosts.ps1" },
             // Startup composition and retired stores
             new[] { "tools", "runtime", "node-runtime.sha256" },
             new[] { "tools", "runtime", "node-runtime.version" },

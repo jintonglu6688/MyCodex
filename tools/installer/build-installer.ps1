@@ -354,6 +354,10 @@ foreach ($name in @('mycodex-auth-host.exe', 'mycodex-auth-host.manifest.json', 
     if ([IO.Path]::GetFullPath($source) -ine [IO.Path]::GetFullPath($destination)) { Copy-Item -LiteralPath $source -Destination $destination -Force }
 }
 $authenticationPackage = Test-AuthenticationHostPackage -PackageRoot $authenticationDestination -AllowDevelopment:$AllowDevelopmentAuthenticationHost
+$maintenanceAssembly = [Reflection.Assembly]::ReflectionOnlyLoadFrom((Join-Path $sourceDirFull 'Infrastructure.dll'))
+if (-not $maintenanceAssembly.GetType('MyCodex.Infrastructure.AuthenticationCenter.AuthenticationInstallationMaintenance')) {
+    throw 'The application output lacks compiled authentication maintenance. Rebuild before packaging.'
+}
 Remove-DirectorySafely -Path (Join-Path $sourceDirFull 'runtime\auth-center') -AllowedRoot $sourceDirFull
 Remove-RetiredBundledNodeRuntime -PackageSourceDir $sourceDirFull
 Remove-DirectorySafely -Path (Join-Path $sourceDirFull 'runtime\computer-use') -AllowedRoot $sourceDirFull
@@ -400,14 +404,11 @@ $isccPath = Get-IsccPath
 $maximumInstallRootLength = Get-MaximumInstallRootLength -PackageSourceDir $sourceDirFull
 
 Write-Host "Compiling installer with Inno Setup: $isccPath"
-$developmentInstallerArguments = @()
-if ($AllowDevelopmentAuthenticationHost) { $developmentInstallerArguments += '/DDevelopmentAuthenticationHost' }
 & $isccPath `
     "/DMyCodexVersion=$version" `
     "/DSourceDir=$sourceDirFull" `
     "/DOutputDir=$outputDirFull" `
     "/DMaximumInstallRootLength=$maximumInstallRootLength" `
-    @developmentInstallerArguments `
     $issPath
 
 if ($LASTEXITCODE -ne 0) {

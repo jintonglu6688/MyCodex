@@ -247,7 +247,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             return response;
         }
 
-        private void ResolvePaths()
+        private void ResolvePaths(bool allowOlderRelease = false)
         {
             if (string.Equals(_runtimeSource, CodexRuntimeSources.Wsl, StringComparison.OrdinalIgnoreCase) || CodexRuntimeSources.IsRemoteUnixSsh(_runtimeSource))
             {
@@ -259,7 +259,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                 _executable = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "runtime",
                     "auth-core", "mycodex-auth-host.exe");
             }
-            _artifact = AuthenticationHostArtifact.Load(_executable);
+            _artifact = allowOlderRelease ? AuthenticationHostArtifact.LoadForUpdate(_executable) : AuthenticationHostArtifact.Load(_executable);
             _codexHome = _explicitHome ?? Environment.GetEnvironmentVariable("CODEX_HOME");
             if (string.IsNullOrWhiteSpace(_codexHome))
             {
@@ -291,6 +291,31 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             return AppServerProcessLifecycle.BuildStartInfo(_executable,
                 command + " --data-dir " + WindowsCommandLineArgumentEscaper.Quote(_dataDirectory) +
                 " --codex-home " + WindowsCommandLineArgumentEscaper.Quote(_codexHome), null, null, null);
+        }
+
+        internal async Task MaintainInstallationAsync(bool stop, bool uninstall, bool startIfMissing, bool allowOlderRelease, CancellationToken token)
+        {
+            ResolvePaths(allowOlderRelease);
+            using (await _usage.EnterAsync(token).ConfigureAwait(false))
+            {
+                if (stop && _usage.HasOtherUsers()) throw new AuthenticationCenterException("authentication_backend_in_use");
+                if (!stop || startIfMissing) await StartAsync(token, allowOlderRelease).ConfigureAwait(false);
+                var status = await SendAsync("status", new Dictionary<string, object>(), token).ConfigureAwait(false);
+                _artifact.ValidateIdentity(status);
+                if (!AuthenticationInstallationStateStore.SamePath(JsonValueReader.GetString(status, "executablePath"), _executable))
+                    throw new AuthenticationCenterException("authentication_update_installation_mismatch");
+                if (!AuthenticationInstallationStateStore.SamePath(JsonValueReader.GetString(status, "codexHome"), _codexHome) ||
+                    !AuthenticationInstallationStateStore.SamePath(JsonValueReader.GetString(status, "dataDir"), _dataDirectory))
+                    throw new AuthenticationCenterException("authentication_update_target_mismatch");
+                if (stop)
+                {
+                    var result = await SendAsync("backend/shutdown", new Dictionary<string, object> { { "forUpdate", !uninstall } }, token).ConfigureAwait(false);
+                    if (!Equals(JsonValueReader.GetValue(result, "status"), "shutting_down"))
+                        throw new AuthenticationCenterException("invalid_response");
+                }
+                else if (AuthenticationHostStartup.RouteRequired(status) && !AuthenticationHostStartup.RouteRunning(status))
+                    throw new AuthenticationCenterException("authentication_route_not_ready");
+            }
         }
 
         private async Task<IDictionary<string, object>> ReadCompatibleStatusAsync(CancellationToken token)
@@ -328,7 +353,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             }
         }
 
-        private async Task StartAsync(CancellationToken cancellationToken)
+        private async Task StartAsync(CancellationToken cancellationToken, bool allowOlderRelease = false)
         {
             using (var process = new Process { StartInfo = BuildStartInfo("serve") })
             {
@@ -357,11 +382,12 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                     }
                     var ready = serializer.DeserializeObject(line) as IDictionary<string, object>;
                     if (ready == null || !ready.TryGetValue("event", out var name) || !Equals(name, "ready") ||
-                        !ready.TryGetValue("protocolVersion", out var protocol) || Convert.ToInt32(protocol) != 3)
+                        (!allowOlderRelease && (!ready.TryGetValue("protocolVersion", out var protocol) || Convert.ToInt32(protocol) != 3)))
                     {
                         throw new AuthenticationCenterException("protocol_mismatch");
                     }
-                    _artifact.ValidateIdentity(ready);
+                    // Older ready events omit identity fields; maintenance verifies the following status response instead.
+                    if (!allowOlderRelease) _artifact.ValidateIdentity(ready);
                 }
                 // Dispose releases our handles, not the independently running host.
             }

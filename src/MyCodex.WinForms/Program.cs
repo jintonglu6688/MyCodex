@@ -31,6 +31,11 @@ namespace MyCodex.WinForms
             // The directory MyCodex was started from may be a cloned repository, so it must not stay current.
             var launchDirectory = Environment.CurrentDirectory;
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+            if (MyCodex.Infrastructure.AuthenticationCenter.AuthenticationInstallationMaintenance.TryRun(args, out var authenticationInstallExitCode))
+            {
+                Environment.ExitCode = authenticationInstallExitCode;
+                return;
+            }
             if (InstallationExitStartup.TryRun(args, out var installationExitCode))
             {
                 Environment.ExitCode = installationExitCode;

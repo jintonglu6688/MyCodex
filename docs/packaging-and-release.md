@@ -39,6 +39,25 @@ These scripts have side effects. Run them only when that side effect is the task
 
 ## Authentication backend
 
+Release preparation validates the pinned backend identity and runs its version
+probe on the build machine. On the user's computer, Setup verifies the installed
+backend files against its own payload hashes without running that probe.
+Authentication prepare, recovery and uninstall use the compiled
+`MyCodex.exe --authentication-maintenance` entry and the application's existing
+backend transport; they do not run a PowerShell authentication script.
+
+Setup records the expected package before replacing files. Missing or damaged
+files still fail installation. A backend restart failure after successful file
+installation leaves a pending recovery record and a completed installation;
+application startup retries the stopped targets and registered routes. A pending
+post-copy recovery never restores an older backend beside the new application.
+Logs remain under `%LOCALAPPDATA%\MyCodex\authentication-updates`.
+
+After building the tests, verify the compiled path and the isolated production
+installer with `powershell -NoProfile -ExecutionPolicy Bypass -File
+tests\tools\AuthenticationMaintenance.Tests.ps1`. Its synthetic payload covers
+interruption before the first Finalize log entry, without accessing real accounts.
+
 For backend version bumps, cloud builds, releases, or GitCode mirroring, first read
 `docs/mycodex-auth-release.md` in the backend repository (normally
 `..\MyCodex-auth-core`). It covers backend publication and the frontend

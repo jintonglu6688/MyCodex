@@ -23,6 +23,12 @@ $capability = '1:' + (Get-FileHash -LiteralPath $probe -Algorithm SHA256).Hash
 [IO.File]::WriteAllText((Join-Path $source 'installed.txt'), 'replacement was allowed')
 New-Item -ItemType Directory -Path (Join-Path $source 'runtime\auth-core') -Force | Out-Null
 [IO.File]::WriteAllText((Join-Path $source 'runtime\auth-core\mycodex-auth-host.manifest.json'), '{}')
+Copy-Item -LiteralPath $probe -Destination (Join-Path $source 'MyCodex.exe')
+Copy-Item -LiteralPath $probe -Destination (Join-Path $source 'runtime\auth-core\mycodex-auth-host.exe')
+[IO.File]::WriteAllText((Join-Path $source 'runtime\auth-core\LICENSE'), 'fixture')
+foreach ($name in @('Infrastructure', 'Application', 'Domain', 'Shared')) {
+    Copy-Item -LiteralPath (Join-Path $bin ($name + '.dll')) -Destination $source
+}
 
 # Compile the complete production script without building/downloading a release payload.
 & $IsccPath /Q ('/DSourceDir=' + $source) ('/DOutputDir=' + $work) /DMaximumInstallRootLength=180 /DAuthenticationInstallTest=MyCodexExitCompileTest (Join-Path $repo 'tools\installer\MyCodex.iss')

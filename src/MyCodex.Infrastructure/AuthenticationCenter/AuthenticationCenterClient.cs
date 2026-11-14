@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Domain.Entities;
+using MyCodex.Infrastructure.Instances;
 using MyCodex.Shared.Constants;
 
 namespace MyCodex.Infrastructure.AuthenticationCenter
@@ -93,6 +94,11 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
 
         public static async Task EnsureLocalBackendAsync(CancellationToken cancellationToken)
         {
+            using (var reservation = TargetInstanceCoordinator.TryReserveSharedUpdate())
+            {
+                if (reservation == null) throw new AuthenticationCenterException("authentication_backend_in_use");
+                await AuthenticationInstallationMaintenance.ResumePendingAsync(AppDomain.CurrentDomain.BaseDirectory, cancellationToken).ConfigureAwait(false);
+            }
             await EnsureBackendPreparedAsync(LocalHost.Value.RequestAsync, cancellationToken).ConfigureAwait(false);
         }
 

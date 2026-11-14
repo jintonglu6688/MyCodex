@@ -64,10 +64,12 @@ english.AuthenticationMaintenanceFailed=Authentication backend maintenance faile
 chinesesimp.AuthenticationMaintenanceFailed=认证后台维护失败。请完成登录或在途请求后重试；卸载前请将转换供应商切换为直连配置。若旧版认证后台仍在运行，请先切换直连并退出旧版后台。程序没有强制停止认证后台。
 english.AuthenticationRecoveryFailed=Authentication routing could not be restored. The previous backend package was retained for recovery. Check the authentication center before using a converted provider.
 chinesesimp.AuthenticationRecoveryFailed=认证路由未能恢复，先前的后台包已保留用于恢复。使用转换供应商前请检查认证中心。
-english.AuthenticationVerificationFailed=Installation did not complete: the authentication backend could not be verified or restored. MyCodex was not started. Retry installation. Setup log: %1
-chinesesimp.AuthenticationVerificationFailed=安装未完成：认证后台版本校验或恢复失败，未启动 MyCodex。请重新运行安装程序。安装日志：%1
-english.VerifyingAuthentication=Verifying the installed authentication backend and restoring routing...
-chinesesimp.VerifyingAuthentication=正在校验已安装的认证后台并恢复路由……
+english.AuthenticationVerificationFailed=Installation did not complete: authentication files are missing or damaged. MyCodex was not started. Retry installation. Setup log: %1
+chinesesimp.AuthenticationVerificationFailed=安装未完成：认证组件文件缺失或损坏，未启动 MyCodex。请重新运行安装程序。安装日志：%1
+english.VerifyingAuthentication=Checking installed authentication files...
+chinesesimp.VerifyingAuthentication=正在检查认证组件文件……
+english.AuthenticationRecoveryPending=MyCodex is installed. Authentication services could not start yet; MyCodex will retry when opened. Your accounts and settings have been kept.
+chinesesimp.AuthenticationRecoveryPending=MyCodex 已安装。认证服务暂未启动，打开 MyCodex 后将自动重试。您的账号和设置已保留。
 english.InstallationIncomplete=Installation incomplete
 chinesesimp.InstallationIncomplete=安装未完成
 
@@ -97,6 +99,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [InstallDelete]
 Type: filesandordirs; Name: "{app}\runtime\*"; Check: IsExistingMyCodexInstallation
+Type: files; Name: "{app}\tools\Update-AuthenticationHosts.ps1"
 
 [UninstallDelete]
 Type: files; Name: "{app}\tools\installation-exit.version"
@@ -110,8 +113,11 @@ Source: "Test-MyCodexResourceUsers.ps1"; DestDir: "{tmp}"; Flags: dontcopy
 Source: "Close-LegacyMyCodexTargets.ps1"; DestDir: "{tmp}"; Flags: dontcopy
 Source: "LegacyTargetExit.cs"; DestDir: "{tmp}"; Flags: dontcopy
 Source: "Stop-MyCodexManagedProcesses.ps1"; DestDir: "{tmp}"; Flags: dontcopy
-Source: "Update-AuthenticationHosts.ps1"; DestDir: "{tmp}"; Flags: dontcopy
-Source: "..\authentication-center\Test-AuthenticationHostPackage.ps1"; DestDir: "{tmp}"; Flags: dontcopy
+Source: "{#SourceDir}\MyCodex.exe"; DestDir: "{tmp}"; Flags: dontcopy
+Source: "{#SourceDir}\Infrastructure.dll"; DestDir: "{tmp}"; Flags: dontcopy
+Source: "{#SourceDir}\Application.dll"; DestDir: "{tmp}"; Flags: dontcopy
+Source: "{#SourceDir}\Domain.dll"; DestDir: "{tmp}"; Flags: dontcopy
+Source: "{#SourceDir}\Shared.dll"; DestDir: "{tmp}"; Flags: dontcopy
 Source: "{#SourceDir}\runtime\auth-core\mycodex-auth-host.manifest.json"; DestDir: "{tmp}"; DestName: "expected-authentication.json"; Flags: dontcopy
 Source: "{#SourceDir}\runtime\auth-core\mycodex-auth-host.exe"; DestDir: "{tmp}"; Flags: dontcopy
 Source: "{#SourceDir}\runtime\auth-core\mycodex-auth-host.manifest.json"; DestDir: "{tmp}"; Flags: dontcopy
@@ -120,7 +126,6 @@ Source: "Test-MyCodexResourceUsers.ps1"; DestDir: "{app}\tools"; Flags: ignoreve
 Source: "Stop-MyCodexManagedProcesses.ps1"; DestDir: "{app}\tools"; Flags: ignoreversion
 Source: "Close-LegacyMyCodexTargets.ps1"; DestDir: "{app}\tools"; Flags: ignoreversion
 Source: "LegacyTargetExit.cs"; DestDir: "{app}\tools"; Flags: ignoreversion
-Source: "Update-AuthenticationHosts.ps1"; DestDir: "{app}\tools"; Flags: ignoreversion
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Excludes: "*.pdb"; Flags: ignoreversion recursesubdirs createallsubdirs solidbreak
 
 [Icons]
@@ -139,6 +144,7 @@ var
   AuthenticationPrepared: Boolean;
   AuthenticationInstalled: Boolean;
   AuthenticationFinalizationFailed: Boolean;
+  AuthenticationRecoveryPending: Boolean;
   AuthenticationStatePath: String;
 
 function CheckInstallPath(): String;
@@ -163,23 +169,19 @@ end;
 
 #include "InstallationTargets.iss"
 
-function AuthenticationMaintenance(Action: String; ScriptPath: String; StatePath: String): Boolean;
+function AuthenticationMaintenance(Action: String; StatePath: String): Boolean;
 var
   ResultCode: Integer;
   Arguments: String;
+  Executable: String;
 begin
-  Arguments := '-NoProfile -ExecutionPolicy Bypass -File "' + ScriptPath + '" -Action ' + Action + ' -InstallRoot "' + ExpandConstant('{app}') + '" -StatePath "' + StatePath + '"';
-  if Action = 'Finalize' then
-    Arguments := Arguments + ' -ExpectedManifestPath "' + ExpandConstant('{tmp}\expected-authentication.json') + '" -RepairPackageRoot "' + ExpandConstant('{tmp}') + '"';
-  if (Action = 'Finalize') or (Action = 'Resume') then
-    Arguments := Arguments + ' -VerificationScript "' + ExpandConstant('{tmp}\Test-AuthenticationHostPackage.ps1') + '"';
-  #ifdef DevelopmentAuthenticationHost
-  if (Action = 'Finalize') or (Action = 'Resume') then
-    Arguments := Arguments + ' -AllowDevelopmentAuthenticationHost';
-  #endif
+  Arguments := '--authentication-maintenance ' + Action + ' "' + ExpandConstant('{app}') + '" "' + StatePath + '"';
+  if IsUninstaller then Executable := ExpandConstant('{app}\MyCodex.exe')
+  else Executable := ExpandConstant('{tmp}\MyCodex.exe');
   ResultCode := -1;
-  Result := Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'), Arguments, '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-  Log(Format('Authentication maintenance: action=%s result=%d diagnostics=%s.log', [Action, ResultCode, StatePath]));
+  Result := Exec(Executable, Arguments, '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  Log(Format('Authentication maintenance: action=%s result=%d started=%d diagnostics=%s.log', [Action, ResultCode, Ord(Result), StatePath]));
+  if not Result then Log('Authentication maintenance launch error: ' + SysErrorMessage(ResultCode));
   if Result then Result := ResultCode = 0;
 end;
 
@@ -187,7 +189,7 @@ procedure RecoverAuthentication();
 begin
   if not AuthenticationPrepared then Exit;
   AuthenticationPrepared := False;
-  if not AuthenticationMaintenance('Resume', ExpandConstant('{tmp}\Update-AuthenticationHosts.ps1'), AuthenticationStatePath) then
+  if not AuthenticationMaintenance('Resume', AuthenticationStatePath) then
     SuppressibleMsgBox(CustomMessage('AuthenticationRecoveryFailed'), mbError, MB_OK, IDOK);
 end;
 
@@ -213,8 +215,11 @@ begin
     Result := PrepareInstallationTargets();
     if Result <> '' then Exit;
     SetPreparingStatus(CustomMessage('PreparingAuthentication'));
-    ExtractTemporaryFile('Update-AuthenticationHosts.ps1');
-    ExtractTemporaryFile('Test-AuthenticationHostPackage.ps1');
+    ExtractTemporaryFile('MyCodex.exe');
+    ExtractTemporaryFile('Infrastructure.dll');
+    ExtractTemporaryFile('Application.dll');
+    ExtractTemporaryFile('Domain.dll');
+    ExtractTemporaryFile('Shared.dll');
     ExtractTemporaryFile('expected-authentication.json');
     ExtractTemporaryFile('mycodex-auth-host.exe');
     ExtractTemporaryFile('mycodex-auth-host.manifest.json');
@@ -222,7 +227,7 @@ begin
     AuthenticationStatePath := ExpandConstant('{localappdata}\MyCodex\authentication-updates\') + GetMD5OfString(ExpandConstant('{app}')) + '\state.json';
     ForceDirectories(ExtractFileDir(AuthenticationStatePath));
     AuthenticationPrepared := True;
-    if not AuthenticationMaintenance('Prepare', ExpandConstant('{tmp}\Update-AuthenticationHosts.ps1'), AuthenticationStatePath) then
+    if not AuthenticationMaintenance('Prepare', AuthenticationStatePath) then
     begin
       Result := CustomMessage('AuthenticationMaintenanceFailed');
       Exit;
@@ -246,35 +251,56 @@ begin
   end;
 end;
 
+function AuthenticationFilesInstalled(): Boolean;
+var
+  Names: TArrayOfString;
+  Index: Integer;
+  Source, Destination: String;
+begin
+  Result := False;
+  Names := ['mycodex-auth-host.exe', 'mycodex-auth-host.manifest.json', 'LICENSE'];
+  try
+    for Index := 0 to GetArrayLength(Names) - 1 do
+    begin
+      Source := ExpandConstant('{tmp}\') + Names[Index];
+      Destination := ExpandConstant('{app}\runtime\auth-core\') + Names[Index];
+      if not FileExists(Destination) then Exit;
+      if GetSHA256OfFile(Destination) <> GetSHA256OfFile(Source) then Exit;
+    end;
+    Result := True;
+  except
+    Log('Authentication package integrity check failed.');
+  end;
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   GuardError: String;
-  ResultCode: Integer;
 begin
   if CurStep = ssInstall then
   begin
     GuardError := ResourceGuardMessage(RunResourceGuard(' -IncludeManagedProcesses'));
     if GuardError <> '' then RaiseException(GuardError);
+    // Record the new identity before any files change, even if the helper cannot start afterwards.
+    if not FileCopy(ExpandConstant('{tmp}\expected-authentication.json'), AuthenticationStatePath + '.installed.tmp', False) then
+      RaiseException(CustomMessage('AuthenticationMaintenanceFailed'));
+    if FileExists(AuthenticationStatePath + '.installed') and not DeleteFile(AuthenticationStatePath + '.installed') then
+      RaiseException(CustomMessage('AuthenticationMaintenanceFailed'));
+    if not RenameFile(AuthenticationStatePath + '.installed.tmp', AuthenticationStatePath + '.installed') then
+      RaiseException(CustomMessage('AuthenticationMaintenanceFailed'));
   end;
   if CurStep = ssPostInstall then
   begin
-    AuthenticationFinalizationFailed := True;
+    AuthenticationPrepared := False;
     WizardForm.StatusLabel.Caption := CustomMessage('VerifyingAuthentication');
     try
-      if AuthenticationMaintenance('Finalize', ExpandConstant('{tmp}\Update-AuthenticationHosts.ps1'), AuthenticationStatePath) then
-      begin
-        ResultCode := -1;
-        if Exec(ExpandConstant('{app}\MyCodex.exe'), '--resume-authentication-hosts', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
-          AuthenticationInstalled := ResultCode = 0;
-        Log(Format('Authentication startup registrations: result=%d', [ResultCode]));
-      end;
+      AuthenticationInstalled := AuthenticationFilesInstalled();
       AuthenticationFinalizationFailed := not AuthenticationInstalled;
       if AuthenticationInstalled then
       begin
-        AuthenticationPrepared := False;
         WriteInstallationExitCapability();
-      end
-      else RecoverAuthentication();
+        AuthenticationRecoveryPending := not AuthenticationMaintenance('Finalize', AuthenticationStatePath);
+      end;
     finally
       ReleaseInstallationReservation();
     end;
@@ -302,7 +328,9 @@ begin
     WizardForm.FinishedHeadingLabel.Caption := CustomMessage('InstallationIncomplete');
     WizardForm.FinishedLabel.Caption := FmtMessage(CustomMessage('AuthenticationVerificationFailed'), [ExpandConstant('{log}')]);
     WizardForm.RunList.Visible := False;
-  end;
+  end
+  else if (CurPageID = wpFinished) and AuthenticationRecoveryPending then
+    WizardForm.FinishedLabel.Caption := CustomMessage('AuthenticationRecoveryPending');
 end;
 
 function InitializeUninstall(): Boolean;
@@ -322,8 +350,11 @@ begin
   GuardError := PrepareInstallationTargets();
   if GuardError <> '' then RaiseException(GuardError);
   SetTargetMaintenanceStatus(CustomMessage('PreparingAuthentication'));
-  if not AuthenticationMaintenance('Uninstall', MaintenanceHelper('Update-AuthenticationHosts.ps1'), ExpandConstant('{tmp}\authentication-uninstall.json')) then
+  AuthenticationStatePath := ExpandConstant('{tmp}\authentication-uninstall.json');
+  AuthenticationPrepared := True;
+  if not AuthenticationMaintenance('Uninstall', AuthenticationStatePath) then
     RaiseException(CustomMessage('AuthenticationMaintenanceFailed'));
+  AuthenticationPrepared := False;
   SetTargetMaintenanceStatus(CustomMessage('PreparingBackgroundProcesses'));
   Arguments := '-NoProfile -ExecutionPolicy Bypass -File "' + MaintenanceHelper('Stop-MyCodexManagedProcesses.ps1') + '" -InstallRoot "' + ExpandConstant('{app}') + '"';
   if not Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'), Arguments, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then ResultCode := 2;
@@ -334,5 +365,9 @@ end;
 
 procedure DeinitializeUninstall();
 begin
-  ReleaseInstallationReservation();
+  try
+    RecoverAuthentication();
+  finally
+    ReleaseInstallationReservation();
+  end;
 end;

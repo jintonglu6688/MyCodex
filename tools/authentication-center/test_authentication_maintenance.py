@@ -41,7 +41,6 @@ def main():
     children = []
     flags = subprocess.CREATE_NO_WINDOW
     state = root / "maintenance.json"
-    script = repository / "tools" / "installer" / "Update-AuthenticationHosts.ps1"
 
     def run_installer(binary, installing=True):
         arguments = [str(binary.resolve()), "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART",
@@ -85,17 +84,19 @@ def main():
         # A resumed resident may inherit the shell's standard handles. Use a file,
         # not a captured pipe whose EOF would wait for the independent service.
         with tempfile.TemporaryFile() as errors:
-            arguments = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script),
-                "-Action", action, "-InstallRoot", str(install), "-StatePath", str(state)]
             if action == "Finalize":
-                arguments += ["-ExpectedManifestPath", str(args.package / "mycodex-auth-host.manifest.json")]
+                shutil.copy2(args.package / "mycodex-auth-host.manifest.json", str(state) + ".installed")
+            arguments = [str(install / "MyCodex.exe"), "--authentication-maintenance", action, str(install), str(state)]
             result = subprocess.run(arguments,
                 stdout=subprocess.DEVNULL, stderr=errors, timeout=75, creationflags=flags)
             errors.seek(0)
             error_text = errors.read().decode(errors="replace")
+            if (result.returncode == 0) != success:
+                error_text += Path(str(state) + ".log").read_text(encoding="utf-8")
             assert (result.returncode == 0) == success, "Unexpected maintenance outcome: " + action + "\n" + error_text
             if expected_error:
-                assert expected_error in error_text, "Maintenance failed for the wrong reason: " + error_text
+                diagnostic = Path(str(state) + ".log").read_text(encoding="utf-8")
+                assert expected_error in diagnostic, "Maintenance failed for the wrong reason: " + error_text
         print("Checked maintenance " + action, flush=True)
 
     def apply(index, provider):

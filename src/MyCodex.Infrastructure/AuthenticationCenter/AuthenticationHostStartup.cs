@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using MyCodex.Application.Interfaces;
+using MyCodex.Infrastructure.Instances;
 using MyCodex.Shared.Helpers;
 
 namespace MyCodex.Infrastructure.AuthenticationCenter
@@ -107,14 +108,52 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
         {
             exitCode = 0;
             if (args == null || args.Length != 1 || args[0] != "--resume-authentication-hosts") return false;
-            try { exitCode = ResumeAsync().GetAwaiter().GetResult(); }
+            try
+            {
+                using (var reservation = TargetInstanceCoordinator.TryReserveSharedUpdate())
+                    exitCode = reservation == null ? 1 : ResumeAsync().GetAwaiter().GetResult();
+            }
             catch { exitCode = 1; }
             return true;
+        }
+
+        internal static List<AuthenticationInstallationStateStore.Target> ReadInstallationTargets(string installationRoot)
+        {
+            var result = new List<AuthenticationInstallationStateStore.Target>();
+            var applicationPath = Path.Combine(installationRoot, "MyCodex.exe");
+            var executable = Path.Combine(installationRoot, "runtime", "auth-core", "mycodex-auth-host.exe");
+            using (var registrations = Registry.CurrentUser.OpenSubKey(RegistrationRoot + "\\" + KeyFor(applicationPath)))
+            {
+                if (registrations == null) return result;
+                foreach (var name in registrations.GetValueNames())
+                {
+                    var paths = registrations.GetValue(name) as string[];
+                    if (paths == null || paths.Length != 3 || name != KeyFor(paths[1]) ||
+                        !AuthenticationInstallationStateStore.SamePath(paths[0], executable))
+                        throw new AuthenticationCenterException("authentication_update_invalid_registration");
+                    result.Add(new AuthenticationInstallationStateStore.Target
+                    {
+                        home = AuthenticationInstallationStateStore.Normalize(paths[1]),
+                        store = AuthenticationInstallationStateStore.Normalize(paths[2])
+                    });
+                }
+            }
+            return result;
+        }
+
+        internal static void ClearInstallation(string installationRoot)
+        {
+            var key = KeyFor(Path.Combine(installationRoot, "MyCodex.exe"));
+            Registry.CurrentUser.DeleteSubKeyTree(RegistrationRoot + "\\" + key, false);
+            using (var run = Registry.CurrentUser.OpenSubKey(RunKey, true))
+                run?.DeleteValue("MyCodex.Authentication." + key, false);
         }
 
         private static async Task<int> ResumeAsync()
         {
             var applicationPath = Process.GetCurrentProcess().MainModule.FileName;
+            using (var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+                await AuthenticationInstallationMaintenance.ResumePendingAsync(Path.GetDirectoryName(applicationPath), timeout.Token).ConfigureAwait(false);
             using (var registrations = Registry.CurrentUser.OpenSubKey(RegistrationRoot + "\\" + KeyFor(applicationPath)))
             {
                 if (registrations == null) return 0;
