@@ -4,6 +4,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Web.Script.Serialization;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Application.Interfaces;
 using MyCodex.Infrastructure.AuthenticationCenter;
 using NUnit.Framework;
@@ -72,11 +73,68 @@ namespace MyCodex.Application.Tests
             WriteManifest();
             var home = Path.Combine(_root, "home");
             var store = Path.Combine(_root, "private");
-            Directory.CreateDirectory(home);
             var host = new LocalAuthenticationHost("Bundled", _executable, home, store);
             var error = Assert.ThrowsAsync<AuthenticationCenterException>(async () =>
                 await host.RequestAsync("provider/list", new Dictionary<string, object>(), CancellationToken.None));
             Assert.That(error.Code, Is.EqualTo(code));
+            Assert.That(Directory.Exists(home), Is.False);
+            Assert.That(Directory.Exists(store), Is.False);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        [NonParallelizable]
+        public void MissingCodexHomeIsCreatedBeforeBackendStart(bool fromEnvironment)
+        {
+            var home = Path.Combine(_root, "new profile 空格", ".codex");
+            var store = Path.Combine(_root, "private");
+            var previous = Environment.GetEnvironmentVariable("CODEX_HOME");
+            try
+            {
+                Environment.SetEnvironmentVariable("CODEX_HOME", home);
+                var host = new LocalAuthenticationHost("Bundled", _executable, fromEnvironment ? null : home, store);
+                FormTestDriver.Invoke(host, "ResolvePaths", false);
+                FormTestDriver.Invoke(host, "ResolvePaths", false);
+                Assert.That(host.CodexHome, Is.EqualTo(home));
+                Assert.That(Directory.Exists(home), Is.True);
+                Assert.That(Directory.GetFileSystemEntries(home), Is.Empty);
+            }
+            finally { Environment.SetEnvironmentVariable("CODEX_HOME", previous); }
+        }
+
+        [Test]
+        public void PreparingExistingCodexHomePreservesConfigurationAndCredentials()
+        {
+            var home = Path.Combine(_root, "home");
+            Directory.CreateDirectory(home);
+            var config = Path.Combine(home, "config.toml");
+            var auth = Path.Combine(home, "auth.json");
+            File.WriteAllText(config, "existing configuration fixture");
+            File.WriteAllText(auth, "existing credential fixture");
+            var host = new LocalAuthenticationHost("Bundled", _executable, home, Path.Combine(_root, "private"));
+            FormTestDriver.Invoke(host, "ResolvePaths", false);
+            Assert.That(File.ReadAllText(config), Is.EqualTo("existing configuration fixture"));
+            Assert.That(File.ReadAllText(auth), Is.EqualTo("existing credential fixture"));
+            Assert.That(Directory.GetFileSystemEntries(home).Length, Is.EqualTo(2));
+        }
+
+        [TestCase("relative")]
+        [TestCase("drive-relative")]
+        [TestCase("root-relative")]
+        [TestCase("file")]
+        [TestCase("blocked-parent")]
+        public void InvalidCodexHomesFailWithoutCreatingPrivateState(string scenario)
+        {
+            var blocker = Path.Combine(_root, "occupied");
+            File.WriteAllText(blocker, "keep this file");
+            var home = scenario == "file" ? blocker : scenario == "blocked-parent" ? Path.Combine(blocker, ".codex") :
+                scenario == "drive-relative" ? "C:relative-codex-home" : scenario == "root-relative" ? @"\relative-codex-home" : "relative-codex-home";
+            var store = Path.Combine(_root, "private");
+            var host = new LocalAuthenticationHost("Bundled", _executable, home, store);
+            var error = Assert.ThrowsAsync<AuthenticationCenterException>(async () =>
+                await host.RequestAsync("status", new Dictionary<string, object>(), CancellationToken.None));
+            Assert.That(error.Code, Is.EqualTo("invalid_codex_home"));
+            Assert.That(File.ReadAllText(blocker), Is.EqualTo("keep this file"));
             Assert.That(Directory.Exists(store), Is.False);
         }
 

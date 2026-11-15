@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Services;
 using MyCodex.Infrastructure.AppServer;
 using MyCodex.Infrastructure.Processes;
 using MyCodex.Shared.Constants;
@@ -265,11 +266,22 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             {
                 _codexHome = LocalSessionCatalog.GetDefaultLocalCodexHomePath();
             }
-            if (!Path.IsPathRooted(_codexHome) || !Directory.Exists(_codexHome))
+            if (!WorkspacePathUtilities.LooksLikeWindowsDriveAbsolutePath(_codexHome) &&
+                !WorkspacePathUtilities.LooksLikeWindowsUncAbsolutePath(_codexHome))
             {
                 throw new AuthenticationCenterException("invalid_codex_home");
             }
-            _codexHome = Path.GetFullPath(_codexHome);
+            try
+            {
+                _codexHome = Path.GetFullPath(_codexHome);
+                // First-run users can open authentication before Codex has created its home.
+                Directory.CreateDirectory(_codexHome);
+            }
+            catch (Exception error) when (error is IOException || error is UnauthorizedAccessException ||
+                error is ArgumentException || error is NotSupportedException || error is System.Security.SecurityException)
+            {
+                throw new AuthenticationCenterException("invalid_codex_home");
+            }
             string targetHash;
             using (var sha = SHA256.Create())
             {

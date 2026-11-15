@@ -13140,7 +13140,7 @@ Local configuration directory: {1}</value>
     <value>The downloaded backend cannot run on this target. Install its required system libraries or use a supported target, then retry. Existing files were kept.</value>
   </data>
   <data name="AuthenticationCenter.Error.CodexHome" xml:space="preserve">
-    <value>This target's Codex configuration directory was not found. Set up Codex CLI on the target before retrying.</value>
+    <value>This target's Codex configuration directory could not be accessed. Check the configuration path and permissions, then retry.</value>
   </data>
   <data name="AuthenticationCenter.Error.BackendUnsafe" xml:space="preserve">
     <value>The target's backend directory has unsafe permissions or unexpected files. Automatic installation stopped without overwriting them; inspect that directory before retrying.</value>

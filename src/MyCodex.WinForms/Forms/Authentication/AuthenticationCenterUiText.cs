@@ -178,7 +178,7 @@ namespace MyCodex.WinForms.Forms
                 case "backend_dependencies_missing":
                     return UiLocalization.Text("AuthenticationCenter.Error.BackendDependencies", "The downloaded backend cannot run on this target. Install its required system libraries or use a supported target, then retry. Existing files were kept.");
                 case "invalid_codex_home":
-                    return UiLocalization.Text("AuthenticationCenter.Error.CodexHome", "This target's Codex configuration directory was not found. Set up Codex CLI on the target before retrying.");
+                    return UiLocalization.Text("AuthenticationCenter.Error.CodexHome", "This target's Codex configuration directory could not be accessed. Check the configuration path and permissions, then retry.");
                 case "backend_install_unsafe":
                     return UiLocalization.Text("AuthenticationCenter.Error.BackendUnsafe", "The target's backend directory has unsafe permissions or unexpected files. Automatic installation stopped without overwriting them; inspect that directory before retrying.");
                 case "backend_install_busy":
