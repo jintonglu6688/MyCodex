@@ -38,6 +38,16 @@ namespace MyCodex.Application.Tests
             Assert.That(text, Is.Not.EqualTo(AuthenticationCenterUiText.Error(new AuthenticationCenterException("unmapped_code"))));
         }
 
+        [Test]
+        public void MissingBackendDependenciesExplainsLinuxRuntimeRecovery()
+        {
+            var text = AuthenticationCenterUiText.Error(new AuthenticationCenterException("backend_dependencies_missing"));
+            Assert.That(text, Does.Contain("libwebkit2gtk-4.1-0"));
+            Assert.That(text, Does.Contain("libayatana-appindicator3-1"));
+            Assert.That(text, Does.Contain("libssl3"));
+            Assert.That(text, Does.Contain("sudo apt install"));
+        }
+
         [TestCase(true, true, true)]
         [TestCase(false, true, false)]
         [TestCase(true, false, false)]

@@ -13092,7 +13092,7 @@ MyCodex 桌面客户端。</value>
     <value>登录尚未完成。请先完成登录再更新后台；账号未被更改。</value>
   </data>
   <data name="AuthenticationCenter.Error.BackendDependencies" xml:space="preserve">
-    <value>下载的认证后台无法在此目标运行。请安装所需系统库或使用受支持的目标，然后重试；原有文件已保留。</value>
+    <value>下载的认证后台因缺少系统运行库而无法启动。在 Ubuntu 或 Debian 上请运行：sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libayatana-appindicator3-1 libssl3。其他 Linux 发行版请安装等价的 WebKitGTK 4.1、GTK 3、AppIndicator 和 OpenSSL 3 运行库，然后重试；原有文件已保留。</value>
   </data>
   <data name="AuthenticationCenter.Error.CodexHome" xml:space="preserve">
     <value>找不到此目标的 Codex 配置目录。请先在目标上设置 Codex CLI，再重试。</value>

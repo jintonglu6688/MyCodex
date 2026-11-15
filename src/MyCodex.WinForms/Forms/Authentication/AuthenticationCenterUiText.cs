@@ -176,7 +176,7 @@ namespace MyCodex.WinForms.Forms
                 case "backend_download_failed":
                     return UiLocalization.Text("AuthenticationCenter.Error.BackendDownload", "The authentication backend could not be downloaded from GitCode. Check the connection and retry Refresh. Existing files were kept.");
                 case "backend_dependencies_missing":
-                    return UiLocalization.Text("AuthenticationCenter.Error.BackendDependencies", "The downloaded backend cannot run on this target. Install its required system libraries or use a supported target, then retry. Existing files were kept.");
+                    return UiLocalization.Text("AuthenticationCenter.Error.BackendDependencies", "The downloaded backend cannot run because required system libraries are missing. On Ubuntu or Debian, run: sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libayatana-appindicator3-1 libssl3. On other Linux distributions, install the equivalent WebKitGTK 4.1, GTK 3, AppIndicator, and OpenSSL 3 runtime libraries, then retry. Existing files were kept.");
                 case "invalid_codex_home":
                     return UiLocalization.Text("AuthenticationCenter.Error.CodexHome", "This target's Codex configuration directory was not found. Set up Codex CLI on the target before retrying.");
                 case "backend_install_unsafe":
