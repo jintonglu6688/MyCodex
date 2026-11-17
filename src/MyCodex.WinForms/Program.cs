@@ -189,6 +189,7 @@ namespace MyCodex.WinForms
             {
                 mainForm.ConfigureTargetContext(catalog, instance, appChannel.Id);
                 mainForm.ApplyStartupArguments(args);
+                _ = new MinimizedActivationRestorer(mainForm);
                 instance.StartServer(mainForm.HandleTargetInstanceRequestAsync);
                 System.Windows.Forms.Application.Run(mainForm);
             }
