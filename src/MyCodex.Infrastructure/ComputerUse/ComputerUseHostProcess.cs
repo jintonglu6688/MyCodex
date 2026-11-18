@@ -57,11 +57,7 @@ namespace MyCodex.Infrastructure.ComputerUse
             {
                 _process.Start();
                 _job = new ComputerUseProcessJob(_process);
-                _inputWriter = new StreamWriter(_process.StandardInput.BaseStream, new UTF8Encoding(false))
-                {
-                    AutoFlush = true,
-                    NewLine = "\n"
-                };
+                _inputWriter = ProcessInputWriter.CreateUtf8(_process);
                 Task.Run(ReadAsync);
                 // Component stderr can contain application data. Drain, never log it.
                 Task.Run(async () => { try { while (await _process.StandardError.ReadLineAsync().ConfigureAwait(false) != null) { } } catch { } });

@@ -857,8 +857,8 @@ namespace MyCodex.Infrastructure.Codex
         private static string FindExecutablePath(string commandName)
         {
             // Search Unicode paths directly; where.exe writes paths using the Windows code page.
-            var searchPath = Environment.CurrentDirectory + Path.PathSeparator +
-                (Environment.GetEnvironmentVariable("PATH") ?? string.Empty);
+            // PATH only: a codex.cmd planted in the launch directory must not win over the installed runtime.
+            var searchPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
             foreach (var entry in searchPath.Split(Path.PathSeparator))
             {
                 var directory = entry.Trim().Trim('"');

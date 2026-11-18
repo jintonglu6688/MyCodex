@@ -179,11 +179,7 @@ namespace MyCodex.Infrastructure.AppServer
                     BuildConnectionKeyArguments(launchInfo),
                     BuildSafeEnvironmentNameSummary(environmentVariableNames));
 
-                var inputWriter = new StreamWriter(process.StandardInput.BaseStream, new UTF8Encoding(false))
-                {
-                    AutoFlush = true,
-                    NewLine = "\n"
-                };
+                var inputWriter = ProcessInputWriter.CreateUtf8(process);
                 resources.InputWriter = inputWriter;
 
                 return new AppServerRuntimeProcessStartResult

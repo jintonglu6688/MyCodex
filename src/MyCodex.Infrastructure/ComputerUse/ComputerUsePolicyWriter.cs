@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Infrastructure.AppServer;
@@ -28,11 +27,7 @@ namespace MyCodex.Infrastructure.ComputerUse
                 {
                     process.Start();
                     job = new ComputerUseProcessJob(process);
-                    inputWriter = new StreamWriter(process.StandardInput.BaseStream, new UTF8Encoding(false))
-                    {
-                        AutoFlush = true,
-                        NewLine = "\n"
-                    };
+                    inputWriter = ProcessInputWriter.CreateUtf8(process);
                     transport = new AppServerProtocolTransport(() => inputWriter,
                         AppServerJsonValue.CreateSerializer(), writeLock, new object(),
                         (method, milliseconds) => new TimeoutException("CUA_POLICY_WRITE_TIMEOUT"));

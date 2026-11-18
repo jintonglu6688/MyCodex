@@ -77,6 +77,38 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        [NonParallelizable]
+        public void GetStatus_IgnoresSystemRuntimeInCurrentDirectory()
+        {
+            var rootPath = CreateTempDirectory();
+            var previousPath = Environment.GetEnvironmentVariable("PATH");
+            var previousDirectory = Environment.CurrentDirectory;
+            try
+            {
+                var launchDirectory = Path.Combine(rootPath, "launch");
+                var runtimeDirectory = Path.Combine(rootPath, "runtime");
+                Directory.CreateDirectory(launchDirectory);
+                Directory.CreateDirectory(runtimeDirectory);
+                File.WriteAllText(Path.Combine(launchDirectory, "codex.cmd"), string.Empty);
+                var executablePath = Path.Combine(runtimeDirectory, "codex.cmd");
+                File.WriteAllText(executablePath, string.Empty);
+                Environment.CurrentDirectory = launchDirectory;
+                Environment.SetEnvironmentVariable("PATH", runtimeDirectory);
+
+                var manager = new CodexRuntimeManager(new AppConfigService(rootPath));
+                var status = manager.GetStatus(new AppConfigSnapshot { CodexRuntimeSource = CodexRuntimeSources.System });
+
+                Assert.That(status.SystemExecutablePath, Is.EqualTo(executablePath));
+            }
+            finally
+            {
+                Environment.CurrentDirectory = previousDirectory;
+                Environment.SetEnvironmentVariable("PATH", previousPath);
+                DeleteDirectory(rootPath);
+            }
+        }
+
+        [Test]
         public void GetStatus_WhenBundledRuntimeMissing_ReportsUnavailableRuntime()
         {
             var rootPath = CreateTempDirectory();
