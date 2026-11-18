@@ -856,52 +856,27 @@ namespace MyCodex.Infrastructure.Codex
 
         private static string FindExecutablePath(string commandName)
         {
-            try
+            // Search Unicode paths directly; where.exe writes paths using the Windows code page.
+            var searchPath = Environment.CurrentDirectory + Path.PathSeparator +
+                (Environment.GetEnvironmentVariable("PATH") ?? string.Empty);
+            foreach (var entry in searchPath.Split(Path.PathSeparator))
             {
-                var startInfo = new ProcessStartInfo
+                var directory = entry.Trim().Trim('"');
+                if (string.IsNullOrWhiteSpace(directory))
                 {
-                    FileName = "where.exe",
-                    Arguments = commandName,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = Encoding.UTF8,
-                    StandardErrorEncoding = Encoding.UTF8
-                };
-
-                using (var process = Process.Start(startInfo))
+                    continue;
+                }
+                try
                 {
-                    if (process == null)
+                    var executablePath = Path.GetFullPath(Path.Combine(directory, commandName));
+                    if (File.Exists(executablePath))
                     {
-                        return null;
-                    }
-
-                    var standardOutputTask = process.StandardOutput.ReadToEndAsync();
-                    var standardErrorTask = process.StandardError.ReadToEndAsync();
-                    process.WaitForExit();
-                    Task.WaitAll(standardOutputTask, standardErrorTask);
-                    var standardOutput = standardOutputTask.Result;
-                    if (process.ExitCode != 0)
-                    {
-                        return null;
-                    }
-
-                    using (var reader = new StringReader(standardOutput))
-                    {
-                        string line;
-                        while ((line = reader.ReadLine()) != null)
-                        {
-                            if (!string.IsNullOrWhiteSpace(line) && File.Exists(line.Trim()))
-                            {
-                                return line.Trim();
-                            }
-                        }
+                        return executablePath;
                     }
                 }
-            }
-            catch
-            {
+                catch (Exception ex) when (ex is ArgumentException || ex is NotSupportedException || ex is PathTooLongException)
+                {
+                }
             }
 
             return null;

@@ -22,6 +22,7 @@ namespace MyCodex.Infrastructure.ComputerUse
         private readonly TaskCompletionSource<bool> _ready = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly ComputerUseDesktopLease _lease;
         private readonly Process _process;
+        private readonly StreamWriter _inputWriter;
         private ComputerUseProcessJob _job;
         private readonly Action<string, string> _report;
         private readonly Func<string, string, CancellationToken, Task> _prepareExecution;
@@ -56,7 +57,11 @@ namespace MyCodex.Infrastructure.ComputerUse
             {
                 _process.Start();
                 _job = new ComputerUseProcessJob(_process);
-                _process.StandardInput.AutoFlush = true;
+                _inputWriter = new StreamWriter(_process.StandardInput.BaseStream, new UTF8Encoding(false))
+                {
+                    AutoFlush = true,
+                    NewLine = "\n"
+                };
                 Task.Run(ReadAsync);
                 // Component stderr can contain application data. Drain, never log it.
                 Task.Run(async () => { try { while (await _process.StandardError.ReadLineAsync().ConfigureAwait(false) != null) { } } catch { } });
@@ -91,7 +96,7 @@ namespace MyCodex.Infrastructure.ComputerUse
             try
             {
                 await _write.WaitAsync(token).ConfigureAwait(false);
-                try { await _process.StandardInput.WriteLineAsync(new JavaScriptSerializer().Serialize(message)).ConfigureAwait(false); }
+                try { await _inputWriter.WriteLineAsync(new JavaScriptSerializer().Serialize(message)).ConfigureAwait(false); }
                 finally { _write.Release(); }
                 if (await Task.WhenAny(waiter.Task, Task.Delay(5000, token)).ConfigureAwait(false) != waiter.Task)
                 {
@@ -339,7 +344,7 @@ namespace MyCodex.Infrastructure.ComputerUse
             _lifetime?.Cancel();
             try
             {
-                try { _process.StandardInput.Close(); } catch { }
+                try { _inputWriter?.Dispose(); } catch { }
                 try { if (!_process.WaitForExit(2000)) ProcessTreeTerminator.TryKill(_process); } catch { }
                 // Never release desktop ownership before terminating the owned executor tree.
                 ProcessTreeTerminator.TryKill(_process);

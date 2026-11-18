@@ -43,6 +43,7 @@ const SYSTEM_ERRORS = new Set(['ENOENT', 'EACCES', 'EPERM', 'EPIPE', 'ECONNRESET
 const ERROR_TYPES = new Set(['Error', 'TypeError', 'RangeError', 'SyntaxError', 'ReferenceError', 'AbortError']);
 
 function failureDiagnostic(failure, method, stage, approval, started, recoverable) {
+    if (failure?.code === 'CUA_COMPONENT_CONTRACT' && failure.cause instanceof Error) failure = failure.cause;
     const message = typeof failure?.message === 'string' ? failure.message : '';
     // These shapes come from the pinned WindowsHelperTransport. Never copy a suffix:
     // helper exit/JSON errors can include stderr, application data or credentials.
@@ -55,7 +56,7 @@ function failureDiagnostic(failure, method, stage, approval, started, recoverabl
         method, stage, approval, elapsedMs: Math.max(0, Math.round(performance.now() - started)),
         category: recoverable ? 'known_action_failure' :
             approval === 'decline' || approval === 'cancel' ? 'approval_declined' :
-            METHODS.has(timeoutMethod) ? 'request_timeout' :
+            METHODS.has(timeoutMethod) || timeoutMethod === 'diagnostic_state' ? 'request_timeout' :
             message.startsWith('computer-use helper exited with ') ? 'helper_exit' :
             message.startsWith('computer-use helper emitted invalid JSON: ') ? 'invalid_json' :
             SYSTEM_ERRORS.has(failure?.code) ? 'system_error' : 'unknown',
