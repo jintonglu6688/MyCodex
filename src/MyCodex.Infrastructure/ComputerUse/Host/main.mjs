@@ -25,8 +25,10 @@ try {
             // Use the live helper: a disposable probe can leave Windows database handles
             // open after close(), making immediate home deletion fail with EPERM.
             const state = await transport.request('diagnostic_state', {}, { skipTurnTransition: true, timeoutMs: 3000 });
-            if (state === null || typeof state !== 'object' || Array.isArray(state)) throw new Error();
-        } catch { throw Object.assign(new Error('CUA_COMPONENT_CONTRACT'), { code: 'CUA_COMPONENT_CONTRACT' }); }
+            if (state === null || typeof state !== 'object' || Array.isArray(state)) throw new TypeError('CUA_INVALID_DIAGNOSTIC_RESPONSE');
+        } catch (cause) {
+            throw Object.assign(new Error('CUA_COMPONENT_CONTRACT', { cause }), { code: 'CUA_COMPONENT_CONTRACT' });
+        }
     }
     const host = createComputerUseHost({
         emit: write,

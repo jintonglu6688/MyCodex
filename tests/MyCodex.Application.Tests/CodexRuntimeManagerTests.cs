@@ -16,6 +16,67 @@ namespace MyCodex.Application.Tests
     public class CodexRuntimeManagerTests
     {
         [Test]
+        [NonParallelizable]
+        public void ResolveLaunchInfo_WhenSystemRuntimePathContainsChinese_PreservesExecutablePath()
+        {
+            var rootPath = CreateTempDirectory();
+            var previousPath = Environment.GetEnvironmentVariable("PATH");
+            try
+            {
+                var runtimeDirectory = Path.Combine(rootPath, "用户 陈", "npm");
+                Directory.CreateDirectory(runtimeDirectory);
+                var executablePath = Path.Combine(runtimeDirectory, "codex.cmd");
+                File.WriteAllText(executablePath, string.Empty);
+                Environment.SetEnvironmentVariable("PATH", runtimeDirectory);
+
+                var manager = new CodexRuntimeManager(new AppConfigService(rootPath));
+                var config = new AppConfigSnapshot { CodexRuntimeSource = CodexRuntimeSources.System };
+
+                var status = manager.GetStatus(config);
+                Assert.That(status.CanLaunch, Is.True);
+                Assert.That(status.SystemExecutablePath, Is.EqualTo(executablePath));
+                var launchInfo = manager.ResolveLaunchInfo(config);
+                Assert.That(launchInfo.EnvironmentVariables["MYCODEX_CODEX_SOURCE"], Is.EqualTo(CodexRuntimeSources.System));
+                Assert.That(launchInfo.EnvironmentVariables["MYCODEX_CODEX_EXECUTABLE"], Is.EqualTo(executablePath));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("PATH", previousPath);
+                DeleteDirectory(rootPath);
+            }
+        }
+
+        [Test]
+        [NonParallelizable]
+        public void GetStatus_WhenPathContainsInvalidEntries_UsesFirstExistingSystemRuntime()
+        {
+            var rootPath = CreateTempDirectory();
+            var previousPath = Environment.GetEnvironmentVariable("PATH");
+            try
+            {
+                var firstDirectory = Path.Combine(rootPath, "first runtime");
+                var secondDirectory = Path.Combine(rootPath, "second runtime");
+                Directory.CreateDirectory(firstDirectory);
+                Directory.CreateDirectory(secondDirectory);
+                var executablePath = Path.Combine(firstDirectory, "codex.cmd");
+                File.WriteAllText(executablePath, string.Empty);
+                File.WriteAllText(Path.Combine(secondDirectory, "codex.cmd"), string.Empty);
+                Environment.SetEnvironmentVariable("PATH", "invalid|entry;\"" + firstDirectory + "\";" + secondDirectory);
+
+                var manager = new CodexRuntimeManager(new AppConfigService(rootPath));
+                var status = manager.GetStatus(new AppConfigSnapshot { CodexRuntimeSource = CodexRuntimeSources.System });
+
+                Assert.That(status.CanLaunch, Is.True);
+                Assert.That(status.SystemExecutablePath, Is.EqualTo(executablePath));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("PATH", previousPath);
+                DeleteDirectory(rootPath);
+            }
+        }
+
+        [Test]
         public void GetStatus_WhenBundledRuntimeMissing_ReportsUnavailableRuntime()
         {
             var rootPath = CreateTempDirectory();

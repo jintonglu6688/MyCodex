@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MyCodex.Infrastructure.AppServer;
@@ -22,12 +23,17 @@ namespace MyCodex.Infrastructure.ComputerUse
             {
                 ComputerUseProcessJob job = null;
                 AppServerProtocolTransport transport = null;
+                StreamWriter inputWriter = null;
                 try
                 {
                     process.Start();
                     job = new ComputerUseProcessJob(process);
-                    process.StandardInput.AutoFlush = true;
-                    transport = new AppServerProtocolTransport(() => process.StandardInput,
+                    inputWriter = new StreamWriter(process.StandardInput.BaseStream, new UTF8Encoding(false))
+                    {
+                        AutoFlush = true,
+                        NewLine = "\n"
+                    };
+                    transport = new AppServerProtocolTransport(() => inputWriter,
                         AppServerJsonValue.CreateSerializer(), writeLock, new object(),
                         (method, milliseconds) => new TimeoutException("CUA_POLICY_WRITE_TIMEOUT"));
                     var reader = Task.Run(async () =>
@@ -69,7 +75,7 @@ namespace MyCodex.Infrastructure.ComputerUse
                 }
                 finally
                 {
-                    try { process.StandardInput.Close(); } catch { }
+                    try { inputWriter?.Dispose(); } catch { }
                     ProcessTreeTerminator.TryKill(process);
                     job?.TerminateAndWait();
                     job?.Dispose();

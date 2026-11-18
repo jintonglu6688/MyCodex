@@ -629,7 +629,8 @@ try {
 }
 finally { $stream.Dispose(); [System.IO.File]::WriteAllText($ReleasedPath, 'released') }
 `);
-        for (const [probeResult, compatible, closeFailure, lockHome] of [['{}', true, false, true], ['{}', true], ['null', false], ['[]', false], ['"private-error-data"', false], ['{}', true, true]]) {
+        for (const [probeResult, compatible, closeFailure, lockHome] of [['{}', true, false, true], ['{}', true], ['null', false], ['[]', false], ['"private-error-data"', false], ['{}', true, true],
+            ['(() => { throw new Error("computer-use helper exited with exit code 5: private-error-data"); })()', false]]) {
             const log = path.join(fixtureRoot, 'transport-calls.jsonl');
             writeFileSync(log, '');
             writeFileSync(transport, `
@@ -673,6 +674,11 @@ finally { $stream.Dispose(); [System.IO.File]::WriteAllText($ReleasedPath, 'rele
                 if (result.error) await until(() => production.messages.some(message => message.event === 'fault'), 'Preparation failure is reported to the host');
                 check(compatible ? result.result?.method === 'list_windows' : result.error?.message === 'CUA_COMPONENT_CONTRACT',
                     `Native validation keeps valid operations usable and rejects invalid replies (${production.messages.find(message => message.event === 'fault')?.diagnostic?.errorCode ?? 'no fault'})`);
+                if (probeResult.startsWith('(() =>')) {
+                    const diagnostic = production.messages.find(message => message.event === 'fault')?.diagnostic;
+                    check(diagnostic?.category === 'helper_exit' && diagnostic.helperExitCode === 5,
+                        'Native preparation preserves the safe underlying failure category and exit code');
+                }
                 if (compatible) await client.request(current, 'list_windows');
                 const records = readFileSync(log, 'utf8').trim().split('\n').map(line => JSON.parse(line));
                 const requests = records.filter(record => record.method);

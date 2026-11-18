@@ -193,6 +193,50 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [TestCase(936)]
+        [TestCase(1252)]
+        public async Task HostControlPreservesUnicodeWithLegacyConsoleEncoding(int codePage)
+        {
+            var previousEncoding = Console.InputEncoding;
+            try
+            {
+                Console.InputEncoding = Encoding.GetEncoding(codePage);
+                File.WriteAllText(Path.Combine(root, "fixture-mode.txt"), "host");
+                var helperHome = Path.Combine(root, "用户陈", "电脑控制");
+                using (var host = CreateHost())
+                {
+                    await host.WaitReadyAsync(CancellationToken.None);
+                    var reply = await host.RequestAsync("echo", new Dictionary<string, object> { { "value", helperHome } });
+                    Assert.That(reply, Is.EqualTo(helperHome));
+                }
+            }
+            finally { Console.InputEncoding = previousEncoding; }
+        }
+
+        [TestCase(936)]
+        [TestCase(1252)]
+        public async Task PolicyWriterPreservesUnicodeWithLegacyConsoleEncoding(int codePage)
+        {
+            var previousEncoding = Console.InputEncoding;
+            try
+            {
+                Console.InputEncoding = Encoding.GetEncoding(codePage);
+                File.WriteAllText(Path.Combine(root, "fixture-mode.txt"), "policy");
+                var app = Path.Combine(root, "中文程序.exe");
+                var policy = new Dictionary<string, object>
+                {
+                    { "windows", new Dictionary<string, object> { { "always_allowed_app_ids", new[] { app } } } }
+                };
+                await ComputerUsePolicyWriter.WriteAsync(fixturePath, root, policy, CancellationToken.None);
+                var capture = new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(File.ReadAllText(Path.Combine(root, "policy-capture.json")));
+                var parameters = (Dictionary<string, object>)((Dictionary<string, object>)capture["request"])["params"];
+                var edit = (Dictionary<string, object>)((System.Collections.IList)parameters["edits"])[0];
+                var windows = (Dictionary<string, object>)((Dictionary<string, object>)edit["value"])["windows"];
+                Assert.That(windows["always_allowed_app_ids"], Is.EqualTo(new[] { app }));
+            }
+            finally { Console.InputEncoding = previousEncoding; }
+        }
+
         [Test]
         public async Task HostEofFailsPendingRequestAndStopsHost()
         {
@@ -410,6 +454,7 @@ class OwnedCuaFixture {
     static void Main(string[] args) {
         if (args.Length > 0 && args[0] == ""--child"") { File.WriteAllText(""child-pid.txt"", Process.GetCurrentProcess().Id.ToString()); Thread.Sleep(60000); return; }
         Console.OutputEncoding = new System.Text.UTF8Encoding(false);
+        Console.InputEncoding = new System.Text.UTF8Encoding(false);
         string mode = File.ReadAllText(""fixture-mode.txt"");
         if (mode == ""mutex"") {
             using (var mutex = new Mutex(false, @""Local\MyCodex.ComputerUse."" + WindowsIdentity.GetCurrent().User.Value + ""."" + Process.GetCurrentProcess().SessionId)) {
@@ -438,6 +483,7 @@ class OwnedCuaFixture {
                 if (id == null) continue;
             } else {
                 string command = (string)request[""command""];
+                if (command == ""echo"" && request.ContainsKey(""value"")) result = request[""value""];
                 if (command == ""prepare"") Console.WriteLine(serializer.Serialize(new { @event = ""prepare"", id = ""preparation"", thread = ""thread"", turn = ""turn"" }));
                 if (command == ""prepareResult"") prepared = request[""prepared""];
                 if (command == ""diagnostic"") Console.WriteLine(serializer.Serialize(new {
