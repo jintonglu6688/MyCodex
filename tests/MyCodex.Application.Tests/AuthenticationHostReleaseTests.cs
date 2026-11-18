@@ -88,16 +88,16 @@ namespace MyCodex.Application.Tests
             Assert.That(result.StandardOutput.Trim(), Is.EqualTo("installed"));
         }
 
-        [TestCase("Linux", "x86_64", "x86_64-unknown-linux-gnu", "1ec210b6df3cb94bc89d1e16e43bd80510098f1e29545a2eac2c74c961fac0c4")]
-        [TestCase("Linux", "aarch64", "aarch64-unknown-linux-gnu", "730b477a53323af2e713a8d427e17a4481af2ed9155f2fdf99a5ff73ef0de644")]
-        [TestCase("Darwin", "arm64", "aarch64-apple-darwin", "a2cc424a03a8ab1a6c31a099f2ce41967701f2c64c8f6f21ba4c01424f9ad092")]
+        [TestCase("Linux", "x86_64", "x86_64-unknown-linux-gnu", "8e746da1b8a43ca685ea3a00b3986b396c609e1eb5fb9042ed9566dc1850128d")]
+        [TestCase("Linux", "aarch64", "aarch64-unknown-linux-gnu", "c85fb47490c48778406641cda5457711c2f6c48aabf88f2256917327273133ad")]
+        [TestCase("Darwin", "arm64", "aarch64-apple-darwin", "f58f5c706bffa1fd531fd4d88f309cfbbcf626462ed3d1ca5e3b27d55a1945d2")]
         public void SupportedTargetsSelectThePinnedGitCodeArchive(string system, string architecture,
             string target, string hash)
         {
             var release = AuthenticationHostDeployment.ParseProbe(system + "\n" + architecture + "\n");
             Assert.That(release.Target, Is.EqualTo(target));
             Assert.That(release.Sha256, Is.EqualTo(hash));
-            Assert.That(release.FileName, Is.EqualTo("mycodex-auth-host-0.4.1-" + target + ".tar.gz"));
+            Assert.That(release.FileName, Is.EqualTo("mycodex-auth-host-0.4.2-" + target + ".tar.gz"));
         }
 
         [Test]
@@ -169,7 +169,7 @@ namespace MyCodex.Application.Tests
             var archive = AuthenticationHostRelease.ForTarget("Linux", "x86_64");
             var manifest = new Dictionary<string, object>
             {
-                { "schemaVersion", 1 }, { "hostVersion", "0.4.1" }, { "protocolVersion", 3 },
+                { "schemaVersion", 1 }, { "hostVersion", "0.4.2" }, { "protocolVersion", 3 },
                 { "upstreamRevision", "85ad4969b3399500baaea9d46b1e08f87aba80e1" },
                 { "sourceRevision", new string('a', 40) }, { "sourceDirty", false },
                 { "target", archive.Target }, { "executable", "mycodex-auth-host" },

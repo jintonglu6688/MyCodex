@@ -38,7 +38,7 @@ namespace MyCodex.Application.Tests
             using (var sha = SHA256.Create()) hash = BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(_store.Executable))).Replace("-", "");
             _manifest = new Dictionary<string, object>
             {
-                { "schemaVersion", 1 }, { "hostVersion", "0.4.1" }, { "protocolVersion", 3 },
+                { "schemaVersion", 1 }, { "hostVersion", "0.4.2" }, { "protocolVersion", 3 },
                 { "upstreamRevision", "85ad4969b3399500baaea9d46b1e08f87aba80e1" },
                 { "sourceRevision", new string('a', 40) }, { "sourceDirty", false },
                 { "target", "x86_64-pc-windows-msvc" }, { "executable", "mycodex-auth-host.exe" }, { "sha256", hash }

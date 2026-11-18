@@ -11,8 +11,8 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
 {
     internal static class AuthenticationHostRelease
     {
-        internal const string Tag = "auth-core-v0.4.1";
-        internal const string SourceRevision = "cb24120fe6d9d03e2f3998fab8a2b292e231fc8b";
+        internal const string Tag = "auth-core-v0.4.2";
+        internal const string SourceRevision = "e120f4dd61c339763bb33b53105c9e182d679ea4";
         private const string BaseUrl = "https://api.gitcode.com/api/v5/repos/gcw_SpGZ48lW/mycodex-auth-host/releases/";
         private const long MaxArchiveBytes = 16 * 1024 * 1024;
         private static readonly SemaphoreSlim DownloadGate = new SemaphoreSlim(1, 1);
@@ -25,7 +25,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             internal string System;
             internal string Architecture;
 
-            internal string FileName => "mycodex-auth-host-0.4.1-" + Target + ".tar.gz";
+            internal string FileName => "mycodex-auth-host-0.4.2-" + Target + ".tar.gz";
         }
 
         internal static Archive ForTarget(string system, string architecture)
@@ -35,16 +35,16 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             {
                 case "x86_64-unknown-linux-gnu":
                     return new Archive { Target = target, System = system, Architecture = architecture,
-                        Sha256 = "1ec210b6df3cb94bc89d1e16e43bd80510098f1e29545a2eac2c74c961fac0c4",
-                        ExecutableSha256 = "cc8da32032922a58b1755459ab1047e36b91ec1f49abc4e358bfbe00d16faa71" };
+                        Sha256 = "8e746da1b8a43ca685ea3a00b3986b396c609e1eb5fb9042ed9566dc1850128d",
+                        ExecutableSha256 = "817944f0f5e8bc253095b3de1a83afa3eae1b92e7051a1e673f102be5ab2c2e2" };
                 case "aarch64-unknown-linux-gnu":
                     return new Archive { Target = target, System = system, Architecture = architecture,
-                        Sha256 = "730b477a53323af2e713a8d427e17a4481af2ed9155f2fdf99a5ff73ef0de644",
-                        ExecutableSha256 = "e2ecaf0212fa6933ea40213faea60e4cc86ec2542e6fc65437e602604a54df49" };
+                        Sha256 = "c85fb47490c48778406641cda5457711c2f6c48aabf88f2256917327273133ad",
+                        ExecutableSha256 = "cafc29934635b196031a3314eb421e68f3b85b45e60532ecf18adfd403454956" };
                 case "aarch64-apple-darwin":
                     return new Archive { Target = target, System = system, Architecture = architecture,
-                        Sha256 = "a2cc424a03a8ab1a6c31a099f2ce41967701f2c64c8f6f21ba4c01424f9ad092",
-                        ExecutableSha256 = "393a16ccb2b9b1593432339938814add601ecd8bb4ba2bdc2f8e119318a8de0b" };
+                        Sha256 = "f58f5c706bffa1fd531fd4d88f309cfbbcf626462ed3d1ca5e3b27d55a1945d2",
+                        ExecutableSha256 = "5a39f2aeff14694d706b2f895079d588990d70d3cdafe591d6251ca9389d2be4" };
                 default:
                     throw new AuthenticationCenterException("unsupported_platform");
             }
