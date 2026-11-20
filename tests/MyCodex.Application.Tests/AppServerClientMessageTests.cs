@@ -3552,7 +3552,8 @@ namespace MyCodex.Application.Tests
                         "Bypass",
                         "-Command",
                         "Write-Output 'first'; Start-Sleep -Milliseconds 1200; Write-Output 'second'"
-                    }, TestContext.CurrentContext.WorkDirectory, "process-1", 15000L, callback);
+                    // A cold powershell.exe start on a CI runner took 18 s; the timing check is relative.
+                    }, TestContext.CurrentContext.WorkDirectory, "process-1", 60000L, callback);
                 var result = task.GetAwaiter().GetResult();
                 stopwatch.Stop();
 
