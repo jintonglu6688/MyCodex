@@ -122,6 +122,15 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             return ParseProbe(result.StandardOutput);
         }
 
+        // Exit 17 means the staged binary could not run. Only the Linux build links system
+        // WebKitGTK/GTK/OpenSSL libraries a user can install, so only Linux gets package advice.
+        internal static string DependencyFailureCode(string system)
+        {
+            return string.Equals(system, "Linux", StringComparison.Ordinal)
+                ? "backend_linux_dependencies_missing"
+                : "backend_dependencies_missing";
+        }
+
         internal static AuthenticationHostRelease.Archive ParseProbe(string output)
         {
             var lines = (output ?? string.Empty).Trim().Split('\n');
@@ -149,7 +158,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
                 StartInfo = start, StandardInput = input, CancellationToken = token,
                 TimeoutMilliseconds = 180000, TimeoutMessage = "Authentication host deployment timed out."
             }), token).ConfigureAwait(false);
-            if (result.ExitCode == 17) throw new AuthenticationCenterException("backend_dependencies_missing");
+            if (result.ExitCode == 17) throw new AuthenticationCenterException(DependencyFailureCode(archive.System));
             if (result.ExitCode == 16) throw new AuthenticationCenterException("backend_integrity_failed");
             if (result.ExitCode == 14 || result.ExitCode == 18) throw new AuthenticationCenterException("backend_install_unsafe");
             if (result.ExitCode == 15) throw new AuthenticationCenterException("backend_install_busy");
@@ -165,7 +174,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             var result = await executor.ExecuteWithInputAsync(config, InstallScript, "mycodex-auth-install", 180000,
                 token, input, archive.System, archive.Architecture, archive.Sha256, archive.ExecutableSha256,
                 update ? "update" : "missing").ConfigureAwait(false);
-            if (result.ExitCode == 17) throw new AuthenticationCenterException("backend_dependencies_missing");
+            if (result.ExitCode == 17) throw new AuthenticationCenterException(DependencyFailureCode(archive.System));
             if (result.ExitCode == 16) throw new AuthenticationCenterException("backend_integrity_failed");
             if (result.ExitCode == 14 || result.ExitCode == 18) throw new AuthenticationCenterException("backend_install_unsafe");
             if (result.ExitCode == 15) throw new AuthenticationCenterException("backend_install_busy");

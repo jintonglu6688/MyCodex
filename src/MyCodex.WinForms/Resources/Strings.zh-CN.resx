@@ -13094,6 +13094,9 @@ MyCodex 桌面客户端。</value>
   <data name="AuthenticationCenter.Error.BackendDependencies" xml:space="preserve">
     <value>下载的认证后台无法在此目标运行。请安装所需系统库或使用受支持的目标，然后重试；原有文件已保留。</value>
   </data>
+  <data name="AuthenticationCenter.Error.BackendLinuxDependencies" xml:space="preserve">
+    <value>下载的认证后台无法在此目标运行。它需要 glibc 2.35 或更高版本，以及 WebKitGTK 4.1、GTK 3 和 OpenSSL 3 运行库。在 Ubuntu 22.04、Debian 12 或更高版本上，请运行：sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libayatana-appindicator3-1 libssl3。其他发行版请安装等价的运行库，然后重试；原有文件已保留。</value>
+  </data>
   <data name="AuthenticationCenter.Error.CodexHome" xml:space="preserve">
     <value>无法访问此目标的 Codex 配置目录。请检查配置路径及访问权限，然后重试。</value>
   </data>

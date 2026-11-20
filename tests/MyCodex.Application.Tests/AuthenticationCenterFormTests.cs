@@ -38,6 +38,17 @@ namespace MyCodex.Application.Tests
             Assert.That(text, Is.Not.EqualTo(AuthenticationCenterUiText.Error(new AuthenticationCenterException("unmapped_code"))));
         }
 
+        [Test]
+        public void OnlyLinuxDependencyFailureSuggestsAptPackages()
+        {
+            var linux = AuthenticationCenterUiText.Error(new AuthenticationCenterException("backend_linux_dependencies_missing"));
+            var other = AuthenticationCenterUiText.Error(new AuthenticationCenterException("backend_dependencies_missing"));
+            Assert.That(linux, Does.Contain("sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libayatana-appindicator3-1 libssl3"));
+            Assert.That(linux, Does.Contain("glibc 2.35"));
+            Assert.That(other, Does.Not.Contain("apt"));
+            Assert.That(linux, Is.Not.EqualTo(AuthenticationCenterUiText.Error(new AuthenticationCenterException("unmapped_code"))));
+        }
+
         [TestCase(true, true, true)]
         [TestCase(false, true, false)]
         [TestCase(true, false, false)]

@@ -100,6 +100,13 @@ namespace MyCodex.Application.Tests
             Assert.That(release.FileName, Is.EqualTo("mycodex-auth-host-0.4.2-" + target + ".tar.gz"));
         }
 
+        [TestCase("Linux", "backend_linux_dependencies_missing")]
+        [TestCase("Darwin", "backend_dependencies_missing")]
+        public void UnrunnableBackendReportsLinuxPackageAdviceOnlyForLinux(string system, string code)
+        {
+            Assert.That(AuthenticationHostDeployment.DependencyFailureCode(system), Is.EqualTo(code));
+        }
+
         [Test]
         public void IntelMacIsRejectedBecauseNoReleaseWasPublished()
         {
