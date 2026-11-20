@@ -22,9 +22,23 @@ $server = [PowerShell]::Create()
             $reader = [IO.StreamReader]::new($stream, [Text.Encoding]::ASCII)
             $lines = @()
             while (-not [string]::IsNullOrEmpty(($line = $reader.ReadLine()))) { $lines += $line }
+            # Read an upload body completely before answering, as a real server does.
+            $length = @($lines | Where-Object { $_ -like 'Content-Length:*' } | ForEach-Object { [int](($_ -split ':', 2)[1].Trim()) })
+            if ($length.Count -gt 0 -and $length[0] -gt 0) {
+                $buffer = New-Object char[] $length[0]
+                $read = 0
+                while ($read -lt $buffer.Length) {
+                    $count = $reader.Read($buffer, $read, $buffer.Length - $read)
+                    if ($count -le 0) { break }
+                    $read += $count
+                }
+                $lines += 'BODY:' + (New-Object string($buffer, 0, $read))
+            }
             [void]$Requests.Add($lines)
             $path = ($lines[0] -split ' ')[1]
             switch ($path) {
+                '/upload' { $head = "HTTP/1.1 200 OK`r`nContent-Length: 0`r`n"; $body = '' }
+                '/upload-denied' { $head = "HTTP/1.1 403 Forbidden`r`nContent-Length: 6`r`n"; $body = 'denied' }
                 '/range' { $head = "HTTP/1.1 206 Partial Content`r`nContent-Range: bytes 0-0/193250403`r`nContent-Length: 1`r`n"; $body = 'x' }
                 '/ignored-range' { $head = "HTTP/1.1 200 OK`r`nContent-Length: 4096`r`n"; $body = 'partial body' }
                 '/bad-range' { $head = "HTTP/1.1 206 Partial Content`r`nContent-Range: bytes 0-0/*`r`nContent-Length: 1`r`n"; $body = 'x' }
@@ -70,6 +84,30 @@ try {
     $text = ($output | ForEach-Object { [string]$_ }) -join "`n"
     Assert-True ($codes.Count -eq 2 -and $codes[0] -eq 0 -and $codes[1] -eq 3) ('Unexpected native exit codes: ' + ($codes -join ','))
     Assert-True ($text -like '*remote: Start Git Hooks Checking*' -and $text -like '*fatal: rejected*') 'Native stderr was not echoed.'
+
+    # Release uploads stream through curl with the signed headers from a temporary config file.
+    $uploadFile = Join-Path ([IO.Path]::GetTempPath()) ('gitcode-upload-test-{0}.bin' -f [Guid]::NewGuid().ToString('N'))
+    $configPattern = 'mycodex-gitcode-upload-*.cfg'
+    $configsBefore = @(Get-ChildItem -LiteralPath ([IO.Path]::GetTempPath()) -Filter $configPattern).Count
+    [IO.File]::WriteAllText($uploadFile, 'fixture upload body')
+    try {
+        $before = $requests.Count
+        & { $ErrorActionPreference = 'Stop'; Invoke-GitCodeFileUpload -Url "$baseUrl/upload" -Headers @{ 'X-Signature' = 'signed "quoted" value' } -Path $uploadFile } *> $null
+        $upload = @($requests[$before])
+        Assert-True ($upload[0] -like 'PUT /upload *') ('Upload must use PUT: ' + $upload[0])
+        Assert-True ($upload -contains 'X-Signature: signed "quoted" value') 'Signed header was not sent intact.'
+        Assert-True ($upload -contains 'Content-Type: application/octet-stream') 'Default content type was not sent.'
+        Assert-True ($upload -contains 'Content-Length: 19') 'Upload length does not match the file.'
+        Assert-True ($upload -contains 'BODY:fixture upload body') 'Upload body does not match the file.'
+
+        try {
+            & { Invoke-GitCodeFileUpload -Url "$baseUrl/upload-denied" -Headers @{} -Path $uploadFile } *> $null
+            throw 'No failure for a rejected upload.'
+        }
+        catch { Assert-True ($_.Exception.Message -like '*failed (curl exit code 22)*') ('Unexpected upload failure: ' + $_.Exception.Message) }
+        Assert-True (@(Get-ChildItem -LiteralPath ([IO.Path]::GetTempPath()) -Filter $configPattern).Count -eq $configsBefore) 'Upload config with signed headers was left behind.'
+    }
+    finally { Remove-Item -LiteralPath $uploadFile -Force -ErrorAction SilentlyContinue }
     Write-Host 'GitCode publishing helper checks passed.'
 }
 finally {

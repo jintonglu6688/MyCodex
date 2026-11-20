@@ -95,12 +95,19 @@ if (Test-Path -LiteralPath $sourceGitCodeWorkflows) {
 
 Push-Location $WorkDirectory
 try {
-    git init -b main | Out-Null
-    git config user.name "MyCodex Release Bot"
-    git config user.email "release@mycodex.local"
-    git add .
-    git commit -m $CommitMessage | Out-Null
-    git remote add gitcode-distribution $RepoUrl
+    # Line-ending warnings go to stderr; the exit code alone decides success.
+    foreach ($gitArguments in @(
+        @("init", "-q", "-b", "main"),
+        @("config", "user.name", "MyCodex Release Bot"),
+        @("config", "user.email", "release@mycodex.local"),
+        @("add", "."),
+        @("commit", "-q", "-m", $CommitMessage),
+        @("remote", "add", "gitcode-distribution", $RepoUrl))) {
+        $exitCode = Invoke-GitCodeNativeCommand -FilePath "git" -Arguments $gitArguments
+        if ($exitCode -ne 0) {
+            throw "git $($gitArguments[0]) failed with exit code $exitCode."
+        }
+    }
     Invoke-GitCodePush -Arguments @("push", "--force", "gitcode-distribution", "main:main")
 }
 finally {

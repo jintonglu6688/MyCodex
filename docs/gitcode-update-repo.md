@@ -149,10 +149,16 @@ The script:
 - Refreshes the legacy runtime manifest with verified npm download URLs before
   generating the app manifest; runtime archives are not uploaded to GitCode.
 - Writes `updates/stable.json` as old-client-compatible ASCII JSON.
-- Publishes only `README.md` and `updates/` to the GitCode distribution repo.
-- Deletes and recreates `app-v<version>` and `updates-stable` tags/releases.
-- Uploads the installer and manifest as GitCode Release attachments.
-- Verifies the public manifest and installer size.
+- Recreates the `app-v<version>` Release, uploads the installer and verifies its
+  public size before changing anything clients read. A failed upload leaves the
+  current `updates-stable` pointer and distribution repo untouched.
+- Then publishes only `README.md` and `updates/` to the GitCode distribution repo,
+  recreates `updates-stable` with the new manifest and verifies the public manifest.
+
+Release attachments are uploaded with `curl.exe`, which streams the file and only
+stops when the transfer stalls; a 300 MB installer can take over 20 minutes on a
+slow uplink. The signed upload URL and headers pass through a temporary config
+file that is deleted afterwards.
 
 Use `-BundledCodexVersion <version>` only when you intentionally want to pin the
 installer and standard runtime manifest to a specific Codex runtime version.

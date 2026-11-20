@@ -144,6 +144,18 @@ if ($PrepareOnly) {
 
 $gitCodeTokenForPublish = Get-GitCodeToken
 
+# Clients read only the stable pointer. Publish and verify the installer first, so a failed
+# upload leaves the previous pointer (and every client's update check) untouched.
+$manifestAsset = (Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json).app.asset
+$assetUrl = "$packageBaseUrl$($manifestAsset.url)"
+Remove-RemoteTagIfExists -TagName $releaseTag
+$releaseBody = "$ReleaseNotesZhCn`n`n$ReleaseNotesEnUs".Trim()
+New-GitCodeRelease -TagName $releaseTag -Name "MyCodex $version" -Body $releaseBody
+Send-GitCodeReleaseFile -TagName $releaseTag -Path $uniqueInstallerPath
+Assert-GitCodePublicDownloadSize -Url $assetUrl -ExpectedSize ([long]$manifestAsset.size) -Name "Installer"
+
+# The distribution repository feeds the daily runtime sync, which can republish the
+# pointer from it; push the new manifest there only once its installer exists.
 if (-not $SkipDistributionRepoPublish) {
     & $distributionScript `
         -RepoUrl $RepoUrl `
@@ -155,13 +167,8 @@ if (-not $SkipDistributionRepoPublish) {
     }
 }
 
-Remove-RemoteTagIfExists -TagName $releaseTag
+# GitCode cannot overwrite an attachment; the pointer is missing only while this small file uploads.
 Remove-RemoteTagIfExists -TagName $stableTag
-
-$releaseBody = "$ReleaseNotesZhCn`n`n$ReleaseNotesEnUs".Trim()
-New-GitCodeRelease -TagName $releaseTag -Name "MyCodex $version" -Body $releaseBody
-Send-GitCodeReleaseFile -TagName $releaseTag -Path $uniqueInstallerPath
-
 New-GitCodeRelease -TagName $stableTag -Name "Stable Update Manifest" -Body "Stable manifest pointer for MyCodex update checks."
 Send-GitCodeReleaseFile -TagName $stableTag -Path $manifestPath
 
@@ -170,9 +177,6 @@ $manifest = Invoke-RestMethod -Uri $manifestUrl -TimeoutSec 120
 if ($manifest.app.version -ne $version) {
     throw "Published manifest version mismatch. Expected $version, got $($manifest.app.version)."
 }
-
-$assetUrl = "$packageBaseUrl$($manifest.app.asset.url)"
-Assert-GitCodePublicDownloadSize -Url $assetUrl -ExpectedSize ([long]$manifest.app.asset.size) -Name "Installer"
 
 Write-Host ""
 Write-Host "GitCode release published:"

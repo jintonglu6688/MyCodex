@@ -63,11 +63,6 @@ function Invoke-WebRequest {
         Copy-Item -LiteralPath (Join-Path $fixtureRoot 'package.tgz') -Destination $OutFile
         return
     }
-    if ($Method -eq 'Put') {
-        $name = [IO.Path]::GetFileName($InFile)
-        $global:codexRuntimeFixture.Uploads[$name] = [pscustomobject]@{ Size = (Get-Item $InFile).Length; Hash = (Get-FileHash $InFile).Hash }
-        return
-    }
     throw "Unexpected fixture download: $Uri"
 }
 
@@ -84,6 +79,10 @@ function Get-GitCodePublicDownloadSize {
     param([string]$Url)
     $global:codexRuntimeFixture.SizeChecks++
     return [long](Get-Item -LiteralPath (Join-Path $fixtureRoot 'package.tgz')).Length
+}
+function Invoke-GitCodeFileUpload {
+    param([string]$Url, [hashtable]$Headers, [string]$Path)
+    $global:codexRuntimeFixture.Uploads[[IO.Path]::GetFileName($Path)] = [pscustomobject]@{ Size = (Get-Item -LiteralPath $Path).Length; Hash = (Get-FileHash -LiteralPath $Path).Hash }
 }
 '@
     # The distribution publisher is outside this test's boundary; verify it receives the prepared manifest.

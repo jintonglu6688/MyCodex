@@ -259,14 +259,60 @@ function Send-GitCodeReleaseFile {
         $headers[$property.Name] = [string]$property.Value
     }
 
-    [void](Invoke-WebRequest `
-        -Method Put `
-        -Uri $uploadInfo.url `
-        -Headers $headers `
-        -InFile $resolvedPath `
-        -ContentType "application/octet-stream" `
-        -TimeoutSec 900 `
-        -UseBasicParsing)
-
+    Invoke-GitCodeFileUpload -Url $uploadInfo.url -Headers $headers -Path $resolvedPath
     Write-Host "Uploaded Release asset: $TagName / $fileName"
+}
+
+function Invoke-GitCodeFileUpload {
+    param(
+        [Parameter(Mandatory = $true)][string]$Url,
+        [hashtable]$Headers,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    # Invoke-WebRequest -InFile buffers the whole file and had a fixed 900 s limit: a
+    # 300 MB installer on a ~240 KB/s uplink timed out. curl streams the file and only
+    # gives up when the transfer stalls. The signed URL and headers go through a
+    # temporary config file so they never appear on a command line or in the log.
+    $curl = Get-Command curl.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($null -eq $curl) {
+        throw "curl.exe was not found. It ships with Windows 10 1803 and later."
+    }
+
+    function ConvertTo-CurlConfigValue([string]$Value) {
+        return '"' + $Value.Replace('\', '\\').Replace('"', '\"') + '"'
+    }
+
+    $configLines = New-Object System.Collections.Generic.List[string]
+    $configLines.Add("url = " + (ConvertTo-CurlConfigValue $Url))
+    $hasContentType = $false
+    if ($null -ne $Headers) {
+        foreach ($name in $Headers.Keys) {
+            if ($name -ieq "Content-Type") { $hasContentType = $true }
+            $configLines.Add("header = " + (ConvertTo-CurlConfigValue ("{0}: {1}" -f $name, $Headers[$name])))
+        }
+    }
+    if (-not $hasContentType) {
+        $configLines.Add("header = " + (ConvertTo-CurlConfigValue "Content-Type: application/octet-stream"))
+    }
+
+    $configPath = Join-Path ([System.IO.Path]::GetTempPath()) ("mycodex-gitcode-upload-{0}.cfg" -f [System.Guid]::NewGuid().ToString("N"))
+    try {
+        [System.IO.File]::WriteAllLines($configPath, $configLines, (New-Object System.Text.UTF8Encoding($false)))
+        $exitCode = Invoke-GitCodeNativeCommand -FilePath $curl.Source -Arguments @(
+            "--silent", "--show-error", "--fail-with-body",
+            "--connect-timeout", "60",
+            "--speed-limit", "1024", "--speed-time", "120",
+            "--request", "PUT", "--upload-file", $Path,
+            "--config", $configPath,
+            "--output", "NUL",
+            "--write-out", "Upload finished: HTTP %{http_code}, %{size_upload} bytes, %{speed_upload} B/s, %{time_total} s\n")
+    }
+    finally {
+        Remove-Item -LiteralPath $configPath -Force -ErrorAction SilentlyContinue
+    }
+
+    if ($exitCode -ne 0) {
+        throw "Upload of $([System.IO.Path]::GetFileName($Path)) failed (curl exit code $exitCode)."
+    }
 }
