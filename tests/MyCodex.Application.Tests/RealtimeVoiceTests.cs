@@ -383,6 +383,35 @@ namespace MyCodex.Application.Tests
 
         [Test]
         [Apartment(ApartmentState.STA)]
+        public void Coordinator_FailedMicrophoneStartTurnsTheMicrophoneOff()
+        {
+            using (var form = new Form())
+            using (var button = new Button())
+            {
+                var handle = form.Handle;
+                var audio = new Audio();
+                var coordinator = Coordinator(form, button, new VoiceClient(), audio, new VoiceChatSettings(), status => { });
+                try
+                {
+                    coordinator.Refresh("a", true);
+                    Pump(coordinator.StartAsync());
+                    audio.FailNextMicrophoneEnable = true;
+
+                    coordinator.HandleTalkKey(true);
+                    Pump(Task.Delay(50));
+
+                    Assert.That(audio.MicrophoneChanges, Is.EqualTo(new[] { true, false }), "A late start must not leave the microphone on.");
+                    Pump(coordinator.StopAsync());
+                }
+                finally
+                {
+                    coordinator.Dispose();
+                }
+            }
+        }
+
+        [Test]
+        [Apartment(ApartmentState.STA)]
         public void Coordinator_HoldTheDefaultF8ToTalkAndReleaseToSend()
         {
             using (var form = new Form())
@@ -984,9 +1013,17 @@ namespace MyCodex.Application.Tests
                 }
             }
 
+            public bool FailNextMicrophoneEnable;
+
             public Task SetMicrophoneEnabledAsync(string sessionId, bool enabled)
             {
                 MicrophoneChanges.Add(enabled);
+                if (enabled && FailNextMicrophoneEnable)
+                {
+                    FailNextMicrophoneEnable = false;
+                    return Task.FromException(new TimeoutException("microphone confirmation timed out"));
+                }
+
                 return Task.CompletedTask;
             }
 

@@ -229,13 +229,27 @@ namespace MyCodex.WinForms.Forms
             catch (Exception ex)
             {
                 _talking = false;
-                // A failed release could leave the microphone live; end voice instead.
-                if (!talking)
+                // A failed release could leave the microphone live; end voice instead. A failed (or timed-out)
+                // start may still turn it on late, and releasing the key is then a no-op, so turn it off now.
+                if (!talking || !await TryDisableMicrophoneAsync())
                 {
                     await StopAsync();
                 }
 
                 ReportError(ex.Message);
+            }
+        }
+
+        private async Task<bool> TryDisableMicrophoneAsync()
+        {
+            try
+            {
+                await _session.SetMicrophoneEnabledAsync(false);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
