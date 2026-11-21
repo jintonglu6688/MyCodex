@@ -26,8 +26,10 @@ namespace MyCodex.WinForms.Forms
         public string Text { get; }
     }
 
+    // Stdout and stderr callbacks append from background threads, so every member takes the lock.
     internal sealed class CommandTerminalBuffer
     {
+        private readonly object _sync = new object();
         private readonly List<CommandTerminalEntry> _entries;
         private readonly int _maxCharacters;
         private int _totalCharacters;
@@ -46,27 +48,45 @@ namespace MyCodex.WinForms.Forms
             }
 
             var normalizedText = NormalizeText(text);
-            _entries.Add(new CommandTerminalEntry(kind, normalizedText));
-            _totalCharacters += normalizedText.Length;
-            TrimToLimit();
+            if (normalizedText.Length == 0)
+            {
+                // Bare line breaks are never shown and would otherwise pile up outside the character limit.
+                return;
+            }
+
+            lock (_sync)
+            {
+                _entries.Add(new CommandTerminalEntry(kind, normalizedText));
+                _totalCharacters += normalizedText.Length;
+                TrimToLimit();
+            }
         }
 
         public void Clear()
         {
-            _entries.Clear();
-            _totalCharacters = 0;
+            lock (_sync)
+            {
+                _entries.Clear();
+                _totalCharacters = 0;
+            }
         }
 
         public CommandTerminalEntry[] GetEntries()
         {
-            return _entries
-                .Select(entry => new CommandTerminalEntry(entry.Kind, entry.Text))
-                .ToArray();
+            lock (_sync)
+            {
+                return _entries
+                    .Select(entry => new CommandTerminalEntry(entry.Kind, entry.Text))
+                    .ToArray();
+            }
         }
 
         public string GetSnapshotText()
         {
-            return string.Join(Environment.NewLine, _entries.Select(entry => entry.Text).Where(text => text.Length > 0));
+            lock (_sync)
+            {
+                return string.Join(Environment.NewLine, _entries.Select(entry => entry.Text).Where(text => text.Length > 0));
+            }
         }
 
         public string[] GetReadableLines()
