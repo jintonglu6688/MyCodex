@@ -17,7 +17,7 @@ namespace MyCodex.Application.Tests.SourceGuards
     public sealed class CodeHealthRatchetTests
     {
         // +1 each: startup repeats a silent browser control setup failure after later status messages.
-        private const int MainFormPartialNonEmptyLinesCeiling = 22529;
+        private const int MainFormPartialNonEmptyLinesCeiling = 22528;
         private const int MainFormCoreFileNonEmptyLinesCeiling = 2879;
         private const int MainFormFieldCeiling = 363;
         private const int MethodsOver150LinesCeiling = 13;

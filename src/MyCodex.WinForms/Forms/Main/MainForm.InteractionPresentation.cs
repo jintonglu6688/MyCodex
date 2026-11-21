@@ -9,9 +9,10 @@ namespace MyCodex.WinForms.Forms
         private Task<bool> WaitToPresentTargetInteractionAsync(string requestId)
         {
             var runtimeVersion = _subAgentRuntimeVersion;
+            // A cancellable exit only pauses presentation; dropping the request would strand App Server.
             return TargetInteractionPresentationGate.WaitAsync(this, _remoteInteractionDialogs, requestId,
-                CanPresentTargetInteraction,
-                () => !_isExitRequested && !IsTargetExitPreparing && !_isRuntimeWindowTransitionInProgress && runtimeVersion == _subAgentRuntimeVersion);
+                () => !IsTargetExitPreparing && CanPresentTargetInteraction(),
+                () => !_isExitRequested && !_isRuntimeWindowTransitionInProgress && runtimeVersion == _subAgentRuntimeVersion);
         }
 
         private bool CanPresentTargetInteraction()

@@ -34,6 +34,54 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Test]
+        public void OpenModalEditorBlocksExitPreparationBeforeWindowsAreDisabled()
+        {
+            using (var fixture = new TargetFormFixture())
+            {
+                FormTestDriver.Invoke(fixture.Form, "CompleteTargetStartup");
+                if (FormTestDriver.Field<TargetWindowGroup>(fixture.Form, "_targetWindowGroup") == null)
+                    FormTestDriver.Invoke(fixture.Form, "InitializeTargetWindowGroup");
+                using (var editor = new Form { Text = "Unsaved editor", ShowInTaskbar = false })
+                {
+                    FormTestDriver.Field<TargetWindowGroup>(fixture.Form, "_targetWindowGroup").Register(editor);
+                    bool? ready = null;
+                    Exception error = null;
+                    editor.Shown += async (sender, args) =>
+                    {
+                        try { ready = await (Task<bool>)FormTestDriver.Invoke(fixture.Form, "PrepareTargetExitAsync", "modal-editor", false); }
+                        catch (Exception ex) { error = ex; }
+                        finally { editor.DialogResult = DialogResult.Cancel; }
+                    };
+                    editor.ShowDialog(fixture.Form);
+
+                    Assert.That(error, Is.Null);
+                    Assert.That(ready, Is.False);
+                    Assert.That((bool)FormTestDriver.Invoke(fixture.Form, "get_IsTargetExitPreparing"), Is.False);
+                    Assert.That(fixture.Form.Enabled, Is.True);
+                }
+            }
+        }
+
+        [Test]
+        public void CancellableExitPreparationPausesPendingInteractionInsteadOfDroppingIt()
+        {
+            using (var fixture = new TargetFormFixture())
+            {
+                FormTestDriver.Invoke(fixture.Form, "CompleteTargetStartup");
+                var preparation = new MyCodex.WinForms.Forms.TargetExitPreparation(operationId => new TaskCompletionSource<bool>().Task, freeze => { }, () => true);
+                FormTestDriver.SetField(fixture.Form, "_targetExitPreparation", preparation);
+                preparation.PrepareAsync("paused");
+
+                var wait = (Task<bool>)FormTestDriver.Invoke(fixture.Form, "WaitToPresentTargetInteractionAsync", "approval-1");
+                var deadline = DateTime.UtcNow.AddMilliseconds(500);
+                while (DateTime.UtcNow < deadline && !wait.IsCompleted) System.Windows.Forms.Application.DoEvents();
+
+                Assert.That(wait.IsCompleted, Is.False, "A cancellable exit must not discard the pending approval.");
+                preparation.Cancel("paused");
+            }
+        }
+
         [TestCase(false)]
         [TestCase(true)]
         public void ActiveDetachedResponseCanPrepareButDraftSaveFailureCancelsExit(bool recoveryPending)

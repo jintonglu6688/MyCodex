@@ -31,6 +31,7 @@ namespace MyCodex.WinForms.Forms
                 try { if (!ConfirmApplicationExit()) return false; }
                 finally { ResumeTargetInitialization(); }
             }
+            if (!IsTargetExitPreparing && HasBlockingTargetModal()) return RejectBusyTargetExit();
             if (_targetExitPreparation == null)
                 _targetExitPreparation = new TargetExitPreparation(PrepareTargetWindowsAndStateAsync, FreezeTargetEntryPoints, CommitPreparedTarget);
             try { return await _targetExitPreparation.PrepareAsync(operationId); }
@@ -42,21 +43,20 @@ namespace MyCodex.WinForms.Forms
             }
         }
 
+        private bool HasBlockingTargetModal() => _targetWindowGroup != null && _targetWindowGroup.HasBlockingModal(_targetManagerForm);
+
+        private bool RejectBusyTargetExit()
+        { SetHighPriorityStatus(UiLocalization.Text("MainForm.Exit.Busy", "Finish the active settings or file operation before exiting this target.")); return false; }
+
         private async Task<bool> PrepareTargetWindowsAndStateAsync(string operationId)
         {
             var forms = GetRuntimeWindowGroupForms();
-            var modal = _targetWindowGroup?.FindModal();
-            var knownExitDialog = modal is TargetExitAllForm || (modal != null && ReferenceEquals(modal, _targetManagerForm));
-            if ((modal != null && !knownExitDialog) ||
-                (_targetWindowGroup != null && _targetWindowGroup.HasNativeModal) ||
+            if (HasBlockingTargetModal() ||
                 forms.Any(form => !(form is AppServerFilePreviewForm) &&
                     form is IRuntimeTransitionWindow operation && operation.IsBusyForRuntimeTransition) ||
                 _sessionWorkbenches.Values.Any(form => form != null && form.HasPendingTargetOperation) ||
                 _subAgentWorkbenches.Values.Any(form => form != null && form.HasPendingTargetOperation))
-            {
-                SetHighPriorityStatus(UiLocalization.Text("MainForm.Exit.Busy", "Finish the active settings or file operation before exiting this target."));
-                return false;
-            }
+                return RejectBusyTargetExit();
             if ((_remoteCommandDispatcher != null && !_remoteCommandDispatcher.TryPauseForExit()) ||
                 (_automationRuntimeHost != null && !_automationRuntimeHost.TryPauseForExit()))
             {

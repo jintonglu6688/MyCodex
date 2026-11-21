@@ -88,6 +88,14 @@ namespace MyCodex.WinForms.Forms
 
         internal bool HasNativeModal => _nativeDialogs != null && _nativeDialogs.HasModal;
 
+        // A modal the user must finish (other than the exit-all dialog or the given owner) blocks target exit.
+        // Exit preparation disables every window, so callers must ask before freezing.
+        internal bool HasBlockingModal(Form exemptOwner)
+        {
+            var modal = FindModal();
+            return (modal != null && !(modal is TargetExitAllForm) && !ReferenceEquals(modal, exemptOwner)) || HasNativeModal;
+        }
+
         internal bool TryActivateModal()
         {
             if (_nativeDialogs != null && _nativeDialogs.TryActivateModal()) return true;
