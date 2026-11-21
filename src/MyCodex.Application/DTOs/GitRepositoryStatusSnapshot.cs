@@ -11,6 +11,9 @@ namespace MyCodex.Application.DTOs
 
         public string WorkspacePath { get; set; }
 
+        // Status paths are relative to this root, which differs from WorkspacePath when a subdirectory is opened.
+        public string RepositoryRootPath { get; set; }
+
         public bool IsGitRepository { get; set; }
 
         public bool CanInitializeRepository { get; set; }

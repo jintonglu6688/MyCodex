@@ -944,6 +944,71 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void DeleteUntracked_TreatsSelectedNameLiterallyAndKeepsWildcardNeighbors()
+        {
+            var workspaceRoot = CreateTempDirectory();
+            try
+            {
+                InitializeTestRepository(workspaceRoot);
+                var selectedPath = Path.Combine(workspaceRoot, "notes[1].txt");
+                var neighborPath = Path.Combine(workspaceRoot, "notes1.txt");
+                File.WriteAllText(selectedPath, "selected" + Environment.NewLine);
+                File.WriteAllText(neighborPath, "neighbor" + Environment.NewLine);
+
+                var result = CreateService().DeleteUntrackedAsync(workspaceRoot, new[] { "notes[1].txt" }).GetAwaiter().GetResult();
+
+                Assert.That(result.Success, Is.True);
+                Assert.That(File.Exists(selectedPath), Is.False);
+                Assert.That(File.ReadAllText(neighborPath), Is.EqualTo("neighbor" + Environment.NewLine));
+            }
+            finally
+            {
+                DeleteDirectory(workspaceRoot);
+            }
+        }
+
+        [Test]
+        public void PathOperations_FromSubdirectoryWorkspaceTargetRepositoryRelativeStatusPaths()
+        {
+            var workspaceRoot = CreateTempDirectory();
+            try
+            {
+                InitializeTestRepository(workspaceRoot);
+                var subdirectory = Path.Combine(workspaceRoot, "app");
+                Directory.CreateDirectory(subdirectory);
+                var rootFile = Path.Combine(workspaceRoot, "settings.json");
+                var nestedFile = Path.Combine(subdirectory, "settings.json");
+                File.WriteAllText(rootFile, "root" + Environment.NewLine);
+                File.WriteAllText(nestedFile, "nested" + Environment.NewLine);
+                RunGit(workspaceRoot, "add --all");
+                RunGit(workspaceRoot, "commit -m \"Initial commit\"");
+                File.WriteAllText(rootFile, "root changed" + Environment.NewLine);
+                File.WriteAllText(nestedFile, "nested changed" + Environment.NewLine);
+                File.WriteAllText(Path.Combine(workspaceRoot, "untracked.txt"), "new" + Environment.NewLine);
+
+                var service = CreateService();
+                var snapshot = service.ReadStatusAsync(subdirectory).GetAwaiter().GetResult();
+                var rootEntry = snapshot.Files.Single(file => file.FilePath == "settings.json");
+                var untrackedEntry = snapshot.Files.Single(file => file.FilePath == "untracked.txt");
+
+                var diff = service.ReadDiffAsync(subdirectory, rootEntry).GetAwaiter().GetResult();
+                var untrackedDiff = service.ReadDiffAsync(subdirectory, untrackedEntry).GetAwaiter().GetResult();
+                var discard = service.DiscardUnstagedAsync(subdirectory, new[] { rootEntry.FilePath }).GetAwaiter().GetResult();
+
+                Assert.That(Path.GetFullPath(snapshot.RepositoryRootPath), Is.EqualTo(Path.GetFullPath(workspaceRoot)).IgnoreCase);
+                Assert.That(diff.StandardOutput, Does.Contain("+root changed"));
+                Assert.That(untrackedDiff.StandardOutput, Does.Contain("+new"));
+                Assert.That(discard.Success, Is.True);
+                Assert.That(File.ReadAllText(rootFile), Is.EqualTo("root" + Environment.NewLine));
+                Assert.That(File.ReadAllText(nestedFile), Is.EqualTo("nested changed" + Environment.NewLine));
+            }
+            finally
+            {
+                DeleteDirectory(workspaceRoot);
+            }
+        }
+
+        [Test]
         public void Push_PushesCurrentBranchToUpstream()
         {
             var remoteRoot = CreateTempDirectory();
@@ -1446,7 +1511,7 @@ namespace MyCodex.Application.Tests
                 item.IsUntracked &&
                 string.Equals(item.FilePath, "src/app file.txt", StringComparison.Ordinal)), Is.True);
             Assert.That(stageResult.Success, Is.True);
-            CollectionAssert.AreEqual(new[] { "add", "--", "src/app file.txt" }, runner.LastArguments);
+            CollectionAssert.AreEqual(new[] { "add", "--", ":(top,literal)src/app file.txt" }, runner.LastArguments);
         }
 
         [Test]
@@ -1478,7 +1543,7 @@ namespace MyCodex.Application.Tests
             var result = service.DeleteUntrackedAsync("/home/user/repo", new[] { "src/app file.txt" }).GetAwaiter().GetResult();
 
             Assert.That(result.Success, Is.True);
-            CollectionAssert.AreEqual(new[] { "clean", "-f", "--", "src/app file.txt" }, runner.LastArguments);
+            CollectionAssert.AreEqual(new[] { "clean", "-f", "--", ":(top,literal)src/app file.txt" }, runner.LastArguments);
         }
 
         [Test]
@@ -1656,7 +1721,7 @@ namespace MyCodex.Application.Tests
             var result = service.MarkConflictsResolvedAsync("/home/user/repo", new[] { "conflict.txt" }).GetAwaiter().GetResult();
 
             Assert.That(result.Success, Is.True);
-            CollectionAssert.AreEqual(new[] { "add", "--", "conflict.txt" }, runner.LastArguments);
+            CollectionAssert.AreEqual(new[] { "add", "--", ":(top,literal)conflict.txt" }, runner.LastArguments);
         }
 
         [Test]
@@ -2081,7 +2146,7 @@ namespace MyCodex.Application.Tests
 
             Assert.That(result.Success, Is.True);
             CollectionAssert.AreEqual(
-                new[] { "diff", "--no-ext-diff", "--binary", "stash@{0}^1", "stash@{0}", "--", "src/app.cs" },
+                new[] { "diff", "--no-ext-diff", "--binary", "stash@{0}^1", "stash@{0}", "--", ":(top,literal)src/app.cs" },
                 runner.LastArguments);
         }
 
@@ -2151,7 +2216,7 @@ namespace MyCodex.Application.Tests
             Assert.That(result.Success, Is.True);
             Assert.That(result.StandardOutput, Does.Contain("diff --cc"));
             CollectionAssert.AreEqual(
-                new[] { "diff", "--cc", "--no-ext-diff", "--", "src/app.cs" },
+                new[] { "diff", "--cc", "--no-ext-diff", "--", ":(top,literal)src/app.cs" },
                 runner.LastArguments);
         }
 
@@ -2204,7 +2269,7 @@ namespace MyCodex.Application.Tests
 
             Assert.That(result.Success, Is.True);
             CollectionAssert.AreEqual(
-                new[] { "diff", "--cached", "--no-ext-diff", "--binary", "--", "src/app.cs" },
+                new[] { "diff", "--cached", "--no-ext-diff", "--binary", "--", ":(top,literal)src/app.cs" },
                 runner.LastArguments);
         }
 
@@ -2223,7 +2288,7 @@ namespace MyCodex.Application.Tests
 
             Assert.That(result.Success, Is.True);
             CollectionAssert.AreEqual(
-                new[] { "diff", "--no-ext-diff", "--binary", "--", "src/app.cs" },
+                new[] { "diff", "--no-ext-diff", "--binary", "--", ":(top,literal)src/app.cs" },
                 runner.LastArguments);
         }
 
@@ -2330,7 +2395,7 @@ namespace MyCodex.Application.Tests
 
             var pushPathsResult = service.StashPushPathsAsync("/home/user/repo", "selected work", false, new[] { "src/app file.txt" }).GetAwaiter().GetResult();
             Assert.That(pushPathsResult.Success, Is.True);
-            CollectionAssert.AreEqual(new[] { "stash", "push", "-m", "selected work", "--", "src/app file.txt" }, runner.LastArguments);
+            CollectionAssert.AreEqual(new[] { "stash", "push", "-m", "selected work", "--", ":(top,literal)src/app file.txt" }, runner.LastArguments);
 
             var branchResult = service.StashBranchAsync("/home/user/repo", "stash@{0}", "feature/stash").GetAwaiter().GetResult();
             Assert.That(branchResult.Success, Is.True);

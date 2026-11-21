@@ -826,6 +826,12 @@ namespace MyCodex.Application.Services
 
             if (_readExtendedStatusDetails)
             {
+                // Only local Windows workbenches open files from disk; remote targets skip the extra round trip.
+                if (_normalizeWorkspacePath == null && !WorkspacePathUtilities.LooksLikeUnixAbsolutePath(normalizedPath))
+                {
+                    snapshot.RepositoryRootPath = ReadOptionalValue(normalizedPath, Args("rev-parse", "--show-toplevel"));
+                }
+
                 PopulateStatusLineStats(normalizedPath, snapshot);
                 snapshot.HeadSha = ReadOptionalValue(normalizedPath, Args("rev-parse", "--short", "HEAD"));
                 if (string.IsNullOrWhiteSpace(snapshot.Branch) && !string.IsNullOrWhiteSpace(snapshot.HeadSha))
@@ -1450,7 +1456,7 @@ namespace MyCodex.Application.Services
             var normalizedStashRef = NormalizeStashRef(stashRef);
             var result = RunCommand(
                 normalizedPath,
-                Args("diff", "--no-ext-diff", "--binary", normalizedStashRef + "^1", normalizedStashRef, "--", filePath.Trim()),
+                Args("diff", "--no-ext-diff", "--binary", normalizedStashRef + "^1", normalizedStashRef, "--", ToRepositoryPathspec(filePath.Trim())),
                 20000);
             return new GitOperationResult
             {
@@ -1949,8 +1955,8 @@ namespace MyCodex.Application.Services
 
             var resolvedDiffKind = ResolveDiffKind(entry, diffKind);
             var arguments = resolvedDiffKind == GitDiffKind.Staged && !entry.IsConflicted
-                ? Args("diff", "--cached", "--no-ext-diff", "--binary", "--", entry.FilePath)
-                : Args("diff", "--no-ext-diff", "--binary", "--", entry.FilePath);
+                ? Args("diff", "--cached", "--no-ext-diff", "--binary", "--", ToRepositoryPathspec(entry.FilePath))
+                : Args("diff", "--no-ext-diff", "--binary", "--", ToRepositoryPathspec(entry.FilePath));
             var result = RunCommand(normalizedPath, arguments, 20000);
             return new GitOperationResult
             {
@@ -2085,9 +2091,11 @@ namespace MyCodex.Application.Services
 
         private GitOperationResult ReadUntrackedDiff(string workspacePath, GitChangedFileEntry entry)
         {
+            // --no-index takes file system paths, not pathspecs, so prefix the way back to the repository root.
+            var rootPrefix = ReadOptionalValue(workspacePath, Args("rev-parse", "--show-cdup")) ?? string.Empty;
             var result = RunCommand(
                 workspacePath,
-                Args("diff", "--no-index", "--", "/dev/null", entry.FilePath),
+                Args("diff", "--no-index", "--", "/dev/null", rootPrefix + entry.FilePath),
                 20000);
             var output = (result.StandardOutput ?? string.Empty).Trim();
             var success = result.Success || (result.ExitCode == 1 && !string.IsNullOrWhiteSpace(output));
@@ -2134,7 +2142,7 @@ namespace MyCodex.Application.Services
             var normalizedPath = NormalizeExistingWorkspacePath(workspacePath);
             var result = RunCommand(
                 normalizedPath,
-                Args("diff", "--cc", "--no-ext-diff", "--", entry.FilePath),
+                Args("diff", "--cc", "--no-ext-diff", "--", ToRepositoryPathspec(entry.FilePath)),
                 20000);
             var output = result.Success ? (result.StandardOutput ?? string.Empty).Trim() : result.StandardOutput;
             if (result.Success && string.IsNullOrWhiteSpace(output))
@@ -2262,7 +2270,7 @@ namespace MyCodex.Application.Services
             var normalizedPath = NormalizeExistingWorkspacePath(workspacePath);
             var pathArguments = paths
                 .Where(path => !string.IsNullOrWhiteSpace(path))
-                .Select(path => path.Trim())
+                .Select(path => ToRepositoryPathspec(path.Trim()))
                 .ToArray();
             if (pathArguments.Length == 0)
             {
@@ -2697,6 +2705,13 @@ namespace MyCodex.Application.Services
         private static string[] Args(params string[] arguments)
         {
             return arguments ?? new string[0];
+        }
+
+        // Status reports paths relative to the repository root, and Git would otherwise expand
+        // wildcards such as "[1]" in a selected name; "top,literal" targets exactly that one path.
+        private static string ToRepositoryPathspec(string repositoryRelativePath)
+        {
+            return ":(top,literal)" + repositoryRelativePath;
         }
 
         private static IReadOnlyList<string> BuildCommitArguments(bool amend, string subject, string body)

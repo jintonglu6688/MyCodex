@@ -2416,9 +2416,10 @@ namespace MyCodex.WinForms.Forms
                 return null;
             }
 
+            var repositoryRoot = _currentStatus == null ? null : TextValueHelper.TrimToNull(_currentStatus.RepositoryRootPath);
             return Path.IsPathRooted(relativePath)
                 ? relativePath
-                : Path.GetFullPath(Path.Combine(_workspacePath, relativePath));
+                : Path.GetFullPath(Path.Combine(repositoryRoot ?? _workspacePath, relativePath));
         }
 
         private GitChangedFileEntry GetSelectedEntry()
