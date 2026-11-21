@@ -7,6 +7,18 @@ namespace MyCodex.Domain.Entities
     [DataContract]
     public class AppConfigSnapshot
     {
+        // DataContractJsonSerializer skips property initializers, so a field missing from an older file would
+        // read as false; on-by-default switches are set here before the stored values are applied.
+        [OnDeserializing]
+        private void SetOnByDefaultSwitches(StreamingContext context)
+        {
+            OfficeShowActivityPane = true;
+            ShowCommandOutput = true;
+            ShowUnavailableWorkspaces = true;
+            SendMessageSoundEnabled = true;
+            CloseSessionWorkbenchOnEscape = true;
+        }
+
         // Null preserves browser integration configured before the master switch existed.
         [DataMember(EmitDefaultValue = false)]
         public bool? BrowserControlEnabled { get; set; }

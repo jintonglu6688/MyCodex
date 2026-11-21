@@ -12,6 +12,23 @@ namespace MyCodex.Application.Tests
     public sealed class AppConfigSnapshotLegacyDataTests
     {
         [Test]
+        public void MissingOnByDefaultSwitches_StayOnWhileStoredValuesWin()
+        {
+            var serializer = new DataContractJsonSerializer(typeof(AppConfigSnapshot));
+            AppConfigSnapshot snapshot;
+            using (var input = new MemoryStream(Encoding.UTF8.GetBytes("{\"ShowCommandOutput\":false}")))
+            {
+                snapshot = (AppConfigSnapshot)serializer.ReadObject(input);
+            }
+
+            Assert.That(snapshot.ShowCommandOutput, Is.False);
+            Assert.That(snapshot.OfficeShowActivityPane, Is.True);
+            Assert.That(snapshot.ShowUnavailableWorkspaces, Is.True);
+            Assert.That(snapshot.SendMessageSoundEnabled, Is.True);
+            Assert.That(snapshot.CloseSessionWorkbenchOnEscape, Is.True);
+        }
+
+        [Test]
         public void LegacyModelDefaults_RoundTripWithoutBecomingPublicAuthority()
         {
             const string json = "{\"DefaultModelId\":\"retired-model\",\"DefaultReasoningEffort\":\"retired-effort\"}";
