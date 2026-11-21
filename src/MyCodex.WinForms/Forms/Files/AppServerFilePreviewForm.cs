@@ -61,6 +61,8 @@ namespace MyCodex.WinForms.Forms
         {
             _path = path ?? string.Empty;
             _saveAsync = saveAsync;
+            _confirmDiscardChanges = ConfirmDiscardChanges;
+            _confirmCloseChanges = ConfirmCloseChanges;
             var decodedText = DecodePreviewText(dataBase64, out _canEdit);
             InitializePreviewUi(_path, decodedText, _canEdit);
         }
@@ -482,7 +484,7 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
-            _editor.ReadOnly = !_canEdit || _isLoading || _targetExitPreparing || _targetExitPrepared;
+            _editor.ReadOnly = !_canEdit || _saveAsync == null || _isLoading || _targetExitPreparing || _targetExitPrepared;
             _reloadButton.Enabled = !_targetExitPreparing && !_targetExitPrepared && !_isLoading && (_hasExternalChange || _isDirty) && _loadTextAsync != null;
             _saveButton.Enabled = !_targetExitPreparing && !_targetExitPrepared && !_isLoading && _canEdit && _saveAsync != null && (!_hasExternalChange || !_isDirty);
         }

@@ -42,6 +42,22 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void SnapshotPreview_HasCloseConfirmationAndStaysReadOnlyWithoutSave()
+        {
+            var snapshot = Convert.ToBase64String(Encoding.UTF8.GetBytes("snapshot"));
+            using (var editable = AppServerFilePreviewForm.CreateForTests("snap.txt", snapshot, data => Task.CompletedTask))
+            {
+                Assert.That(FormTestDriver.Field<Func<AppServerFilePreviewCloseChoice>>(editable, "_confirmCloseChanges"), Is.Not.Null);
+            }
+
+            using (var readOnly = AppServerFilePreviewForm.CreateForTests("snap.txt", snapshot))
+            {
+                FormTestDriver.Invoke(readOnly, "RefreshPreviewState");
+                Assert.That(readOnly.ContentReadOnlyForTests, Is.True);
+            }
+        }
+
+        [Test]
         public void FromNonUtf8Text_IsReadOnlySoSavingCannotReplaceCharacters()
         {
             var gbkBytes = new byte[] { 0xC4, 0xE3, 0xBA, 0xC3 };
