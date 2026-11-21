@@ -15,7 +15,11 @@ $executableSha256 = '858bf3fbbf01c9a08c7b15e4b52d659f60e277714546b868010034ed64c
 $sourceRevision = 'e120f4dd61c339763bb33b53105c9e182d679ea4'
 . (Join-Path $PSScriptRoot 'Test-AuthenticationHostPackage.ps1')
 
-if (Test-Path -LiteralPath (Join-Path $destination 'mycodex-auth-host.manifest.json') -PathType Leaf) {
+$existingExecutable = Join-Path $destination 'mycodex-auth-host.exe'
+# Test-AuthenticationHostPackage runs the executable; only a copy of the pinned build may run.
+if ((Test-Path -LiteralPath (Join-Path $destination 'mycodex-auth-host.manifest.json') -PathType Leaf) -and
+    (Test-Path -LiteralPath $existingExecutable -PathType Leaf) -and
+    (Get-FileHash -LiteralPath $existingExecutable -Algorithm SHA256).Hash -ieq $executableSha256) {
     try {
         $existing = Test-AuthenticationHostPackage -PackageRoot $destination
         if ($existing.sha256 -ceq $executableSha256 -and $existing.sourceRevision -ceq $sourceRevision) {

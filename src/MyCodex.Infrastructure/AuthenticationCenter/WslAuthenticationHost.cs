@@ -22,7 +22,9 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             "exec \"$host\" --paths-json";
         private const string ManifestScript =
             "set -eu\n" +
+            "[ -n \"${HOME:-}\" ] || exit 12\n" +
             "host=\"$HOME/.local/share/MyCodex/auth-core/bin/mycodex-auth-host\"\n" +
+            "[ -x \"$host\" ] || exit 11\n" +
             "uname -m\n" +
             "sha256sum \"$host\" | cut -c1-64\n" +
             "cat \"$HOME/.local/share/MyCodex/auth-core/bin/mycodex-auth-host.manifest.json\"";
@@ -97,7 +99,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             {
                 try
                 {
-                    await ResolveAsync(cancellationToken).ConfigureAwait(false);
+                    await ResolveAsync(cancellationToken, true).ConfigureAwait(false);
                     return;
                 }
                 catch (AuthenticationCenterException error) when (error.Code == "backend_update_available") { }
@@ -175,19 +177,41 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             throw new AuthenticationCenterException("backend_update_unsafe");
         }
 
-        private async Task ResolveAsync(CancellationToken cancellationToken)
+        private async Task ResolveAsync(CancellationToken cancellationToken, bool allowOutdatedHost = false)
         {
-            var paths = await _executor.ExecuteAsync(_config,
-                ResolveScript, "mycodex-auth-paths", 20000,
+            // Check the installed host against the pinned release before running it at all.
+            var serializer = new JavaScriptSerializer { MaxJsonLength = 1048576 };
+            var package = await _executor.ExecuteAsync(_config,
+                ManifestScript, "mycodex-auth-package", 20000,
                 cancellationToken).ConfigureAwait(false);
-            if (paths.ExitCode == 11)
+            if (package.ExitCode == 11)
             {
                 var release = await AuthenticationHostDeployment.ProbeWslAsync(_config, _executor, cancellationToken).ConfigureAwait(false);
                 await AuthenticationHostDeployment.InstallWslAsync(_config, release, false, cancellationToken).ConfigureAwait(false);
-                paths = await _executor.ExecuteAsync(_config, ResolveScript, "mycodex-auth-paths", 20000,
+                package = await _executor.ExecuteAsync(_config, ManifestScript, "mycodex-auth-package", 20000,
                     cancellationToken).ConfigureAwait(false);
             }
-            var serializer = new JavaScriptSerializer { MaxJsonLength = 1048576 };
+            if (package.ExitCode != 0)
+            {
+                throw new AuthenticationCenterException(package.ExitCode == 11 ? "wsl_backend_missing" :
+                    package.ExitCode == 12 ? LocalAuthenticationHost.ReadErrorCode(serializer, package.StandardError) : "backend_manifest_missing");
+            }
+            var lines = (package.StandardOutput ?? string.Empty).Split(new[] { '\n' }, 3);
+            if (lines.Length != 3) throw new AuthenticationCenterException("backend_manifest_invalid");
+            var releaseArchive = AuthenticationHostRelease.ForTarget("Linux", lines[0].Trim());
+            var outdated = false;
+            try { _artifact = AuthenticationHostArtifact.LoadTarget(lines[2], lines[1].Trim(), releaseArchive.Target); }
+            catch (AuthenticationCenterException error) when (error.Code == "backend_incompatible")
+            {
+                _artifact = AuthenticationHostArtifact.LoadTargetForUpdate(lines[2], lines[1].Trim(), releaseArchive.Target);
+                outdated = true;
+            }
+            outdated = outdated || !AuthenticationHostRelease.IsInstalledRelease(lines[2], lines[1].Trim(), releaseArchive);
+            // A host that is not the pinned release runs only during an update, to shut it down.
+            if (outdated && !allowOutdatedHost) throw new AuthenticationCenterException("backend_update_available");
+            var paths = await _executor.ExecuteAsync(_config,
+                ResolveScript, "mycodex-auth-paths", 20000,
+                cancellationToken).ConfigureAwait(false);
             if (paths.ExitCode != 0)
             {
                 throw new AuthenticationCenterException(paths.ExitCode == 11 ? "wsl_backend_missing" :
@@ -200,24 +224,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             {
                 throw new AuthenticationCenterException("invalid_response");
             }
-            var package = await _executor.ExecuteAsync(_config,
-                ManifestScript, "mycodex-auth-package", 20000,
-                cancellationToken).ConfigureAwait(false);
-            if (package.ExitCode != 0)
-            {
-                throw new AuthenticationCenterException("backend_manifest_missing");
-            }
-            var lines = (package.StandardOutput ?? string.Empty).Split(new[] { '\n' }, 3);
-            if (lines.Length != 3) throw new AuthenticationCenterException("backend_manifest_invalid");
-            var releaseArchive = AuthenticationHostRelease.ForTarget("Linux", lines[0].Trim());
-            try { _artifact = AuthenticationHostArtifact.LoadTarget(lines[2], lines[1].Trim(), releaseArchive.Target); }
-            catch (AuthenticationCenterException error) when (error.Code == "backend_incompatible")
-            {
-                _artifact = AuthenticationHostArtifact.LoadTargetForUpdate(lines[2], lines[1].Trim(), releaseArchive.Target);
-                throw new AuthenticationCenterException("backend_update_available");
-            }
-            if (!AuthenticationHostRelease.IsInstalledRelease(lines[2], lines[1].Trim(), releaseArchive))
-                throw new AuthenticationCenterException("backend_update_available");
+            if (outdated) throw new AuthenticationCenterException("backend_update_available");
             await PrepareDataDirectoryAsync(cancellationToken).ConfigureAwait(false);
         }
 

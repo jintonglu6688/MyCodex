@@ -19,7 +19,9 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             "exec \"$host\" --paths-json";
         private const string ManifestScript =
             "set -eu\n" +
+            "[ -n \"${HOME:-}\" ] || exit 12\n" +
             "host=\"$HOME/.local/share/MyCodex/auth-core/bin/mycodex-auth-host\"\n" +
+            "[ -x \"$host\" ] || exit 11\n" +
             "uname -s\n" +
             "uname -m\n" +
             "if command -v sha256sum >/dev/null 2>&1; then sha256sum \"$host\" | cut -c1-64; " +
@@ -114,7 +116,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             {
                 try
                 {
-                    await ResolveAsync(cancellationToken).ConfigureAwait(false);
+                    await ResolveAsync(cancellationToken, true).ConfigureAwait(false);
                     return;
                 }
                 catch (AuthenticationCenterException error) when (error.Code == "backend_update_available") { }
@@ -192,19 +194,42 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             throw new AuthenticationCenterException("backend_update_unsafe");
         }
 
-        private async Task ResolveAsync(CancellationToken cancellationToken)
+        private async Task ResolveAsync(CancellationToken cancellationToken, bool allowOutdatedHost = false)
         {
+            // Check the installed host against the pinned release before running it at all.
             var serializer = new JavaScriptSerializer { MaxJsonLength = 1048576 };
-            var paths = await _executor.ExecuteAsync(_config,
-                ResolveScript,
-                "mycodex-auth-paths", 30000, cancellationToken).ConfigureAwait(false);
-            if (paths.ExitCode == 11)
+            var package = await _executor.ExecuteAsync(_config,
+                ManifestScript,
+                "mycodex-auth-package", 30000, cancellationToken).ConfigureAwait(false);
+            if (package.ExitCode == 11)
             {
                 var release = await AuthenticationHostDeployment.ProbeRemoteAsync(_config, _executor, cancellationToken).ConfigureAwait(false);
                 await AuthenticationHostDeployment.InstallRemoteAsync(_config, _executor, release, false, cancellationToken).ConfigureAwait(false);
-                paths = await _executor.ExecuteAsync(_config, ResolveScript,
-                    "mycodex-auth-paths", 30000, cancellationToken).ConfigureAwait(false);
+                package = await _executor.ExecuteAsync(_config, ManifestScript,
+                    "mycodex-auth-package", 30000, cancellationToken).ConfigureAwait(false);
             }
+            if (package.ExitCode != 0)
+            {
+                throw new AuthenticationCenterException(package.ExitCode == 11 ? "remote_backend_missing" :
+                    package.ExitCode == 12 ? LocalAuthenticationHost.ReadErrorCode(serializer, package.StandardError) : "backend_manifest_missing");
+            }
+            var lines = (package.StandardOutput ?? string.Empty).Split(new[] { '\n' }, 4);
+            if (lines.Length != 4) throw new AuthenticationCenterException("backend_manifest_invalid");
+            var expectedTarget = TargetTriple(lines[0].Trim(), lines[1].Trim());
+            var outdated = false;
+            try { _artifact = AuthenticationHostArtifact.LoadTarget(lines[3], lines[2].Trim(), expectedTarget); }
+            catch (AuthenticationCenterException error) when (error.Code == "backend_incompatible")
+            {
+                _artifact = AuthenticationHostArtifact.LoadTargetForUpdate(lines[3], lines[2].Trim(), expectedTarget);
+                outdated = true;
+            }
+            var releaseArchive = AuthenticationHostRelease.ForTarget(lines[0].Trim(), lines[1].Trim());
+            outdated = outdated || !AuthenticationHostRelease.IsInstalledRelease(lines[3], lines[2].Trim(), releaseArchive);
+            // A host that is not the pinned release runs only during an update, to shut it down.
+            if (outdated && !allowOutdatedHost) throw new AuthenticationCenterException("backend_update_available");
+            var paths = await _executor.ExecuteAsync(_config,
+                ResolveScript,
+                "mycodex-auth-paths", 30000, cancellationToken).ConfigureAwait(false);
             if (paths.ExitCode != 0)
             {
                 throw new AuthenticationCenterException(paths.ExitCode == 11 ? "remote_backend_missing" :
@@ -217,25 +242,7 @@ namespace MyCodex.Infrastructure.AuthenticationCenter
             {
                 throw new AuthenticationCenterException("invalid_response");
             }
-            var package = await _executor.ExecuteAsync(_config,
-                ManifestScript,
-                "mycodex-auth-package", 30000, cancellationToken).ConfigureAwait(false);
-            if (package.ExitCode != 0)
-            {
-                throw new AuthenticationCenterException("backend_manifest_missing");
-            }
-            var lines = (package.StandardOutput ?? string.Empty).Split(new[] { '\n' }, 4);
-            if (lines.Length != 4) throw new AuthenticationCenterException("backend_manifest_invalid");
-            var expectedTarget = TargetTriple(lines[0].Trim(), lines[1].Trim());
-            try { _artifact = AuthenticationHostArtifact.LoadTarget(lines[3], lines[2].Trim(), expectedTarget); }
-            catch (AuthenticationCenterException error) when (error.Code == "backend_incompatible")
-            {
-                _artifact = AuthenticationHostArtifact.LoadTargetForUpdate(lines[3], lines[2].Trim(), expectedTarget);
-                throw new AuthenticationCenterException("backend_update_available");
-            }
-            var releaseArchive = AuthenticationHostRelease.ForTarget(lines[0].Trim(), lines[1].Trim());
-            if (!AuthenticationHostRelease.IsInstalledRelease(lines[3], lines[2].Trim(), releaseArchive))
-                throw new AuthenticationCenterException("backend_update_available");
+            if (outdated) throw new AuthenticationCenterException("backend_update_available");
             await PrepareDataDirectoryAsync(cancellationToken).ConfigureAwait(false);
         }
 
