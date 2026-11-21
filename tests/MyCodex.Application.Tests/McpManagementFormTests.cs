@@ -25,6 +25,35 @@ namespace MyCodex.Application.Tests
     {
         [Test]
         [Apartment(ApartmentState.STA)]
+        public void SavingServerSettings_KeepsInheritedEnvironmentVariableNames()
+        {
+            var server = new AppServerMcpServerStatus
+            {
+                ServerName = "docs",
+                ConfigValues = new Dictionary<string, object>
+                {
+                    { "command", "node" },
+                    { "env_vars", new object[] { "HOME", "PATH" } }
+                }
+            };
+            using (var form = new McpServerSettingsForm(server))
+            {
+                FormTestDriver.Field<TextBox>(form, "_workingDirectoryTextBox").Text = "C:\\work";
+                FormTestDriver.Invoke(form, "SaveButton_Click", null, EventArgs.Empty);
+
+                Assert.That(form.EditedConfig["env_vars"], Is.EqualTo(new object[] { "HOME", "PATH" }));
+                Assert.That(form.EditedConfig.ContainsKey("env"), Is.False);
+                Assert.That(form.EditedConfig["cwd"], Is.EqualTo("C:\\work"));
+
+                var buildEdits = typeof(McpManagementForm).GetMethod("BuildServerSettingEdits", BindingFlags.NonPublic | BindingFlags.Static);
+                var edits = (IReadOnlyCollection<AppServerConfigWriteEdit>)buildEdits.Invoke(null, new object[] { "docs", form.EditedConfig });
+                var envVarsEdit = System.Linq.Enumerable.Single(edits, edit => edit.KeyPath.EndsWith(".env_vars", StringComparison.Ordinal));
+                Assert.That(envVarsEdit.Value, Is.EqualTo(new object[] { "HOME", "PATH" }), "Writing the server back must not delete env_vars.");
+            }
+        }
+
+        [Test]
+        [Apartment(ApartmentState.STA)]
         public void NativeMcpMutationsUseCoreAndImportIsAnExplicitKeyboardAction()
         {
             WithCulture("en-US", () =>

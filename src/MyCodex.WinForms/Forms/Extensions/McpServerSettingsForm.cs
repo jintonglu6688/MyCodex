@@ -367,19 +367,17 @@ namespace MyCodex.WinForms.Forms
 
                 if (envValues != null && envValues.Count > 0)
                 {
-                    if (config.ContainsKey("env_vars") && !config.ContainsKey("env"))
-                    {
-                        config["env_vars"] = envValues;
-                    }
-                    else
-                    {
-                        config["env"] = envValues;
-                        config.Remove("env_vars");
-                    }
+                    config["env"] = envValues;
                 }
                 else
                 {
                     config.Remove("env");
+                }
+
+                // env_vars names inherited variables and is not edited here; only an old dictionary
+                // form (shown above as env) is folded into env.
+                if (JsonValueReader.GetValue(config, "env_vars") is IDictionary<string, object>)
+                {
                     config.Remove("env_vars");
                 }
 

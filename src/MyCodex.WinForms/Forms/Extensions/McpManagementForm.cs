@@ -1508,7 +1508,7 @@ namespace MyCodex.WinForms.Forms
             edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "cwd"), JsonValueReader.GetString(config, "cwd")));
             edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "args"), GetArrayValue(config, "args")));
             edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "env"), GetDictionaryValue(config, "env")));
-            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "env_vars"), GetDictionaryValue(config, "env_vars")));
+            edits.Add(AppServerConfigWriteEdit.CreateReplace(BuildServerConfigFieldKeyPath(serverName, "env_vars"), (object)GetDictionaryValue(config, "env_vars") ?? GetArrayValue(config, "env_vars")));
 
             if (config != null)
             {
