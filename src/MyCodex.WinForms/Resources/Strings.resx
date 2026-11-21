@@ -10898,6 +10898,9 @@ Describe what should be checked before considering work complete.</value>
   <data name="AppServerFileBrowserForm.Status.Created" xml:space="preserve">
     <value>Item created.</value>
   </data>
+  <data name="AppServerFileBrowserForm.Error.ItemAlreadyExists" xml:space="preserve">
+    <value>An item with this name already exists. Choose another name.</value>
+  </data>
   <data name="AppServerFileBrowserForm.Status.Deleted" xml:space="preserve">
     <value>Item deleted.</value>
   </data>

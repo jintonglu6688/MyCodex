@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
 using MyCodex.Application.Tests.SourceGuards;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Enums;
 using MyCodex.Shared.Constants;
 using MyCodex.WinForms.Forms;
@@ -872,6 +873,62 @@ namespace MyCodex.Application.Tests
                 Assert.That(client.WrittenFiles.Single().Path, Is.EqualTo(@"E:\Repo\notes.md"));
                 Assert.That(client.WrittenFiles.Single().Data, Is.Empty);
                 Assert.That(form.FocusedItemTextForTests, Is.EqualTo("notes.md"));
+            }
+        }
+
+        [Test]
+        public async Task CreateFile_LeavesExistingFileUntouchedAndFocusesIt()
+        {
+            var client = new FakeAppServerFilesClient();
+            client.Directories[@"E:\Repo"] = new List<AppServerFileSystemEntry>
+            {
+                new AppServerFileSystemEntry { FileName = "Notes.md", IsFile = true },
+                new AppServerFileSystemEntry { FileName = "other.md", IsFile = true }
+            };
+
+            using (var form = new AppServerFileBrowserForm(
+                client,
+                @"E:\Repo",
+                paths => Task.CompletedTask,
+                message => { }))
+            {
+                await form.LoadCurrentPathForTestsAsync();
+                await form.CreateFileForTestsAsync("notes.md");
+
+                Assert.That(client.WrittenFiles, Is.Empty);
+                Assert.That(form.FocusedItemTextForTests, Is.EqualTo("Notes.md"));
+                Assert.That(
+                    FormTestDriver.Field<Label>(form, "_statusLabel").Text,
+                    Is.EqualTo(UiLocalization.Text("AppServerFileBrowserForm.Error.ItemAlreadyExists", "An item with this name already exists. Choose another name.")));
+            }
+        }
+
+        [Test]
+        public async Task DeleteSelected_InEmptyDirectoryDoesNotReusePreviousDirectorySelection()
+        {
+            var client = new FakeAppServerFilesClient();
+            client.Directories[@"E:\Repo"] = new List<AppServerFileSystemEntry>
+            {
+                new AppServerFileSystemEntry { FileName = "keep.txt", IsFile = true }
+            };
+            client.Directories[@"E:\Repo\empty"] = new List<AppServerFileSystemEntry>();
+
+            using (var form = new AppServerFileBrowserForm(
+                client,
+                @"E:\Repo",
+                paths => Task.CompletedTask,
+                null,
+                message => { },
+                paths => true))
+            {
+                await form.LoadCurrentPathForTestsAsync();
+                Assert.That(form.FocusedItemTextForTests, Is.EqualTo("keep.txt"));
+
+                await form.LoadPathForTestsAsync(@"E:\Repo\empty");
+                await form.DeleteSelectedForTestsAsync();
+
+                Assert.That(client.RemovedPaths, Is.Empty);
+                Assert.That(form.FocusedItemTextForTests, Is.Null);
             }
         }
 

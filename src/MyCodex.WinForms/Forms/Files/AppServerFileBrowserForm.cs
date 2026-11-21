@@ -706,6 +706,8 @@ namespace MyCodex.WinForms.Forms
 
             if (itemToFocus == null)
             {
+                // Commands fall back to this entry, so it must not outlive the list it came from.
+                _lastFocusedEntry = null;
                 return;
             }
 
@@ -1081,11 +1083,26 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
-            var targetPath = CombineChildPath(_currentPath, name);
+            var directoryPath = _currentPath;
+            var targetPath = CombineChildPath(directoryPath, name);
             await RunOperationAsync(
                 targetPath,
-                () => _client.WriteFileAsync(targetPath, new byte[0]),
-                UiLocalization.Text("AppServerFileBrowserForm.Status.Created", "Item created."));
+                async () =>
+                {
+                    // The write below overwrites, so an existing file would be emptied instead of created.
+                    // Leave it untouched; the refresh then focuses the existing item.
+                    var existing = await _client.ReadDirectoryAsync(directoryPath);
+                    if ((existing ?? new List<AppServerFileSystemEntry>()).Any(entry =>
+                            entry != null && string.Equals(entry.FileName, ExtractName(targetPath), StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return UiLocalization.Text(
+                            "AppServerFileBrowserForm.Error.ItemAlreadyExists",
+                            "An item with this name already exists. Choose another name.");
+                    }
+
+                    await _client.WriteFileAsync(targetPath, new byte[0]);
+                    return UiLocalization.Text("AppServerFileBrowserForm.Status.Created", "Item created.");
+                });
         }
 
         private async Task DeleteSelectedAsync()
@@ -1129,20 +1146,26 @@ namespace MyCodex.WinForms.Forms
             }
         }
 
-        private async Task RunOperationAsync(string childToFocusPath, Func<Task> operationAsync, string successMessage)
+        private Task RunOperationAsync(string childToFocusPath, Func<Task> operationAsync, string successMessage)
         {
-            if (operationAsync == null)
-            {
-                return;
-            }
+            return operationAsync == null
+                ? Task.CompletedTask
+                : RunOperationAsync(childToFocusPath, async () =>
+                {
+                    await operationAsync();
+                    return successMessage;
+                });
+        }
 
+        private async Task RunOperationAsync(string childToFocusPath, Func<Task<string>> operationAsync)
+        {
             var childToFocus = ExtractName(childToFocusPath);
             SetLoadingState(true);
             try
             {
-                await operationAsync();
+                var statusMessage = await operationAsync();
                 await LoadEntriesAfterOperationAsync(childToFocus, null);
-                SetOperationStatus(successMessage);
+                SetOperationStatus(statusMessage);
             }
             catch (Exception ex)
             {

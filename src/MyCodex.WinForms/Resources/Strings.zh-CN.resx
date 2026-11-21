@@ -10837,6 +10837,9 @@ MyCodex 桌面客户端。</value>
   <data name="AppServerFileBrowserForm.Status.Created" xml:space="preserve">
     <value>项目已创建。</value>
   </data>
+  <data name="AppServerFileBrowserForm.Error.ItemAlreadyExists" xml:space="preserve">
+    <value>已存在同名项目，请换一个名称。</value>
+  </data>
   <data name="AppServerFileBrowserForm.Status.Deleted" xml:space="preserve">
     <value>项目已删除。</value>
   </data>
