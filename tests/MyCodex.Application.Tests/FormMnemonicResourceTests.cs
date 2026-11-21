@@ -105,6 +105,17 @@ namespace MyCodex.Application.Tests
             "GitRemoteEditForm.Button.Save",
             "GitRemoteEditForm.Button.Cancel"
         })]
+        [TestCase("GitCommitMessageEditForm", new[]
+        {
+            "GitCommitMessageEditForm.Button.OK",
+            "GitCommitMessageEditForm.Button.Cancel"
+        })]
+        [TestCase("AppServerFileBrowserForm.NameDialog", new[]
+        {
+            "AppServerFileBrowserForm.NameDialog.Label.Name",
+            "AppServerFileBrowserForm.NameDialog.Button.Create",
+            "AppServerFileBrowserForm.NameDialog.Button.Cancel"
+        })]
         [TestCase("GitUpstreamEditForm", new[]
         {
             "GitUpstreamEditForm.Label.Branch",

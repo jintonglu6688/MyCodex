@@ -10953,7 +10953,7 @@ Describe what should be checked before considering work complete.</value>
     <value>Create</value>
   </data>
   <data name="AppServerFileBrowserForm.NameDialog.Button.Cancel" xml:space="preserve">
-    <value>&amp;Cancel</value>
+    <value>Cancel(&amp;A)</value>
   </data>
   <data name="AppServerFileBrowserForm.NameDialog.Accessible.Cancel" xml:space="preserve">
     <value>Cancel</value>

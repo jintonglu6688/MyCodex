@@ -34,7 +34,8 @@ namespace MyCodex.WinForms.Forms
             _pluginSources = pluginSources ?? new List<AppServerPluginSummary>();
             Text = UiLocalization.Text("InsertSkillForm.Title", "Insert Skill");
             StartPosition = FormStartPosition.CenterParent;
-            FormBorderStyle = FormBorderStyle.FixedDialog;
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MinimumSize = new Size(580, 360);
             MaximizeBox = false;
             MinimizeBox = false;
             ShowInTaskbar = false;

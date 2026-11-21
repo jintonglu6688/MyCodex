@@ -1948,7 +1948,7 @@ namespace MyCodex.WinForms.Forms
 
                 _acceptButton = CreateDialogButton(acceptText, acceptAccessibleName, 1);
                 _cancelButton = CreateDialogButton(
-                    UiLocalization.Text("AppServerFileBrowserForm.NameDialog.Button.Cancel", "&Cancel"),
+                    UiLocalization.Text("AppServerFileBrowserForm.NameDialog.Button.Cancel", "Cancel(&A)"),
                     UiLocalization.Text("AppServerFileBrowserForm.NameDialog.Accessible.Cancel", "Cancel"),
                     2);
                 UiTheme.ApplyDialogButton(_acceptButton, UiGlyph.Ok);

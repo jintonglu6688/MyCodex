@@ -8693,7 +8693,7 @@ MyCodex 桌面客户端。</value>
     <value>修改(&amp;A)</value>
   </data>
 <data name="GitCommitMessageEditForm.Button.Cancel" xml:space="preserve">
-    <value>取消(&amp;A)</value>
+    <value>取消(&amp;C)</value>
   </data>
 <data name="GitCommitMessageEditForm.Message.SubjectRequired" xml:space="preserve">
     <value>请先输入提交标题。</value>
@@ -10892,7 +10892,7 @@ MyCodex 桌面客户端。</value>
     <value>创建</value>
   </data>
   <data name="AppServerFileBrowserForm.NameDialog.Button.Cancel" xml:space="preserve">
-    <value>取消(&amp;C)</value>
+    <value>取消(&amp;A)</value>
   </data>
   <data name="AppServerFileBrowserForm.NameDialog.Accessible.Cancel" xml:space="preserve">
     <value>取消</value>

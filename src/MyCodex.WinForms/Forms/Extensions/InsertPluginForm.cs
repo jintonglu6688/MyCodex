@@ -21,7 +21,8 @@ namespace MyCodex.WinForms.Forms
         {
             Text = UiLocalization.Text("InsertPluginForm.Title", "Insert Plugin");
             StartPosition = FormStartPosition.CenterParent;
-            FormBorderStyle = FormBorderStyle.FixedDialog;
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MinimumSize = new Size(620, 360);
             MaximizeBox = false;
             MinimizeBox = false;
             ShowInTaskbar = false;
