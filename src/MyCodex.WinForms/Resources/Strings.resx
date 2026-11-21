@@ -7411,6 +7411,9 @@ No: Windows directory, mapped to /mnt/&lt;drive&gt;/... and still cloned by WSL 
 <data name="GitEnvironmentForm.Status.EmailSaved" xml:space="preserve">
     <value>Git user email saved.</value>
   </data>
+<data name="GitEnvironmentForm.Status.SaveFailed.Template" xml:space="preserve">
+    <value>Git setting was not saved: {0}</value>
+  </data>
 <data name="GitEnvironmentForm.Status.CopiedSummary" xml:space="preserve">
     <value>Copied Git environment summary.</value>
   </data>

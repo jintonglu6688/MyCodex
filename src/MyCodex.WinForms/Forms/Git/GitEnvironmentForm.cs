@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Services;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
 
@@ -197,9 +198,9 @@ namespace MyCodex.WinForms.Forms
                     return;
                 }
 
-                await _environmentService.SetGlobalUserNameAsync(form.Value, CancellationToken.None);
-                SetStatus(UiLocalization.Text("GitEnvironmentForm.Status.NameSaved", "Git user name saved."), true);
-                await RefreshStatusAsync();
+                await SaveGlobalValueAsync(
+                    () => _environmentService.SetGlobalUserNameAsync(form.Value, CancellationToken.None),
+                    UiLocalization.Text("GitEnvironmentForm.Status.NameSaved", "Git user name saved."));
             }
         }
 
@@ -216,10 +217,29 @@ namespace MyCodex.WinForms.Forms
                     return;
                 }
 
-                await _environmentService.SetGlobalUserEmailAsync(form.Value, CancellationToken.None);
-                SetStatus(UiLocalization.Text("GitEnvironmentForm.Status.EmailSaved", "Git user email saved."), true);
-                await RefreshStatusAsync();
+                await SaveGlobalValueAsync(
+                    () => _environmentService.SetGlobalUserEmailAsync(form.Value, CancellationToken.None),
+                    UiLocalization.Text("GitEnvironmentForm.Status.EmailSaved", "Git user email saved."));
             }
+        }
+
+        // A failed git config write is reported here; left unhandled it would reach the global UI-thread handler.
+        private async Task SaveGlobalValueAsync(Func<Task> save, string savedText)
+        {
+            try
+            {
+                await save();
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                SetStatus(string.Format(
+                    UiLocalization.Text("GitEnvironmentForm.Status.SaveFailed.Template", "Git setting was not saved: {0}"),
+                    GitOutputSanitizer.RedactSensitiveText(ex.Message)), true);
+                return;
+            }
+
+            SetStatus(savedText, true);
+            await RefreshStatusAsync();
         }
 
         private void PopulateSnapshot(GitEnvironmentSnapshot snapshot)
