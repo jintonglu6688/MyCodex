@@ -85,7 +85,8 @@ try:
     result['owned_plugin_enabled_through_official_api'] = True
     installed = rpc.request('plugin/installed', {})
     (run / 'installed.json').write_text(json.dumps(installed, indent=2), encoding='utf-8')
-    runtime = ROOT / 'runtime/browser/b1'
+    bundle_id = json.loads((ROOT / 'tools/runtime/browser-use-bundle.json').read_text(encoding='utf-8-sig'))['bundleId']
+    runtime = ROOT / 'runtime/browser' / bundle_id
     modules = runtime / 'bin/node_modules'
     server = {'command': str(runtime / 'bin/node.exe'), 'args': [str(modules / '@oai/cua-repl/bin/cua-repl.mjs')], 'enabled': True,
               'env': {'CODEX_CLI_PATH': str(cli), 'NODE_REPL_NODE_PATH': str(runtime / 'bin/node.exe'),
