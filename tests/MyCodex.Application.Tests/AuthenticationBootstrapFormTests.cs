@@ -114,11 +114,13 @@ namespace MyCodex.Application.Tests
                     var cancelButton = FindControl<Button>(form, "Cancel sign-in");
                     var statusLabel = FindControl<Label>(form, "Sign-in status");
 
+                    ErrorBoxRecorder.Clear();
                     chatGptButton.PerformClick();
                     System.Windows.Forms.Application.DoEvents();
 
                     Assert.That(statusLabel.Text, Is.EqualTo(
                         "The sign-in page could not be opened. Check your default browser, then retry or cancel sign-in."));
+                    Assert.That(ErrorBoxRecorder.Messages, Has.Some.EqualTo(statusLabel.Text), "Failures must also open the error box.");
                     Assert.That(screenReader.Messages, Is.Empty);
                     Assert.That(chatGptButton.Enabled, Is.True);
                     Assert.That(cancelButton.Enabled, Is.True);

@@ -228,7 +228,7 @@ namespace MyCodex.WinForms.Forms
                     }
                     catch
                     {
-                        SetStatus(UiLocalization.Text(
+                        ShowFailure(UiLocalization.Text(
                             "AuthenticationBootstrapForm.Status.BrowserOpenFailed",
                             "The sign-in page could not be opened. Check your default browser, then retry or cancel sign-in."));
                         return;
@@ -255,7 +255,7 @@ namespace MyCodex.WinForms.Forms
                     }
                     catch
                     {
-                        SetStatus(string.Format(
+                        ShowFailure(string.Format(
                             CultureInfo.CurrentCulture,
                             UiLocalization.Text(
                                 "AuthenticationBootstrapForm.Status.DeviceCodeBrowserOpenFailed.Template",
@@ -280,7 +280,7 @@ namespace MyCodex.WinForms.Forms
             }
             catch
             {
-                SetStatus(UiLocalization.Text("AuthenticationBootstrapForm.Status.Failed", "Sign-in could not be started."));
+                ShowFailure(UiLocalization.Text("AuthenticationBootstrapForm.Status.Failed", "Sign-in could not be started."));
             }
             finally
             {
@@ -319,7 +319,7 @@ namespace MyCodex.WinForms.Forms
             }
             catch
             {
-                SetStatus(UiLocalization.Text("AuthenticationBootstrapForm.Status.CheckFailed", "Unable to check sign-in status."));
+                ShowFailure(UiLocalization.Text("AuthenticationBootstrapForm.Status.CheckFailed", "Unable to check sign-in status."));
             }
             finally
             {
@@ -347,7 +347,7 @@ namespace MyCodex.WinForms.Forms
             }
             catch
             {
-                SetStatus(UiLocalization.Text("AuthenticationBootstrapForm.Status.CancelFailed", "Unable to cancel sign-in."));
+                ShowFailure(UiLocalization.Text("AuthenticationBootstrapForm.Status.CancelFailed", "Unable to cancel sign-in."));
             }
             finally
             {
@@ -394,6 +394,13 @@ namespace MyCodex.WinForms.Forms
         private void SetStatus(string text)
         {
             _statusLabel.Text = text;
+        }
+
+        // Failures also open the standard error box, which screen readers read without extra speech.
+        private void ShowFailure(string text)
+        {
+            SetStatus(text);
+            AuthenticationCenterUiText.ShowError(this, text);
         }
 
         private enum AuthenticationLoginKind
