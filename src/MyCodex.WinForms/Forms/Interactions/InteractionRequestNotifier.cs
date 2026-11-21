@@ -14,15 +14,22 @@ namespace MyCodex.WinForms.Forms
         /// Announces a request that opens a dialog: the configured sound in the foreground and
         /// the background, followed by speech while this target is in the background.
         /// </summary>
-        internal static async Task Notify(NotificationPromptMode soundMode, string notice, Action playSound, Func<string, bool> speak)
+        internal static async Task Notify(NotificationPromptMode soundMode, string notice, Action playSound, Func<string, bool> speak,
+            Func<bool> isForeground = null)
         {
-            var prompt = InteractionRequestPromptPlanner.Plan(ForegroundApplicationWindow.BelongsToCurrentProcess(), soundMode);
+            isForeground = isForeground ?? ForegroundApplicationWindow.BelongsToCurrentProcess;
+            var prompt = InteractionRequestPromptPlanner.Plan(isForeground(), soundMode);
             if ((prompt & InteractionRequestPrompt.Sound) != 0)
             {
                 playSound();
                 if ((prompt & InteractionRequestPrompt.Speech) != 0)
                 {
                     await Task.Delay(SoundLeadMilliseconds);
+                    // Back in the foreground during the sound: the screen reader reads the dialog instead.
+                    if (isForeground())
+                    {
+                        return;
+                    }
                 }
             }
 
