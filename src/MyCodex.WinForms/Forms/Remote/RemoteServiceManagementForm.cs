@@ -477,6 +477,14 @@ namespace MyCodex.WinForms.Forms
             try
             {
                 SetBusy(true);
+                // Pairing needs HTTPS; refuse before registration sends the tenant secret to an external Relay.
+                if (!IsEmbeddedMode() && !_snapshot.UseTls)
+                {
+                    ShowError(UiLocalization.Text("RemoteServiceManagementForm.Message.PairingRequiresHttps", "Pairing requires HTTPS. Turn on TLS in Connection Settings."));
+                    FocusControl(_generatePairingCodeButton);
+                    return;
+                }
+
                 await RefreshFirewallStatusAsync().ConfigureAwait(true);
                 var identity = _identityStore.LoadOrCreateHostIdentity(_snapshot.HostId);
                 var registration = await _workflow.ConnectAndRegisterAsync(

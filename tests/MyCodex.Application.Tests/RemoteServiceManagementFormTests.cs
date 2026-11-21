@@ -491,6 +491,36 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public async Task GeneratePairingCode_ExternalRelayWithoutTls_StopsBeforeSendingTheTenantSecret()
+        {
+            var client = new FakeRelayHostClient();
+            var store = CreateConfiguredStore();
+            store.Snapshot.RemoteServiceMode = "External";
+            store.Snapshot.UseTls = false;
+            store.Snapshot.CreatedAt = DateTime.UtcNow; // an existing config keeps its TLS choice
+            string messageText = null;
+            using (var form = new RemoteServiceManagementForm(
+                store,
+                client,
+                new FakeScreenReaderService(),
+                null,
+                true,
+                null,
+                new FakeRemoteIdentityStore(),
+                bindingStore: new FakeRemoteBindingStore()))
+            {
+                form.MessageBoxForTests = (title, message) => messageText = message;
+                var registrationsBefore = client.RegisterHostCalls;
+
+                await form.ClickGeneratePairingCodeForTests();
+
+                Assert.That(client.RegisterHostCalls, Is.EqualTo(registrationsBefore));
+                Assert.That(client.CreatePairingInviteCalls, Is.EqualTo(0));
+                Assert.That(messageText, Is.EqualTo(UiLocalization.Text("RemoteServiceManagementForm.Message.PairingRequiresHttps", "Pairing requires HTTPS. Turn on TLS in Connection Settings.")));
+            }
+        }
+
+        [Test]
         public async Task GeneratePairingCode_EmbeddedCopiesCertificateSha256()
         {
             var store = CreateConfiguredStore();

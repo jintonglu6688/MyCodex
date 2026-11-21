@@ -11355,6 +11355,7 @@ MyCodex 桌面客户端。</value>
   <data name="RemoteServiceManagementForm.DeviceNameFallback.Template" xml:space="preserve"><value>设备 {0}</value></data>
   <data name="RemoteServiceManagementForm.Message.PairingCodeCopied" xml:space="preserve"><value>配对码已复制到剪贴板。请在手机端导入后完成配对。</value></data>
   <data name="RemoteServiceManagementForm.Message.GeneratePairingCodeFailed" xml:space="preserve"><value>生成配对码失败。请检查“连接设置”。</value></data>
+  <data name="RemoteServiceManagementForm.Message.PairingRequiresHttps" xml:space="preserve"><value>配对需要 HTTPS。请在“连接设置”中开启 TLS。</value></data>
   <data name="RemoteServiceManagementForm.Message.StartEmbeddedRelaySucceeded" xml:space="preserve"><value>远程服务已启动。</value></data>
   <data name="RemoteServiceManagementForm.Message.StartEmbeddedRelayFailed" xml:space="preserve"><value>远程服务启动失败。</value></data>
   <data name="RemoteServiceManagementForm.Message.StopEmbeddedRelayFailed" xml:space="preserve"><value>远程服务停止失败。</value></data>

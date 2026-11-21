@@ -11399,6 +11399,7 @@ Describe what should be checked before considering work complete.</value>
   <data name="RemoteServiceManagementForm.DeviceNameFallback.Template" xml:space="preserve"><value>Device {0}</value></data>
   <data name="RemoteServiceManagementForm.Message.PairingCodeCopied" xml:space="preserve"><value>Pairing code copied to the clipboard. Import it on your phone to pair this PC.</value></data>
   <data name="RemoteServiceManagementForm.Message.GeneratePairingCodeFailed" xml:space="preserve"><value>Failed to generate pairing code. Check Connection Settings.</value></data>
+  <data name="RemoteServiceManagementForm.Message.PairingRequiresHttps" xml:space="preserve"><value>Pairing requires HTTPS. Turn on TLS in Connection Settings.</value></data>
   <data name="RemoteServiceManagementForm.Message.StartEmbeddedRelaySucceeded" xml:space="preserve"><value>Remote service started.</value></data>
   <data name="RemoteServiceManagementForm.Message.StartEmbeddedRelayFailed" xml:space="preserve"><value>Failed to start remote service.</value></data>
   <data name="RemoteServiceManagementForm.Message.StopEmbeddedRelayFailed" xml:space="preserve"><value>Failed to stop remote service.</value></data>
