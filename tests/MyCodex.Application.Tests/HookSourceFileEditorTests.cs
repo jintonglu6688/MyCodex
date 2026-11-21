@@ -90,6 +90,21 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public async Task AddHookAsync_OnlyAnUnlistableFolderThatIsProvenMissingStartsANewFile()
+        {
+            var files = new FakeFileClient { UnlistableFolderSuffix = @".codex\" };
+            var service = new HookManagementService(new HookManagementServiceTests.FakeHookClient(), new HookManagementServiceTests.FakeConfigClient(), files);
+            var handler = HookSourceFileEditor.BuildCommandHandler("c", null, null);
+
+            await service.AddHookAsync(@"E:\New\.codex\hooks.json", "stop", null, handler);
+            Assert.That(files.Writes.Keys, Is.EqualTo(new[] { @"E:\New\.codex\hooks.json" }));
+
+            files.ParentListsFolder = true;
+            Assert.ThrowsAsync<InvalidOperationException>(() => service.AddHookAsync(@"E:\Locked\.codex\hooks.json", "stop", null, handler));
+            Assert.That(files.Writes.Count, Is.EqualTo(1), "A folder that exists but cannot be listed must not get a replacement file.");
+        }
+
+        [Test]
         public async Task RemoveHookAsync_RemovesTheDefinitionAndMovesTheNextHandlersState()
         {
             var files = new FakeFileClient();
@@ -139,6 +154,10 @@ namespace MyCodex.Application.Tests
         {
             public bool ExistsButUnreadable { get; set; }
 
+            public string UnlistableFolderSuffix { get; set; }
+
+            public bool ParentListsFolder { get; set; }
+
             public Dictionary<string, byte[]> Contents { get; } = new Dictionary<string, byte[]>();
 
             public List<string> CreatedDirectories { get; } = new List<string>();
@@ -174,11 +193,22 @@ namespace MyCodex.Application.Tests
 
             public Task<List<AppServerFileSystemEntry>> ReadDirectoryAsync(string path)
             {
+                if (UnlistableFolderSuffix != null && path.EndsWith(UnlistableFolderSuffix, StringComparison.Ordinal))
+                {
+                    throw new System.IO.IOException("cannot list");
+                }
+
                 // The missing case lists only a sibling; the unreadable case lists the file itself.
-                return Task.FromResult(new List<AppServerFileSystemEntry>
+                var entries = new List<AppServerFileSystemEntry>
                 {
                     new AppServerFileSystemEntry { FileName = ExistsButUnreadable ? "hooks.json" : "config.toml", IsFile = true }
-                });
+                };
+                if (ParentListsFolder)
+                {
+                    entries.Add(new AppServerFileSystemEntry { FileName = ".codex" });
+                }
+
+                return Task.FromResult(entries);
             }
 
             public Task RemoveAsync(string path, bool? recursive = null, bool? force = null)

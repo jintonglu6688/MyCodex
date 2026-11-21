@@ -127,25 +127,40 @@ namespace MyCodex.Application.Services
             }
             catch (Exception)
             {
-                // Only a file its folder does not list starts a new one; an existing file that cannot be read is never
-                // replaced. A folder that cannot be listed counts as missing, and creating it then reports any real error.
-                List<AppServerFileSystemEntry> entries = null;
-                try
+                // A new file starts only where a listing proves it absent (its folder, or a missing folder in the
+                // parent's listing); an existing file that cannot be read is never replaced.
+                var folder = HookSourceFileEditor.GetSiblingPath(path, string.Empty);
+                var fileListed = await ListsEntryAsync(folder, HookSourceFileEditor.GetFileName(path)).ConfigureAwait(false);
+                if (fileListed == null)
                 {
-                    entries = await RequireFileClient().ReadDirectoryAsync(HookSourceFileEditor.GetSiblingPath(path, string.Empty)).ConfigureAwait(false);
-                }
-                catch (Exception)
-                {
-                }
-
-                var fileName = HookSourceFileEditor.GetFileName(path);
-                if (entries != null && entries.Any(entry => string.Equals(entry.FileName, fileName, StringComparison.OrdinalIgnoreCase)))
-                {
-                    throw;
+                    var folderPath = folder.TrimEnd('/', '\\');
+                    var folderListed = await ListsEntryAsync(HookSourceFileEditor.GetSiblingPath(folderPath, string.Empty), HookSourceFileEditor.GetFileName(folderPath)).ConfigureAwait(false);
+                    fileListed = folderListed == false ? false : (bool?)null;
                 }
 
+                if (fileListed == false)
+                {
+                    return null;
+                }
+
+                throw;
+            }
+        }
+
+        // Null when the directory cannot be listed.
+        private async Task<bool?> ListsEntryAsync(string directory, string name)
+        {
+            List<AppServerFileSystemEntry> entries;
+            try
+            {
+                entries = await RequireFileClient().ReadDirectoryAsync(directory).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
                 return null;
             }
+
+            return entries != null && entries.Any(entry => string.Equals(entry.FileName, name, StringComparison.OrdinalIgnoreCase));
         }
 
         private IAppServerFileSystemClient RequireFileClient()
