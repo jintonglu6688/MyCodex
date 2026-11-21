@@ -2237,6 +2237,10 @@ namespace MyCodex.Application.Tests
                 AppServerClient.ShouldRememberLoadedThreadIdFromEvent(
                     new AppServerEventArgs("thread_closed", "closed", threadId: "child-thread")),
                 Is.False);
+            Assert.That(
+                AppServerClient.ShouldRememberLoadedThreadIdFromEvent(
+                    new AppServerEventArgs("thread_archived", "archived", threadId: "child-thread")),
+                Is.False, "Archiving forgets the thread; its own event must not add it back.");
         }
 
         [Test]

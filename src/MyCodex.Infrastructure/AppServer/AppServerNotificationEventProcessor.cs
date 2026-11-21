@@ -19,6 +19,8 @@ namespace MyCodex.Infrastructure.AppServer
         private readonly Dictionary<string, PendingMcpToolCallItem> _mcpToolCalls = new Dictionary<string, PendingMcpToolCallItem>(StringComparer.Ordinal);
         private readonly Dictionary<string, PendingReasoningItem> _reasoningItems = new Dictionary<string, PendingReasoningItem>(StringComparer.Ordinal);
         private readonly HashSet<string> _commandOutputDeltaItemIds = new HashSet<string>(StringComparer.Ordinal);
+        // Trailing bytes of a UTF-8 character split across command output chunks, per process stream.
+        private readonly Dictionary<string, byte[]> _commandOutputPendingBytes = new Dictionary<string, byte[]>(StringComparer.Ordinal);
         // Temporary threads such as the voice preview never become sessions.
         private readonly HashSet<string> _ephemeralThreadIds = new HashSet<string>(StringComparer.Ordinal);
 
@@ -39,6 +41,7 @@ namespace MyCodex.Infrastructure.AppServer
                 _mcpToolCalls.Clear();
                 _reasoningItems.Clear();
                 _commandOutputDeltaItemIds.Clear();
+                _commandOutputPendingBytes.Clear();
             }
         }
 
@@ -758,7 +761,7 @@ namespace MyCodex.Infrastructure.AppServer
             var decodedText = AppServerJsonValueReader.GetString(parameters, "delta");
             if (string.IsNullOrEmpty(decodedText))
             {
-                decodedText = DecodeCommandExecDelta(AppServerJsonValueReader.GetString(parameters, "deltaBase64"));
+                decodedText = DecodeCommandExecDelta((processId ?? string.Empty) + "\n" + (stream ?? string.Empty), AppServerJsonValueReader.GetString(parameters, "deltaBase64"));
             }
 
             if (string.IsNullOrEmpty(decodedText))
@@ -1420,29 +1423,72 @@ namespace MyCodex.Infrastructure.AppServer
             return AppServerProtocolTextComposer.BuildFileChangeProgressPreview(text);
         }
 
-        private static string DecodeCommandExecDelta(string deltaBase64)
+        private string DecodeCommandExecDelta(string streamKey, string deltaBase64)
         {
             if (string.IsNullOrWhiteSpace(deltaBase64))
             {
                 return string.Empty;
             }
 
+            byte[] chunk;
             try
             {
-                var bytes = Convert.FromBase64String(deltaBase64);
-                try
-                {
-                    return new UTF8Encoding(false, true).GetString(bytes);
-                }
-                catch
-                {
-                    return Encoding.Default.GetString(bytes);
-                }
+                chunk = Convert.FromBase64String(deltaBase64);
             }
-            catch
+            catch (FormatException)
             {
                 return string.Empty;
             }
+
+            lock (_syncRoot)
+            {
+                byte[] pending;
+                var bytes = chunk;
+                if (_commandOutputPendingBytes.TryGetValue(streamKey, out pending))
+                {
+                    _commandOutputPendingBytes.Remove(streamKey);
+                    bytes = new byte[pending.Length + chunk.Length];
+                    Buffer.BlockCopy(pending, 0, bytes, 0, pending.Length);
+                    Buffer.BlockCopy(chunk, 0, bytes, pending.Length, chunk.Length);
+                }
+
+                var tail = IncompleteUtf8TailLength(bytes);
+                try
+                {
+                    var text = new UTF8Encoding(false, true).GetString(bytes, 0, bytes.Length - tail);
+                    if (tail > 0)
+                    {
+                        var rest = new byte[tail];
+                        Buffer.BlockCopy(bytes, bytes.Length - tail, rest, 0, tail);
+                        _commandOutputPendingBytes[streamKey] = rest;
+                    }
+
+                    return text;
+                }
+                catch (DecoderFallbackException)
+                {
+                    // Not UTF-8 (for example a console code page); decode with the system code page.
+                    return Encoding.Default.GetString(bytes);
+                }
+            }
+        }
+
+        // Length of a UTF-8 sequence cut off at the end of the buffer (0 when the buffer ends on a character).
+        internal static int IncompleteUtf8TailLength(byte[] bytes)
+        {
+            for (var i = 1; i <= 3 && i <= bytes.Length; i++)
+            {
+                var value = bytes[bytes.Length - i];
+                if ((value & 0xC0) == 0x80)
+                {
+                    continue;
+                }
+
+                var length = (value & 0xE0) == 0xC0 ? 2 : (value & 0xF0) == 0xE0 ? 3 : (value & 0xF8) == 0xF0 ? 4 : 1;
+                return length > i ? i : 0;
+            }
+
+            return 0;
         }
 
         private static string AbbreviateForLog(string text, int maxLength)

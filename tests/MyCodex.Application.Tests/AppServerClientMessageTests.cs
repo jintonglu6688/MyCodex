@@ -485,6 +485,45 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public async Task SendUserMessageAsync_AppliesTheNewApprovalModeBeforeTheReplyAndKeepsAFinishedTurnEnded()
+        {
+            var client = CreateClient();
+            using (var stream = new MemoryStream())
+            using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
+            {
+                FormTestDriver.SetField(client, "_isConnected", true);
+                FormTestDriver.SetField(client, "_process", Process.GetCurrentProcess());
+                FormTestDriver.SetField(client, "_inputWriter", writer);
+                FormTestDriver.Field<HashSet<string>>(client, "_loadedThreadIds").Add("thread-1");
+                var approvalModes = FormTestDriver.Field<Dictionary<string, ApprovalMode>>(client, "_threadApprovalModes");
+                approvalModes["thread-1"] = ApprovalMode.FullAccess;
+
+                var task = client.SendUserMessageAsync(
+                    "thread-1",
+                    TestContext.CurrentContext.WorkDirectory,
+                    new[] { new AppServerUserInputItem { Type = "text", Text = "hello" } },
+                    ApprovalMode.ReadOnly,
+                    null,
+                    null);
+
+                var firstMessage = ReadFirstWrittenMessage(await WaitForWrittenTextAsync(stream).ConfigureAwait(false));
+                CompleteRequest(client, Convert.ToString(firstMessage["id"], CultureInfo.InvariantCulture), new Dictionary<string, object> { { "snapshots", new object[0] } });
+                var message = ReadLastWrittenMessage(await WaitForWrittenLineCountAsync(stream, 2).ConfigureAwait(false));
+                Assert.That(message["method"], Is.EqualTo("turn/start"));
+                Assert.That(approvalModes["thread-1"], Is.EqualTo(ApprovalMode.ReadOnly), "An approval arriving before the reply must not use Full Access.");
+
+                // The turn starts and finishes before its turn/start reply is read.
+                FormTestDriver.Invoke(client, "RememberActiveTurnId", "thread-1", "turn-1");
+                FormTestDriver.Invoke(client, "ForgetActiveTurnId", "thread-1");
+                CompleteRequest(client, Convert.ToString(message["id"], CultureInfo.InvariantCulture),
+                    new Dictionary<string, object> { { "turn", new Dictionary<string, object> { { "id", "turn-1" } } } });
+                await task.ConfigureAwait(false);
+
+                Assert.That(client.HasInterruptibleTurn("thread-1"), Is.False);
+            }
+        }
+
+        [Test]
         public async Task DeleteThreadAsync_SendsNativeThreadDeleteAndClearsLocalThreadState()
         {
             var client = CreateClient();
@@ -3094,6 +3133,33 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void Dispose_DoesNotWaitForAStuckWrite()
+        {
+            var client = CreateClient();
+            var writeLock = FormTestDriver.Field<SemaphoreSlim>(client, "_writeLock");
+            writeLock.Wait();
+            var watch = Stopwatch.StartNew();
+
+            client.Dispose();
+
+            Assert.That(watch.Elapsed, Is.LessThan(TimeSpan.FromSeconds(10)));
+        }
+
+        [Test]
+        public void LocalCommand_CanBeStoppedWhileDisconnected()
+        {
+            using (var client = CreateClient())
+            using (var cancellation = new CancellationTokenSource())
+            {
+                FormTestDriver.Field<Dictionary<string, CancellationTokenSource>>(client, "_localCommandCancellationSources")["proc-1"] = cancellation;
+
+                client.TerminateCommandAsync("proc-1").GetAwaiter().GetResult();
+
+                Assert.That(cancellation.IsCancellationRequested, Is.True);
+            }
+        }
+
+        [Test]
         public void RejectedLoginRequest_DoesNotBlockTheNextSignIn()
         {
             using (var client = CreateClient())
@@ -3128,6 +3194,37 @@ namespace MyCodex.Application.Tests
                     }));
 
                 Assert.That(received.Single(item => item.EventType == "assistant").Content, Is.EqualTo("Done."));
+            }
+        }
+
+        [Test]
+        public void CommandOutput_ChineseSplitAcrossChunks_IsNotGarbled()
+        {
+            using (var client = CreateClient())
+            {
+                var output = new StringBuilder();
+                client.EventReceived += (sender, args) =>
+                {
+                    if (args.EventType == "command_exec_output") output.Append(args.Content);
+                };
+                var process = typeof(AppServerClient).GetMethod(
+                    "ProcessIncomingMessage",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+                    null,
+                    new[] { typeof(IDictionary<string, object>), typeof(long) },
+                    null);
+                var bytes = Encoding.UTF8.GetBytes("编译完成");
+                foreach (var chunk in new[] { bytes.Take(4).ToArray(), bytes.Skip(4).Take(5).ToArray(), bytes.Skip(9).ToArray() })
+                {
+                    var notification = new Dictionary<string, object>
+                    {
+                        { "method", "command/exec/outputDelta" },
+                        { "params", new Dictionary<string, object> { { "processId", "p1" }, { "stream", "stdout" }, { "deltaBase64", Convert.ToBase64String(chunk) } } }
+                    };
+                    process.Invoke(client, new object[] { notification, FormTestDriver.Invoke<long>(client, "GetConnectionEpoch") });
+                }
+
+                Assert.That(output.ToString(), Is.EqualTo("编译完成"));
             }
         }
 

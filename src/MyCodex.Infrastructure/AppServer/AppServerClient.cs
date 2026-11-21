@@ -31,6 +31,7 @@ namespace MyCodex.Infrastructure.AppServer
         private readonly object _syncRoot = new object();
         private readonly SemaphoreSlim _connectionLifecycleLock = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
+        private const int CleanupWriteLockWaitMilliseconds = 2000;
         private readonly JavaScriptSerializer _serializer = AppServerJsonValue.CreateSerializer();
         private readonly AppServerProtocolTransport _protocolTransport;
         private readonly AppServerClientOperations _operations;
@@ -45,6 +46,8 @@ namespace MyCodex.Infrastructure.AppServer
         private readonly HashSet<string> _loadedThreadIds = new HashSet<string>(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _activeTurnIds = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly Dictionary<string, ApprovalMode> _threadApprovalModes = new Dictionary<string, ApprovalMode>(StringComparer.Ordinal);
+        // The last turn that ended on each thread; a late turn/start reply must not mark it active again.
+        private readonly Dictionary<string, string> _endedTurnIds = new Dictionary<string, string>(StringComparer.Ordinal);
         private IInternalToolRegistry _internalToolRegistry = new InternalToolRegistry(null);
         private readonly Dictionary<string, InternalToolExecutionContext> _internalToolContexts =
             new Dictionary<string, InternalToolExecutionContext>(StringComparer.OrdinalIgnoreCase);
@@ -420,7 +423,29 @@ namespace MyCodex.Infrastructure.AppServer
             AddOptionalString(parameters, "effort", reasoningEffort);
             AppServerCollaborationParameters.AddTo(parameters, collaborationMode);
 
-            var result = await SendRequestAsync("turn/start", parameters, LongRunningRequestTimeoutMs).ConfigureAwait(false);
+            // Approval requests of this turn can arrive before its reply, so they must already see the new mode.
+            ApprovalMode previousApprovalMode;
+            bool hadPreviousApprovalMode;
+            lock (_syncRoot)
+            {
+                hadPreviousApprovalMode = _threadApprovalModes.TryGetValue(threadId, out previousApprovalMode);
+                SetThreadApprovalModeUnsafe(threadId, approvalMode);
+            }
+
+            IDictionary<string, object> result;
+            try
+            {
+                result = await SendRequestAsync("turn/start", parameters, LongRunningRequestTimeoutMs).ConfigureAwait(false);
+            }
+            catch
+            {
+                lock (_syncRoot)
+                {
+                    SetThreadApprovalModeUnsafe(threadId, hadPreviousApprovalMode ? previousApprovalMode : (ApprovalMode?)null);
+                }
+
+                throw;
+            }
 
             var turn = AppServerJsonValueReader.GetDictionary(result, "turn");
             var turnId = AppServerJsonValueReader.GetString(turn, "id");
@@ -428,14 +453,10 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 lock (_syncRoot)
                 {
-                    _activeTurnIds[threadId] = turnId;
-                    if (approvalMode.HasValue)
+                    string endedTurnId;
+                    if (!_endedTurnIds.TryGetValue(threadId, out endedTurnId) || !string.Equals(endedTurnId, turnId, StringComparison.Ordinal))
                     {
-                        _threadApprovalModes[threadId] = approvalMode.Value;
-                    }
-                    else
-                    {
-                        _threadApprovalModes.Remove(threadId);
+                        _activeTurnIds[threadId] = turnId;
                     }
                 }
             }
@@ -990,13 +1011,13 @@ namespace MyCodex.Infrastructure.AppServer
 
         public async Task TerminateCommandAsync(string processId)
         {
-            EnsureConnected();
-
             if (string.IsNullOrWhiteSpace(processId))
             {
+                EnsureConnected();
                 return;
             }
 
+            // A command MyCodex started itself must stay stoppable after the App Server disconnects.
             CancellationTokenSource localCancellation;
             lock (_syncRoot)
             {
@@ -1009,6 +1030,7 @@ namespace MyCodex.Infrastructure.AppServer
                 return;
             }
 
+            EnsureConnected();
             await SendRequestAsync("command/exec/terminate", new Dictionary<string, object>
             {
                 { "processId", processId }
@@ -1779,7 +1801,25 @@ namespace MyCodex.Infrastructure.AppServer
 
             lock (_syncRoot)
             {
+                string endedTurnId;
+                if (_activeTurnIds.TryGetValue(threadId, out endedTurnId))
+                {
+                    _endedTurnIds[threadId] = endedTurnId;
+                }
+
                 _activeTurnIds.Remove(threadId);
+            }
+        }
+
+        private void SetThreadApprovalModeUnsafe(string threadId, ApprovalMode? approvalMode)
+        {
+            if (approvalMode.HasValue)
+            {
+                _threadApprovalModes[threadId] = approvalMode.Value;
+            }
+            else
+            {
+                _threadApprovalModes.Remove(threadId);
             }
         }
 
@@ -1886,6 +1926,7 @@ namespace MyCodex.Infrastructure.AppServer
                 _pendingRequestRegistry.Clear();
                 _loadedThreadIds.Clear();
                 _threadApprovalModes.Clear();
+                _endedTurnIds.Clear();
                 _isConnected = false;
                 _connectedRuntimeKey = null;
                 _connectionLostHandled = true;
@@ -2451,7 +2492,9 @@ namespace MyCodex.Infrastructure.AppServer
         private void CleanupProcessResources()
         {
             AppServerProcessResources resources;
-            _writeLock.Wait();
+            // A write stuck on a runtime that stopped reading holds this lock for minutes, and this runs on
+            // the UI thread during close or restart; ending the process is what releases that write.
+            var writeLockTaken = _writeLock.Wait(CleanupWriteLockWaitMilliseconds);
             try
             {
                 lock (_syncRoot)
@@ -2461,7 +2504,10 @@ namespace MyCodex.Infrastructure.AppServer
             }
             finally
             {
-                _writeLock.Release();
+                if (writeLockTaken)
+                {
+                    _writeLock.Release();
+                }
             }
 
             CleanupProcessResources(resources);
@@ -3060,6 +3106,7 @@ namespace MyCodex.Infrastructure.AppServer
             return args != null &&
                    !string.IsNullOrWhiteSpace(args.ThreadId) &&
                    !string.Equals(args.EventType, "thread_deleted", StringComparison.Ordinal) &&
+                   !string.Equals(args.EventType, "thread_archived", StringComparison.Ordinal) &&
                    !string.Equals(args.EventType, "thread_closed", StringComparison.Ordinal);
         }
     }
