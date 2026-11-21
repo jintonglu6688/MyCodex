@@ -68,6 +68,7 @@ namespace MyCodex.Application.Tests
         {
             var recorder = new CommandRecorder { ExitCode = 0 };
             var service = CreateCloneService(target, recorder);
+            var cancellation = new CancellationTokenSource();
 
             var result = service.CloneAsync(
                 new GitCloneRequest
@@ -78,8 +79,9 @@ namespace MyCodex.Application.Tests
                     RecurseSubmodules = true
                 },
                 null,
-                CancellationToken.None).GetAwaiter().GetResult();
+                cancellation.Token).GetAwaiter().GetResult();
 
+            Assert.That(recorder.CancellationToken, Is.EqualTo(cancellation.Token), "Cancel must reach the clone command.");
             Assert.That(recorder.OperationName, Is.EqualTo(expectedOperation));
             Assert.That(recorder.TimeoutMilliseconds, Is.EqualTo(expectedTimeout));
             Assert.That(recorder.Script, Is.EqualTo(UnixGitCloneScript.CloneScript));
@@ -164,6 +166,8 @@ namespace MyCodex.Application.Tests
 
             public string[] Arguments { get; private set; }
 
+            public CancellationToken CancellationToken { get; set; }
+
             public void Record(object config, string script, string operationName, int timeoutMilliseconds, string[] arguments)
             {
                 Assert.That(config, Is.Not.Null);
@@ -219,7 +223,8 @@ namespace MyCodex.Application.Tests
                 CancellationToken cancellationToken,
                 params string[] arguments)
             {
-                throw new NotSupportedException("Unexpected cancellable command in this test.");
+                _recorder.CancellationToken = cancellationToken;
+                return ExecuteAsync(config, script, operationName, timeoutMilliseconds, arguments);
             }
         }
 
@@ -268,7 +273,8 @@ namespace MyCodex.Application.Tests
                 CancellationToken cancellationToken,
                 params string[] arguments)
             {
-                throw new NotSupportedException("Unexpected cancellable command in this test.");
+                _recorder.CancellationToken = cancellationToken;
+                return ExecuteAsync(config, script, operationName, timeoutMilliseconds, arguments);
             }
         }
     }

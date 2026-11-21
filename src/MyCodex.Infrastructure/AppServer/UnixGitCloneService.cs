@@ -8,11 +8,11 @@ namespace MyCodex.Infrastructure.AppServer
 {
     internal sealed class UnixGitCloneService : IGitCloneService
     {
-        private readonly UnixCommandInvoker _execute;
+        private readonly UnixCancellableCommandInvoker _execute;
         private readonly string _operationPrefix;
         private readonly int _timeoutMilliseconds;
 
-        internal UnixGitCloneService(UnixCommandInvoker execute, string operationPrefix, int timeoutMilliseconds)
+        internal UnixGitCloneService(UnixCancellableCommandInvoker execute, string operationPrefix, int timeoutMilliseconds)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _operationPrefix = operationPrefix ?? throw new ArgumentNullException(nameof(operationPrefix));
@@ -43,6 +43,7 @@ namespace MyCodex.Infrastructure.AppServer
                 UnixGitCloneScript.CloneScript,
                 _operationPrefix + "-git-clone",
                 _timeoutMilliseconds,
+                cancellationToken,
                 repositoryUrl,
                 parentDirectory,
                 folderName,

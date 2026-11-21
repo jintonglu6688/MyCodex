@@ -19,7 +19,7 @@ namespace MyCodex.Infrastructure.AppServer
         internal WslGitCloneService(WslAppServerConfigSnapshot config, IWslCommandExecutor executor)
         {
             _inner = new UnixGitCloneService(
-                UnixCommandInvokers.ForWsl(config, executor),
+                UnixCommandInvokers.ForWslCancellable(config, executor),
                 "mycodex-wsl",
                 30 * 60 * 1000);
         }

@@ -19,7 +19,7 @@ namespace MyCodex.Infrastructure.AppServer
         internal RemoteMacGitCloneService(RemoteMacSshConfigSnapshot config, IRemoteSshCommandExecutor executor)
         {
             _inner = new UnixGitCloneService(
-                UnixCommandInvokers.ForRemote(config, executor),
+                UnixCommandInvokers.ForRemoteCancellable(config, executor),
                 "mycodex-remote",
                 // 0 would fall back to the SSH executor's 10-second default; match the WSL clone budget.
                 30 * 60 * 1000);
