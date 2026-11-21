@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Services;
 using MyCodex.Shared.Constants;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
@@ -285,15 +286,31 @@ namespace MyCodex.WinForms.Forms
                     return;
                 }
 
+                var plan = GitRemoteUrlUpdatePlanner.Plan(entry, form.FetchUrl, form.SeparatePushUrl);
+                if (!plan.HasChanges)
+                {
+                    RestoreListFocus();
+                    return;
+                }
+
                 await RunRemoteOperationAsync(async () =>
                 {
-                    var result = await _gitService.SetRemoteUrlAsync(_workspacePath, form.RemoteName, form.FetchUrl, _lifetimeCancellation.Token).ConfigureAwait(true);
-                    if (result == null || !result.Success || string.Equals(form.FetchUrl, form.PushUrl, StringComparison.Ordinal))
+                    GitOperationResult result = null;
+                    if (plan.FetchUrl != null)
                     {
-                        return result;
+                        result = await _gitService.SetRemoteUrlAsync(_workspacePath, form.RemoteName, plan.FetchUrl, _lifetimeCancellation.Token).ConfigureAwait(true);
+                        if (result == null || !result.Success)
+                        {
+                            return result;
+                        }
                     }
 
-                    return await _gitService.SetRemotePushUrlAsync(_workspacePath, form.RemoteName, form.PushUrl, _lifetimeCancellation.Token).ConfigureAwait(true);
+                    if (plan.UpdatePushUrl)
+                    {
+                        result = await _gitService.SetRemotePushUrlAsync(_workspacePath, form.RemoteName, plan.PushUrl, _lifetimeCancellation.Token).ConfigureAwait(true);
+                    }
+
+                    return result;
                 });
             }
         }

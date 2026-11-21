@@ -165,6 +165,15 @@ namespace MyCodex.Application.Services
             return RunAsync(() =>
             {
                 var normalizedRemoteName = NormalizeRemoteName(remoteName);
+                if (string.IsNullOrWhiteSpace(remoteUrl))
+                {
+                    // No URL: drop the separate push URL so pushes follow the fetch URL again.
+                    return RunOperation(
+                        workspacePath,
+                        Args("config", "--unset-all", "remote." + normalizedRemoteName + ".pushurl"),
+                        SharedLocalization.Text("GitRepositoryService.Operation.SetRemotePushUrl", "Updated remote repository push URL."));
+                }
+
                 var normalizedRemoteUrl = NormalizeRemoteUrl(remoteUrl);
                 return RunOperation(
                     workspacePath,

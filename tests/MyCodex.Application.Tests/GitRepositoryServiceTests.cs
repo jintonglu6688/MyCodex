@@ -2460,6 +2460,9 @@ namespace MyCodex.Application.Tests
             Assert.That(setPushUrlResult.Success, Is.True);
             CollectionAssert.AreEqual(new[] { "remote", "set-url", "--push", "origin", "https://example.com/push-new.git" }, runner.LastArguments);
 
+            service.SetRemotePushUrlAsync("/home/user/repo", "origin", null).GetAwaiter().GetResult();
+            CollectionAssert.AreEqual(new[] { "config", "--unset-all", "remote.origin.pushurl" }, runner.LastArguments);
+
             var removeResult = service.RemoveRemoteAsync("/home/user/repo", "origin").GetAwaiter().GetResult();
             Assert.That(removeResult.Success, Is.True);
             CollectionAssert.AreEqual(new[] { "remote", "remove", "origin" }, runner.LastArguments);

@@ -2,7 +2,9 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Services;
 using MyCodex.Shared.Constants;
+using MyCodex.Shared.Helpers;
 using MyCodex.WinForms.Localization;
 using MyCodex.WinForms.Theming;
 
@@ -16,6 +18,7 @@ namespace MyCodex.WinForms.Forms
         private readonly Button _okButton;
         private readonly Button _cancelButton;
         private readonly bool _isEditMode;
+        private readonly GitRemoteEntry _entry;
 
         public GitRemoteEditForm(GitRemoteEntry entry)
         {
@@ -47,6 +50,7 @@ namespace MyCodex.WinForms.Forms
             UiTheme.ApplyButton(_okButton, UiGlyph.Ok);
             UiTheme.ApplyButton(_cancelButton, UiGlyph.Cancel);
 
+            _entry = entry;
             if (entry != null)
             {
                 _nameTextBox.Text = entry.Name ?? string.Empty;
@@ -73,6 +77,12 @@ namespace MyCodex.WinForms.Forms
         public string FetchUrl
         {
             get { return (_fetchUrlTextBox.Text ?? string.Empty).Trim(); }
+        }
+
+        // Null when the push URL follows the fetch URL.
+        public string SeparatePushUrl
+        {
+            get { return TextValueHelper.TrimToNull(_pushUrlTextBox.Text); }
         }
 
         public string PushUrl
@@ -110,7 +120,32 @@ namespace MyCodex.WinForms.Forms
                 return;
             }
 
+            var redactedUrlTextBox = FindEditedRedactedUrl();
+            if (redactedUrlTextBox != null)
+            {
+                MessageBox.Show(
+                    this,
+                    UiLocalization.Text("GitRemoteEditForm.Message.RedactedCredential", "The URL still contains *** in place of a hidden credential. Enter the full URL."),
+                    AppConstants.AppName,
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                redactedUrlTextBox.Focus();
+                return;
+            }
+
             DialogResult = DialogResult.OK;
+        }
+
+        // Untouched URLs may show *** for a hidden credential; an edited one must not keep it.
+        private TextBox FindEditedRedactedUrl()
+        {
+            var plan = GitRemoteUrlUpdatePlanner.Plan(_entry, FetchUrl, SeparatePushUrl);
+            if (GitRemoteUrlUpdatePlanner.ContainsRedactedCredential(plan.FetchUrl))
+            {
+                return _fetchUrlTextBox;
+            }
+
+            return plan.UpdatePushUrl && GitRemoteUrlUpdatePlanner.ContainsRedactedCredential(plan.PushUrl) ? _pushUrlTextBox : null;
         }
 
         private void BuildLayout()

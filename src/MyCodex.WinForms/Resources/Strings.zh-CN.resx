@@ -9002,6 +9002,9 @@ MyCodex 桌面客户端。</value>
   <data name="GitRemoteEditForm.Message.FetchUrlRequired" xml:space="preserve">
     <value>请先输入获取地址。</value>
   </data>
+  <data name="GitRemoteEditForm.Message.RedactedCredential" xml:space="preserve">
+    <value>地址中仍有代替隐藏凭据的 ***，请输入完整地址。</value>
+  </data>
   <data name="GitRemoteEditForm.Label.Name" xml:space="preserve">
     <value>名称(&amp;N)</value>
   </data>

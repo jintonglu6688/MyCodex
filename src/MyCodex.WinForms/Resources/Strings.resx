@@ -9054,6 +9054,9 @@ Suggestion:
   <data name="GitRemoteEditForm.Message.FetchUrlRequired" xml:space="preserve">
     <value>Enter the fetch URL first.</value>
   </data>
+  <data name="GitRemoteEditForm.Message.RedactedCredential" xml:space="preserve">
+    <value>The URL still contains *** in place of a hidden credential. Enter the full URL.</value>
+  </data>
   <data name="GitRemoteEditForm.Label.Name" xml:space="preserve">
     <value>Name(&amp;N)</value>
   </data>
