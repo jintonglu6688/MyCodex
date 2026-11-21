@@ -1259,7 +1259,7 @@ namespace MyCodex.WinForms.Forms
             var success = await RunGitOperationAsync(() => _gitService.CommitAsync(_workspacePath, subject, body));
             if (success)
             {
-                ClearCommitInputs();
+                ClearCommitInputsIfUnchanged(subject, body);
             }
         }
 
@@ -1302,7 +1302,7 @@ namespace MyCodex.WinForms.Forms
             var success = await RunGitOperationAsync(() => _gitService.CommitAmendAsync(_workspacePath, subject, body));
             if (success)
             {
-                ClearCommitInputs();
+                ClearCommitInputsIfUnchanged(subject, body);
             }
         }
 
@@ -1673,6 +1673,16 @@ namespace MyCodex.WinForms.Forms
         {
             _commitSubjectTextBox.Clear();
             _commitBodyTextBox.Clear();
+        }
+
+        // The inputs stay editable while a commit runs; keep a message the user started meanwhile.
+        private void ClearCommitInputsIfUnchanged(string committedSubject, string committedBody)
+        {
+            if (string.Equals(GetCommitSubject(), committedSubject, StringComparison.Ordinal) &&
+                string.Equals(GetCommitBody(), committedBody, StringComparison.Ordinal))
+            {
+                ClearCommitInputs();
+            }
         }
 
         private static string FormatOptionalCommitBody(string body)

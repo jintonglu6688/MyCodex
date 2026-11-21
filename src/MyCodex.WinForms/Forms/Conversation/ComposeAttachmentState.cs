@@ -208,6 +208,16 @@ namespace MyCodex.WinForms.Forms
             return false;
         }
 
+        internal static bool SameAttachments(IReadOnlyList<PendingAttachmentItem> first, IReadOnlyList<PendingAttachmentItem> second)
+        {
+            first = first ?? Array.Empty<PendingAttachmentItem>();
+            second = second ?? Array.Empty<PendingAttachmentItem>();
+            return first.Count == second.Count && first.Zip(second, (a, b) =>
+                a.LocalPath == b.LocalPath && a.Kind == b.Kind && a.InputName == b.InputName &&
+                a.MarkerText == b.MarkerText && a.IsDirectory == b.IsDirectory && a.IsRemotePath == b.IsRemotePath &&
+                (a.InMemoryContent ?? Array.Empty<byte>()).SequenceEqual(b.InMemoryContent ?? Array.Empty<byte>())).All(equal => equal);
+        }
+
         internal static bool ContainsPendingAttachment(IEnumerable<PendingAttachmentItem> attachments, string path)
         {
             if (attachments == null)

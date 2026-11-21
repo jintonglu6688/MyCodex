@@ -993,6 +993,47 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Test]
+        public async Task SendCurrentInput_KeepsTextTypedWhileSendingAndIgnoresRepeatedSubmit()
+        {
+            var sendCount = 0;
+            var pending = new TaskCompletionSource<ChatWorkbenchSendResult>();
+            var callbacks = CreateCallbacks();
+            callbacks.SendAsync = request =>
+            {
+                sendCount++;
+                return pending.Task;
+            };
+
+            using (var control = new ChatWorkbenchControl(callbacks))
+            {
+                control.SetInputText("first message");
+                var sending = control.SendCurrentInputAsync();
+                await control.SendCurrentInputAsync();
+                control.SetInputText("next message");
+                pending.SetResult(new ChatWorkbenchSendResult(true, true, "sent"));
+                await sending;
+
+                Assert.That(sendCount, Is.EqualTo(1));
+                Assert.That(control.InputText, Is.EqualTo("next message"));
+            }
+        }
+
+        [Test]
+        public async Task SendCurrentInput_ClearsUnchangedDraftAfterSuccess()
+        {
+            var callbacks = CreateCallbacks();
+            callbacks.SendAsync = request => Task.FromResult(new ChatWorkbenchSendResult(true, true, "sent"));
+
+            using (var control = new ChatWorkbenchControl(callbacks))
+            {
+                control.SetInputText("only message");
+                await control.SendCurrentInputAsync();
+
+                Assert.That(control.InputText, Is.Empty);
+            }
+        }
+
         private static ChatWorkbenchHostCallbacks CreateCallbacks()
         {
             return new ChatWorkbenchHostCallbacks

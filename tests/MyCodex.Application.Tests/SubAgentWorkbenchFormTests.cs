@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Tests.TestSupport;
 using MyCodex.Domain.Entities;
+using MyCodex.Shared.Constants;
 using MyCodex.WinForms.Controls;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
@@ -47,6 +48,24 @@ namespace MyCodex.Application.Tests
                     Assert.That(selectionChanges, Is.Zero);
                     Assert.That(history.Items.Cast<ChatHistoryItem>().Any(item => item.FullText.Contains("second reply")), Is.True);
                 });
+            }
+        }
+
+        [Test]
+        public void WorkbenchUsesConfiguredSendShortcutMode()
+        {
+            var operations = CreateOperations(new List<string>());
+            operations.WorkbenchCallbacks = new ChatWorkbenchHostCallbacks
+            {
+                GetSendMessageShortcutMode = () => SendMessageShortcutMode.CtrlEnterNewLineEnterSend
+            };
+            using (var form = new SubAgentWorkbenchForm(new ChatSession { Id = "parent" },
+                new[] { CreateSubAgent("a", "a", "A") }, operations))
+            {
+                var callbacks = FormTestDriver.Field<ChatWorkbenchHostCallbacks>(FormTestDriver.Single<ChatWorkbenchControl>(form), "_callbacks");
+
+                Assert.That(callbacks.GetSendMessageShortcutMode, Is.Not.Null);
+                Assert.That(callbacks.GetSendMessageShortcutMode(), Is.EqualTo(SendMessageShortcutMode.CtrlEnterNewLineEnterSend));
             }
         }
 

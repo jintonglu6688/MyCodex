@@ -35,6 +35,7 @@ namespace MyCodex.WinForms.Controls
         private readonly MenuItem _removeSelectedAttachmentMenuItem;
         private readonly MenuItem _clearAttachmentsMenuItem;
         private bool _isSending;
+        private bool _isSubmitting;
         private bool _isUpdatingInputText;
 
         public ChatWorkbenchControl(ChatWorkbenchHostCallbacks callbacks)
@@ -338,49 +339,59 @@ namespace MyCodex.WinForms.Controls
             RefreshPendingAttachmentState();
         }
 
+        internal bool HasDraft(string text, IReadOnlyList<PendingAttachmentItem> attachments)
+        {
+            return string.Equals(InputText, text ?? string.Empty, StringComparison.Ordinal) &&
+                ComposeAttachmentState.SameAttachments(_pendingAttachments, attachments);
+        }
+
         internal async Task SendCurrentInputAsync()
         {
-            if (_callbacks.SendAsync == null)
+            // The keyboard shortcut bypasses the disabled button, so guard the whole submission here.
+            if (_callbacks.SendAsync == null || _isSubmitting)
             {
                 return;
             }
 
-            SynchronizePendingAttachmentsWithInputText(true);
-            var rawText = InputText;
-            var attachmentsSnapshot = ComposeAttachmentState.CloneAttachments(_pendingAttachments);
-            var inputItems = BuildOutgoingInputItems(rawText, attachmentsSnapshot);
-            if (inputItems.Count == 0)
-            {
-                return;
-            }
-
-            var unavailableAttachments = _callbacks.ValidateAttachmentsAsync != null
-                ? await _callbacks.ValidateAttachmentsAsync(attachmentsSnapshot)
-                : Array.Empty<PendingAttachmentItem>();
-            if (unavailableAttachments != null && unavailableAttachments.Count > 0)
-            {
-                SetStatus(UiLocalization.Text("ChatWorkbenchControl.Status.AttachmentsUnavailable", "Attachments are unavailable. Please add them again"));
-                return;
-            }
-
-            var request = new ChatWorkbenchSendRequest(
-                rawText,
-                OutgoingInputItemBuilder.BuildPreviewText(rawText, attachmentsSnapshot),
-                inputItems,
-                attachmentsSnapshot);
-
-            _isSending = true;
+            _isSubmitting = true;
             RefreshActionState();
-            SetStatus(UiLocalization.Text("ChatWorkbenchControl.Status.Sending", "Sending message..."));
             try
             {
+                SynchronizePendingAttachmentsWithInputText(true);
+                var rawText = InputText;
+                var attachmentsSnapshot = ComposeAttachmentState.CloneAttachments(_pendingAttachments);
+                var inputItems = BuildOutgoingInputItems(rawText, attachmentsSnapshot);
+                if (inputItems.Count == 0)
+                {
+                    return;
+                }
+
+                var unavailableAttachments = _callbacks.ValidateAttachmentsAsync != null
+                    ? await _callbacks.ValidateAttachmentsAsync(attachmentsSnapshot)
+                    : Array.Empty<PendingAttachmentItem>();
+                if (unavailableAttachments != null && unavailableAttachments.Count > 0)
+                {
+                    SetStatus(UiLocalization.Text("ChatWorkbenchControl.Status.AttachmentsUnavailable", "Attachments are unavailable. Please add them again"));
+                    return;
+                }
+
+                var request = new ChatWorkbenchSendRequest(
+                    rawText,
+                    OutgoingInputItemBuilder.BuildPreviewText(rawText, attachmentsSnapshot),
+                    inputItems,
+                    attachmentsSnapshot);
+
+                _isSending = true;
+                RefreshActionState();
+                SetStatus(UiLocalization.Text("ChatWorkbenchControl.Status.Sending", "Sending message..."));
                 var result = await _callbacks.SendAsync(request);
                 if (result == null || !result.KeepSending)
                 {
                     _isSending = false;
                 }
 
-                if (result != null && result.ClearInput)
+                // The input stays editable while sending; keep anything typed or attached since.
+                if (result != null && result.ClearInput && HasDraft(rawText, attachmentsSnapshot))
                 {
                     SetInputText(string.Empty);
                     ClearPendingAttachments(false);
@@ -399,6 +410,7 @@ namespace MyCodex.WinForms.Controls
             }
             finally
             {
+                _isSubmitting = false;
                 RefreshActionState();
             }
         }
@@ -602,7 +614,7 @@ namespace MyCodex.WinForms.Controls
         {
             var hasDraft = !string.IsNullOrWhiteSpace(InputText) || _pendingAttachments.Count > 0;
             var canSend = _callbacks.CanSend == null || _callbacks.CanSend();
-            _sendButton.Enabled = canSend && hasDraft && !_isSending;
+            _sendButton.Enabled = canSend && hasDraft && !_isSending && !_isSubmitting;
             _stopButton.Enabled = _isSending || (_callbacks.CanStop != null && _callbacks.CanStop());
             _insertButton.Enabled = canSend && HasAttachmentActions;
         }

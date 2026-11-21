@@ -498,7 +498,8 @@ namespace MyCodex.WinForms.Forms
                     _operations.PlayMessageSentSound?.Invoke();
                 }
 
-                if (result != null && result.IsSuccess && result.ClearInput)
+                if (result != null && result.IsSuccess && result.ClearInput &&
+                    request != null && _chatWorkbench.HasDraft(request.RawText, request.Attachments))
                 {
                     _operations.ClearDraft?.Invoke();
                 }

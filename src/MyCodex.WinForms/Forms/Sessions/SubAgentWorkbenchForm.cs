@@ -126,6 +126,7 @@ namespace MyCodex.WinForms.Forms
                 OpenMessageDetail = callbacks.OpenMessageDetail,
                 AnnounceStatus = callbacks.AnnounceStatus,
                 DeleteTemporaryAttachment = callbacks.DeleteTemporaryAttachment,
+                GetSendMessageShortcutMode = callbacks.GetSendMessageShortcutMode,
                 SendAsync = SendCurrentInputAsync,
                 StopAsync = StopActiveSubAgentAsync,
                 CanSend = () =>
@@ -493,7 +494,7 @@ namespace MyCodex.WinForms.Forms
                 if (result?.IsSuccess == true && result.ClearInput)
                 {
                     if (_agentDrafts.TryGetValue(sendingSession.Id, out var draft) && draft.DraftText == sentDraft.DraftText &&
-                        SameAttachments(draft.Attachments, sentDraft.Attachments))
+                        ComposeAttachmentState.SameAttachments(draft.Attachments, sentDraft.Attachments))
                         _agentDrafts.Remove(sendingSession.Id);
                 }
                 if (!ReferenceEquals(ActiveSession, sendingSession))
@@ -511,7 +512,7 @@ namespace MyCodex.WinForms.Forms
 
                 return result == null ? new ChatWorkbenchSendResult(false, false, string.Empty) :
                     new ChatWorkbenchSendResult(result.IsSuccess, result.ClearInput && _chatWorkbench.InputText == sentDraft.DraftText &&
-                        SameAttachments(_chatWorkbench.PendingAttachments, sentDraft.Attachments),
+                        ComposeAttachmentState.SameAttachments(_chatWorkbench.PendingAttachments, sentDraft.Attachments),
                         _runningTurns.ContainsKey(sendingThreadId), result.StatusText);
             }
             catch (Exception ex)
@@ -531,14 +532,6 @@ namespace MyCodex.WinForms.Forms
                 _pendingSendThreadIds.Remove(sendingThreadId);
                 RefreshActionState();
             }
-        }
-
-        private static bool SameAttachments(IReadOnlyList<PendingAttachmentItem> first, IReadOnlyList<PendingAttachmentItem> second)
-        {
-            return first.Count == second.Count && first.Zip(second, (a, b) =>
-                a.LocalPath == b.LocalPath && a.Kind == b.Kind && a.InputName == b.InputName &&
-                a.MarkerText == b.MarkerText && a.IsDirectory == b.IsDirectory && a.IsRemotePath == b.IsRemotePath &&
-                (a.InMemoryContent ?? Array.Empty<byte>()).SequenceEqual(b.InMemoryContent ?? Array.Empty<byte>())).All(equal => equal);
         }
 
         private async Task StopActiveSubAgentAsync()
