@@ -225,10 +225,30 @@ namespace MyCodex.Application.Services
                 }
 
                 var value = line.Substring(separatorIndex + 1).Trim();
-                return value.Length == 0 ? null : value;
+                return value.Length == 0 ? null : RemoveUrlCredentials(value);
             }
 
             return null;
+        }
+
+        // The origin URL goes into App Server thread metadata; a token in its user info must not.
+        private static string RemoveUrlCredentials(string url)
+        {
+            var schemeIndex = url.IndexOf("://", StringComparison.Ordinal);
+            if (schemeIndex < 0)
+            {
+                return url;
+            }
+
+            var authorityStart = schemeIndex + 3;
+            var authorityEnd = url.IndexOfAny(new[] { '/', '?', '#' }, authorityStart);
+            if (authorityEnd < 0)
+            {
+                authorityEnd = url.Length;
+            }
+
+            var at = authorityEnd > authorityStart ? url.LastIndexOf('@', authorityEnd - 1, authorityEnd - authorityStart) : -1;
+            return at < 0 ? url : url.Substring(0, authorityStart) + url.Substring(at + 1);
         }
 
         private static string ResolveGitConfigPath(string gitDirectory)

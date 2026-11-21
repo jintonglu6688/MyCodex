@@ -90,6 +90,29 @@ namespace MyCodex.Application.Tests
             Assert.Throws<DirectoryNotFoundException>(() => service.CreateFromPath(workspaceRoot, true));
         }
 
+        [TestCase("https://user:ghp_secret@github.com/demo/repo.git", "https://github.com/demo/repo.git")]
+        [TestCase("https://ghp_secret@github.com/demo/repo.git", "https://github.com/demo/repo.git")]
+        [TestCase("https://github.com/demo/repo.git", "https://github.com/demo/repo.git")]
+        [TestCase("https://github.com/demo/repo@v1.git", "https://github.com/demo/repo@v1.git")]
+        [TestCase("git@github.com:demo/repo.git", "git@github.com:demo/repo.git")]
+        public void ReadGitInfo_DropsCredentialsFromTheOriginUrl(string url, string expected)
+        {
+            var workspaceRoot = CreateTempDirectory();
+            try
+            {
+                var gitRoot = Path.Combine(workspaceRoot, ".git");
+                Directory.CreateDirectory(Path.Combine(gitRoot, "refs", "heads"));
+                File.WriteAllText(Path.Combine(gitRoot, "HEAD"), "ref: refs/heads/main");
+                File.WriteAllText(Path.Combine(gitRoot, "config"), "[remote \"origin\"]" + Environment.NewLine + "    url = " + url + Environment.NewLine);
+
+                Assert.That(new WorkspaceService().ReadGitInfo(workspaceRoot).OriginUrl, Is.EqualTo(expected));
+            }
+            finally
+            {
+                DeleteDirectory(workspaceRoot);
+            }
+        }
+
         [Test]
         public void ReadGitInfo_ReadsBranchShaAndOriginFromSimpleGitDirectory()
         {
