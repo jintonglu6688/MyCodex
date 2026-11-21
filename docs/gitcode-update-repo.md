@@ -146,12 +146,17 @@ The script:
 - Fetches and packages the official latest bundled Codex runtime by default.
 - Builds the installer with that bundled runtime.
 - Copies it to a unique release file name.
-- Refreshes the legacy runtime manifest with verified npm download URLs before
-  generating the app manifest; runtime archives are not uploaded to GitCode.
+- Refreshes the legacy runtime manifest locally (`Publish-GitCodeRuntime.ps1
+  -LocalManifestOnly`) with verified npm download URLs before generating the app
+  manifest; runtime archives are not uploaded to GitCode, and this step does not
+  touch the distribution repo or the `updates-stable` pointer.
 - Writes `updates/stable.json` as old-client-compatible ASCII JSON.
-- Recreates the `app-v<version>` Release, uploads the installer and verifies its
+- Creates the `app-v<version>` Release, uploads the installer and verifies its
   public size before changing anything clients read. A failed upload leaves the
-  current `updates-stable` pointer and distribution repo untouched.
+  current `updates-stable` pointer and distribution repo untouched. When that tag
+  already exists (republishing a version), the installer goes to a new
+  `app-v<version>-<UniqueSuffix>` Release instead, so the Release the live pointer
+  still downloads from is never deleted.
 - Then publishes only `README.md` and `updates/` to the GitCode distribution repo,
   recreates `updates-stable` with the new manifest and verifies the public manifest.
 

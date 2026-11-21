@@ -145,6 +145,12 @@ function Invoke-GitCodeFileUpload {
     Assert-True ($global:codexRuntimeFixture.Uploads.ContainsKey('stable.json')) 'Stable pointer was not uploaded.'
     Assert-True ($global:codexRuntimeFixture.Uploads.Count -eq 1) 'Only the small stable manifest may be uploaded.'
     Assert-True ($global:codexRuntimeFixture.SizeChecks -eq $triples.Count) 'Each published runtime package must be size-checked once.'
+    # The app release flow republishes the pointer itself, after its installer upload.
+    $global:codexRuntimeFixture.Uploads.Clear()
+    $global:codexRuntimeFixture.SizeChecks = 0
+    & $publish -Token 'fixture' -RegistryBaseUrl 'https://registry.fixture' -TargetTriple $triples -LocalManifestOnly
+    Assert-True ($global:codexRuntimeFixture.Uploads.Count -eq 0) 'Local-only runtime publication uploaded the stable pointer.'
+    Assert-True ($global:codexRuntimeFixture.SizeChecks -eq $triples.Count) 'Local-only runtime publication skipped package checks.'
 
     try {
         & $prepare -Version '../escape' -RegistryBaseUrl 'https://registry.fixture'

@@ -19,7 +19,11 @@ param(
 
     [string]$ManifestPath,
 
-    [switch]$SkipDistributionRepoPublish
+    [switch]$SkipDistributionRepoPublish,
+
+    # Refresh and verify the runtime entries in $ManifestPath only. The app release script
+    # publishes the distribution repo and pointer itself, after its installer upload succeeds.
+    [switch]$LocalManifestOnly
 )
 
 Set-StrictMode -Version Latest
@@ -158,6 +162,19 @@ foreach ($targetTriple in $targetTriples) {
         -Package ($packages[$targetTripleKey])
 }
 Write-Manifest -Manifest $manifest -Path $ManifestPath
+
+if ($LocalManifestOnly) {
+    foreach ($targetTriple in $targetTriples) {
+        $package = $packages[[string]$targetTriple]
+        Assert-GitCodePublicDownloadSize -Url $package.DownloadUrl -ExpectedSize ([long]$package.Size) -Name "Runtime package $targetTriple"
+    }
+
+    Write-Host ""
+    Write-Host "Legacy runtime manifest refreshed locally:"
+    Write-Host "  Version:  $version"
+    Write-Host "  Manifest: $ManifestPath"
+    return
+}
 
 if (-not $SkipDistributionRepoPublish) {
     & $distributionScript `

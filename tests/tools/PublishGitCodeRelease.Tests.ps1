@@ -8,9 +8,9 @@ function Assert-True($Condition, [string]$Message) {
 
 # Runs the real release script against a fixture: every GitCode call is replaced by an event
 # recorder, so the test checks what is published and in which order, offline.
-function Invoke-ReleaseFixture([bool]$FailInstallerUpload) {
+function Invoke-ReleaseFixture([bool]$FailInstallerUpload, [string[]]$ExistingTags = @(), [bool]$PublishRuntime = $false) {
     $fixtureRoot = Join-Path $repoRoot ('temp\gitcode-release-test-' + [Guid]::NewGuid().ToString('N'))
-    $global:gitCodeReleaseFixture = @{ Events = [Collections.Generic.List[string]]::new(); FailInstallerUpload = $FailInstallerUpload }
+    $global:gitCodeReleaseFixture = @{ Events = [Collections.Generic.List[string]]::new(); FailInstallerUpload = $FailInstallerUpload; ExistingTags = $ExistingTags }
     try {
         foreach ($relative in @('tools\gitcode', 'tools\build', 'tools\update', 'tools\authentication-center', 'artifacts\installer', 'updates')) {
             New-Item -ItemType Directory -Path (Join-Path $fixtureRoot $relative) -Force | Out-Null
@@ -35,9 +35,15 @@ $manifest = @{ app = @{ version = $Version; asset = @{ url = "$name/download"; f
 [IO.File]::WriteAllText($OutputPath, ($manifest | ConvertTo-Json -Depth 5))
 $global:LASTEXITCODE = 0
 '@
+        Set-Content -LiteralPath (Join-Path $fixtureRoot 'tools\gitcode\Publish-GitCodeRuntime.ps1') -Encoding ASCII -Value @'
+param($Owner, $Repo, $RepoUrl, $Token, $Version, $ManifestPath, [switch]$LocalManifestOnly)
+$global:gitCodeReleaseFixture.Events.Add("runtime local=$LocalManifestOnly manifest=$([IO.Path]::GetFileName($ManifestPath))")
+$global:LASTEXITCODE = 0
+'@
         # Later definitions win when the script dot-sources the helpers.
         Add-Content -LiteralPath (Join-Path $fixtureRoot 'tools\gitcode\GitCodePublishing.ps1') -Encoding ASCII -Value @'
 function Get-GitCodeToken { 'fixture-token' }
+function Test-RemoteTagExists { param([string]$TagName) @($global:gitCodeReleaseFixture.ExistingTags) -contains $TagName }
 function Remove-RemoteTagIfExists { param([string]$TagName) $global:gitCodeReleaseFixture.Events.Add("remove $TagName") }
 function New-GitCodeRelease { param([string]$TagName, [string]$Name, [string]$Body) $global:gitCodeReleaseFixture.Events.Add("create $TagName") }
 function Send-GitCodeReleaseFile {
@@ -54,8 +60,9 @@ function Assert-GitCodePublicDownloadSize {
 
         Push-Location $fixtureRoot
         try {
-            & (Join-Path $fixtureRoot 'tools\gitcode\Publish-GitCodeRelease.ps1') -Token 'fixture-token' -SkipInstallerBuild `
-                -SkipStandardRuntimePublish -UniqueSuffix 'fixture' -ReleaseNotesZhCn 'zh' -ReleaseNotesEnUs 'en' | Out-Null
+            $arguments = @{ Token = 'fixture-token'; SkipInstallerBuild = $true; SkipStandardRuntimePublish = (-not $PublishRuntime)
+                UniqueSuffix = 'fixture'; ReleaseNotesZhCn = 'zh'; ReleaseNotesEnUs = 'en' }
+            & (Join-Path $fixtureRoot 'tools\gitcode\Publish-GitCodeRelease.ps1') @arguments | Out-Null
             return $null
         }
         catch { return $_.Exception.Message }
@@ -90,6 +97,20 @@ Assert-True ($failure -like '*Injected installer upload failure*') "Installer up
 $events = @($global:gitCodeReleaseFixture.Events)
 Assert-True (-not ($events -contains 'remove updates-stable')) ('The stable pointer was removed before the installer existed: ' + ($events -join ' > '))
 Assert-True (-not ($events -contains 'distribution')) ('The distribution repository was pushed before the installer existed: ' + ($events -join ' > '))
+
+# The runtime step only refreshes the local manifest; the pointer still waits for the installer.
+$failure = Invoke-ReleaseFixture -FailInstallerUpload $true -PublishRuntime $true
+Assert-True ($failure -like '*Injected installer upload failure*') "Installer upload failure was not reported: $failure"
+$events = @($global:gitCodeReleaseFixture.Events)
+Assert-True ($events[0] -eq 'runtime local=True manifest=stable.json') ('Runtime publish was not local-only: ' + ($events -join ' > '))
+Assert-True (-not ($events -contains 'remove updates-stable')) ('The runtime step moved the stable pointer: ' + ($events -join ' > '))
+
+# Republishing an existing version uploads to a new release, leaving the live one downloadable.
+$failure = Invoke-ReleaseFixture -FailInstallerUpload $false -ExistingTags @('app-v9.9.9')
+Assert-True ($null -eq $failure) "Fixture republish failed: $failure"
+$events = @($global:gitCodeReleaseFixture.Events)
+Assert-True (-not ($events -contains 'remove app-v9.9.9')) ('The live release was deleted: ' + ($events -join ' > '))
+Assert-True ($events -contains 'upload app-v9.9.9-fixture/MyCodex_v9.9.9_Setup_fixture.exe') ('Republish did not use a new release: ' + ($events -join ' > '))
 
 Remove-Item Function:\git, Function:\Invoke-RestMethod
 Write-Host 'GitCode release publish order checks passed.'

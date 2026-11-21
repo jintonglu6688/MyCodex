@@ -65,14 +65,18 @@ if ($sourceRemotes -contains "gitcode") {
 }
 
 $version = Get-AppVersion -Path $versionPropsPath
-$releaseTag = "app-v$version"
-$stableTag = "updates-$Channel"
-$packageBaseUrl = "$gitCodeApiBase/repos/$Owner/$Repo/releases/$releaseTag/attach_files/"
-$installerPath = Join-Path $repoRoot ("artifacts\installer\MyCodex_v" + $version + "_Setup.exe")
-
 if ([string]::IsNullOrWhiteSpace($UniqueSuffix)) {
     $UniqueSuffix = [DateTime]::UtcNow.ToString("yyyyMMddHHmmss")
 }
+
+$releaseTag = "app-v$version"
+# Republishing a version must not delete the release the live pointer still downloads from.
+if (-not $PrepareOnly -and (Test-RemoteTagExists -TagName $releaseTag)) {
+    $releaseTag = "app-v$version-$UniqueSuffix"
+}
+$stableTag = "updates-$Channel"
+$packageBaseUrl = "$gitCodeApiBase/repos/$Owner/$Repo/releases/$releaseTag/attach_files/"
+$installerPath = Join-Path $repoRoot ("artifacts\installer\MyCodex_v" + $version + "_Setup.exe")
 
 if (-not $SkipInstallerBuild) {
     & $installerScript `
@@ -103,6 +107,9 @@ if (-not $PrepareOnly -and -not $SkipStandardRuntimePublish -and
         Repo = $Repo
         RepoUrl = $RepoUrl
         Token = Get-GitCodeToken
+        ManifestPath = Join-Path $repoRoot "updates\$Channel.json"
+        # This script publishes the distribution repo and pointer after the installer upload.
+        LocalManifestOnly = $true
     }
     if (-not [string]::IsNullOrWhiteSpace($BundledCodexVersion) -and
         -not [string]::Equals($BundledCodexVersion.Trim(), "latest", [StringComparison]::OrdinalIgnoreCase)) {
