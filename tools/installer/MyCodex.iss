@@ -30,7 +30,6 @@ UninstallDisplayIcon={app}\MyCodex.exe
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=commandline
 WizardStyle=classic
 Compression=lzma2/ultra64
 SolidCompression=yes

@@ -391,13 +391,14 @@ if ([string]::Equals($bundledCodexVersion, "latest", [System.StringComparison]::
     Write-Host "Resolved package source bundled Codex runtime to $bundledCodexVersion $codexTargetTriple."
 }
 
-Remove-NonPinnedBundledCodexRuntimes `
-    -PackageSourceDir $sourceDirFull `
-    -RequiredVersion $bundledCodexVersion
-
+# Check first: a mistyped version must fail before the other runtimes are pruned from the package source.
 if (-not (Test-BundledCodexRuntimeExists -Version $bundledCodexVersion -TargetTriple $codexTargetTriple -Root $sourceDirFull)) {
     throw "Bundled Codex runtime $bundledCodexVersion $codexTargetTriple was not found in package source directory."
 }
+
+Remove-NonPinnedBundledCodexRuntimes `
+    -PackageSourceDir $sourceDirFull `
+    -RequiredVersion $bundledCodexVersion
 
 New-Item -ItemType Directory -Path $outputDirFull -Force | Out-Null
 $isccPath = Get-IsccPath

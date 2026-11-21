@@ -34,6 +34,8 @@ namespace MyCodex.Application.Tests
 
             Assert.That(codexCleanupIndex, Is.GreaterThan(0));
             Assert.That(compileIndex, Is.GreaterThan(codexCleanupIndex));
+            var pinnedRuntimeCheckIndex = source.LastIndexOf("if (-not (Test-BundledCodexRuntimeExists -Version $bundledCodexVersion", System.StringComparison.Ordinal);
+            Assert.That(pinnedRuntimeCheckIndex, Is.GreaterThan(0).And.LessThan(codexCleanupIndex), "A missing pinned runtime must fail before others are pruned.");
         }
 
         [Category(SourceGuardCategory.Assets)]
