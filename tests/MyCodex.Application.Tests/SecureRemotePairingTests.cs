@@ -200,6 +200,14 @@ namespace MyCodex.Application.Tests
             changedCiphertext.Ciphertext = SecureRemoteBase64Url.Encode(ciphertext);
             AssertInvalidClaim(vector, changedCiphertext);
 
+            var malformedNonce = CloneOpaqueClaim(original);
+            malformedNonce.Nonce = "not base64url!";
+            AssertInvalidClaim(vector, malformedNonce);
+
+            var missingKey = CloneOpaqueClaim(original);
+            missingKey.Header.DeviceAgreementPublicKey = null;
+            AssertInvalidClaim(vector, missingKey);
+
             var proofPlaintext = vector.Bytes("pairing", "claimPlaintext");
             proofPlaintext[proofPlaintext.Length - 100] ^= 0x01;
             AssertInvalidClaim(vector, WithEncryptedPlaintext(original, proofPlaintext, vector));

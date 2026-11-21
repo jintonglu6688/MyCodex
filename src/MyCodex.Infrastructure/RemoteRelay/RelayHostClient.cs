@@ -71,7 +71,7 @@ namespace MyCodex.Infrastructure.RemoteRelay
             };
             if (metadata.ProtocolVersion != 1)
             {
-                throw new InvalidOperationException("The Relay protocol version is not supported.");
+                throw new InvalidOperationException(MyCodex.Shared.Localization.SharedLocalization.Text("RelayHostClient.Error.UnsupportedProtocolVersion", "The Relay protocol version is not supported."));
             }
 
             var publicKey = SecureRemoteBase64Url.Decode(metadata.SigningPublicKey);

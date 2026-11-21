@@ -151,6 +151,34 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public async Task Save_AfterImportWithoutSecret_DoesNotReuseThePreviousServersSecret()
+        {
+            var store = new FakeRemoteServiceConfigStore();
+            using (var form = CreateForm(store: store))
+            {
+                form.SetServiceModeForTests("External");
+                form.SetConnectionFieldsForTests("old.example.com", 443, true, "tenant_old", "old-secret", "Windows");
+                await form.ClickSaveForTests();
+            }
+
+            using (var form = CreateForm(store: store))
+            {
+                form.ClipboardReaderForTests = () =>
+                    "{\"relayHost\":\"new.example.com\",\"relayPort\":443,\"tlsRequired\":true," +
+                    "\"tenants\":[{\"tenantId\":\"11111111-1111-4111-8111-111111111111\",\"enabled\":true}]}";
+                form.ClickImportServerInfoForTests();
+                var savesBefore = store.SaveCount;
+
+                await form.ClickSaveForTests();
+
+                Assert.That(store.SaveCount, Is.EqualTo(savesBefore));
+                Assert.That(store.ProtectedSecret, Is.EqualTo("old-secret"));
+                Assert.That(form.DialogResult, Is.Not.EqualTo(DialogResult.OK));
+                Assert.That(form.ServerInfoStatusForTests, Is.EqualTo(UiLocalization.Text("RemoteServiceSettingsForm.Status.AccessSecretRequired", "Enter the access secret before saving.")));
+            }
+        }
+
+        [Test]
         public async Task Save_PersistsConfigWithoutCallingRelayOrTts()
         {
             var store = new FakeRemoteServiceConfigStore();

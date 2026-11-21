@@ -438,6 +438,9 @@
   <data name="AppServerClient.Error.AppServerExited" xml:space="preserve">
     <value>Codex App Server 已退出。</value>
   </data>
+  <data name="RelayHostClient.Error.UnsupportedProtocolVersion" xml:space="preserve">
+    <value>不支持此 Relay 的协议版本。</value>
+  </data>
   <data name="AppServerClient.Error.BatchConfigEditsRequired" xml:space="preserve">
     <value>批量配置编辑不能为空。</value>
   </data>

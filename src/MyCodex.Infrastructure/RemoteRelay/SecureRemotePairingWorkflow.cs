@@ -195,10 +195,10 @@ namespace MyCodex.Infrastructure.RemoteRelay
             ValidateLocalInvite(invite, opaqueClaim);
             var header = opaqueClaim.Header;
             var package = invite.Package;
-            var nonce = SecureRemoteBase64Url.Decode(opaqueClaim.Nonce);
-            var encrypted = SecureRemoteBase64Url.Decode(opaqueClaim.Ciphertext);
-            var inviteSecret = SecureRemoteBase64Url.Decode(package.InviteSecret);
-            var deviceAgreementKey = SecureRemoteBase64Url.Decode(header.DeviceAgreementPublicKey);
+            byte[] nonce = null;
+            byte[] encrypted = null;
+            byte[] inviteSecret = null;
+            byte[] deviceAgreementKey = null;
             byte[] sharedSecret = null;
             byte[] pairingBaseKey = null;
             byte[] claimKey = null;
@@ -206,6 +206,11 @@ namespace MyCodex.Infrastructure.RemoteRelay
             byte[] plaintext = null;
             try
             {
+                // Decoded inside the try: one malformed claim is rejected on its own instead of failing the refresh.
+                nonce = SecureRemoteBase64Url.Decode(opaqueClaim.Nonce);
+                encrypted = SecureRemoteBase64Url.Decode(opaqueClaim.Ciphertext);
+                inviteSecret = SecureRemoteBase64Url.Decode(package.InviteSecret);
+                deviceAgreementKey = SecureRemoteBase64Url.Decode(header.DeviceAgreementPublicKey);
                 if (nonce.Length != 12 ||
                     encrypted.Length < 16 ||
                     header.CiphertextLength != encrypted.Length)
@@ -265,6 +270,7 @@ namespace MyCodex.Infrastructure.RemoteRelay
             catch (Exception ex) when (
                 ex is CryptographicException ||
                 ex is FormatException ||
+                ex is ArgumentException ||
                 ex is EndOfStreamException)
             {
                 Trace.TraceWarning(

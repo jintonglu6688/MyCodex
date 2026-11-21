@@ -430,6 +430,16 @@ namespace MyCodex.WinForms.Forms
             CaptureSelectedModeFields();
             var selectedMode = SelectedServiceModeForTests;
             var rawExternalSecret = GetExternalRawSecretForSave();
+            // A cleared secret (an import without one, or an edit) must not fall back to the saved secret,
+            // which belongs to the previous server.
+            if (!IsEmbeddedMode(selectedMode) && rawExternalSecret != null && string.IsNullOrWhiteSpace(rawExternalSecret) &&
+                !string.IsNullOrWhiteSpace(_snapshot.ExternalProfile.EncryptedAccessSecret))
+            {
+                SetServerInfoStatus(UiLocalization.Text("RemoteServiceSettingsForm.Status.AccessSecretRequired", "Enter the access secret before saving."), true);
+                _accessSecretTextBox.Focus();
+                return;
+            }
+
             if (!string.IsNullOrWhiteSpace(rawExternalSecret))
             {
                 RemoteServiceConfigPlanner.SelectMode(_snapshot, "External");

@@ -11413,6 +11413,7 @@ MyCodex 桌面客户端。</value>
   <data name="RemoteServiceSettingsForm.Status.ServerInfoInstruction" xml:space="preserve"><value>保存前可以导入部署 JSON，或检测公网服务器。</value></data>
   <data name="RemoteServiceSettingsForm.Status.Imported" xml:space="preserve"><value>服务器信息已导入，请检查设置后保存。</value></data>
   <data name="RemoteServiceSettingsForm.Status.ImportedWithoutSecret" xml:space="preserve"><value>服务器信息已导入，请在保存前输入或轮换访问密钥。</value></data>
+  <data name="RemoteServiceSettingsForm.Status.AccessSecretRequired" xml:space="preserve"><value>请在保存前输入访问密钥。</value></data>
   <data name="RemoteServiceSettingsForm.Status.ImportFailed" xml:space="preserve"><value>无法导入服务器信息，请复制完整的部署 JSON 后重试。</value></data>
   <data name="RemoteServiceSettingsForm.Status.AddressRequired" xml:space="preserve"><value>请先输入公网服务器地址。</value></data>
   <data name="RemoteServiceSettingsForm.Status.Detecting" xml:space="preserve"><value>正在检测公网服务器...</value></data>

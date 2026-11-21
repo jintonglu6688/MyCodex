@@ -11461,6 +11461,7 @@ Describe what should be checked before considering work complete.</value>
   <data name="RemoteServiceSettingsForm.Status.ServerInfoInstruction" xml:space="preserve"><value>Import deployment JSON or detect the public server before saving.</value></data>
   <data name="RemoteServiceSettingsForm.Status.Imported" xml:space="preserve"><value>Server information was imported. Review the settings and save.</value></data>
   <data name="RemoteServiceSettingsForm.Status.ImportedWithoutSecret" xml:space="preserve"><value>Server information was imported. Enter or rotate the access secret before saving.</value></data>
+  <data name="RemoteServiceSettingsForm.Status.AccessSecretRequired" xml:space="preserve"><value>Enter the access secret before saving.</value></data>
   <data name="RemoteServiceSettingsForm.Status.ImportFailed" xml:space="preserve"><value>Server information could not be imported. Copy the complete deployment JSON and try again.</value></data>
   <data name="RemoteServiceSettingsForm.Status.AddressRequired" xml:space="preserve"><value>Enter the public server address before detection.</value></data>
   <data name="RemoteServiceSettingsForm.Status.Detecting" xml:space="preserve"><value>Detecting the public server...</value></data>

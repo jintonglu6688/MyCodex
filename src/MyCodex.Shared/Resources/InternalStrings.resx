@@ -459,6 +459,9 @@
   <data name="AppServerClient.Error.AppServerExited" xml:space="preserve">
     <value>Codex App Server exited.</value>
   </data>
+  <data name="RelayHostClient.Error.UnsupportedProtocolVersion" xml:space="preserve">
+    <value>The Relay protocol version is not supported.</value>
+  </data>
   <data name="AppServerClient.SystemNotice.UnparsableMessageIgnored" xml:space="preserve">
     <value>Received an unparsable App Server message and ignored it.</value>
   </data>
