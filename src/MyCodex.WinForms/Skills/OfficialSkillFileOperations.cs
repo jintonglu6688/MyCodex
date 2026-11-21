@@ -181,7 +181,43 @@ namespace MyCodex.WinForms.Skills
             await _fileSystemClient.WriteFileAsync(
                 CombinePath(targetDirectory, SkillFileName),
                 Encoding.UTF8.GetBytes(SkillFileEditor.BuildSkillMarkdownText(model))).ConfigureAwait(false);
+            await SaveOpenAiInterfaceAsync(targetDirectory, model).ConfigureAwait(false);
             return targetDirectory;
+        }
+
+        private async Task SaveOpenAiInterfaceAsync(string skillDirectory, SkillFileModel model)
+        {
+            var changes = SkillFileEditor.GetChangedInterfaceValues(model);
+            if (changes.Count == 0)
+            {
+                return;
+            }
+
+            var agentsDirectory = CombinePath(skillDirectory, SkillFileEditor.AgentsDirectoryName);
+            var filePath = CombinePath(agentsDirectory, SkillFileEditor.OpenAiAgentFileName);
+            string existingText = null;
+            // Read only a file known to exist, so a failed read can never be mistaken for "start from empty".
+            if (await ContainsEntryAsync(skillDirectory, SkillFileEditor.AgentsDirectoryName).ConfigureAwait(false) &&
+                await ContainsEntryAsync(agentsDirectory, SkillFileEditor.OpenAiAgentFileName).ConfigureAwait(false))
+            {
+                var result = await _fileSystemClient.ReadFileAsync(filePath).ConfigureAwait(false);
+                existingText = DecodeUtf8(result == null ? null : result.DataBase64);
+            }
+            else
+            {
+                await _fileSystemClient.CreateDirectoryAsync(agentsDirectory, true).ConfigureAwait(false);
+            }
+
+            await _fileSystemClient.WriteFileAsync(
+                filePath,
+                Encoding.UTF8.GetBytes(SkillFileEditor.UpdateOpenAiInterfaceText(existingText, changes))).ConfigureAwait(false);
+        }
+
+        private async Task<bool> ContainsEntryAsync(string directory, string name)
+        {
+            var entries = await _fileSystemClient.ReadDirectoryAsync(directory).ConfigureAwait(false);
+            return (entries ?? new List<AppServerFileSystemEntry>()).Any(entry =>
+                entry != null && string.Equals(entry.FileName, name, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task DeleteAsync(AppServerSkillInfo skill)

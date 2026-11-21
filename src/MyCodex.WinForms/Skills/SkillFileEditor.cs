@@ -53,6 +53,24 @@ namespace MyCodex.WinForms.Skills
         public string SkillPath { get; set; }
 
         public SkillSaveLocation Location { get; set; }
+
+        // What was on disk when an existing skill was loaded; null for a new skill.
+        public SkillFileSource Source { get; set; }
+    }
+
+    internal sealed class SkillFileSource
+    {
+        public IList<string> FrontMatterLines { get; set; }
+
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
+        public string DisplayName { get; set; }
+
+        public string ShortDescription { get; set; }
+
+        public string DefaultPrompt { get; set; }
     }
 
     internal sealed class SkillValidationResult
@@ -150,7 +168,85 @@ namespace MyCodex.WinForms.Skills
                 model.Description = skill.Description ?? string.Empty;
             }
 
+            model.Source = model.Source ?? new SkillFileSource();
+            model.Source.DisplayName = model.DisplayName;
+            model.Source.ShortDescription = model.ShortDescription;
+            model.Source.DefaultPrompt = model.DefaultPrompt;
             return model;
+        }
+
+        // Returns only the agents/openai.yaml interface fields the user changed (empty value = remove).
+        public static Dictionary<string, string> GetChangedInterfaceValues(SkillFileModel model)
+        {
+            var changes = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (model == null)
+            {
+                return changes;
+            }
+
+            var source = model.Source ?? new SkillFileSource();
+            AddIfChanged(changes, "display_name", model.DisplayName, source.DisplayName);
+            AddIfChanged(changes, "short_description", model.ShortDescription, source.ShortDescription);
+            AddIfChanged(changes, "default_prompt", model.DefaultPrompt, source.DefaultPrompt);
+            return changes;
+        }
+
+        public static string UpdateOpenAiInterfaceText(string existingText, IDictionary<string, string> changes)
+        {
+            var newLine = (existingText ?? string.Empty).Contains("\r\n") ? "\r\n" : "\n";
+            var lines = string.IsNullOrEmpty(existingText)
+                ? new List<string>()
+                : existingText.Replace("\r\n", "\n").Replace('\r', '\n').TrimEnd('\n').Split('\n').ToList();
+            var interfaceIndex = lines.FindIndex(line => CountLeadingSpaces(line) == 0 &&
+                string.Equals(line.Trim(), "interface:", StringComparison.Ordinal));
+            if (interfaceIndex < 0)
+            {
+                lines.Add("interface:");
+                interfaceIndex = lines.Count - 1;
+            }
+
+            var blockEnd = FindBlockEnd(lines, interfaceIndex, 0);
+            var childIndent = 2;
+            for (var i = interfaceIndex + 1; i < blockEnd; i++)
+            {
+                if (lines[i].Trim().Length > 0)
+                {
+                    childIndent = CountLeadingSpaces(lines[i]);
+                    break;
+                }
+            }
+
+            foreach (var change in changes ?? new Dictionary<string, string>())
+            {
+                var replacement = string.IsNullOrWhiteSpace(change.Value)
+                    ? null
+                    : new string(' ', childIndent) + change.Key + ": " + ToYamlScalar(change.Value.Trim());
+                var keyIndex = FindKeyLine(lines, interfaceIndex + 1, blockEnd, childIndent, change.Key);
+                if (keyIndex >= 0)
+                {
+                    var valueEnd = FindBlockEnd(lines, keyIndex, childIndent);
+                    lines.RemoveRange(keyIndex, valueEnd - keyIndex);
+                    blockEnd -= valueEnd - keyIndex;
+                    if (replacement != null)
+                    {
+                        lines.Insert(keyIndex, replacement);
+                        blockEnd++;
+                    }
+                }
+                else if (replacement != null)
+                {
+                    var insertAt = blockEnd;
+                    while (insertAt > interfaceIndex + 1 && lines[insertAt - 1].Trim().Length == 0)
+                    {
+                        insertAt--;
+                    }
+
+                    lines.Insert(insertAt, replacement);
+                    blockEnd++;
+                }
+            }
+
+            return string.Join(newLine, lines) + newLine;
         }
 
         public static SkillValidationResult ValidateContent(SkillFileModel model)
@@ -317,6 +413,12 @@ namespace MyCodex.WinForms.Skills
                 model.Name = GetFirstNonEmpty(GetDictionaryValue(fields, "name"), fallbackName);
                 model.Description = GetDictionaryValue(fields, "description") ?? string.Empty;
                 model.Body = (reader.ReadToEnd() ?? string.Empty).TrimStart('\r', '\n');
+                model.Source = new SkillFileSource
+                {
+                    FrontMatterLines = frontMatter,
+                    Name = model.Name,
+                    Description = model.Description
+                };
             }
 
             return model;
@@ -326,24 +428,112 @@ namespace MyCodex.WinForms.Skills
         {
             var builder = new StringBuilder();
             builder.AppendLine("---");
-            builder.Append("name: ");
-            builder.AppendLine(ToYamlScalar(model.Name));
-            builder.Append("description: ");
-            builder.AppendLine(ToYamlScalar(model.Description));
+            var source = model.Source;
+            if (source != null && source.FrontMatterLines != null)
+            {
+                // Keep every other front matter field (metadata, license, comments) exactly as loaded.
+                var lines = source.FrontMatterLines.ToList();
+                if (!string.Equals(NormalizeSingleLine(model.Name), NormalizeSingleLine(source.Name), StringComparison.Ordinal))
+                {
+                    ReplaceTopLevelKey(lines, "name", model.Name, true);
+                }
+
+                if (!string.Equals(NormalizeSingleLine(model.Description), NormalizeSingleLine(source.Description), StringComparison.Ordinal))
+                {
+                    ReplaceTopLevelKey(lines, "description", model.Description, false);
+                }
+
+                foreach (var line in lines)
+                {
+                    builder.AppendLine(line);
+                }
+            }
+            else
+            {
+                builder.Append("name: ");
+                builder.AppendLine(ToYamlScalar(model.Name));
+                builder.Append("description: ");
+                builder.AppendLine(ToYamlScalar(model.Description));
+            }
+
             builder.AppendLine("---");
             builder.AppendLine();
             builder.AppendLine(NormalizeLineEndings(model.Body).Trim());
             return builder.ToString();
         }
 
-        private static Dictionary<string, string> ParseKeyValueLines(IEnumerable<string> lines)
+        private static void ReplaceTopLevelKey(List<string> lines, string key, string value, bool insertFirst)
+        {
+            var replacement = key + ": " + ToYamlScalar(value);
+            var keyIndex = FindKeyLine(lines, 0, lines.Count, 0, key);
+            if (keyIndex < 0)
+            {
+                lines.Insert(insertFirst ? 0 : lines.Count, replacement);
+                return;
+            }
+
+            lines.RemoveRange(keyIndex, FindBlockEnd(lines, keyIndex, 0) - keyIndex);
+            lines.Insert(keyIndex, replacement);
+        }
+
+        private static int FindKeyLine(IList<string> lines, int start, int end, int indent, string key)
+        {
+            for (var i = start; i < end; i++)
+            {
+                var line = lines[i] ?? string.Empty;
+                var trimmed = line.Trim();
+                if (CountLeadingSpaces(line) == indent &&
+                    trimmed.StartsWith(key + ":", StringComparison.Ordinal))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        // A value or block continues while lines are indented deeper than its key (blank lines included).
+        private static int FindBlockEnd(IList<string> lines, int keyIndex, int keyIndent)
+        {
+            var end = keyIndex + 1;
+            for (var i = keyIndex + 1; i < lines.Count; i++)
+            {
+                var line = lines[i] ?? string.Empty;
+                if (line.Trim().Length == 0)
+                {
+                    continue;
+                }
+
+                if (CountLeadingSpaces(line) <= keyIndent)
+                {
+                    break;
+                }
+
+                end = i + 1;
+            }
+
+            return end;
+        }
+
+        private static void AddIfChanged(IDictionary<string, string> changes, string key, string value, string original)
+        {
+            var current = (value ?? string.Empty).Trim();
+            if (!string.Equals(current, (original ?? string.Empty).Trim(), StringComparison.Ordinal))
+            {
+                changes[key] = current;
+            }
+        }
+
+        private static Dictionary<string, string> ParseKeyValueLines(IList<string> lines)
         {
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var rawLine in lines ?? Enumerable.Empty<string>())
+            lines = lines ?? new List<string>();
+            for (var i = 0; i < lines.Count; i++)
             {
-                var line = rawLine ?? string.Empty;
+                var line = lines[i] ?? string.Empty;
                 var trimmed = line.Trim();
-                if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal))
+                // Indented lines belong to the previous key (nested maps or block scalars).
+                if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal) || CountLeadingSpaces(line) > 0)
                 {
                     continue;
                 }
@@ -356,10 +546,26 @@ namespace MyCodex.WinForms.Skills
 
                 var key = trimmed.Substring(0, separatorIndex).Trim();
                 var value = trimmed.Substring(separatorIndex + 1).Trim();
-                values[key] = UnquoteYamlScalar(value);
+                values[key] = value.StartsWith("|", StringComparison.Ordinal) || value.StartsWith(">", StringComparison.Ordinal)
+                    ? ReadBlockScalar(lines, i, value[0] == '|')
+                    : UnquoteYamlScalar(value);
             }
 
             return values;
+        }
+
+        private static string ReadBlockScalar(IList<string> lines, int keyIndex, bool literal)
+        {
+            var parts = new List<string>();
+            var end = FindBlockEnd(lines, keyIndex, 0);
+            for (var i = keyIndex + 1; i < end; i++)
+            {
+                parts.Add((lines[i] ?? string.Empty).Trim());
+            }
+
+            return literal
+                ? string.Join("\n", parts).Trim()
+                : NormalizeSingleLine(string.Join(" ", parts));
         }
 
         private static string GetPortableFileName(string path)

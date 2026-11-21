@@ -390,7 +390,8 @@ namespace MyCodex.WinForms.Forms
                 DefaultPrompt = _defaultPromptTextBox.Text,
                 Body = _bodyTextBox.Text,
                 SkillPath = _isNew ? null : _loadedModel.SkillPath,
-                Location = GetSelectedLocation()
+                Location = GetSelectedLocation(),
+                Source = _isNew ? null : _loadedModel.Source
             };
 
             var validation = _validateModel(model, _isNew);
