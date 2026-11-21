@@ -55,8 +55,9 @@ namespace MyCodex.Application.Services
                 return file;
             }
 
-            var searchable = " " + BuildSearchableCommandText(command.DisplayCommand) + " ";
-            if (ContainsAny(searchable, " dotnet build ", " msbuild ", " npm run build ", " pnpm build ", " yarn build ", " cargo build ", " go build ", " cmake --build "))
+            // Match the program actually run and its subcommand: words elsewhere in the arguments
+            // (an echo, a script argument) must not make an arbitrary program auto-approvable.
+            if (StartsWithCommand(tokens, "dotnet build", "msbuild", "npm run build", "pnpm build", "pnpm run build", "yarn build", "cargo build", "go build", "cmake --build"))
             {
                 return BuildCommandClassification(
                     ApprovalRequestCategory.CommandBuild,
@@ -66,7 +67,7 @@ namespace MyCodex.Application.Services
                     null);
             }
 
-            if (ContainsAny(searchable, " dotnet test ", " vstest ", " npm test ", " pnpm test ", " yarn test ", " cargo test ", " go test ", " pytest "))
+            if (StartsWithCommand(tokens, "dotnet test", "vstest.console", "npm test", "pnpm test", "yarn test", "cargo test", "go test", "pytest", "python -m pytest"))
             {
                 return BuildCommandClassification(
                     ApprovalRequestCategory.CommandTest,
@@ -76,7 +77,7 @@ namespace MyCodex.Application.Services
                     null);
             }
 
-            if (ContainsAny(searchable, " npm install ", " pnpm install ", " yarn install ", " pip install ", " dotnet restore ", " nuget restore "))
+            if (StartsWithCommand(tokens, "npm install", "pnpm install", "yarn install", "pip install", "python -m pip install", "dotnet restore", "nuget restore"))
             {
                 return BuildCommandClassification(
                     ApprovalRequestCategory.CommandDependencyInstall,
@@ -883,6 +884,31 @@ namespace MyCodex.Application.Services
                    string.Equals(shellKind, "zsh", StringComparison.OrdinalIgnoreCase);
         }
 
+        private static bool StartsWithCommand(IReadOnlyList<string> tokens, params string[] commands)
+        {
+            foreach (var command in commands)
+            {
+                var words = command.Split(' ');
+                if (tokens.Count < words.Length || !IsExecutable(tokens[0], words[0]))
+                {
+                    continue;
+                }
+
+                var matches = true;
+                for (var i = 1; i < words.Length && matches; i++)
+                {
+                    matches = string.Equals(NormalizeToken(tokens[i]), words[i], StringComparison.Ordinal);
+                }
+
+                if (matches)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static bool IsExecutable(string token, string expectedName)
         {
             var executable = NormalizeToken(GetExecutableName(token));
@@ -1046,24 +1072,6 @@ namespace MyCodex.Application.Services
             builder.Length = 0;
         }
 
-        private static bool ContainsAny(string text, params string[] values)
-        {
-            if (string.IsNullOrEmpty(text) || values == null)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < values.Length; i++)
-            {
-                if (text.IndexOf(values[i], StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         private static bool ContainsToken(IReadOnlyList<string> tokens, string expected)
         {
             if (tokens == null)
@@ -1098,23 +1106,6 @@ namespace MyCodex.Application.Services
             }
 
             return false;
-        }
-
-        private static string BuildSearchableCommandText(string commandText)
-        {
-            if (string.IsNullOrWhiteSpace(commandText))
-            {
-                return string.Empty;
-            }
-
-            var builder = new StringBuilder(commandText.Length);
-            for (var i = 0; i < commandText.Length; i++)
-            {
-                var ch = commandText[i];
-                builder.Append(ch == '"' || ch == '\'' ? ' ' : ch);
-            }
-
-            return builder.ToString();
         }
 
         private static bool IsPathOption(string token)

