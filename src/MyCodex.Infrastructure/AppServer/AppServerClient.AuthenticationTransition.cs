@@ -40,7 +40,23 @@ namespace MyCodex.Infrastructure.AppServer
                 }
                 // Keep an uncertain login pending until completion, cancellation,
                 // or a process restart; its response alone does not end OAuth.
-                var result = await start().ConfigureAwait(false);
+                AppServerLoginResult result;
+                try
+                {
+                    result = await start().ConfigureAwait(false);
+                }
+                catch (InvalidOperationException)
+                {
+                    // The App Server answered with an error (or the request never left), so no OAuth
+                    // flow exists to wait for; a later sign-in must not be refused as runtime_busy.
+                    lock (_syncRoot)
+                    {
+                        _authenticationLoginPending = false;
+                    }
+
+                    throw;
+                }
+
                 lock (_syncRoot)
                 {
                     _authenticationPendingLoginId = result?.LoginId;

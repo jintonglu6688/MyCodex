@@ -3094,6 +3094,24 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void RejectedLoginRequest_DoesNotBlockTheNextSignIn()
+        {
+            using (var client = CreateClient())
+            {
+                var start = typeof(AppServerClient).GetMethod("StartAuthenticationLoginWithGateAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+                Func<Task<AppServerLoginResult>> rejected = () => Task.FromException<AppServerLoginResult>(new InvalidOperationException("login rejected"));
+                Func<Task<AppServerLoginResult>> accepted = () => Task.FromResult(new AppServerLoginResult { LoginId = "login-2" });
+
+                Assert.ThrowsAsync<InvalidOperationException>(() => (Task<AppServerLoginResult>)start.Invoke(client, new object[] { rejected }));
+                Assert.That(client.HasAuthenticationTransitionWork, Is.False);
+
+                var result = ((Task<AppServerLoginResult>)start.Invoke(client, new object[] { accepted })).GetAwaiter().GetResult();
+                Assert.That(result.LoginId, Is.EqualTo("login-2"));
+                Assert.That(client.HasAuthenticationTransitionWork, Is.True, "An accepted sign-in stays pending until it completes.");
+            }
+        }
+
+        [Test]
         public void CompletedAgentMessageWithoutItemId_StillDeliversText()
         {
             using (var client = CreateClient())

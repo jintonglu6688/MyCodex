@@ -357,6 +357,30 @@ namespace MyCodex.WinForms.Forms
             }
         }
 
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            // Closing the window abandons the sign-in; leaving it running would block the next one.
+            var abandonedLoginId = DialogResult == DialogResult.OK ? null : _loginId;
+            _loginId = null;
+            base.OnFormClosed(e);
+            if (!string.IsNullOrWhiteSpace(abandonedLoginId))
+            {
+                _ = CancelAbandonedLoginAsync(abandonedLoginId);
+            }
+        }
+
+        private async System.Threading.Tasks.Task CancelAbandonedLoginAsync(string loginId)
+        {
+            try
+            {
+                await _authenticationClient.CancelLoginAsync(loginId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceWarning("Failed to cancel an abandoned sign-in. ErrorType={0}", ex.GetType().FullName);
+            }
+        }
+
         private void RefreshActionState()
         {
             _chatGptButton.Enabled = !_isBusy;

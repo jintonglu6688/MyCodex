@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MyCodex.Application.DTOs;
 using MyCodex.Application.Interfaces;
+using MyCodex.Application.Tests.TestSupport;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
 
@@ -165,6 +166,24 @@ namespace MyCodex.Application.Tests
             {
                 CultureInfo.CurrentCulture = originalCulture;
                 CultureInfo.CurrentUICulture = originalUiCulture;
+            }
+        }
+
+        [Test]
+        public void ChatGptLogin_ClosingTheWindowCancelsTheUnfinishedSignIn()
+        {
+            var client = new FakeAuthenticationClient { ChatGptAuthUrl = "https://chatgpt.example.test/auth?flow=close" };
+            using (var form = new AuthenticationBootstrapForm(client, new FakeScreenReaderService(), url => { }))
+            {
+                form.Show();
+                System.Windows.Forms.Application.DoEvents();
+                FormTestDriver.Field<Button>(form, "_chatGptButton").PerformClick();
+                System.Windows.Forms.Application.DoEvents();
+
+                form.Close();
+                System.Windows.Forms.Application.DoEvents();
+
+                Assert.That(client.CanceledLoginId, Is.EqualTo("login-1"));
             }
         }
 
