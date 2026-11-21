@@ -3094,6 +3094,70 @@ namespace MyCodex.Application.Tests
         }
 
         [Test]
+        public void CompletedAgentMessageWithoutItemId_StillDeliversText()
+        {
+            using (var client = CreateClient())
+            {
+                var received = new List<AppServerEventArgs>();
+                client.EventReceived += (sender, args) => received.Add(args);
+
+                FormTestDriver.Invoke(client, "HandleNotification", BuildItemNotification(
+                    "item/completed",
+                    new Dictionary<string, object>
+                    {
+                        { "type", "agentMessage" },
+                        { "text", "Done." }
+                    }));
+
+                Assert.That(received.Single(item => item.EventType == "assistant").Content, Is.EqualTo("Done."));
+            }
+        }
+
+        [Test]
+        public void MalformedNotification_IsIgnoredWithoutEndingTheConnection()
+        {
+            using (var client = CreateClient())
+            {
+                var received = new List<AppServerEventArgs>();
+                client.EventReceived += (sender, args) => received.Add(args);
+                var process = typeof(AppServerClient).GetMethod(
+                    "ProcessIncomingMessage",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+                    null,
+                    new[] { typeof(IDictionary<string, object>), typeof(long) },
+                    null);
+                var notification = new Dictionary<string, object>
+                {
+                    { "method", "thread/started" },
+                    { "params", new Dictionary<string, object>
+                        {
+                            { "thread", new Dictionary<string, object> { { "id", "thread-1" }, { "createdAt", long.MaxValue } } }
+                        }
+                    }
+                };
+
+                Assert.DoesNotThrow(() => process.Invoke(client, new object[] { notification, FormTestDriver.Invoke<long>(client, "GetConnectionEpoch") }));
+                Assert.That(received.Select(item => item.EventType), Does.Contain("system_notice"));
+                Assert.That(received.Select(item => item.EventType), Does.Not.Contain("app_server_disconnected"));
+            }
+        }
+
+        [Test]
+        public async Task StandardOutputEndOfStream_ReportsDisconnect()
+        {
+            using (var client = CreateClient())
+            {
+                var received = new List<AppServerEventArgs>();
+                client.EventReceived += (sender, args) => received.Add(args);
+
+                await (Task)FormTestDriver.Invoke(client, "ReadStdOutLoopAsync",
+                    new StringReader(string.Empty), CancellationToken.None, FormTestDriver.Invoke<long>(client, "GetConnectionEpoch"), null);
+
+                Assert.That(received.Select(item => item.EventType), Does.Contain("app_server_disconnected"));
+            }
+        }
+
+        [Test]
         public void HandleAsyncAgentMessage_ShouldEmitDedicatedInputRequest()
         {
             using (var client = CreateClient())

@@ -998,7 +998,7 @@ namespace MyCodex.Infrastructure.AppServer
             {
                 case "agentMessage":
                     var finalText = AppServerJsonValueReader.GetString(item, "text");
-                    if (string.IsNullOrWhiteSpace(finalText))
+                    if (string.IsNullOrWhiteSpace(finalText) && itemId != null)
                     {
                         lock (_syncRoot)
                         {
@@ -1010,9 +1010,13 @@ namespace MyCodex.Infrastructure.AppServer
                         }
                     }
 
-                    lock (_syncRoot)
+                    // A completed message without an item id still carries its text; only its buffer lookup is skipped.
+                    if (itemId != null)
                     {
-                        _agentMessageBuffers.Remove(itemId);
+                        lock (_syncRoot)
+                        {
+                            _agentMessageBuffers.Remove(itemId);
+                        }
                     }
 
                     if (string.Equals(AppServerJsonValueReader.GetString(item, "delivery"), "async", StringComparison.OrdinalIgnoreCase))

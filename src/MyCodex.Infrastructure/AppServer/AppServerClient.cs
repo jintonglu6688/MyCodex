@@ -1966,6 +1966,16 @@ namespace MyCodex.Infrastructure.AppServer
 
                     ProcessIncomingMessage(line, connectionEpoch);
                 }
+
+                // After stdout EOF no response can arrive, even if the process stays alive; without this
+                // every later request would wait for its own timeout.
+                if (!cancellationToken.IsCancellationRequested && IsCurrentConnectionSource(connectionEpoch, process))
+                {
+                    HandleAppServerConnectionLost(
+                        SharedLocalization.Text("AppServerClient.Error.AppServerExited", "Codex App Server exited."),
+                        connectionEpoch,
+                        process);
+                }
             }
             catch (Exception ex)
             {
@@ -2061,16 +2071,37 @@ namespace MyCodex.Infrastructure.AppServer
                     _dynamicRequestCoordinator.HandleServerRequest(message, connectionEpoch);
                     break;
                 case AppServerIncomingMessageKind.Notification:
-                    if (string.Equals(AppServerJsonValueReader.GetString(message, "method"), "account/login/completed", StringComparison.Ordinal))
+                    try
                     {
-                        ObserveAuthenticationLoginCompletion(AppServerJsonValueReader.GetString(AppServerJsonValueReader.GetDictionary(message, "params"), "loginId"));
+                        if (string.Equals(AppServerJsonValueReader.GetString(message, "method"), "account/login/completed", StringComparison.Ordinal))
+                        {
+                            ObserveAuthenticationLoginCompletion(AppServerJsonValueReader.GetString(AppServerJsonValueReader.GetDictionary(message, "params"), "loginId"));
+                        }
+                        HandleNotification(message);
                     }
-                    HandleNotification(message);
+                    catch (Exception ex) when (IsNotificationDataFailure(ex))
+                    {
+                        // One malformed notification must not reach the reader loop, which would restart the
+                        // process and fail every other session on this target.
+                        Trace.TraceError(
+                            "Failed to handle App Server notification. Method={0}; ErrorType={1}",
+                            AppServerJsonValueReader.GetString(message, "method"),
+                            ex.GetType().FullName);
+                        OnEventReceived(new AppServerEventArgs(
+                            "system_notice",
+                            SharedLocalization.Text("AppServerClient.SystemNotice.UnparsableMessageIgnored", "Received an unparsable App Server message and ignored it.")));
+                    }
                     break;
                 case AppServerIncomingMessageKind.Response:
                     HandleResponse(message);
                     break;
             }
+        }
+
+        private static bool IsNotificationDataFailure(Exception ex)
+        {
+            return ex is ArgumentException || ex is FormatException || ex is InvalidCastException ||
+                ex is KeyNotFoundException || ex is NullReferenceException || ex is OverflowException;
         }
 
         private bool TryDeserializeIncomingMessage(string json, out IDictionary<string, object> message)
