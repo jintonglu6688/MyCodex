@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using MyCodex.Application.DTOs;
 using MyCodex.Domain.Enums;
+using MyCodex.Shared.Helpers;
 
 namespace MyCodex.WinForms.Forms
 {
@@ -18,7 +19,7 @@ namespace MyCodex.WinForms.Forms
                 Status = status,
                 CompletedAt = DateTime.Now,
                 TurnId = state == null ? null : state.TurnId,
-                Summary = content,
+                Summary = TextValueHelper.FirstNonEmptyTrimmed(state == null ? null : state.LastAssistantMessageText, content),
                 ErrorMessage = errorMessage,
                 GeneratedArtifacts = new List<string>(),
                 ChangedFiles = CopyChangedFiles(state)

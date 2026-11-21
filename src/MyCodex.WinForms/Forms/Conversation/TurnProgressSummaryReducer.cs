@@ -33,6 +33,7 @@ namespace MyCodex.WinForms.Forms
             }
 
             state.TurnId = string.Empty;
+            state.LastAssistantMessageText = string.Empty;
             state.Explanation = string.Empty;
             state.PlanSteps.Clear();
             state.PlanDeltaText = string.Empty;
@@ -93,6 +94,14 @@ namespace MyCodex.WinForms.Forms
 
             switch (eventType.ToLowerInvariant())
             {
+                case "assistant":
+                    // Kept for every thread, displayed or not, so automations report the turn's reply.
+                    if (!string.IsNullOrWhiteSpace(e.Content))
+                    {
+                        state.LastAssistantMessageText = e.Content;
+                    }
+
+                    return false;
                 case "turn_started":
                     var pendingSkillNames = state.PendingSkillNames.Count > 0
                         ? state.PendingSkillNames.ToArray()

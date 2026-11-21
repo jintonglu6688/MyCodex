@@ -18,6 +18,9 @@ namespace MyCodex.WinForms.Forms
 
         public string TurnId { get; set; }
 
+        // The turn's final reply; terminal turn events carry only a generic status text.
+        public string LastAssistantMessageText { get; set; }
+
         public string Explanation { get; set; }
 
         public List<AppServerTurnPlanStep> PlanSteps { get; private set; }

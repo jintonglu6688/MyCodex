@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MyCodex.Application.DTOs;
 using MyCodex.Domain.Enums;
 using MyCodex.WinForms.Forms;
 using NUnit.Framework;
@@ -31,6 +32,27 @@ namespace MyCodex.Application.Tests
 
             state.ChangedFiles.Add("later.cs");
             CollectionAssert.AreEqual(new[] { "src/MainForm.cs", "tests/AutomationTests.cs" }, completion.ChangedFiles);
+        }
+
+        [Test]
+        public void Build_UsesTheTurnsFinalReplyInsteadOfTheGenericCompletionText()
+        {
+            var state = new TurnProgressSummaryState();
+            TurnProgressSummaryReducer.ApplyEvent(state, new AppServerEventArgs("turn_started", "Started", "thread-1", "turn-1"));
+            TurnProgressSummaryReducer.ApplyEvent(state, new AppServerEventArgs("assistant", "Checking...", "thread-1", "turn-1"));
+            TurnProgressSummaryReducer.ApplyEvent(state, new AppServerEventArgs("assistant", "No findings.", "thread-1", "turn-1"));
+
+            var completion = AutomationRunCompletionBuilder.Build(
+                AutomationRunStatus.Completed,
+                "Current turn request completed.",
+                null,
+                state);
+
+            Assert.That(completion.Summary, Is.EqualTo("No findings."));
+
+            TurnProgressSummaryReducer.ApplyEvent(state, new AppServerEventArgs("turn_started", "Started", "thread-1", "turn-2"));
+            Assert.That(AutomationRunCompletionBuilder.Build(AutomationRunStatus.Completed, "Current turn request completed.", null, state).Summary,
+                Is.EqualTo("Current turn request completed."), "A new turn must not reuse the previous turn's reply.");
         }
 
         [Test]
