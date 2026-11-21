@@ -21,7 +21,8 @@ namespace MyCodex.Infrastructure.AppServer
             _inner = new UnixGitCloneService(
                 UnixCommandInvokers.ForRemote(config, executor),
                 "mycodex-remote",
-                0);
+                // 0 would fall back to the SSH executor's 10-second default; match the WSL clone budget.
+                30 * 60 * 1000);
         }
 
         public Task<GitCloneResult> CloneAsync(

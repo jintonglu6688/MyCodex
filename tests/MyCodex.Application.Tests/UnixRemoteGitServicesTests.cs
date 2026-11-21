@@ -63,7 +63,7 @@ namespace MyCodex.Application.Tests
         }
 
         [TestCase("wsl", "mycodex-wsl-git-clone", 30 * 60 * 1000)]
-        [TestCase("remote", "mycodex-remote-git-clone", 0)]
+        [TestCase("remote", "mycodex-remote-git-clone", 30 * 60 * 1000)]
         public void CloneAsync_UsesTargetOperationTimeoutAndPositionalArguments(string target, string expectedOperation, int expectedTimeout)
         {
             var recorder = new CommandRecorder { ExitCode = 0 };
