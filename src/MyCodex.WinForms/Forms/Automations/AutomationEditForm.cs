@@ -755,11 +755,6 @@ namespace MyCodex.WinForms.Forms
             {
                 _intervalUnitLabel.Text = string.Empty;
             }
-
-            if (usesTime && _timePicker.Value.Hour == 0 && _timePicker.Value.Minute == 0)
-            {
-                _timePicker.Value = DateTime.Today.AddHours(8);
-            }
         }
 
         private AutomationScheduleSnapshot BuildSchedule()

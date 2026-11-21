@@ -611,6 +611,38 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [TestCase(AutomationScheduleKind.Daily)]
+        [TestCase(AutomationScheduleKind.Weekly)]
+        public void AutomationEditForm_ReopeningMidnightScheduleKeepsMidnight(AutomationScheduleKind kind)
+        {
+            var definition = new AutomationDefinitionSnapshot
+            {
+                Id = "automation-1",
+                Name = "Nightly",
+                Kind = AutomationKind.Standalone,
+                Prompt = "Run nightly checks.",
+                ModelId = "gpt-5.5",
+                Schedule = new AutomationScheduleSnapshot
+                {
+                    Kind = kind,
+                    TimeOfDayMinutes = 0,
+                    DayOfWeek = kind == AutomationScheduleKind.Weekly ? DayOfWeek.Monday : (DayOfWeek?)null
+                },
+                Context = new AutomationContextSnapshot { WorkspacePath = @"E:\MyCodex" }
+            };
+
+            using (var form = new AutomationEditForm(definition, null, new[]
+            {
+                CreateModelOption("gpt-5.5", "high", "high")
+            }, modelId => true))
+            {
+                FormTestDriver.ClickOk(form);
+
+                Assert.That(form.Request.Schedule.Kind, Is.EqualTo(kind));
+                Assert.That(form.Request.Schedule.TimeOfDayMinutes, Is.EqualTo(0));
+            }
+        }
+
         [Test]
         public void AutomationEditForm_WeeklyScheduleStoresDayAndTime()
         {
