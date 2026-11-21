@@ -1,12 +1,17 @@
 using System.Text;
 using MyCodex.Application.DTOs;
+using MyCodex.Application.Services;
 
 namespace MyCodex.Infrastructure.AppServer
 {
+    // Probe output (credential.helper, remote URLs) can carry tokens and reaches details and the clipboard,
+    // so every value leaving here is redacted.
     internal static class UnixGitEnvironmentText
     {
         public static void AppendDetails(StringBuilder details, string title, int exitCode, string standardOutput, string standardError)
         {
+            standardOutput = GitOutputSanitizer.RedactSensitiveText(standardOutput);
+            standardError = GitOutputSanitizer.RedactSensitiveText(standardError);
             details.AppendLine(">> " + title);
             details.AppendLine("ExitCode: " + exitCode);
             if (!string.IsNullOrWhiteSpace(standardOutput))
@@ -24,9 +29,9 @@ namespace MyCodex.Infrastructure.AppServer
 
         public static string GetBestOutput(string standardOutput, string standardError)
         {
-            return string.IsNullOrWhiteSpace(standardOutput)
-                ? standardError ?? string.Empty
-                : standardOutput;
+            return GitOutputSanitizer.RedactSensitiveText(string.IsNullOrWhiteSpace(standardOutput)
+                ? standardError
+                : standardOutput);
         }
 
         public static GitEnvironmentSnapshot BuildSnapshot(

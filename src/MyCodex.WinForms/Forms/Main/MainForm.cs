@@ -1948,7 +1948,7 @@ namespace MyCodex.WinForms.Forms
         {
             try
             {
-                Trace.TraceError("[SendCurrentInput] {0}: {1}", stage, exception);
+                Trace.TraceError("[SendCurrentInput] {0}: ErrorType={1}; MessageLength={2}{3}{4}", stage, exception.GetType().FullName, (exception.Message ?? string.Empty).Length, Environment.NewLine, exception.StackTrace); // The message is upstream text and may hold secrets.
             }
             catch
             {

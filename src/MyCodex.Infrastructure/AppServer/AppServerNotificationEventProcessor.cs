@@ -1217,11 +1217,12 @@ namespace MyCodex.Infrastructure.AppServer
         private void HandleTurnFailed(string threadId, string turnId, string errorMessage, string reason = null)
         {
             var eventArgs = AppServerNotificationFactory.CreateTurnFailed(threadId, turnId, errorMessage, reason);
+            // Upstream error text can echo request URLs or keys; the log records only its size.
             Trace.TraceWarning(
-                "App Server turn failed. ThreadId={0}; TurnId={1}; Message={2}",
+                "App Server turn failed. ThreadId={0}; TurnId={1}; MessageLength={2}",
                 threadId,
                 turnId,
-                AbbreviateForLog(eventArgs.Content, 1000));
+                (eventArgs.Content ?? string.Empty).Length);
             _context.RaiseEvent(eventArgs);
         }
 
@@ -1235,10 +1236,10 @@ namespace MyCodex.Infrastructure.AppServer
             var willRetry = AppServerJsonValueReader.GetNullableBool(parameters, "willRetry") == true;
             var eventArgs = AppServerNotificationFactory.CreateError(threadId, turnId, errorMessage, reason, willRetry);
             Trace.TraceWarning(
-                "App Server error event. ThreadId={0}; TurnId={1}; Message={2}",
+                "App Server error event. ThreadId={0}; TurnId={1}; MessageLength={2}",
                 threadId,
                 turnId,
-                AbbreviateForLog(eventArgs.Content, 1000));
+                (eventArgs.Content ?? string.Empty).Length);
             _context.RaiseEvent(eventArgs);
         }
 
