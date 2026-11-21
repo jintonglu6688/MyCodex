@@ -33,8 +33,8 @@ namespace MyCodex.Infrastructure.AppServer
             "  stderr_file=$(mktemp)\n" +
             "  \"$@\" >\"$stdout_file\" 2>\"$stderr_file\"\n" +
             "  code=$?\n" +
-            "  stdout=$(encode_file \"$stdout_file\")\n" +
-            "  stderr=$(encode_file \"$stderr_file\")\n" +
+            // Without Perl/MIME::Base64 the records would read as empty, clean output; exit so the caller falls back.
+            "  stdout=$(encode_file \"$stdout_file\") && stderr=$(encode_file \"$stderr_file\") || { rm -f \"$stdout_file\" \"$stderr_file\"; exit 70; }\n" +
             "  rm -f \"$stdout_file\" \"$stderr_file\"\n" +
             "  printf '%s\\t%s\\t%s\\t%s\\n' \"$key\" \"$code\" \"$stdout\" \"$stderr\"\n" +
             "}\n" +
