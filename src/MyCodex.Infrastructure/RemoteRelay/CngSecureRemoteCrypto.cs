@@ -19,7 +19,6 @@ namespace MyCodex.Infrastructure.RemoteRelay
         private const string BCryptAesAlgorithm = "AES";
         private const string BCryptChainingMode = "ChainingMode";
         private const string BCryptChainingModeGcm = "ChainingModeGCM";
-        private const string BCryptObjectLength = "ObjectLength";
         private const string NCryptRawSecretKdf = "TRUNCATE";
 
         public byte[] HkdfSha256(byte[] ikm, byte[] salt, byte[] info, int length)
@@ -340,7 +339,6 @@ namespace MyCodex.Infrastructure.RemoteRelay
                 0));
 
             var keyHandle = IntPtr.Zero;
-            byte[] keyObject = null;
             var keyCopy = (byte[])key.Clone();
             try
             {
@@ -352,26 +350,13 @@ namespace MyCodex.Infrastructure.RemoteRelay
                     chainingMode.Length,
                     0));
 
-                var objectLengthBytes = new byte[4];
-                int propertyLength;
-                ThrowIfError(BCryptGetProperty(
-                    algorithmHandle,
-                    BCryptObjectLength,
-                    objectLengthBytes,
-                    objectLengthBytes.Length,
-                    out propertyLength,
-                    0));
-                if (propertyLength != objectLengthBytes.Length)
-                {
-                    throw new CryptographicException("BCrypt returned an invalid AES key-object length.");
-                }
-
-                keyObject = new byte[BitConverter.ToInt32(objectLengthBytes, 0)];
+                // CNG must own the key object: it is used until BCryptDestroyKey, and a managed array is
+                // only pinned for the duration of this call, so a compacting GC could move it under CNG.
                 ThrowIfError(BCryptGenerateSymmetricKey(
                     algorithmHandle,
                     out keyHandle,
-                    keyObject,
-                    keyObject.Length,
+                    IntPtr.Zero,
+                    0,
                     keyCopy,
                     keyCopy.Length,
                     0));
@@ -387,10 +372,6 @@ namespace MyCodex.Infrastructure.RemoteRelay
 
                 BCryptCloseAlgorithmProvider(algorithmHandle, 0);
                 Array.Clear(keyCopy, 0, keyCopy.Length);
-                if (keyObject != null)
-                {
-                    Array.Clear(keyObject, 0, keyObject.Length);
-                }
             }
         }
 
@@ -604,20 +585,11 @@ namespace MyCodex.Infrastructure.RemoteRelay
             int inputLength,
             int flags);
 
-        [DllImport("bcrypt.dll", CharSet = CharSet.Unicode)]
-        private static extern int BCryptGetProperty(
-            IntPtr handle,
-            string property,
-            byte[] output,
-            int outputLength,
-            out int resultLength,
-            int flags);
-
         [DllImport("bcrypt.dll")]
         private static extern int BCryptGenerateSymmetricKey(
             IntPtr algorithmHandle,
             out IntPtr keyHandle,
-            byte[] keyObject,
+            IntPtr keyObject,
             int keyObjectLength,
             byte[] secret,
             int secretLength,
