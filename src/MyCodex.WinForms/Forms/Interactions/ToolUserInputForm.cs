@@ -192,7 +192,10 @@ namespace MyCodex.WinForms.Forms
                     return;
                 }
 
-                answers[editor.QuestionId] = values;
+                if (values != null)
+                {
+                    answers[editor.QuestionId] = values;
+                }
             }
 
             Answers = answers;
@@ -355,6 +358,13 @@ namespace MyCodex.WinForms.Forms
                 if (_optionComboBox != null)
                 {
                     var selected = _optionComboBox.SelectedItem as OptionItem;
+                    if (selected != null && selected.IsNotSet)
+                    {
+                        answers = null;
+                        errorMessage = null;
+                        return true;
+                    }
+
                     if (selected == null)
                     {
                         answers = null;
@@ -366,6 +376,13 @@ namespace MyCodex.WinForms.Forms
                 }
 
                 var value = (_textBox.Text ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(value) && _question.IsOptional)
+                {
+                    answers = null;
+                    errorMessage = null;
+                    return true;
+                }
+
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     answers = null;
@@ -381,6 +398,12 @@ namespace MyCodex.WinForms.Forms
             private static List<OptionItem> BuildOptionItems(AppServerToolUserInputQuestion question)
             {
                 var items = new List<OptionItem>();
+                if (question.IsOptional && question.Options != null && question.Options.Count > 0)
+                {
+                    // Listed first so an optional choice is never submitted on the user's behalf.
+                    items.Add(OptionItem.CreateNotSet(UiLocalization.Text("ToolUserInputForm.Option.NotSet", "(Not set)")));
+                }
+
                 if (question.Options != null)
                 {
                     foreach (var option in question.Options)
@@ -511,6 +534,13 @@ namespace MyCodex.WinForms.Forms
                 public string Description { get; }
 
                 public bool IsOther { get; }
+
+                public bool IsNotSet { get; private set; }
+
+                public static OptionItem CreateNotSet(string label)
+                {
+                    return new OptionItem(label, null, null, false) { IsNotSet = true };
+                }
 
                 public override string ToString()
                 {

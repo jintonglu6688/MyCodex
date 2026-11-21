@@ -21,6 +21,9 @@ namespace MyCodex.Application.DTOs
 
         public bool IsSecret { get; set; }
 
+        // An optional question may be left unanswered; its answer is then omitted.
+        public bool IsOptional { get; set; }
+
         public List<AppServerToolUserInputOption> Options { get; }
     }
 }

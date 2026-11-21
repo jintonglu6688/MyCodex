@@ -602,7 +602,8 @@ namespace MyCodex.Infrastructure.AppServer
                     Id = pair.Key,
                     Header = title,
                     Question = title,
-                    Description = description
+                    Description = description,
+                    IsOptional = !required.Contains(pair.Key)
                 };
 
                 var type = (AppServerJsonValue.GetString(propertySchema, "type") ?? string.Empty).Trim().ToLowerInvariant();

@@ -1230,6 +1230,9 @@ Latest: {1}</value>
 <data name="ToolUserInputForm.Option.Other" xml:space="preserve">
     <value>Other</value>
   </data>
+<data name="ToolUserInputForm.Option.NotSet" xml:space="preserve">
+    <value>(Not set)</value>
+  </data>
 <data name="ToolUserInputForm.Option.OtherDescription" xml:space="preserve">
     <value>Manually enter another value.</value>
   </data>

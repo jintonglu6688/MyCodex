@@ -1230,6 +1230,9 @@
 <data name="ToolUserInputForm.Option.Other" xml:space="preserve">
     <value>其他</value>
   </data>
+<data name="ToolUserInputForm.Option.NotSet" xml:space="preserve">
+    <value>（不填写）</value>
+  </data>
 <data name="ToolUserInputForm.Option.OtherDescription" xml:space="preserve">
     <value>手动输入其他内容。</value>
   </data>

@@ -48,6 +48,31 @@ namespace MyCodex.Application.Tests
             }
         }
 
+        [Test]
+        [Apartment(ApartmentState.STA)]
+        public void McpForm_OptionalFieldsAreNotForcedOrPrefilled()
+        {
+            var parameters = (IDictionary<string, object>)new System.Web.Script.Serialization.JavaScriptSerializer().DeserializeObject(
+                "{\"threadId\":\"thread-1\",\"serverName\":\"probe\",\"mode\":\"form\",\"message\":\"Details\"," +
+                "\"requestedSchema\":{\"type\":\"object\",\"required\":[\"name\"],\"properties\":{" +
+                "\"name\":{\"type\":\"string\"},\"note\":{\"type\":\"string\"},\"notify\":{\"type\":\"boolean\"}}}}");
+            var request = AppServerInteractionRequestMapper.BuildPendingMcpElicitationRequest(7, "7", parameters);
+            Assert.That(request.Questions.Single(q => q.Id == "name").IsOptional, Is.False);
+            Assert.That(request.Questions.Single(q => q.Id == "notify").IsOptional, Is.True);
+
+            using (var form = new ToolUserInputForm(request.Questions, "MCP", request.Content, false))
+            {
+                form.Show();
+                var nameBox = Descendants(form).OfType<TextBox>().First(box => box.AccessibleName == request.Questions.Single(q => q.Id == "name").Question);
+                nameBox.Text = "Ada";
+                var ok = (Button)typeof(ToolUserInputForm).GetField("_okButton", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(form);
+                ok.PerformClick();
+
+                Assert.That(form.DialogResult, Is.EqualTo(DialogResult.OK));
+                Assert.That(form.Answers.Keys, Is.EquivalentTo(new[] { "name" }), "Unanswered optional fields must be left out, not filled in.");
+            }
+        }
+
         [TestCase(250)]
         [TestCase(400)]
         [Apartment(ApartmentState.STA)]
