@@ -184,7 +184,7 @@ namespace MyCodex.WinForms.Forms
                     {
                         if (downloadForm.ShowDialog(this) != DialogResult.OK || downloadForm.DownloadResult == null)
                         {
-                            SetStatus(UiLocalization.Text("MainForm.Update.Status.Cancelled", "Update cancelled"));
+                            SetStatus(downloadForm.DialogResult == DialogResult.Abort ? UiLocalization.Text("MainForm.Update.Status.Failed", "Update failed") : UiLocalization.Text("MainForm.Update.Status.Cancelled", "Update cancelled")); // Abort: download or verification failed
                             return;
                         }
 
