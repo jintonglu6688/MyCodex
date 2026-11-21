@@ -335,8 +335,7 @@ namespace MyCodex.Infrastructure.GitHosting
             "if [ -z \"$parent\" ]; then exit 64; fi\n" +
             "shift 2\n" +
             "case \"$parent\" in '~') parent=\"$HOME\" ;; '~/'*) parent=\"$HOME/${parent#~/}\" ;; esac\n" +
-            "mkdir -p \"$parent\"\n" +
-            "cd \"$parent\"\n" +
+            "mkdir -p \"$parent\" && cd \"$parent\" || exit 1\n" +
             "if ! command -v gh >/dev/null 2>&1; then echo 'GitHub CLI is not installed on the remote SSH host.' >&2; exit 127; fi\n" +
             "gh \"$@\"\n" +
             "exit_code=$?\n" +
@@ -505,8 +504,7 @@ namespace MyCodex.Infrastructure.GitHosting
             "if [ -z \"$parent\" ]; then exit 64; fi\n" +
             "shift 2\n" +
             "case \"$parent\" in '~') parent=\"$HOME\" ;; '~/'*) parent=\"$HOME/${parent#~/}\" ;; esac\n" +
-            "mkdir -p \"$parent\"\n" +
-            "cd \"$parent\"\n" +
+            "mkdir -p \"$parent\" && cd \"$parent\" || exit 1\n" +
             "if ! command -v gh >/dev/null 2>&1; then echo 'GitHub CLI is not installed in WSL.' >&2; exit 127; fi\n" +
             "gh \"$@\"\n" +
             "exit_code=$?\n" +
