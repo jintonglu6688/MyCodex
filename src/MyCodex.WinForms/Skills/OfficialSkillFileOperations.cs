@@ -172,7 +172,7 @@ namespace MyCodex.WinForms.Skills
                 if ((existingEntries ?? new List<AppServerFileSystemEntry>()).Any(item =>
                         item != null && string.Equals(item.FileName, model.Name.Trim(), StringComparison.OrdinalIgnoreCase)))
                 {
-                    throw new InvalidOperationException("A skill with this internal name already exists in the selected location.");
+                    throw new InvalidOperationException(UiLocalization.Text("SkillEditForm.Error.NameExists", "A skill with this internal name already exists in the selected location."));
                 }
 
                 await _fileSystemClient.CreateDirectoryAsync(targetDirectory, true).ConfigureAwait(false);

@@ -4913,6 +4913,9 @@ Trust this host key for the selected Remote Unix profile and retry? Only continu
 <data name="SkillEditForm.Location.User.Template" xml:space="preserve">
     <value>User: {0}</value>
   </data>
+<data name="SkillEditForm.Error.NameExists" xml:space="preserve">
+    <value>A skill with this internal name already exists in the selected location.</value>
+  </data>
 <data name="SkillEditForm.Location.Workspace.Template" xml:space="preserve">
     <value>Workspace: {0}</value>
   </data>

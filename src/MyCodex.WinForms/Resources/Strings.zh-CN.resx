@@ -4835,6 +4835,9 @@ MyCodex 桌面客户端。</value>
 <data name="SkillEditForm.Location.User.Template" xml:space="preserve">
     <value>用户级：{0}</value>
   </data>
+<data name="SkillEditForm.Error.NameExists" xml:space="preserve">
+    <value>所选位置已有同一内部名称的技能。</value>
+  </data>
 <data name="SkillEditForm.Location.Workspace.Template" xml:space="preserve">
     <value>工作区级：{0}</value>
   </data>
